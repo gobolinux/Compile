@@ -1,6 +1,8 @@
 all:
 	gcc -o SuperUserName SuperUserName.c
-	mv SuperUserName ../bin/ 
+	gcc -o IsExecutable IsExecutable.c
+	mv SuperUserName IsExecutable ../bin/ 
 static:	
 	gcc -o SuperUserName SuperUserName.c -static
-	mv SuperUserName ../bin/ 
+	gcc -o IsExecutable IsExecutable.c -static
+	mv SuperUserName IsExecutable ../bin/ 
