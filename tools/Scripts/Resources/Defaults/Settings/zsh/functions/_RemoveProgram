@@ -1,0 +1,3 @@
+#compdef RemoveProgram
+
+#_files -W ${goboPrefix}/Programs

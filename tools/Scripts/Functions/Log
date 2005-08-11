@@ -1,0 +1,150 @@
+#!/bin/sh (source)
+
+
+#
+# 10/09/2004 - [detsch] Changed logging functions (FD instead of stream), 
+#              following David Smith sugestion
+
+Import Terminal
+
+logLevelError=10
+logLevelTerse=20
+logLevelNormal=30
+logLevelVerbose=40
+logLevelDebug=50
+
+[ "$logMode" ] || logMode="Normal"
+
+export verboseFD=100
+export normalFD=101
+export terseFD=102
+export errorFD=103
+export debugFD=104
+export logFD=105
+export questionFD=106
+
+
+function Is_Log_Mode() {
+   [ "$1" = "$logMode" ]
+}
+
+function Log_Function() {
+    Parameters "$@" message color FD 
+    [ $FD == $questionFD ] && echo -e -n ${colorNormal}${colorNormal}
+    echo -e "${colorGray}${scriptName}:${colorNormal} ${color}$message${colorNormal}" >&$FD 
+    echo "$scriptName: $message" >&$logFD
+}
+
+function Log_Error() {
+    Log_Function "$*" "${colorBoldRed}" "${errorFD}"
+}
+
+function Log_Normal() {
+    Log_Function "$*" "${colorCyan}" "${normalFD}"
+}
+
+function Log_Terse() {
+    Log_Function "$*" "${colorBoldCyan}" "${terseFD}"
+}
+
+function Log_Verbose() {
+    Log_Function "$*" "${colorNormal}" "${verboseFD}"
+}
+
+function Log_Debug() {
+    Log_Function "$*" "${colorRedWhite}" "${debugFD}"
+}
+
+# Ask a question. If the answer is "n", quit.
+function Ask_Continue() {
+    if [ "$logLevel" -lt "$logLevelNormal" ]
+    then return 0
+    fi
+    
+    if [ "$1" ]
+    then Log_Question "$1" 
+    fi
+    
+    Log_Question "Press Enter to continue or Ctrl-C to cancel."
+    read
+    
+    if [ "$REPLY" = "n" ]
+    then
+       exit 1
+    fi
+    
+    if [ "$?" != "0" ]
+    then
+       exit $?
+    fi 
+}
+
+function Log_Question() {
+    Log_Function "$*" "${colorBoldCyan}" "${questionFD}"
+}
+
+function Ask_Option() {
+    Log_Question "$*" 
+
+    # detsch, maybe this loop should be continued until some valid 
+    #  response is received
+    while true
+    do
+       read
+       #if [ "$REPLY" != "" -o "${questionStream}" = "" ]
+       if [ "$REPLY" != "" ]
+       then
+          break
+       fi
+    done
+    #echo resposta: $REPLY
+         
+    if [ "$?" != "0" ]
+    then
+       exit $?
+    fi 
+}
+
+function Ask() {
+   Parameters "$@" question
+   Ask_Option "$question [Y/n]"
+   if [ "$REPLY" = "n" -o "$REPLY" = "N" ]
+   then return 1
+   else return 0
+   fi
+}
+
+function Progress_Start() {
+    Parameters "$@" message
+
+    echo -n "$message" 1>&2
+    echo -n " *" 1>&2
+    spinControl=0
+}
+
+function Progress_Move() {
+   case "$spinControl" in
+   0) echo -n "|" 1>&2 ; spinControl=1 ;;
+   1) echo -n "/" 1>&2 ; spinControl=2 ;;
+   2) echo -n "-" 1>&2 ; spinControl=3 ;;
+   3) echo -n "\\" 1>&2 ; spinControl=0 ;;
+   esac # esac is ridiculous.
+}
+
+function Progress_End() {
+    echo 1>&2
+}
+
+# Prints an error message and exits
+function Die() {
+   [[ "$@" != "" ]] && Log_Error "$@"
+#   Log_Error "$@"
+   exit 1
+}
+
+# Prints a message and exits successfully
+function PassAway() {
+   [[ "$@" != "" ]] && Log_Error "$@"
+#   Log_Error "$@"
+   exit 0
+}

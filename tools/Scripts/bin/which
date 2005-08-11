@@ -1,0 +1,36 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 06/01/2004 - [hisham] changed "not found" message (which time)
+# 08/12/2002 - [rafasgj] removed RealPath
+# 23/11/2002 - [hisham] reformatted changelog
+# 12/04/2002 - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import Log
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="Display real location of an executable file."
+scriptCredits="Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<executable>"
+scriptExample="ls"
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+fakepath=`type -p "$1"`
+if [ ! "$fakepath" ]
+then
+   Die "$1 not found, or it's not a program."
+fi
+
+readlink -f $fakepath
+
+exit 0

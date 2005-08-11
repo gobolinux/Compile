@@ -1,0 +1,7 @@
+#!/bin/sh
+[ "$EDITOR"        ] && exec $EDITOR "$1"
+[ "`which mcedit`" ] && exec mcedit "$1"
+[ "`which nano`"   ] && exec nano "$1"
+[ "`which vi`"     ] && exec vi "$1"
+echo "No text editor was found."
+echo "Please set the EDITOR environment variable."

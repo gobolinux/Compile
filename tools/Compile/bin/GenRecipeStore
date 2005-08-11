@@ -1,0 +1,81 @@
+#!/bin/sh
+
+##################################################
+# Changelog
+##################################################
+
+# 23/08/2004 - [detsch] retouch generated recipes based on 
+#              "$name/$version/Recipe" change date
+# 04/02/2004 - [calica]S assert_dir to ensure environment
+#            - rename config variables prefix: get -> gen
+# 10/12/2003 - [hisham] Avoid the Current link
+# 09/12/2003 - [calica] first version
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import GoboLinux
+
+##################################################
+# Options and configuration
+##################################################
+
+scriptDescription='Generate "packed recipes", ready for submission.'
+scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
+scriptNotes="This script will take all recipes in $genRecipeRecipeDir and "\
+"pack them as Foo--1.0--recipe.tar.bz2 files at $genRecipeStoreDir."
+scriptUsage=""
+Parse_Options "$@"
+shift $parsedArguments
+
+Parse_Conf Compile.conf
+
+
+if Is_Writable "$genRecipeStoreDir"
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+##################################################
+# Helper functions
+##################################################
+
+Import Compile
+
+##################################################
+# Prepare Environment
+##################################################
+
+assert_dir $genRecipeStoreDir
+assert_dir $genRecipeRecipeDir
+
+##################################################
+# Operation
+##################################################
+
+lsfile="$genRecipeStoreDir/RecipeList"
+$sudo echo -n >"$lsfile"
+for name in "$genRecipeRecipeDir/"*
+do
+    name=`basename $name`
+    for version in "$genRecipeRecipeDir/$name/"*
+    do
+        if [ -L "$version" ]
+        then
+            continue
+        fi
+        version=`basename $version`
+        archive="$name--$version--recipe.tar.bz2"
+        $sudo echo $archive >>"$lsfile"
+        Log_Verbose "Package: $archive"
+        cd "$genRecipeRecipeDir"
+        Exists "$name/$version/Recipe" && Quiet tar cjvf "$genRecipeStoreDir/$name--$version--recipe.tar.bz2" "$name/$version" \
+        && touch "$genRecipeStoreDir/$name--$version--recipe.tar.bz2" --reference="$name/$version/Recipe"
+    done
+done
+
+exit;

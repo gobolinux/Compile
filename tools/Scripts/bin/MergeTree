@@ -1,0 +1,63 @@
+#!/bin/sh
+
+### Changelog #########################################################
+
+# 07/11/2002 - [hisham] Updated logging
+#            - bugfix: pass options in recursion
+# 23/11/2002 - [hisham] Reformatted changelog
+# 31/05/2002 - [hisham] removed hardcoded script name
+#            - minor cleanup
+# 20/04/2002 - [hisham] Fixed silly typo
+#            - Only descend on directories that are not links (share!)
+# XX/XX/XXXX - [hisham] First version
+
+### Imports ###########################################################
+
+. ScriptFunctions
+Import OptionParser
+
+### Options ###########################################################
+
+helpOnNoArguments=yes
+scriptDescription="Mirrors one directory structure into another."
+scriptNotes="All files and directories in <source> appear as
+    symbolic links in <destination>"
+scriptUsage="<source> <destination>"
+scriptExample="/Programs/KOffice/Current /Programs/KDE/Current"
+Add_Option_Boolean "d" "delete" "On conflicts, overwrite original file."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #########################################################
+
+source=$1
+destination=$2
+
+Boolean "delete" && flags="$flags --delete"
+Boolean "verbose" && flags="$flags --verbose"
+
+cd $source
+for file in *
+do
+   if [ "$file" != "*" ]
+   then
+      if [ ! -e $destination/$file ]
+      then
+         ln -s $PWD/$file $destination/$file
+      else
+         if [ -d $destination/$file -a ! -L $destination/$file ]
+         then
+            $scriptName $flags $OPT_DELETE $source/$file $destination/$file
+         else
+            if Boolean "delete"
+            then
+               Log_Normal "File $file exists in $destination... REPLACING."
+               rm $destination/$file
+               ln -s $PWD/$file $destination/$file
+            else
+               Log_Verbose "File $file exists in $destination... skipping"
+            fi
+         fi
+      fi
+   fi
+done

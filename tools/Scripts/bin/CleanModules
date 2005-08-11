@@ -1,0 +1,43 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 23/11/2003 - [hisham] Reformatted changelog
+# 31/05/2003 - [hisham] New option parser
+# XX/XX/XXXX - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import OptionParser
+Import GoboLinux
+
+### Options ###################################################################
+
+scriptDescription="Clean up all kernel modules that can be removed."
+scriptCredits="Copyright (C) 2003. Released under the GNU GPL."
+scriptUsage=""
+scriptExample=""
+
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+Verify_Superuser
+
+function buggy_module() {
+   case $1 in
+   iptek|add_others_here) return 0
+   ;;
+   esac # esac is ridiculous
+   return 1
+}
+
+for i in `lsmod | tail +2 | cut -f 1 -d " "`
+do
+if ! `buggy_module "$i"`
+then
+   rmmod $i 2> /dev/null
+fi
+done

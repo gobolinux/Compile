@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# 03/07/2003 - defaults option [Carlo Calica]
+# 13/01/2003 - Minor doc fix
+# 02/08/2002 - new option parser
+# 23/12/2001 - --depth, path
+# XX/XX/XXXX - first version
+
+. ScriptFunctions
+Import OptionParser
+Import Process
+Import File
+
+scriptDescription="remove all empty directories inside current (or a given) directory"
+scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU GPL."
+Add_Option_Entry "d" "depth" "Depth of search for empty directories."
+Add_Option_Boolean "D" "no-defaults" "Do not remove emptys in Defaults."
+
+Parse_Options "$@"
+shift $parsedArguments
+
+Quiet Entry "depth" && depth="-maxdepth `Entry "depth"`"
+
+if Boolean "no-defaults"
+then
+   PREPROC="grep -v Defaults"
+else
+   PREPROC="cat"
+fi
+
+dir="$1"
+[ "$dir" ] || dir="."
+
+if Is_Directory "$1"
+then
+   cd "$1"
+else
+   Die "$1 is not a directory."
+fi
+
+find . -type d $DEPTH | $PREPROC | tac | while read i
+
+do rmdir "$i" 2> /dev/null && Log_Verbose "$i"
+done

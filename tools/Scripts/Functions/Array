@@ -1,0 +1,50 @@
+#!/bin/sh (source)
+
+function Break_Into_Array() {
+   local colonlist="$1"
+   local arrayname="$2"
+   local delimiter="$3"
+   eval `echo "$colonlist" | sed 's/^/'"$arrayname"'=("/;s/'"$delimiter"'/" "/g;s/$/")/'`
+}
+
+function List_To_Array() {
+   local option="$1" 
+   local array="$2"
+   
+   for i in `seq $optionsListSize`
+   do
+      if [ "$option" = "${optionsShortList[i]}" -o "$option" = "${optionsLongList[i]}" ]
+      then
+         value="${optionsStateList[i]}"
+         if [ "$value" = "#@unset@#" ]
+    then return 1
+    else Break_Into_Array "$value" "$array" ":"
+         return 0
+    fi
+      fi
+   done
+   return 2
+}
+
+function For_Each() {
+   local arrayname="$1"
+   local lambda="$2"
+
+   eval '
+      for each in "${'"$arrayname"'[@]}"
+      do
+         '"$lambda"'
+      done
+   '
+}
+
+function Map() {
+   local fun="$1"
+   shift
+   local c=$#
+   for (( i = 0; i < c; i++ ))
+   do
+      "$fun" "$1"
+      shift      
+   done
+}

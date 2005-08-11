@@ -1,0 +1,107 @@
+#!/bin/sh
+
+#
+# FixAttributes - Fix attributes from files based on its contents
+# Changelog:
+#    31/08/2004 - fixed -t and -f flags
+#    23/05/2003 - minor updates and cleanups
+#    13/01/2003 - minor fixes in documentation
+#    12/04/2002 - using new option parser
+#    14/02/2001 - major rewrite - 2 to 3x faster
+#    09/12/2000 - fix for names with spaces
+#
+
+source ScriptFunctions
+Import GoboLinux
+Import Log
+Import OptionParser
+
+scriptVersion="3.2"
+scriptCredits="Copyright (C) Hisham Muhammad, 2000-2003 - Released under the GNU GPL."
+scriptDescription="Fix attributes from files based on its contents."
+scriptUsage="[options...] files..."
+scriptNotes="Default permission modes are obtained from FixAttributes.conf."
+helpOnNoArguments=yes
+Add_Option_Boolean "R" "recursive" "Recurses into subdirectories fixing permissions."
+Add_Option_Entry "t" "true" "Sets permission <entry> if file is considered executable."
+Add_Option_Entry "f" "false" "Sets permission <entry> if file is considered not executable."
+Parse_Options "$@"
+shift $parsedArguments
+
+Parse_Conf FixAttributes.conf
+
+# I'm using here a C helper.
+# Here it is for your convenience, copy it to 'IsExecutable.c' (removing
+# the leading comments of course) and compile with
+#    gcc -o IsExecutable IsExecutable.c
+# You may run the source through a beautifier if desired (I compressed it
+# here for the space -- the code won't look nearly as cryptic).
+#
+# #include <stdio.h>
+# #include <string.h>
+# #include <errno.h>
+# inline int endsWith(char* haystack, char* needle) {
+#   char* objext = strstr(haystack, needle); if (objext) {
+#   objext += strlen(needle); if (! *objext) return 1; } return 0; }
+# int main(int argc, char** argv) {
+#   char head[2]; int ok; FILE* file; if (argc < 2) return 100;
+#   if ( (! strcmp(argv[1], "core")) || (endsWith(argv[1], ".o")) ) return 1;
+#   file = fopen(argv[1], "r"); if (errno) return 100;
+#   ok = fread(&head, 2, 1, file); fclose(file); if (!ok) return 100;
+#   if ((head[0]==127&&head[1]=='E')||(head[0]=='#' && head[1]=='!')) return 0;
+#   else return 1; }
+
+function file_fix() {
+   Log_Verbose "$1"
+   if IsExecutable "$1"
+   then chmod $fixatChmodTrue "$1"
+   else chmod $fixatChmodFalse "$1"
+   fi
+}
+
+function rec_fixat() {
+   if [ -d "$1" ]
+   then
+      Log_Verbose "$1"
+      chmod $fixatChmodTrue "$1"
+      cd "$1"
+      Log_Verbose `pwd`
+      ls -A | while read i
+      do
+         rec_fixat "$i"
+      done
+      cd ..
+   else
+      file_fix "$1"
+   fi
+}
+
+function flat_fixat() {
+   if [ -d "$1" ]
+   then
+      Log_Verbose "$1"
+      chmod $fixatChmodTrue "$1"
+   else
+      file_fix "$1"
+   fi
+}
+
+function fixat_loop() {
+   if Boolean "recursive"
+   then fixatfunction=rec_fixat
+   else fixatfunction=flat_fixat
+   fi
+   
+   while [ "$1" != "" ]
+   do
+      $fixatfunction "$1"
+      shift
+   done
+}
+
+[ "$fixatChmodTrue" ] || fixatChmodTrue=755
+[ "$fixatChmodFalse" ] || fixatChmodFalse=644
+Entry "t" && fixatChmodTrue=`Entry "t"`
+Entry "f" && fixatChmodFalse=`Entry "f"`
+
+fixat_loop "$@"

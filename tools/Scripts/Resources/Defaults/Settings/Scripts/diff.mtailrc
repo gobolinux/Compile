@@ -1,0 +1,25 @@
+files: stdin
+colors:
+#normal line color
+    /^.*$/ white
+#Line numbers
+    /^[0-9].*$/ brightcyan
+#Removed lines
+    /^<.*$/ brightred
+    /^-.*$/ brightred
+    /^d[0-9].*$/ brightred
+#Inserted lines
+    /^>.*$/ brightgreen
+    /^\+.*$/ brightgreen
+    /^a[0-9].*$/ brightgreen
+#Separator
+    /^---$/ cyan
+    /^@@.*@@$/ cyan
+#'Only' files
+    /^Only in.*$/ brightyellow
+    /^Only in [^:]*:/ cyan
+    /^Only in/ brightred
+#New files
+    /^dif.*/ brightbackground
+ansi:
+    /brightbackground/[41;37;1m/

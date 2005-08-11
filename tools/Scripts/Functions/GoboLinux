@@ -1,0 +1,521 @@
+#!/bin/sh (source)
+
+Import File
+
+function Get_Version() {
+   Parameters "$@" package version
+   ! Exists "$goboPrograms/$package/$version" && return 1
+   realversion=$(basename $(readlink -f "$goboPrograms/$package/$version"))
+   if Is_Directory "$goboPrograms/$package/$realversion"
+   then
+      echo "$realversion"
+      return 0
+   fi
+   return 1
+}
+
+function Link_Or_Expand_All() {
+
+### python Link_Or_Expand_All CHANGELOG
+
+# 14/09/2004 - [detsch] Experimtntal relative option
+# 10/09/2004 - [detsch] Changed Log() function following David Smith sugestion & code
+# 23/05/2004 - [detsch] try:except and checking goboPrograms[-1]=='/' on belongs_to_same_app()
+# 01/04/2004 - [detsch] bugfix: now checking if os.path.islink(bn) when 
+#                       belongs_to_same_app() before trying to link file (3:)  
+# 29/03/2004 - [detsch] ported Log functions (no more os.system())
+# 29/03/2004 - [detsch] first version released for testing
+# 27/03/2004 - [detsch] major code reorganization,
+#                       fixing "SymlinkProgram TeTeX" (bin/* allways overwrite) bug
+# 21/03/2004 - [detsch] "line-by-line" port based on bash Link_Or_Expand running
+#
+
+   Parameters "$@" rfrom conflict relative
+
+python -c """
+import os, string, os.path
+
+import thread
+
+def Log(mode, s) :
+    # from Scripts/Current/Functions/Terminal:
+    colorGray='\033[1;30m'
+    colorBoldBlue='\033[1;34m'
+    colorBrown='\033[33m'
+    colorYellow='\033[1;33m'
+    colorBoldGreen='\033[1;32m'
+    colorBoldRed='\033[1;31m'
+    colorCyan='\033[36m'
+    colorBoldCyan='\033[1;36m'
+    colorRedWhite='\033[41;37m'
+    colorNormal='\033[0m'
+
+    if mode == 'Debug' :
+        color = colorRedWhite
+    elif mode == 'Verbose' :
+        color = colorNormal
+    elif mode == 'Normal' :
+        color = colorCyan
+    elif mode == 'Terse' :
+        color = colorBoldCyan
+    elif mode == 'Error' :
+        color = colorBoldRed
+    else :
+        color = colorNormal
+    
+    fdName = mode.lower()+'FD'
+    fdString = os.environ[fdName]
+    fdNum = int(fdString)
+
+    os.write(fdNum, colorGray+os.environ['scriptName']+':'+colorNormal+' '+color+s+colorNormal+'\n')
+
+def Log_Debug(s) :
+    Log('Debug', s)
+
+def Log_Verbose(s) :
+    Log('Verbose', s)
+
+def Log_Normal(s) :
+    Log('Normal', s)
+
+def Log_Terse(s) :
+    Log('Terse', s)
+
+def Log_Error(s) :
+    Log('Error', s)
+
+count = 0
+def Link_Or_Expand(new, conflict, relative = False) :
+    global count
+    count = count + 1
+    
+    goboPrograms = os.environ['goboPrograms']
+    if relative :
+	relativegoboprograms = goboPrograms
+	candidate = goboPrograms[len(os.environ['goboPrefix']):]
+	if candidate[0] == '/' :
+	    candidate = candidate[1:]
+	for i in range(10) :
+	    candidate = '../'+candidate
+	    if os.access(candidate, os.W_OK) :
+		relativegoboprograms=candidate
+		break
+    
+    def points_to(p) :
+        if os.access(p, os.R_OK) :
+	    return os.path.realpath(os.path.realpath(p))
+
+        if os.path.islink(p) :
+            points = os.path.realpath(os.path.realpath(p)).replace('/share/', '/Shared/')
+            if points[0] != '/' :
+                points = os.path.dirname(p)+'/'+points
+            return points
+        else :
+            return p
+
+    def link_inside() :
+        Log_Verbose('Linking files from \'%s\' in directory \'%s\'...'%(realnew, bn))
+        os.chdir(bn)
+        for i in os.listdir(realnew) :
+            Link_Or_Expand(realnew+'/'+i, conflict, relative)
+        os.chdir('..')
+
+    def belongs_to_same_app() :
+      try :
+         pstrlen = len(goboPrograms)
+         # if goboPrograms ends with an '/'
+         if goboPrograms[-1] == '/' :
+               pstrlen = pstrlen - 1
+         
+         # realnew instead of new because of typical MergeTree links
+	 appnewname = realnew[pstrlen:].split('/')[1]
+	 appoldname = realold[pstrlen:].split('/')[1]
+         
+         # added: case-insensitive
+         if appnewname.lower() == appoldname.lower() :
+            return 1
+         else :
+            return 0
+      except :
+         return 0
+    
+    def create_single_link(orig, dest) :
+	if relative :
+	    relativeorig = orig.replace(os.path.realpath(goboPrograms), relativegoboprograms)
+	    os.symlink(relativeorig, './'+dest)
+	else :
+	    os.symlink(orig, './'+dest)
+    
+    realnew = points_to(new)
+    bn = os.path.basename(new)
+
+    # if name of new is not being used, or is used by an broken link...
+    if not os.access(bn, os.R_OK) :
+        # if is a broken link, remove it
+        if os.path.islink(bn) :
+            os.unlink(bn)
+
+        realold = ''
+    else :
+        realold = os.path.realpath(os.path.realpath(bn))
+
+    # 1: new is a broken link
+    if not os.access(realnew, os.R_OK) :
+        Log_Debug('Skipping %s because it is a broken link under %s.'%(new, goboPrograms))
+        # 'TODO: Do nothing by now. I'm not sure what the correct behavior'
+
+    # 2: name of new is not being used
+    elif not realold :
+        Log_Verbose('Creating link: %s'%bn)
+        Log_Debug('symlink1 %s ./%s'%(realnew,bn))
+        create_single_link(realnew, bn)
+
+    # 3: probably upgrading a program version
+    elif os.path.islink(bn) and belongs_to_same_app() :
+        Log_Verbose('Replacing link: %s'%new)
+        Log_Debug('symlink2 %s ./%s'%(realnew,bn))
+        os.unlink('./'+bn)
+        create_single_link(realnew, bn)
+
+    # 4: name of new was being used by an directory (probably with links)
+    elif (not os.path.islink(bn)) and os.path.isdir(bn) and os.path.isdir(realnew) :
+        link_inside()
+
+    # 5: name of new was being used by an link to a directory
+    elif os.path.islink(bn) and os.path.isdir(realold) and os.path.isdir(realnew) :
+        Log_Normal('Creating expanded directory \'%s\'...'%(bn))
+        os.unlink(bn)
+        os.makedirs(bn)
+        os.chdir(bn)
+        Log_Verbose('Linking files from \'%s\' in directory \'%s\'...'%(realold, bn))
+        for i in os.listdir(realold) :
+            oldbn=os.path.basename(i)
+            create_single_link(realold+'/'+i, oldbn)
+        os.chdir('..')
+        link_inside()
+
+    # 6: conflict for a same name
+    elif not os.path.isdir(realold) and not os.path.isdir(realnew):
+        Log_Error('Conflict: %s'%realold)
+        if conflict == 'overwrite' or conflict == 'o' :
+            os.unlink('./'+bn)
+            create_single_link(realnew, bn)
+            Log_Normal('Replaced with: %s'%realnew)
+
+    # 7: if one of [realold, realnew] is a dir and the other isn't, we have an "unsolvable" conflict
+    elif (not os.path.isdir(realold) and os.path.isdir(realnew)) or (os.path.isdir(realold) and not os.path.isdir(realnew)) :
+        Log_Error('Conflict: cannot create expanded directory \'%s\'.'%(bn))
+
+    # 0
+    else :
+        Log_Error('SERIOUS: Should never enter here')
+#       islink(bn) isdir(realold) isdir(realnew)
+#       0                     0         0 -> 6
+#       0                     0         1 -> 7
+#       0                     1         0 -> 7
+#       0                     1         1 -> 4
+#       1                     0         0 -> 6
+#       1                     0         1 -> 7
+#       1                     1         0 -> 7
+#       1                     1         1 -> 5
+
+
+for i in os.listdir('$rfrom') :
+        Link_Or_Expand('$rfrom'+'/'+i, '$conflict', $relative)
+if count == 1 :
+        Log_Normal('Processed %s file.'%(count))
+else :
+        Log_Normal('Processed %s files.'%(count))
+"""
+}
+
+# function Bash_Link_Or_Expand_All() {
+#    Parameters "$@" rfrom conflict
+#    for j in "$rfrom"/*
+#    do
+#       Link_Or_Expand "$j" "$conflict"
+#    done
+# }
+
+# function Link_Or_Expand() {
+#    Parameters "$@" new conflict
+#    local realnew=`readlink -f "$new"`
+#    local bn
+# 
+#    function prepare_directory() {
+#       Log_Normal "Creating expanded directory '$bn'..."
+#       local realold=`readlink -f "$bn"`
+#       if ! [ -d "$realold" -a -d "$realnew" ]
+#       then
+#          Log_Error "Conflict: cannot create expanded directory '$bn'."
+#          return 1
+#       fi
+#       rm "$bn"
+#       mkdir "$bn"
+#       cd "$bn"
+#       Log_Verbose "Linking files from '$realold' in directory '$bn'..."
+#       local i
+#       for i in "$realold/"*
+#       do
+#          oldbn=`basename "$i"`
+#          ln -nfs "$i" ./"${oldbn}"
+#       done
+#       cd ..
+#       return 0
+#    }
+# 
+#    function link_inside() {
+#       Log_Verbose "Linking files from '$realnew' in directory '$bn'..."
+#       cd "$bn"
+#       local i
+#       ls -A "$realnew" | while read i
+#       do
+#          Link_Or_Expand "$realnew/$i" "$conflict"
+#          if [ $? -gt 0 ]
+#          then
+#             cd ..
+#             return 1
+#          fi
+#       done
+#       cd ..
+#       return 0
+#    }
+# 
+#    function file_conflict() {
+#       Parameters "$@" filename
+#       Log_Error "Conflict: $filename"
+#       if [ "$conflict" = "overwrite" ]
+#       then
+#          ln -nfs "$realnew" ./"${bn}"
+#          Log_Normal "Replaced with: $realnew"
+#       fi
+#       return 0
+#    }
+# 
+#    function prepare_and_link() {
+#       prepare_directory && link_inside
+#    }
+# 
+#    function overwrite_file() {
+#       Parameters "$@" errfunc
+#       appnewdir=`echo "${new}" | sed -n "s#\\(${goboPrograms}/[^/]*\\)/.*#\\1#p"`
+#       thistemp=`readlink -f "${bn}"`
+#       appolddir=`echo  "${thistemp}" | sed -n "s#\\(${goboPrograms}/[^/]*\\)/.*#\\1#p"`
+#       if [ "${appnewdir}" == "${appolddir}" ]
+#       then
+#          Log_Verbose "Replacing link: ${new}"
+#          Log_Debug "ln -snf $realnew ./${bn}"
+#          ln -snf "$realnew" ./"${bn}"
+#       else
+#          $errfunc "$thistemp"
+#           return $?
+#       fi
+#    }
+# 
+#    bn=`basename "$new"`
+# 
+#    function points_to() {
+#       if [ -L "$1" ]
+#       then
+#          points=`ls -l "$1" | sed 's/.* -> //;s@/share/@/Shared/@'`
+#          if ! [ "`echo "$points" | cut -b1`" = "/" ]
+#          then 
+#          points=`dirname "$1"`/"$points" 
+#          fi
+#          echo $points
+#       else echo "$1"
+#       fi
+#    }
+# 
+#    if Is_Broken_Link "$bn"
+#    then
+#       rm "$bn"
+#    fi
+# 
+#    if [ -L "$new" ] && ! Exists `points_to "$new"`
+#    then
+#       :
+#       Log_Debug "Skipping $new because it is a broken link under ${goboPrograms}."
+#       # TODO: Do nothing by now. I'm not sure what the
+#       # correct behavior is.
+#    elif [ -L "$new" ] && Exists `points_to "$new"`
+#    then
+#       Log_Verbose "Creating link: $bn"
+#       Log_Debug "ln -nfs "`points_to "$new"`" ./${bn}"
+#       ln -nfs `points_to "$new"` ./"${bn}"
+#    elif [ -L "$bn" -a -d "$realnew" ]
+#    then
+#       overwrite_file prepare_and_link
+#       return $?
+#    elif [ -d "$bn" ]
+#    then
+#       link_inside
+#    elif ! [ -e "$bn" ]
+#    then
+#       Log_Verbose "Creating link: $bn"
+#       Log_Debug "ln -nfs $realnew ./${bn}"
+#       ln -nfs "$realnew" ./"${bn}"
+#    else
+#       overwrite_file file_conflict
+#       return $?
+#    fi
+# }
+
+function Reverse_Link_Or_Expand() {
+   local source destination 
+   Parameters "$@" source destination
+   local rsource bsource dsource file 
+   rsource=`readlink -f "$source"`
+   bsource=`basename "$rsource"`
+   dsource=`dirname "$rsource"`
+
+   if [ $rsource == "$destination/$bsource" ]
+   then			# Already symlinked.  Don't do anything
+     return
+   fi
+
+   if ! Exists "$destination/$bsource"
+   then    # No conflicts in $destination
+      if ! Is_Directory $rsource || Is_Empty_Directory $rsource
+      then
+         mv "$source" "$destination"
+         ln -vs "$destination/$bsource" "$dsource" >&$verboseFD
+      else
+         Make_Directory "$destination/$bsource"
+         cd "$rsource"
+         for file in "$rsource"/*
+         do
+            Reverse_Link_Or_Expand "$file" "$destination/$bsource"
+         done
+         cd ..
+      fi
+   else     # We have a conflict, try to handle it
+      if Is_Nonempty_Directory "$rsource" && Is_Directory "$destination/$bsource"
+      then
+         cd "$rsource"
+         for file in "$rsource"/*
+         do
+            Reverse_Link_Or_Expand "$file" "$destination/$bsource"
+         done
+         cd ..
+      elif Is_Empty_Directory "$rsource"
+      then
+         rmdir "$rsource" >&$verboseFD
+         ln -vs "$destination/$bsource" "$dsource" >&$verboseFD
+      else
+         Log_Error "Conflict: $bsource already exists at $destination."
+      fi
+   fi
+}
+
+function Dependencies_File() {
+   Parameters "$@" package version
+
+   function attempt_file() {
+      if Is_File "$1"
+      then
+         Quiet mkdir -p "$correctdir" && \
+         Quiet mv "$1" "$correctfile" && \
+         echo "$correctfile" && \
+         return 0
+         echo "$1"
+         return 0
+      fi
+      return 1
+   }
+   local correctdir="$goboPrograms/$package/$version/Resources"
+   local correctfile="$correctdir/Dependencies"
+   attempt_file "$correctfile" && return 0
+   # XXX backwards compatibility
+   attempt_file "$goboPrograms/$package/$version/.dependencies" && return 0
+   Log_Verbose "Dependency file not found. Searching for old version."
+   attempt_file "$goboPrograms/$package/.dependencies" && return 0
+   return 1
+}
+
+function Find_Conf() {
+   function check_conf() {
+      Exists "$1" && echo "$1" || return 1
+   }
+   check_conf "$HOME/${goboUserSettings}/Scripts/$1" ||\
+   check_conf "${goboSettings}/Scripts/$1"
+}
+
+# Parse the script's configuration
+function Parse_Conf() {
+   process_conf() {
+      Exists "$1" && source "$1"
+   }
+   dirzero=$(dirname $(readlink -f $0))
+   progname=$(echo $dirzero | sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@" | tr "/" " " | awk '{print $1}') #"
+   process_conf "${goboSettings}/$progname/$1"
+   process_conf "${goboSettings}/$progname/$1"
+   process_conf "$dirzero/$1"
+   process_conf "$HOME/${goboUserSettings}/$progname/$1"
+   process_conf "$HOME/${goboUserSettings}/$1"
+}
+
+# Some simple define for sudo
+sudo_validate="sudo -u #0 -v"
+sudo_exec="sudo -u #0"
+
+# Respawn the script, asking for root privileges
+function Verify_Superuser() {
+   if [ $ROOTLESS_GOBOLINUX ]
+   then 
+      echo "Bypassing verification for superuser"
+   else
+      if [ $UID != 0 ]
+      then
+         Log_Verbose "Running as superuser..."
+         # Revalidate password for another 5 mins.
+         $sudo_validate
+         # Run with superuser's HOME.
+         exec sudo -u "#0" -H $0 "${savedOptions[@]}"
+      fi
+   fi
+}
+
+# Respawn the script with normal permissions.
+function Release_Superuser() {
+   if [ $SUDO_USER ] && [ "$UID" = "0" ]
+   then
+      Log_Verbose "Running as $SUDO_USER..."
+      # Revalidate password for another 5 mins.
+      $sudo_validate
+      # Run with superuser's HOME.
+      exec sudo -u "$SUDO_USER" -H $0 "${savedOptions[@]}"
+   fi
+}
+
+
+# Respawn the script, asking for root privileges
+function Try_Superuser() {
+   if [ $UID != 0 ]
+   then
+      echo "You may run this with superuser privileges (press Enter to skip)..."
+      sudo -u "#0" $0 "$@" && exit
+   fi
+}
+
+# Whenever you need to strip ${goboPrograms} off from a path,
+# use this function. It's the bullet-proof way to do so.
+function Strip_Gobo_Programs() {
+   sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@"
+}
+
+# Inspect to which package a linked file points to
+function Which_Package() {
+   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f1
+}
+
+# Inspect the version of the package a linked file points to
+function Which_Version() {
+   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f2
+}
+
+# Whenever you need to strip ${goboPrograms} off from a path,
+# use this function. It's the bullet-proof way to do so.
+function Strip_Gobo_Programs() {
+   sed "s@${goboPrograms}@@;s@^/*@@"
+}

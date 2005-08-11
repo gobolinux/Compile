@@ -1,0 +1,77 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import OptionParser
+Import GoboLinux
+Import File
+Import String
+
+######## Changelog ########
+
+# 2004/06/30 - [calica] use --keyring rather than --homedir
+# 2004/05/27 - [ecd] splitted 'Hashes' file in more files (SignPackage, VerifyPackage)
+#            - added "local-user" option
+#            - signing only with keys from $HOME
+#            - description adapted to splitted version
+# 2003/12/15 - [calica] First version
+
+###########################
+
+scriptDescription="Generate and sign a hash file of a Gobolinux package with gpg."
+scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{ [<options>] <package> [<version>] }"
+scriptNotes="If no version is specified, Current is assumed.  "\
+"If the -u option isn't used, the first ID found in the secret keyring is used."
+
+########## Options ##########
+Add_Option_Entry "u" "local-user" "Use <entry> as the user ID to sign with."
+Add_Option_Boolean "S" "no-signature" "Just create FileHash.  No GPG signing."
+
+Parse_Options "$@"
+shift $parsedArguments
+
+GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring}"
+
+if Is_Entry_Set "local-user" 
+then
+   localuser=`Entry "local-user"`
+   GPG_opts="${GPG_opts} -u $localuser"
+fi
+
+########## Version ##########
+package=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   version=`Get_Version "$package" "$2"`
+else
+   version=`Get_Version "$package" "Current"`
+fi
+
+prefix="$goboPrograms/$package/$version"
+
+Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+cd "$prefix"
+
+Release_Superuser
+
+########## Functions ##########
+
+########## Sign Resources/FileHash ##########
+
+FileHash_loc="Resources/FileHash"
+FileHash_sig="${FileHash_loc}.sig"
+
+Log_Normal "Creating FileHash"
+Gen_FileHash "$prefix" "$FileHash_loc"
+
+Boolean "no-signature" && exit 0
+
+Log_Normal "Signing FileHash"
+Sign_File "$FileHash_loc" "$FileHash_sig"
+
+exit 0
+

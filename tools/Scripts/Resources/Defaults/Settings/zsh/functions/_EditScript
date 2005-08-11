@@ -1,0 +1,3 @@
+#compdef EditScript
+
+_files -W /Programs/Scripts/Current/bin

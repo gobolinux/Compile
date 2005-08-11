@@ -1,0 +1,3 @@
+#compdef TestBootTheme
+
+_files -W /Programs/BootScripts/Current/share/BootThemes

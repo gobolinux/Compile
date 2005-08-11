@@ -1,0 +1,204 @@
+#!/usr/bin/python
+
+# 
+# FindPackage
+#  Search, chooses an occurence and prints where some package (or recipe) can 
+#  be found, based only on the program name (case insesitive) or on the 
+#  program name and program version.
+#
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+
+
+### Changelog ###############################################################
+
+# 19/07/2004 - [detsch] moved most of code to 'GetAvailable'
+# 08/07/2004 - [detsch] First version, mostly based on Manager source code
+#
+
+from GetAvailable import *
+
+if __name__ == '__main__' :
+	import sys
+	import getopt, os
+
+	try :
+		opts, args = getopt.getopt(sys.argv[1:], 't:Wslh', ['types=', 'type=', 'local-dirs=', 'full-list', 'force-update', 'substring', 'no-web', 'help'])
+	except getopt.GetoptError, detail :
+		print sys.argv[0].split('/')[-1]+': '+str(detail)
+		sys.exit(1)
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	types =  [ 'local_package', 'official_package' ]
+	typesChanged = False
+	localdirs = None
+	fulllist = False
+	forceupdate = False
+	substring = False
+	noWeb = False
+	
+	for o, a in opts :
+		if o in ['--types','--type', '-t'] :
+			typesChanged = True
+			types = a.split(',')
+			for i in range(len(types)) :
+				if len (types[i]) == 1 :
+					for t in validTypes :
+						if types[i][0] == t[0] :
+							types[i] = t
+							break
+			if 'all' in types :
+				types = validTypes[:-1] # don't include 'all'
+		if o == '--local-dirs' :
+			localdirs = a.split(',')
+		elif o in ['--full-list', '-l'] :
+			fulllist = True
+		elif o == '--force-update' :
+			forceupdate = True
+		elif o in ['--substring','-s'] :
+			substring = True
+			fulllist = True
+		elif o in ['--no-web', '-W'] :
+			noWeb = True
+			if not typesChanged :
+				types =  [ 'local_package' ]
+		elif o in ['--help', '-h'] :
+			print """
+FindPackage
+ Search, chooses an occurence and prints where some package (or recipe) can 
+ be found, based only on the program name (case insesitive) or on the 
+ program name and program version.
+ 
+
+Options:
+ -t [t1,t2,...]
+ --types=[t1,t2,...]  sets what kind of packages can be searched, in the 
+                      passed order. Valid types are: 
+                       local_package, official_package, contrib_package, 
+                       recipe, tracked, all
+                      using only the first character from any of the above 
+                      is also valid:
+                       l, o, c, r, t, a     
+                      Default types are:
+                       local_package, official_package
+                      notice that when "recipe" type is used, Compile.conf is 
+                      read to set recipe-store locations and local recipes 
+                      locations. 
+ 
+ --local-dirs=[d1,..] where to look for local binary packages. By default,
+                      uses the paths defined at GetAvailable.conf
+
+ --force-update       downloads required packages list even if there is a
+                      local copy (cached in ~/.Settings/cache/) newer than one hour.
+
+ -l, --full-list      prints all the occurences that match the passed 
+                      parameters, not only the "best"
+ 
+ -s, --substring      match packages whose names contains the passed substring
+                      automatically enables '--full-list' 
+ 
+ -W, --no-web         do not try to download anything and don't lists 
+                      remote recipes and packages (if not explicitly listed
+                      in '--types='). Overrides '--force-update'
+
+Examples of usage:
+ FindPackage kde
+ FindPackage kde 3.2.3
+ FindPackage KDE 3.2.3
+ FindPackage --types=recipe kde 3.2.3
+ FindPackage --types=local_package,official_package kde 3.2.3
+ FindPackage -t l,o kde 3.2.3
+ FindPackage --full-list kde 3.2.3
+ FindPackage --force-update --full-list kde 3.2.3
+ FindPackage --types=recipe kde-base 3.2.3
+ FindPackage --types=recipe --substring kd 3.2.3
+ """
+			sys.exit(0)
+	
+	if len (args) >= 1 :
+		p = args[0]
+	else :
+		sys.exit(1)
+	
+	if len (args) >= 2 :  
+		v = args[1]
+	else  :
+		v = ''
+	
+	hook = None
+	try :
+		import os.path
+		if not os.path.realpath('/dev/fd/1').find('/fd/pipe:') > 0:
+			hook = consoleProgressHook
+			pass
+	except :
+		pass
+		
+	availables = GetAvailable(types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)
+
+	l = []
+	#print availables
+	for t in types :
+		if not t in availables.keys() :
+			continue
+			
+		if substring :
+			matched = [] # programs that match
+			for pname in availables[t]['programs'].keys() :
+				if pname.lower().find(p.lower()) > -1 :
+					matched.append(pname)
+		else :
+			if availables[t]['programs'].has_key(p) :
+				matched = [p]
+			else :
+				matched = []
+		
+		for match in matched  :
+			if v :
+				if availables[t]['programs'][match].has_key(v) :
+					for i in availables[t]['programs'][match][v] :
+						l.append((v,i))
+			else :
+				for fv in availables[t]['programs'][match].keys() :
+					for i in availables[t]['programs'][match][fv] :
+						l.append((fv,i))
+	
+	
+	if fulllist :
+		if v :
+			for version, site in l :
+				print site
+		else :
+			from GuessLatest import GuessLatest
+
+			while l :
+				versions = []
+				for version, site in l :
+					versions.append(version)
+				
+				lastest = GuessLatest(versions)
+				for version, site in l :
+					if version == lastest :
+						print site
+						l.remove((version, site))
+			
+		sys.exit(0)
+	else :
+		if v :
+			if len(l) >= 1 :
+				print l[0][1]
+				sys.exit(0)
+			else :
+				sys.exit(1)
+		else :
+			from GuessLatest import GuessLatest
+
+			versions = []
+			for version, site in l :
+				versions.append(version)
+			
+			lastest = GuessLatest(versions)
+			for version, site in l :
+				if version == lastest :
+					print site
+					sys.exit(0)
+			sys.exit(1)
+

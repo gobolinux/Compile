@@ -1,0 +1,3 @@
+#compdef CreatePackage Dependencies DisableProgram RemoveProgram SymlinkProgram
+
+_files -W ${goboPrefix}/Programs

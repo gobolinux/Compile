@@ -1,0 +1,126 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 26/08/2004 - [detsch] - Checking url only if 'http:'
+# 23/08/2004 - [detsch] - Code for finding and getting Recipe rewritten
+#            - No more 'deduce_current_version'
+#            - No more 'Current' link 
+#            - Don't copying version-specific lines to new version Recipe  
+# 11/12/2003 - [hisham] Support multiple recipe trees
+# 24/10/2003 - [hisham] First version
+
+source ScriptFunctions
+Import File
+Import Log
+Import OptionParser
+Import GoboLinux
+
+### Options ###################################################################
+
+scriptDescription="Update a recipe to a new version."
+scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<package> <version> (url)"
+scriptNotes="Optimistically, it assumes only the version number has changed, "\
+"and the compilation process is still identical. The generated recipe is "\
+"better understood as a 'template' for the new version recipe."
+scriptExample="Allegro 4.1.12"
+Parse_Options "$@"
+shift $parsedArguments
+
+Parse_Conf Compile.conf
+Import Compile
+
+unset packagename versionnumber
+
+if [ -z "$2" ]
+then
+   Die "Please specify a package and version number. See --help."
+fi
+
+app="$1"
+newversion="$2"
+newurl="$3"
+
+Log_Normal "Locating a recipe for $app..."
+rawrecipe=`FindPackage --type=recipe "$app" 2> /dev/null`
+[ "$rawrecipe" ] || Die "Could not find a recipe for $app"
+Log_Normal "Found recipe for $app at $rawrecipe"
+
+bakedrecipedir=`GetRecipe $rawrecipe`
+[ "$bakedrecipedir" ] || Die "Error getting recipe"
+Log_Normal "Recipe placed in $bakedrecipedir"
+
+[ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
+oldrecipe=$bakedrecipedir/Recipe
+. $oldrecipe
+
+packagename=`Get_Token "$bakedrecipedir" "/" "-2"`
+oldversion=`Get_Token "$bakedrecipedir" "/" "-1"`
+
+oldrecipedir="$bakedrecipedir"
+
+if [ "$oldversion" = "$newversion" ]
+then
+   Die "Current version is already $newversion."
+fi
+
+Log_Normal "Creating recipe for $packagename $newversion based on $oldversion."
+
+destinationDir=$genRecipeRecipeDir
+newrecipedir="$destinationDir/$packagename/$newversion"
+
+mkdir -p "$destinationDir/$packagename"
+cp -R "$oldrecipedir" "$newrecipedir"
+
+cd "$newrecipedir" || Die "Failed creating new recipe dir."
+
+[ -e "Recipe" ] || Die "Recipe file not found."
+
+mv Recipe Recipe.old
+
+if [ "$compileRecipeAuthor" != "" ]
+then echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` >> Recipe
+else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/Compile.conf"
+fi
+
+if [ "$newurl" ]
+then
+   . Recipe.old
+   switchurls="s,$url,$newurl,g;"
+fi
+
+# do not copy version-specific values
+sed "${switchurls};s:$oldversion:$newversion:g" Recipe.old | grep -v "file_md5" | grep -v "file_size" | grep -v "# Recipe for version" >> Recipe
+
+rm Recipe.old
+
+. Recipe
+
+if [ "$newurl" ]
+then
+	url="$newurl"
+fi
+
+if Starts_With "http:" $url
+then
+   Quiet pushd "$compileArchivesDir"
+   Log_Normal "Checking URL '$url'..."
+   if ! wget -t 5 --spider "$url" &> "$verboseStream"
+   then
+      Log_Terse "URL may be invalid. Please check."
+   fi
+   Quiet popd
+fi
+
+
+if ls *.patch &> /dev/null
+then
+   Log_Normal "This recipe contains patches. Please check if they still apply."
+fi
+
+Log_Normal "Recipe template for $packagename $newversion created"
+Log_Normal "Printing result ($newrecipedir/Recipe):"
+cat "$newrecipedir/Recipe"
+Log_Normal "Done"

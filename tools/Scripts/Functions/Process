@@ -1,0 +1,38 @@
+#!/bin/sh (source)
+
+# //////////////////////////////////////////////////
+# PROCESS OPERATIONS
+# //////////////////////////////////////////////////
+
+# XXX Need to check where this is used and change it.
+function Waited() { [ $? -gt 0 ] ;}
+
+function Succeeded() { [ $? -eq 0 ] ;}
+
+function Failed() { [ $? -gt 0 ] ;}
+
+function Quiet() { "$@" &> /dev/null ;}
+
+function Run_If_Available() {
+   unset -v have
+   type $1 &> /dev/null
+   [ $? -eq 0 ] && "$@"
+}
+
+function Poll_Wait() {
+   interval="$1"
+   shift
+
+   local display waited
+   Is_Log_Mode "Verbose" && Progress_Start
+   waited=0
+   [ "$display" ] && echo
+   while "$@"
+   do
+      sleep "$interval"
+      Progress_Move 
+      waited=$[waited+1]
+   done
+   Progress_End
+   return $[waited]
+}

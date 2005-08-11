@@ -1,0 +1,306 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 13/05/2005 - [detsch] Small cleanup
+# 22/02/2005 - [detsch] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import GoboLinux # if you want Verify_Superuser
+Import OptionParser
+
+
+### Options ###################################################################
+
+scriptDescription="Builds an environment on which a GoboLinux ISO can be edited
+and rebuilt. For use mainly by GoboLinux developers and people interested in
+tunning the GoboLinux ISO."
+scriptCredits="Copyright (C) 2005. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<iso-file> <target>"
+scriptExample="~/GoboLinux-012-i686.iso /Depot/GoboLinuxISO"
+scriptNotes="* Requires GoboLinux ISO >= 012alpha1
+
+    * you may use a device (e.g. /dev/hdc) as <iso-file>
+
+    * <target> must be a non existing directory
+"
+
+Parse_Options "$@"
+shift $parsedArguments
+
+
+### Operation #################################################################
+
+Verify_Superuser
+
+iso="$1"
+target="$2"
+
+[ "$iso" -a "$target" ] || Die "Please pass the iso file and the target directory as parameters."
+
+[ -e $target ] && Die "Target directory already exists.
+Please provide a non-existing directory as target."
+
+
+Ask_Continue "Preparing iso building environment on '$target' based on '$iso'"
+
+
+for directory in BuiltISO Environment LiveCD Mount_CD-ROM Mount_CD-ROM/Programs_Local Mount_CD-ROM/Users_Local Mount_CD-ROM/Depot_Local
+do
+	Log_Normal "Creating directory '${target}/${directory}'..."
+	mkdir -p "${target}/${directory}"
+done 
+
+Log_Normal "Creating script '${target}/CompressAndBuildISO'..."
+
+echo '#!/bin/sh
+
+if [ $1 ]
+then
+    echo "Bypassing squashfs creation "
+    echo "(call $0 without parameters to create it)"
+else
+    # compress the uncompressed files into a squashfs file
+    echo "Creating squashfs compressed file..."
+    time nice -20 mksquashfs Environment/* LiveCD/GoboLinux.squashfs -noappend
+fi
+
+# having the squashfs file, you can prepare the bootable iso
+echo "Building ISO..."
+iso_name="BuiltISO/GoboLinux-NoVersion.iso"
+time nice -20 mkisofs -R -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table LiveCD  > $iso_name
+' > "${target}/CompressAndBuildISO"
+chmod +x "${target}/CompressAndBuildISO"
+
+
+Log_Normal "Creating script '${target}/ChrootEnvironment'..."
+
+echo '#!/bin/sh
+
+mp="Environment"
+
+if [ -d "$mp" ]
+then
+   echo "Binding "  ${mp}/Mount/CD-ROM " ..."
+   mount -o bind Mount_CD-ROM ${mp}/Mount/CD-ROM
+   mount -o bind /Programs    ${mp}/Mount/CD-ROM/Programs_Local
+   mount -o bind /Depot       ${mp}/Mount/CD-ROM/Depot_Local
+   mount -o bind /Users       ${mp}/Mount/CD-ROM/Users_Local
+
+   echo "Binding "  ${mp}/System/Kernel/Devices " ..."
+   mount -o bind /System/Kernel/Devices ${mp}/System/Kernel/Devices
+   echo "Binding " ${mp}/System/Kernel/Status  " ..."
+   mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
+
+   echo "Chrooting into ${mp} "
+   chroot ${mp}
+
+   sync
+
+   #####################################################################
+
+   echo "Cleaning up /tmp..."
+   rm -fr ${mp}/tmp/*
+
+   for dir in System/Kernel/Status \
+              System/Kernel/Devices \
+              Mount/CD-ROM/Programs_Local \
+              Mount/CD-ROM/Depot_Local \
+              Mount/CD-ROM/Users_Local \
+              Mount/CD-ROM
+   do
+      echo "Unbinding " "${mp}/${dir}"
+      umount "${mp}/${dir}"
+   done
+
+else
+   echo "Error: $mp" "dont exist."
+fi
+
+# additional thing to check before releasing a LiveCD
+# cd /Programs/; time for i in *; do echo $i; mkdir $i/Current/Resources/; Dependencies $i > $i/Current/Resources/Dependencies; done
+# cd /Programs/; du --max-depth=1 > /Depot/Install/Wizard/Auxiliary/Programs_du.txt
+# cd /Programs/; \ls > /Depot/Install/Wizard/Profiles/Full
+# cd /Programs/; grep Warn */Current/Resources/Dependencies
+# cd /Depot/Install/Wizard/Profiles/; for i in `cat Typical`; do [ "`grep "$i" Full`" ] || echo $i; done
+# cd /Depot/Install/Wizard/Profiles/; for i in `cat Base`; do [ "`grep "$i" Full`" ] || echo $i; done
+# for i in *; do [ -d $i/Settings ] && { diff -r $i/Settings $i/Current/Resources/Defaults/Settings &> /dev/null  || echo $i; }; done
+' > "${target}/ChrootEnvironment"
+
+chmod +x "${target}/ChrootEnvironment"
+
+
+Log_Normal "Creating file '${target}/README'..."
+
+echo '
+==============================================================================
+ GoboLinux LiveCD Building Environment
+ --------------------------------------
+ André Detsch - Last Updated 22/02/2005
+==============================================================================
+
+This is a simple environment on which someone can easily customize gobolinux
+live/installation CD (012 or above).
+
+The process is really # Unmount LiveCD:
+#   umount /Mount/CD-ROM
+easy, and has evolved through the lasts releases.
+
+==============================================================================
+ Performing basic changes on the GoboLinux LiveCD
+==============================================================================
+
+Package needed: SquashFS-Tools 2.0
+                A squashfs enabled kernel
+
+=> Phase 1 - Chroot into copied system:
+There is a convenience script that binds /dev and /proc,
+calls chroot and do some other simple tasks. All you have to do is run
+  ChrootEnvironment
+
+Since 012aplha1 (when we started to use squashfs), you can perform changes
+directly in the "Environment" directory without having to call this script
+(in this case, jump to Phase 4). By the way, chrooting into the Enviroment
+directory enables you to use the management scripts (InstallPackage, RemoveProgram, etc.)
+and even the "Manager" front-end.
+
+=> Phase 2 - Perform the changes:
+Do whatever you what inside the chroot environment...
+
+=> Phase 3 - Exit the chrooted environment:
+Just call
+  "exit" or "^d"
+The "ChrootEnvironment" script will do the rest, including unbinding everything
+
+=> Phase 4 - Building the new ISO
+call
+  CompressAndBuildISO
+as the name sugests, it will do two things:
+- it creates an squashfs file (inside LiveCD)
+- it builds an BuiltISO/GoboLinux-NoVersion.iso iso file.
+
+Thats it!
+
+==============================================================================
+ Advanced features:
+==============================================================================
+
+=> Changing the kernel: to change the kernel to be used in LiveCD, you must
+udpate it the kernel image at LiveCD/isolinux/kernel;
+
+
+==============================================================================
+About the directories:
+==============================================================================
+
+- BuiltISO -> will contain the new generated iso
+
+- Mount_CDROM -> A convenience directory. The "ChrootEnvironment" script
+binds it with /Mount/CD-ROM inside Environment, i.e., on the chrooted
+environment, you can access it via /Mount/CD-ROM, using it as a directory
+to place or get files easily from outside the chrooted environment.
+
+- Environment -> Contains files extracted from LiveCD squashfs.
+
+- LiveCD -> cointains the things needed to build the LveCD (squashfs file
+and isolinux directory)
+
+You may change any of the above names, just correct the "ChrootEnvironment"
+and "CompressAndBuildISO" scripts.
+
+Tip: if you dont have enough free space in one partition, you can create symlinks
+(e.g. ${DIR}BuiltISO -> /Depot/BuiltISO), so you dont have to edit the scripts.
+' > "${target}/README"
+
+
+# => Step 2 - Mount the original squashfs:
+# Mount the GoboLinux LiveCD:
+#   mount /Mount/CD-ROM
+# 
+# Mount the squashfs:
+#   mount /Mount/CD-ROM/Gobolinux.squashfs /Mount/SquashFS -o loop
+
+function cleanup() {
+	Log_Terse 
+	umount "${squash_mount}"
+	rm -rf "${squash_mount}"
+	umount "${iso_mount}"
+	rm -rf "${iso_mount}"
+	rm -rf "${target}"
+	Die "$1"
+}
+
+
+iso_mount="${target}/iso_tmp_mount"
+mkdir "${iso_mount}"
+Log_Normal "Mounting iso file..."
+loopoption=""
+
+# is a regular file? must use -o loop
+[ -f "${iso}" ] && loopoption="-o loop"
+mount "${iso}" "${iso_mount}" ${loopoption} || cleanup "Could not mount iso loopback. Cleaning up created directories."
+
+squash_mount="${target}/squash_tmp_mount"
+mkdir "${squash_mount}"
+Log_Normal "Mounting squashfs loopback..."
+mount "${iso_mount}"/GoboLinux.squashfs "${squash_mount}" -o loop -t squashfs ||  cleanup "Could not mount squashfs loopback. Cleaning up created directories."
+
+# 
+# Copy the files to HD:
+#   cp -Rp /Mount/SquashFS/* ./Environment/
+# 
+Log_Normal "Copying live cd files into '${target}/Environment/'... (will take some minutes)"
+cp -a  ${squash_mount}/* "${target}/Environment/"
+
+
+# Unmount the squashfs:
+#   umount /Mount/SquashFS
+
+umount $squash_mount
+rm -rf $squash_mount 
+Log_Normal "Unmounting squashfs loopback..."
+ 
+# => Step 3 - Copy the "isolinux" directory from LiveCD (about 1.8 GB):
+#   cp -R /Mount/CD-ROM/isolinux ${DIR}/ISO/LiveCD/
+
+Log_Normal "Copying isolinux files into '${target}/LiveCD'..."
+cp -a "$iso_mount"/{isolinux,README} "${target}/LiveCD"
+
+
+# Unmount LiveCD:
+#   umount /Mount/CD-ROM
+
+umount "${iso_mount}"
+rm -rf "${iso_mount}"
+Log_Normal "Unmounting iso file..."
+
+Log_Terse "ISO building environment prepared at ${target}."
+Log_Terse "Run 'ChrootEnvironment' (at ${target}) to perform changes."
+Log_Terse "Run 'CompressAndBuildIso' to build a new iso image."
+Log_Terse "Take a look at 'README' for further details."
+
+# => Step 4 - Chroot into copied system:
+# There is a convenience script that binds /dev and /proc,
+# calls chroot and do some other simple tasks. All you have to do is run
+#   ChrootEnvironment
+# 
+# 
+# => Step 5 - Perform the changes:
+# Do whatever you what inside the chroot environment...
+# 
+# 
+# => Step 6 - Exit the chrooted environment:
+# Just call
+#   "exit" or "^d"
+# The "ChrootEnvironment" script will do the rest, including unbinding everything
+# 
+# 
+# => Step 7 - Building the new ISO
+# call
+#   CompressAndBuildISO
+# as the name sugests, it will do two things:
+# - it creates an squashfs file (inside ${DIR}/LiveCD)
+# - it builds an ${DIR}/ISO/BuiltISO/GoboLinux-NoVersion.iso iso file.

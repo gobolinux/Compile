@@ -1,0 +1,320 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+Import String
+
+### Changelog #################################################################
+
+# 15/12/2004 - [lucasvr] integrated with Compile's cross-compiling feature
+# 04/12/2004 - [hisham] circumvent CVS snapshot dependencies
+# 24/11/2004 - [hisham] support for a Dependencies.blacklist conf file
+# 12/11/2004 - [hisham] bugfix: disambiguate -h option
+# 12/11/2004 - [calica] - --write option
+# 03/09/2004 - [detsch] - using GuessProgramCase instead of 'find -i' to detect 
+#                         installed program
+# 23/08/2004 - [detsch] - major changes on 'check' mode. Instead of just printing, 
+#                         a command can be executed (like Compile or InstallPackage)
+#            - 'execute' option
+#            - 'higher-or-missing-only' option -> using GuessLatest
+#            - 'dependencies-file' option
+#            
+# 23/06/2004 - [calica] clean up $prefix to handle symlinks
+#              Changed how the paths are converted to program/version.  Keying off of
+#              \1/\2/[bin|sbin|lib|libexec rather than Programs/\1/\2
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+# 27/04/2004 - [hisham] -c now returns exit code 1 when there's a program missing
+# 08/12/2003 - [rafasgj] Removed RealPath
+#            - [hisham] Commented out Python dependencies
+# 14/10/2003 - [detsch,gbedin] fixed extract_dependencies for
+#              libraries within subdirectories of ${goboLibraries}
+# 05/07/2003 - [hisham] Added "list" switch
+# 26/06/2003 - [calica] Added Checking for Daemons
+# 31/05/2002 - [hisham] Fixed listing of files searched
+# 26/05/2002 - [hisham] Added "all" switch
+# 12/05/2002 - [hisham] First version
+
+
+### Defines ###################################################################
+
+deps_file="Resources/Dependencies"
+
+### Options ###################################################################
+
+scriptDescription="Queries dependencies in a GoboLinux package."
+scriptCredits="Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{ [-c] <package> [<version>] | -f <file> }"
+scriptNotes="If no version is specified, Current is assumed. "
+Add_Option_Boolean "f" "file" "show dependencies of one file only."
+Add_Option_Boolean "c" "check" "check the package's dependency file,\
+ instead of generating one."
+Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Boolean "a" "all" "inspect all files, not only those in 'bin', 'sbin' and 'lib'."
+Add_Option_Boolean "m" "missing-only" "Display missing dependencies only. (check mode only)"
+Add_Option_Boolean "H" "higher-or-missing-only" "Display missing dependencies or higher versions only. (check mode only)"
+Add_Option_Boolean "l" "list" "List dependency file, if any (generate if not present)."
+Add_Option_Boolean "d" "dependencies-file" "Do not look at parses the passed file."
+Add_Option_Entry   "e" "execute" "Execute the command on each missing/higher. (check mode only)" ""
+Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
+Add_Option_Entry   "p" "programs" "<dir> to check dependencies against."
+Add_Option_Boolean "w" "write" "Write dependencies to $deps_file."
+
+Parse_Options "$@"
+shift $parsedArguments
+
+if Boolean "cross-compile"
+then
+	. GoboPath Reload
+fi
+
+### Utility functions #################################################################
+
+function extract_dependencies_from_file() {
+   lddresult=`ldd "$1" 2> /dev/null | grep "=>"`
+   echo -n "$lddresult"  | grep "not found" | awk '{ print $1 }' | while read i
+   do
+      echo "# *Warning*: Unresolved library $i"
+   done
+
+   echo -n "$lddresult"  | grep -v "not found" | awk '{ print $3 }' | while read i
+   do
+      if [ ! "$i" ]
+      then
+         echo "here" "->" "$lddresult"
+      fi
+      readlink -f "$i"
+   done
+}
+
+function runit_dependencies() {
+   if Exists "$1/Daemons"
+   then
+      readlink -f "${goboPrograms}/Runit/Current/" | sed 's%$%/%'
+   fi
+}
+
+function python_dependencies() {
+   {
+      cd "$1"
+      {
+         {
+            find . -name "*.py" | while read file
+            do
+               Progress_Move
+               grep -w "import" "$file" | sed 's/;/\n/g;s/#.*//g'
+            done
+         } | grep -w "import" | sed 's/^[[:blank:]]*//;s%\.%/%g' | while read line
+         do
+            case "$line" in
+            "from"*)
+               module=`echo "$line" | cut -d' ' -f2`
+               echo "$module"
+               ;;
+            "import"*)
+               modules=(`echo "$line" | sed 's/^import//' | tr ',' ' '`)
+               for module in ${modules[@]}
+               do echo "$module"
+            done
+               ;;
+            esac # esac is ridiculous.
+         done
+      } | sort | uniq | while read module
+      do
+         Progress_Move
+         cd "${goboLibraries}/python2.2"
+         file=$(find . -path "*/$module.py" -or -path "*/$module.so" -follow 2> /dev/null)
+         if [ "$file" ]
+         then
+            prog=`readlink -f "$file"`
+            if Starts_With "${goboPrograms}" "$prog" && ! Starts_With "$1" "$prog"
+            then
+               echo $prog
+            fi
+         fi
+      done
+   }
+}
+
+function path2programs() {
+#   sed 's@/Programs/\([^/]*\)/\([^/]*\)/.*$@\1 \2@g'
+# The follow perl could/should be converted to sed.  Unfortunately I don't know sed.
+   perl -n -e '$_ =~ m@/([^/]+)/([^/]+)/lib@ && print "$1 $2\n";' \
+           -e '$_ =~ m@/([^/]+)/([^/]+)/libexec@ && print "$1 $2\n";' \
+           -e '$_ =~ m@/([^/]+)/([^/]+)/bin@ && print "$1 $2\n";' \
+           -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";'
+}
+
+### --file: Check one file only #########################################################
+
+if Boolean "file"
+then
+   extract_dependencies_from_file "$1"
+   exit 0
+fi
+
+
+### Parse options #######################################################################
+# 
+package=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   version=`Get_Version "$package" "$2"`
+else
+   version=`Get_Version "$package" "Current"`
+fi
+
+execute=`Entry "execute"`
+prefix=`readlink -f $goboPrograms/$package/$version`
+
+if Boolean "dependencies-file"
+then
+   dependenciesfile="$1"
+   [ -f "$dependenciesfile" ] || Die "File $dependenciesfile not found."
+   #echo $dependenciesfile
+else
+   Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+   Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+   Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+   dependenciesfile=`Dependencies_File "$package" "$version"`
+fi
+
+
+### --check: Verify dependencies ########################################################
+
+if Boolean "list"
+then
+   if [ "$dependenciesfile" ]
+   then
+      cat "$dependenciesfile"
+      exit 0
+   fi
+fi
+
+### --check: Verify dependencies ########################################################
+if Boolean "check"
+then
+   installall=
+   [ `Boolean "batch"` ] && installall=1 && batch="--batch"
+   skipall=
+   
+   check_programs=`Entry "programs"`
+   ! [ "$check_programs" = "" ] && export goboPrograms="$check_programs"
+   
+   [ -f "$dependenciesfile" ] || Die "Dependencies file for $package version $version not found."
+   result=0
+
+   # XXX backwards compatibility: grep -v "^\\*"
+   fulllist=`cat "$dependenciesfile" | grep -v "^#" | grep -v "^\\*" | grep -v "^$" | tr -- " \n" "@ "`
+   
+   for i in ${fulllist[@]}
+   do
+      program=`echo "$i" | cut -d"@" -f1`
+      version=`echo "$i" | cut -d"@" -f2`
+      if Ends_With "CVS" "$version"
+      then
+         version="CVS"
+      fi
+      iprogram=`GuessProgramCase $program $version`
+      #$(basename $(find "${goboPrograms}" -maxdepth 1 -iname "$program") 2> /dev/null)
+      if [ ! -d "$goboPrograms/$iprogram" ] # program not found
+      then
+         result=1
+         if [ "$execute" -a ! "$skipall" -a ! "$installall" ] 
+         then
+            Log_Question "Dependency $program $version is not installed."
+            Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
+            [ "$REPLY" = "I" -o "$REPLY" = "i" ] && { $execute "$program" "$version" || $execute "$program" ;}
+            [ "$REPLY" = "SA" -o "$REPLY" = "sa" ] && skipall=1
+            [ "$REPLY" = "IA" -o "$REPLY" = "ia" ] && installall=1 && { $execute "$program" "$version" || $execute "$program" ;}
+         else 
+            Log_Terse "Dependency $program $version is not installed."
+            [ "$installall" ] && { $execute ${batch} "$program" "$version" || $execute ${batch} "$program" ;}
+         fi
+      else #program found
+         if ! Boolean "missing-only"
+         then
+            if Is_Directory "${goboPrograms}/$iprogram/$version"
+            then
+               Log_Verbose "OK ---------------> $program $version"
+            
+            else # program found, but version not installed
+               yourversion=`Get_Version "$iprogram" "Current"`
+               [ "$yourversion" ] || yourversion=`GuessLatest \`ls /Programs/$iprogram |grep -v Settings |grep -v Variable |grep -v Current\`` 
+               
+               if [ "`GuessLatest $version $yourversion`" == "$yourversion" ]
+               then # a newer version is already installed
+                  if ! Boolean "higher-or-missing-only"
+                  then
+                     Log_Normal "Dependency $program is installed, but version differs (required $version, yours is $yourversion)"
+                  fi
+               else # an older version is installed
+                  result=1
+                  if [ "$execute" -a ! "$skipall" -a ! "$installall" ] 
+                  then
+                     Log_Question "Dependency $program is installed, but required version is higher ($version, yours is $yourversion)"
+                     Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
+                     [ "$REPLY" = "I" -o "$REPLY" = "i" ] && { $execute "$program" "$version" || $execute "$program" ;}
+                     [ "$REPLY" = "SA" -o "$REPLY" = "sa" ] && skipall=1
+                     [ "$REPLY" = "IA" -o "$REPLY" = "ia" ] && installall=1 && { $execute "$program" "$version" || $execute "$program" ;}
+                  else 
+                     Log_Terse "Dependency $program is installed, but version differs (required $version, yours is $yourversion)"
+                     [ "$installall" ] && { $execute "$program" "$version" || $execute "$program" ;}
+                  fi
+               fi
+            fi
+         fi
+      fi
+   done 
+   exit $result
+fi
+
+### default: Generate a dependency report ###############################################
+if Boolean "write"
+then
+   $sudo_validate
+   writer="$sudo_exec tee $prefix/$deps_file"
+else
+   writer="cat"
+fi
+
+blacklistfile=`Find_Conf "Dependencies.blacklist"`
+blacklist=("do_not_match")
+if [ "$blacklistfile" ]
+then
+   for app in `cat "$blacklistfile"`
+   do blacklist=("${blacklist[@]}" "^$app ")
+   done
+fi
+
+if [ "$prefix" ]
+then
+{
+   Progress_Start "Generating dependency report. Please wait: "
+   {
+      if Boolean "all"
+      then
+         find "$prefix"
+      else
+         find "$prefix" -path "$prefix/sbin/*" -or \
+                        -path "$prefix/bin/*"  -or \
+                        -path "$prefix/lib/*"  -or \
+                        -path "$prefix/libexec/*"
+      fi
+   } | while read i
+   do
+      if [ -x "$i" -a ! -L "$i" -a ! -d "$i" ]
+      then
+         extract_dependencies_from_file "$i"
+      fi
+      Progress_Move
+   done
+   runit_dependencies "$prefix"
+   #python_dependencies "$prefix"
+   Progress_End
+} | path2programs | sort | uniq | grep -v "^$package " | FilterLines -n "${blacklist[@]}" | $writer
+fi

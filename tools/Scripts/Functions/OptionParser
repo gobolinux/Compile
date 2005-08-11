@@ -1,0 +1,279 @@
+#!/bin/sh (source)
+
+Import String
+Import Process
+
+#declare -a savedOptions
+#declare -a optionsShortList
+#declare -a optionsLongList
+#declare -a optionsDescriptionList
+#declare -a optionsTypeList
+#declare -a optionsStateList
+optionsListSize=0
+export parsedArguments=0
+
+function Add_Option() {
+   local i
+   if [ "$scriptDebug" = "on" ]
+   then
+      for i in `seq $optionsListSize`
+      do
+         if [ "$3" = "${optionsShortList[i]}" -o "$4" = "${optionsLongList[i]}" ]
+         then Die "Script internal error: option name -$3 --$4 conflicts with -${optionsShortList[i]} --${optionsLongList[i]}."
+         fi
+      done
+   fi
+   optionsListSize=$[optionsListSize+1]
+   optionsTypeList[$optionsListSize]="$1"
+   optionsStateList[$optionsListSize]="$2"
+   optionsShortList[$optionsListSize]="$3"
+   optionsLongList[$optionsListSize]="$4"
+   optionsDescriptionList[$optionsListSize]="$5"
+}
+
+function Add_Option_Boolean() {
+   Add_Option "Boolean" "" "$@"
+}
+
+function Add_Option_Entry() {
+   if [ "$4" ]
+   then Add_Option "Entry" "$4" "$1" "$2" "$3"
+   else Add_Option "Entry" "#@unset@#" "$1" "$2" "$3"
+   fi 
+}
+
+function Add_Option_List() {
+   if [ "$4" ]
+   then Add_Option "List" "$4" "$1" "$2" "$3"
+   else Add_Option "List" "#@unset@#" "$1" "$2" "$3"
+   fi 
+}
+
+
+
+function Entry() {
+   local i
+   for i in `seq $optionsListSize`
+   do
+      if [ "$1" = "${optionsShortList[i]}" -o "$1" = "${optionsLongList[i]}" ]
+      then
+         value="${optionsStateList[i]}"
+         if [ "$value" = "#@unset@#" ]
+         then return 1
+         else
+            echo "$value"
+            return 0
+         fi
+      fi
+   done
+   return 2
+}
+
+function Is_Entry_Set() {
+   Quiet Entry "$@"
+}
+
+function Is_Entry() {
+   Parameters "$@" option compare
+   local i
+   if Is_Empty "$compare"
+   then
+      Quiet Entry "$1"
+      return $?
+   fi
+
+   for i in `seq $optionsListSize`
+   do
+      if [ "$option" = "${optionsShortList[i]}" -o "$option" = "${optionsLongList[i]}" ]
+      then
+         value="${optionsStateList[i]}"
+         if [ "$value" = "$compare" ]
+         then return 0
+         else return 1
+         fi
+      fi
+   done
+   return 2
+}
+
+# detsch, 23/08/2004
+# experimental, should be a more generic function
+function Forward_Boolean_Entry() {
+   if Boolean "$1"
+   then
+      echo "--$1"
+   else
+      echo ""
+   fi
+}
+
+function Boolean() {
+   local i
+   for i in `seq $optionsListSize`
+   do
+      if [ "$1" = "${optionsShortList[i]}" -o "$1" = "${optionsLongList[i]}" ]
+      then
+         if [ "${optionsStateList[i]}" = "on" ]
+         then return 0
+         else return 1
+         fi
+      fi
+   done
+   return 2
+}
+
+function Set_Boolean() {
+   local i
+   for i in `seq $optionsListSize`
+   do
+      if [ "$1" = "${optionsShortList[i]}" -o "$1" = "${optionsLongList[i]}" ]
+      then
+         if [ "$2" ]
+         then optionsStateList[i]="$2"
+         else optionsStateList[i]="on"
+         fi
+         return 0
+      fi
+   done
+   return 2
+}
+
+function Show_Version() {
+   echo "$scriptName $scriptVersion"
+   echo
+   [ "$scriptCredits" ] && echo "$scriptCredits"
+   exit 0
+}
+
+function Show_Help() {
+   {
+      local i
+      if [ "$HELP2MAN" ]
+      then
+         local H2Mn=-n
+         local H2Mecho=echo
+      else
+         local H2Mecho=:
+         local H2Mtab="    "
+         local H2Mnotes="Notes:"
+      fi
+      [ "$scriptDescription" ] && echo "$scriptDescription"
+      echo
+      echo -e "Usage: $scriptName $scriptUsage"
+      echo
+      echo "Options:"
+      for i in `seq $optionsListSize`
+      do
+         case "${optionsTypeList[i]}" in
+         "Entry")
+            echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]} <entry>"
+            echo -e "        ${optionsDescriptionList[i]}"
+            if [ "${optionsStateList[i]}" != "#@unset@#" ]
+            then
+               echo "        The default value is '${optionsStateList[i]}'."
+            fi
+            $H2Mecho
+            ;;
+         "List")
+            echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]} <entry>[:<entry>...]"
+            echo -e "        ${optionsDescriptionList[i]}"
+            if [ "${optionsStateList[i]}" != "#@unset@#" ]
+            then
+               echo "        The default value is '${optionsStateList[i]}'."
+            fi
+            $H2Mecho
+            ;;
+         "Boolean")
+            echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]}"
+            echo -e "        ${optionsDescriptionList[i]}"
+            $H2Mecho
+            ;;
+         esac # esac is ridiculous.
+      done
+      echo
+      if [ "$scriptNotes" ]
+      then
+         echo "$H2Mnotes"
+         echo "$H2Mtab$scriptNotes"
+         echo
+      fi
+      if [ "$scriptExample" ]
+      then
+         echo "Examples:"
+         $H2Mecho
+         echo -e "$H2Mtab$scriptName $scriptExample"
+         echo
+      fi
+   } | fmt -w "$COLUMNS"
+   exit 0
+}
+
+function List_Options() {
+   local i
+   for ((i=1; i <= optionsListSize; i++))
+   do
+      echo -n "-${optionsShortList[i]} --${optionsLongList[i]} "
+   done
+   echo
+   exit 0
+}
+
+function Parse_Options() {
+   local i
+   savedOptions=("$@")
+   if [ "$1" = "--help" -o "$1" = "-h" ] || [ "$helpOnNoArguments" -a -z "$*" ]
+   then Show_Help
+   fi
+   if [ "$1" = "--version" -o "$1" = "-v" ] || [ "$helpOnNoArguments" -a -z "$*" ]
+   then Show_Version
+   fi
+   if [ "$1" = "--list-options" ]
+   then List_Options
+   fi
+   while true
+   do
+      [ "$1" ] || break
+      if [ "$1" = "--" ]
+      then
+         export parsedArguments=$[parsedArguments+1]
+         shift
+         break
+      fi
+      for i in `seq $optionsListSize`
+      do
+         if [ "$1" = "-${optionsShortList[i]}" -o "$1" = "--${optionsLongList[i]}" ]
+         then
+            export parsedArguments=$[parsedArguments+1]
+            local flag="$1"
+            shift
+            case "${optionsTypeList[i]}" in
+            "Boolean")
+               optionsStateList[i]="on"
+               ;;
+            "Entry"|"List")
+               if [ "${#@}" == 0 ]
+               then
+                  Die "Unknown option: $flag requires an argument."
+               fi
+               optionsStateList[i]="$1"
+               export parsedArguments=$[parsedArguments+1]
+               shift
+               ;;
+            esac # esac is ridiculous.
+            continue 2
+         fi
+      done
+      if [ "${1:0:1}" = "-" ]
+      then
+         Die "Unknown option: $1"
+      fi
+      break
+   done
+   Boolean "verbose" && {
+      Import LogVerbose
+   }
+}
+
+Add_Option_Boolean "h" "help" "Shows this help."
+Add_Option_Boolean "v" "version" "Show program version."
+Add_Option_Boolean "V" "verbose" "Enable verbose mode."

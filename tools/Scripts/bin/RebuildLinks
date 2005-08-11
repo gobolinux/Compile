@@ -1,0 +1,80 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 08/12/2003 - [hisham] Removed RealPath
+# 23/11/2003 - [hisham] Reformatted changelog
+# 16/02/2003 - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="Rebuild $goboLinks directories."
+scriptCredits="Copyright (C) 2003. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<option>"
+scriptExample="--shared"
+scriptNotes="Not all directories in the $goboLinks hierarchy can be "\
+"rebuilt using this tool because it would render the system in an "\
+"inconsistent state during the program's execution."
+Add_Option_Boolean "s" "shared" "Rebuild $goboShared."
+Add_Option_Boolean "n" "environment" "Rebuild $goboEnvironment."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+Verify_Superuser
+
+function prepare_rebuild() {
+   Parameters "$@" dir
+
+   [ -d "$dir" ] || Make_Directory "$dir"
+   cd "$dir"
+   Ask_Continue "About to clean up $dir and rebuild it."
+   Log_Verbose "Removing contents of existing $dir..." && rm -rf *
+}
+
+function rebuild() {
+   Parameters "$@" unixname
+
+   for i in `find /Programs -maxdepth 3 -path "*/Current/*" -name "$unixname" -follow`
+   do
+      ri=`readlink -f "$i"`
+      for j in "$ri"/*
+      do
+         Link_Or_Expand "$j" "do-not-overwrite-on-conflicts" || exit 1
+      done
+   done
+}
+
+function rebuild_environment() {
+   cd "${goboPrograms}"
+   find -path "*/Resources/Environment" -maxdepth 4 | while read i
+   do
+      f=`echo "$i" | cut -d/ -f2-3 | sed 's%/%--%'`
+      ln -s `readlink -f "$i"` "${goboEnvironment}/$f"
+   done
+   cd "${goboEnvironment}"
+   cat * > Cache
+}
+
+if Boolean "shared"
+then
+   prepare_rebuild "$goboShared"
+   rebuild "Shared"
+fi
+
+if Boolean "environment"
+then
+   prepare_rebuild "$goboEnvironment"
+   rebuild_environment
+fi
+

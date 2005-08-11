@@ -1,0 +1,120 @@
+#!/bin/sh
+
+### Changelog ########################################################
+
+# 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
+# 13/12/2003 - First version, forked from SymlinkProgram
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import OptionParser
+Import Process
+Import String
+
+helpOnNoArguments=yes
+scriptDescription="Runs 'make install', using a sandbox environment."
+scriptCredits="Copyright (C) Hisham Muhammad, 2001-2003 - Released under the GNU GPL."
+scriptUsage="[<options>] <program_name> [<program_version>] [ -- <extra_arguments> ]"
+scriptExample="--makefile makefile.unix --target install_shared WeirdSuperLib 2.4"
+scriptNotes="
+Normally you'll want to use CompileProgram(1) instead.
+'$scriptName' is called by CompileProgram(1).
+If no program version is specified, Current is assumed.
+"
+Add_Option_Entry "t" "target" "Makefile target to be used." "install"
+Add_Option_Entry "f" "makefile" "Specify which makefile to use." "Makefile"
+Add_Option_Entry "c" "command" "Use the given command instead of make. Options --target and --makefile are then ignored."
+Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Entry "a" "add-allowed" "Specify additional allowed directories or files. Colon separated list."
+Add_Option_Boolean "F" "no-sandbox" "Do not protect the installation with a sandbox."
+Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative to the current "\
+"directory, '.'. Passing 1 to this option will build it relative to the parent directory, '..',"\
+"passing 2 relative to '../..', and so on." ""
+
+Parse_Options "$@"
+shift $parsedArguments
+
+if Boolean "cross-compile"
+then
+	. GoboPath Reload
+fi
+
+Is_Writable "$goboExecutables" || Verify_Superuser
+
+### Version ####################################################################
+
+if [ "$goboInstall" = "" ]
+then
+    export goboInstall="$goboPrograms"
+fi
+
+
+# TODO: this code is copy-and-pasted from SymlinkProgram.
+# It should move into functions.
+
+[ "$1" -o "$1" = "--" ] || Die "Argument missing: specify the program name."
+
+package="`basename "$1" /`"
+packageDir="$goboPrograms/$package"
+installPackageDir="$goboInstall/$package"
+current="$packageDir/Current"
+version=$(basename $(readlink -f $current))
+
+if ! Is_Directory "$packageDir"
+then Die "Directory $packageDir does not exist."
+fi
+
+shift
+if [ "$1" = "--" ]
+then
+   shift
+elif [ "$1" ]
+then
+   vdir="$goboPrograms/$package/$1"
+   if { ! Is_Directory "$vdir" ;} && { ! Boolean "no-sandbox" ;}
+   then Die "There is no version $1 for package $package."
+   fi
+   [ "$version" != "$1" ] && ln -sfn `basename "$vdir"` "$current"
+   version="$1"
+   shift
+fi
+
+if [ "$1" = "--" ]
+then
+   shift
+fi
+
+if ! Exists "$current"
+then
+   youngestdir=`ls --sort=time "$packageDir" | head -n 1`
+   ln -s "$youngestdir" "$current"
+fi
+
+### Install ####################################################################
+
+Log_Normal "Installing $package..."
+
+unset $expandsandbox
+if Is_Entry "expand-sandbox"
+then
+   for i in $(seq $(Entry "expand-sandbox"))
+   do
+      expandsandbox=$expandsandbox/..
+   done
+fi
+
+allowed=".$expandsandbox:$installPackageDir/$version:$packageDir/Settings:$packageDir/Variable"
+Is_Entry "add-allowed" && allowed="$allowed:`Entry "add-allowed"`"
+Log_Verbose "Sandbox: $allowed"
+
+fibosandbox="FiboSandbox -s $allowed"
+
+Boolean "no-sandbox" && fibosandbox=
+[ "$ROOTLESS_GOBOLINUX" ] && fibosandbox=
+if Is_Entry "command"
+then
+   $fibosandbox `Entry "command"` "$@" || Die "Installation failed."
+else
+   $fibosandbox make -f "`Entry "makefile"`" "$@" `Entry "target"` || Die "Installation failed."
+fi

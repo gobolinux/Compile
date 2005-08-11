@@ -1,0 +1,66 @@
+#!/bin/bash
+### has to be bash not sh so aliases are inherited.
+
+source ScriptFunctions
+Import GoboLinux
+Import OptionParser
+Import File
+Import Log
+
+### Changelog #################################################################
+
+# 31/05/2003 - Cleanup
+# 13/01/2003 - Minor doc fix
+# 18/05/2002 - Using new option parser / autohelp
+# 25/03/2002 - GoboLinux compliant
+# 06/09/2001 - detect and expand aliases
+#              use any $EDITOR
+# 23/04/2001 - auto insert date in changelog (no more XX/XX/XXXX!)
+#              TemplateScript now uses a function library, ScriptFunctions.
+# 21/04/2001 - use TemplateScript, a much better template.
+# XX/XX/XXXX - first version
+
+### Options ###################################################################
+
+scriptDescription="Create or edit a GoboLinux script."
+scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<script-name-with-no-path>"
+scriptExample="$scriptName"
+scriptNotes="You will be prompted if you want to create the script "\
+"if it does not exist."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+if Is_Alias "$1"
+then
+   script=`alias $1 | sed "s/.*'..//;s/'//"`
+   echo $script
+else
+   script="$1"
+fi
+
+unset linkafteredit
+
+scriptfile="${goboScripts}/${script}"
+
+Is_Writable "${scriptfile}" || Verify_Superuser
+
+if ! Exists "${scriptfile}"
+then
+    Ask_Continue "$scriptfile does not exist. Create? (Y/n)"
+    today=`date +%d\\\/%m\\\/%Y`
+    year=`date +%Y`
+    cat "${goboScripts}/TemplateScript" | sed "s/INSERT_DATE_HERE/${today}/g;s/INSERT_YEAR_HERE/${year}/g" > "$scriptfile"
+    chmod +x "$scriptfile"
+    linkafteredit=yes
+fi
+
+$EDITOR "${scriptfile}"
+
+[ "$linkafteredit" ] && {
+    ln -s "${scriptfile}" "${goboExecutables}"
+}
+

@@ -1,0 +1,79 @@
+#!/bin/sh
+
+# Changelog:
+
+### Changelog #################################################################
+
+# 31/05/2003 - integration of g, sg and rg
+# 17/05/2002 - update to new option parser
+# 26/04/2002 - detect uppercase and set case sensitivity accordingly
+# 20/11/2001 - bugfix for searches starting with -
+# XX/XX/XXXX - first version
+
+### Options ###################################################################
+
+source ScriptFunctions
+Import OptionParser
+Import String
+
+scriptDescription="Shorthand for 'grep'."
+scriptCredits="Copyright (C) 2001-2002 Hisham Muhammad. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<pattern> [<files...>]"
+Add_Option_Boolean "r" "recursive" "Recursive."
+Add_Option_Boolean "s" "source" "Special mode for C/C++/Java sources: skips comments."
+Add_Option_Boolean "w" "whole-word" "Match whole words only."
+Add_Option_Boolean "C" "no-color" "Avoid coloring (for grep's that don't support it)."
+scriptNotes="
+Search is case sensitive only if there is at least one uppercase character
+in the pattern.
+Binary files are not searched.
+Error messages are not displayed.
+Line numbers are displayed.
+If no files are specified, all files are selected (except in \"source\" mode, where
+*.[CcHh]* is selected instead).
+"
+Parse_Options "$@"
+shift $parsedArguments
+
+### Flags #####################################################################
+
+Boolean "whole-word" && export whole="-w"
+Boolean "recursive" && export recursive="-r"
+color="--color=always"
+Boolean "no-color" && export color=
+
+### Special mode for source files #############################################
+
+Boolean "source" && {
+
+function source_grep() {
+   cat "$1" |\
+   FilterComments |\
+   grep -n $whole --color=always "$2" |\
+   awk -v fil="$1" '
+      {
+         print fil ":" $0
+      }
+   '
+}
+
+pattern="$1"
+shift
+if [ "$*" ] 
+then for f in "$@"; do source_grep "$f" "$pattern"; done
+else for f in *.[CcHh]*; do source_grep "$f" "$pattern"; done
+fi
+
+exit 0
+}
+
+### Normal mode ###############################################################
+
+pattern="$1"
+shift
+Has_Uppercase "$pattern" || insensitive=-i
+if [ "$*" ]
+then grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" "$@"
+else grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" * .[A-Za-z0-9]*
+fi

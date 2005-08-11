@@ -1,0 +1,232 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 09/04/2005 - [detsch] "--target-dir" option
+# 16/02/2005 - [detsch] Fix: no more packaging Variable directory 
+#                       (but still packing Defaults/Variable)
+# 02/09/2004 - [detsch] -n,-k options. Changed devel-versions format (X.Y.Z.<date>-<name>) 
+# 25/08/2004 - [detsch] Compilation of python modules (.pyc) when devel-version
+# 23/06/2004 - [calica] Create packages from programs outside of $goboPrograms
+# 15/06/2004 - [detsch] tar & compression in a single step if no $anyvariable and
+#              no personal-backup
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+#              Added --personal-backup option
+# 09/06/2004 - [detsch] no-dependencies option
+# 08/12/2003 - [rafasgj] Removed RealPath
+# 30/06/2003 - [hisham] Change in the way files are packed in order to
+#              accomodate the Defaults dir
+#            - minor fix linking Current
+# 31/05/2003 - [hisham] Cleanup
+#            - Replace dependencies (instead of append)
+#            - Use Resources/Architecture and Resources/Dependencies
+# XX/XX/2002 - First version
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+
+### Options ###################################################################
+
+helpOnNoArguments=yes
+scriptDescription="Make a GoboLinux package."
+scriptCredits="Copyright (C) 2002-2003 Hisham Muhammad - Released under the GNU GPL."
+scriptUsage="<directory>"
+Add_Option_Boolean "b" "bzip2" "Compress using bzip2"
+Add_Option_Boolean "D" "no-dependencies" "Do not create Dependencies file"
+Add_Option_Boolean "g" "gzip" "Compress using gzip"
+Add_Option_Boolean "p" "personal-backup" "Use personal backup mode.  Do NOT use for public distribution"
+Add_Option_Boolean "d" "devel-version" "Manage development version numbers (for use mainly by GoboLinux developers)"
+Add_Option_Entry   "n" "new-version" "Sets a new version number for the package (for use mainly by GoboLinux developers)" ""
+Add_Option_Boolean "k" "keep" "Copy new version instead of moving (for use with devel-version and new-version)"
+Add_Option_Boolean "s" "sign" "Sign package"
+Add_Option_Entry   "t" "target-dir" "Create the package archive inside the passed directory (instead of '.')" ""
+
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation ############################################################
+
+#Verify_Superuser
+
+newversion=`Entry "new-version"`
+
+if { ! Boolean "no-dependencies" ;} || { Boolean "devel-version" ;} || { Boolean "signature" ;} || [ "$newversion"  ]
+then
+   Verify_Superuser
+fi 
+
+package=`basename "$1"`
+package=`GuessProgramCase $package $2`
+
+targetdir=`Entry "target-directory"`
+[ "$targetdir" ] || targetdir="`pwd`"
+
+cd ${goboPrograms}
+# TODO make it smarter
+if [ "$2" ]
+then
+   versionnumber="$2"
+else
+   currentversion=`Get_Version "$package" Current`
+   if [ "$currentversion" ]
+   then
+      versionnumber=$(basename $currentversion)
+   else
+      Die "Couldn't deduce version for $package. Please create the 'Current' link."
+   fi
+fi
+
+Is_Directory "${goboPrograms}/$package/$versionnumber" || Die "Package $package version $versionnumber does not exist."
+Is_Link "${goboPrograms}/$package/$versionnumber" && tree_symlinked=yes
+
+
+if { Boolean "devel-version" ;} || [ "$newversion"  ]
+then
+   
+   if [ -d "$package/$versionnumber/lib/python2.3/site-packages" ] 
+   then
+      cd $package/$versionnumber/lib/python2.3/site-packages
+      tmpfile=`Temporary_File`
+      export PYTHONPATH=.
+      for i in *.py; do rm $goboLibraries/python2.3/site-packages/${i}o; echo import `basename $i .py`; done > $tmpfile
+      python $tmpfile
+      rm -f $tmpfile
+      Quiet cd -
+   fi
+
+   if [ ! "$newversion" ]
+   then
+      name=$USER
+      if [ $UID = 0 ] && [ $USER = gobo -o $USER = root ]
+      then
+         echo "You are currently logged in as $USER."
+         echo "Please enter your regular user name so this devel version"
+         read -p "can be properly tagged: " name
+      fi
+   
+      if echo "$versionnumber" | grep ".*\..*\..*\..*" &> /dev/null
+      then # current version in format X.Y.Z.snapshot 
+         newversion=`echo $versionnumber | sed 's/\(.*\..*\..*\)\..*/\1/'`.`date +%Y%m%d`-$name
+	 
+	 # add hour.minutes if devel version is from today
+	 if { echo "$versionnumber" | grep ".*\..*\..*\..*\-.*\-.*" &> /dev/null ;} || [ "$versionnumber" == "$newversion" ] 
+	 then
+            if [ "$versionnumber" == "$newversion" ] || [ "`echo "$versionnumber" | sed 's/.*\..*\..*\.\(.*\)\-.*\-.*/\1/'`" == "`date +%Y%m%d `" ] 
+	    then
+	       newversion=$newversion-`date +%H%M`
+	    fi
+	 fi 
+	 
+      elif echo "$versionnumber" | grep ".*\..*\..*" &> /dev/null
+      then # current version in format X.Y.Z
+         newversion=$versionnumber.`date +%Y%m%d`-$name
+      else
+         newversion="0.0.0".`date +%Y%m%d`-$name
+      fi
+   fi  
+   
+   if [ "$tree_symlinked" = "yes" ]
+   then
+      Quiet pushd `readlink -f ${goboPrograms}/$package/$versionnumber`/../..
+      real_package=`readlink -f $package`
+   fi
+   
+   if [ "$versionnumber" != "$newversion" ] 
+   then
+      if Boolean "keep"
+      then
+         Log_Normal "Copying $package $versionnumber to $newversion"
+         cp -R $package/$versionnumber $package/$newversion
+      else
+         Log_Normal "Moving $package $versionnumber to $newversion"
+         mv $package/$versionnumber $package/$newversion
+      fi
+   else
+      Log_Normal "Current version is already $newversion"  
+   fi
+   
+   if [ "$tree_symlinked" = "yes" ]
+   then
+      Quiet popd
+      rm $package/$versionnumber
+      ln -s $real_package/$newversion $package/$newversion
+   fi
+   ln -nsf $newversion $package/Current
+   if [ $package = "Scripts" ]
+   then PATH=$PATH:${goboPrograms}/$package/$newversion/bin
+   fi
+   SymlinkProgram $package
+   versionnumber=$newversion
+fi
+
+Log_Normal "Creating package for ${package} ${versionnumber}."
+
+archfile="$package/$versionnumber/Resources/Architecture"
+if Exists "$archfile"
+then
+   architecture=`cat "$archfile"`
+else
+   architecture=`uname -m`
+fi
+
+packagefile="$package--$versionnumber--$architecture.tar"
+Boolean "personal-backup" && packagefile="$package--$versionnumber-PersonalBackup--$architecture.tar"
+
+[ -e "$package/Settings" ] && anysettings="$package/Settings"
+
+if ! Boolean "no-dependencies"
+then
+   resources="$package/$versionnumber/Resources"
+   Make_Directory "$resources"
+   Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
+fi
+
+if Boolean "sign"
+then
+   SignProgram $sign_opts "$package" "$versionnumber"
+fi
+
+# XXX Backwards compatibility
+Quiet rm "$package/.dependencies"
+Quiet rm "$package/$versionnumber/.dependencies"
+
+# Try to remove unneeded directories
+Quiet rmdir "$package/$versionnumber/bin"
+Quiet rmdir "$package/$versionnumber/sbin"
+Quiet rmdir "$package/$versionnumber/lib"
+Quiet rmdir "$package/$versionnumber/include"
+Quiet rmdir "$package/$versionnumber/man/man*"
+Quiet rmdir "$package/$versionnumber/man"
+Quiet rmdir "$package/$versionnumber/info"
+Quiet rmdir "$package/$versionnumber/share"
+Quiet rmdir "$package/$versionnumber/Shared"
+if [ ! -e "$package/$versionnumber/Shared" ]
+then
+   Quiet rm "$package/$versionnumber/share"
+fi
+
+
+[ "$tree_symlinked" = "yes" ] && Quiet pushd `RealPath ${goboPrograms}/$package/$versionnumber`/../..
+if { Boolean "personal-backup" ;} && [ "$anysettings" ]
+then
+   tar cvpf "$targetdir/$packagefile" `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons"  1>&2`
+   [ "$tree_symlinked" = "yes" ] && Quiet popd
+   
+   # would make sense as personal-backup.  CJC
+   Boolean "personal-backup" && [ "$anysettings" ] && tar rhvpf "$targetdir/$packagefile" "$package/Settings" 1>&2
+   Boolean "gzip" && gzip -f "$targetdir/$packagefile" || bzip2 -f "$targetdir/$packagefile"
+else
+   Boolean "gzip" && option="z" || option="j"
+   Boolean "gzip" && extension="gz" || extension="bz2"
+   tar cvpf$option "$targetdir/$packagefile".$extension `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons"`  1>&2
+   [ "$tree_symlinked" = "yes" ] && Quiet popd
+fi
+
+size=`ls -l "$targetdir/$packagefile".* | awk '{ print $5 }'`
+Log_Verbose "Packaged $package, version $versionnumber - $size bytes."
+
+echo "$targetdir/$packagefile.$extension"

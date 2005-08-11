@@ -1,0 +1,90 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 02/09/2004 - [detsch] usermod -G floppy,audio,users,cdrecord,video <user>
+# 23/11/2003 - [hisham] Renamed long options
+#            - Added skel option
+# 11/11/2003 - [detsch] Password option
+# 20/10/2003 - [detsch] Fixed parameters of 'chfn'
+#            - Shell option (with default=/bin/zsh)
+#            - Home creation with '700' permission                 
+# 31/05/2003 - [hisham] Updated logging system
+# 27/01/2003 - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+
+### Options ###################################################################
+
+scriptDescription="Register a new user in this system."
+scriptCredits="Copyright (C) 2003. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="[<options>] <login>"
+scriptExample="-f 'Hisham Muhammad' lode"
+scriptNotes="User information such as full name and office number can be viewed with programs such as "\
+"finger(1) and modified with chfn(1)."
+Add_Option_Entry "c" "comment" "Text to be stored in the comment field of the UNIX password file."
+Add_Option_Entry "f" "full-name" "User's full name."
+Add_Option_Entry "r" "room-number" "User's office number."
+Add_Option_Entry "w" "work-phone" "User's work phone."
+Add_Option_Entry "h" "home-phone" "User's home phone."
+Add_Option_Entry "o" "other" "User's home phone."
+Add_Option_Entry "s" "shell" "User's default shell." "/bin/zsh"
+Add_Option_Entry "p" "password" "Encoded user's password."
+Add_Option_Boolean "S" "skel" "Populate home directory with customized settings."
+
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+Verify_Superuser
+
+name="$1"
+
+skeldir=${goboPrograms}/Scripts/Settings/Scripts/
+homedir="${goboUsers}/$name"
+
+Log_Verbose "Creating user $name account and home directory..."
+
+Is_Entry "password" && passwordstring="-p `Entry password`"
+
+Boolean "skel" && {
+   skeldir="${goboShared}/EnhancedSkel/Default"
+   if Is_Directory "$skeldir"
+   then
+      skel="-k $skeldir"
+   else
+      Log_Error "To use the 'skel' option you need to install EnhancedSkel." 
+   fi
+}
+
+useradd -c "`Entry comment`" -d "$homedir" -m $skel -s "`Entry shell`" $passwordstring "$name"
+
+Log_Verbose "Setting \"${goboUsers}/$name\" permissions..."
+chmod 0700 "${goboUsers}/$name"
+Log_Verbose "Editing information for $name..."
+Is_Entry "full-name" || {
+   Log_Terse "Enter $name's real full name (ex. John Doe)"
+   read -p "]"
+   chfn -f "$REPLY" "$name"
+} && chfn -f "`Entry full-name`" "$name"
+Is_Entry "room-number" && chfn -r "`Entry room-number`" "$name"
+Is_Entry "work-phone" && chfn -w "`Entry work-phone`" "$name"
+Is_Entry "home-phone" && chfn -h "`Entry home-phone`" "$name"
+Is_Entry "password" || passwd "$name"
+
+if Boolean "skel"
+then
+   cd "$homedir"
+   GrepReplace -R "/Users/testuser" "$homedir"
+fi
+
+usermod -G floppy,audio,users,cdrecord,video $name
+

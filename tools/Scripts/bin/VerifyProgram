@@ -1,0 +1,143 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import OptionParser
+Import GoboLinux
+Import File
+Import String
+
+######## Changelog ########
+#
+# 2005/03/04 - [calica] Look in $HOME/.gnupg/pubring.gpg for keys
+# 2004/10/10 - [calica] much improved md5sum check routines
+# 2004/05/27 - [ecd] splitted 'Hashes' file in more files (SignPackage, VerifyPackage)
+#            - description adapted to splitted version
+# 2003/12/15 - [calica] First version
+#
+###########################
+
+GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring} --keyring $HOME/.gnupg/pubring.gpg"
+
+scriptDescription="Verify the hashes file gpg signature and check the hashes of a Gobolinux package."
+scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{ [<options>] <package> [<version>] }"
+scriptNotes="If no version is specified, Current is assumed.  
+The default keyrings are: 
+    $HOME/.gnupg/pubring.gpg
+    ${GPG_gobo_keyring}"
+
+########## Options ##########
+Add_Option_Entry "r" "keyring" "GPG option to an additional the keyring location."
+Add_Option_Boolean "S" "no-signature" "Just verify FileHash.  Do not check GPG signature."
+Add_Option_Boolean "q" "quiet" "No output.  Check exit status for result."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Utility functions ################################################################
+function check_filehashes() {
+### python check_filehashes CHANGELOG
+# 10/10/2004 - [calica] First version
+   Parameters "$@" file
+   
+python -c """
+import re, os, string, os.path, sys
+
+hashfile='Resources/FileHash'
+
+file_checksums={}
+errors=0
+
+hashes = file(hashfile, 'r')
+for line in hashes:
+   fields = re.split('\s+', line)
+   file_checksums[fields[1]]=fields[0]
+   
+# Walk file tree
+for line in sys.stdin:
+   line = line.rstrip()
+   try:
+      good_md5 = file_checksums[line]
+      test_md5 = re.split('\s+', os.popen('md5sum %s'%line).read().rstrip())[0]
+      del file_checksums[line]
+      if good_md5 != test_md5:
+         print line, 'has been modified!'
+         errors+=1
+   except:
+      print line, 'not found in hashfile'
+      errors+=1
+
+for missing in file_checksums:
+   print missing, 'is missing'
+   errors+=1
+      
+sys.exit(errors)
+
+"""
+}
+
+### Parse options #######################################################################
+package=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   version=`Get_Version "$package" "$2"`
+else
+   version=`Get_Version "$package" "Current"`
+fi
+
+quiet=""
+Boolean "verbose" || quiet="Quiet"
+Boolean "quiet" && quiet="Quiet"
+
+prefix="$goboPrograms/$package/$version"
+
+Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+cd "$prefix"
+
+FileHash_loc="Resources/FileHash"
+FileHash_sig="${FileHash_loc}.sig"
+if Is_Entry_Set "keyring"
+then
+   keyring=`Entry "keyring"`
+   GPG_opts="${GPG_opts} --keyring ${keyring}"
+fi
+
+########## Operations ##########
+## meant to be run with superuser privileges
+
+result=0
+if Exists "${FileHash_sig}" && ! Boolean "no-signature"
+then
+   Boolean "quiet" || Log_Normal "Verifying signature..."
+   $quiet gpgv ${GPG_opts} "${FileHash_sig}" "${FileHash_loc}"
+   rtn=$?
+   if [ $rtn -ne "0" ]
+   then
+      Boolean "quiet" || Log_Error "Signature check failed: $rtn"
+      exit $rtn
+   fi
+   Boolean "quiet" || Log_Normal "Signature OK"
+elif ! Boolean "no-signature"
+then  
+  Boolean "quiet" || Log_Error "No signature to verify."
+fi
+if Exists "${FileHash_loc}"
+then
+   Boolean "quiet" || Log_Normal "Verifying FileHash..."
+#   $quiet md5sum --check "${FileHash_loc}"
+#   output=`find * -type f | grep -v "Resources/FileHash" | check_filehashes`
+   output=`Check_FileHash "$prefix" "Resources/FileHash"`
+   rtn=$?
+   if [ $rtn -ne "0" ]
+   then
+      Boolean "quiet" || Log_Error "FileHash check failed: $rtn"
+      echo $output
+      exit $rtn
+   fi
+   Boolean "quiet" || Log_Normal "FileHash OK"
+else
+   Boolean "quiet" || Log_Error "No FileHash to verify."
+fi

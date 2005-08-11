@@ -1,0 +1,239 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 09/08/2005 - [lucasvr] added python build detection, improved file contents visualization
+# 06/03/2005 - [lucasvr] fixed a typo on perl modules recipe dir
+# 21/07/2005 - [detsch] fixes on non-id#0 running (sudo and friends)
+# 02/12/2004 - [detsch] checking for existing recipes (exact version or same program)
+# 23/08/2004 - [detsch] message when author variable is not set, $genRecipeRecipeDir
+# 12/05/2004 - [hisham] convenience: set PAGER variable if unset
+# 07/01/2004 - [hisham] fixed so that url uses double quotes
+# 26/12/2003 - [hisham] perl support, smarter makefile detections
+# 11/12/2003 - [hisham] simple multiple recipe dirs support
+# 24/10/2003 - [hisham] First version
+
+source ScriptFunctions
+Import File
+Import Log
+Import OptionParser
+Import GoboLinux
+
+### Options ###################################################################
+
+scriptDescription="Create a recipe template."
+scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="[<app_name> [<app_version>]] <url>"
+#scriptNotes="Any extra options passed after '--' will be passed to 'configure'."
+scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
+Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
+Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
+Parse_Options "$@"
+shift $parsedArguments
+
+unset packagename versionnumber
+
+Import Compile
+Parse_Conf Compile.conf
+
+if Is_Writable "$genRecipeRecipeDir/$packagename" 
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+[ "$PAGER" ] || PAGER=less
+
+assert_dir $genRecipeRecipeDir
+
+if [ "$3" ]
+then
+   packagename="$1"
+   versionnumber="$2"
+   shift 2
+elif [ "$2" ]
+then
+   packagename="$1"
+   shift
+fi
+
+bname=`basename "$1" .tar.gz`
+bname=`basename "$bname" .tar.bz2`
+bname=`basename "$bname" .tgz`
+bname=`basename "$bname" .zip`
+
+if [ ! "$packagename" ]
+then
+   packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
+   deduced=`DeduceName "README" "$packagename"`
+   [ "$deduced" ] && packagename=$deduced
+fi
+
+# Enforce some naming conventions
+packagename=`NamingConventions "$packagename"`
+
+if [ ! "$versionnumber" ]
+then
+   versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
+fi
+
+
+if ! Boolean "no-check"
+then
+   sameversionrecipe=`FindPackage --types=recipe $packagename $versionnumber 2> /dev/null`
+   if [ "$sameversionrecipe" ]
+   then
+      Log_Question "There is already a recipe for $packagename $versionnumber, at"
+      Log_Question "$sameversionrecipe"
+      if ! Ask "Create another?"
+      then
+         exit 0
+      fi
+            
+   else
+      sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null`
+      if [ "$sameprogramrecipe" ]
+      then
+         Log_Question "There is already a recipe for $packagename, at"
+         Log_Question "$sameprogramrecipe"
+         if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
+	 then
+	    NewVersion $packagename $versionnumber
+	    exit 0
+	 fi
+      fi
+   fi
+fi
+
+
+Ask_Continue "Creating recipe template for $packagename version $versionnumber."
+
+recipedir="$genRecipeRecipeDir/$packagename/$versionnumber"
+
+$sudo mkdir -p $recipedir
+[ "$sudo" ] && Quiet $sudo chown $USER $recipedir
+    
+# TODO: generalize mirror system
+url=`echo $1 | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
+url=`echo $url | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
+
+${sudo} Quiet rm "$recipedir/Recipe"
+
+if [ "$compileRecipeAuthor" != "" ]
+then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipedir/Recipe"
+     echo "# Recipe for version $versionnumber by $compileRecipeAuthor, on" `date` >> "$recipedir/Recipe"
+else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/Compile/Compile.conf"
+fi
+
+echo "compile_version=$scriptVersion" >> "$recipedir/Recipe"
+echo "url=\"$url\"" >> "$recipedir/Recipe"
+
+Quiet pushd "$compileArchivesDir"
+file="$PWD/$(basename "$1")"
+if ! Boolean "no-fetch"
+then
+   wget --passive-ftp -c "$1" || \
+   wget --passive-ftp "$1" || \
+   wget "$1" || {
+      Log_Error "Couldn't fetch file, URL may be invalid."
+      exit 1
+   }
+else
+   if ! [ -e "$file" ]
+   then
+      Log_Error "--no-fetch used, but file is not available."
+      exit 1
+   fi
+fi
+Quiet popd
+
+echo "file_size="`Get_Size "$file"` >> "$recipedir/Recipe"
+echo "file_md5="`Get_MD5 "$file"` >> "$recipedir/Recipe"
+
+# TODO: report if multiple directories, tell the user to verify it
+file_contents=`mktemp`
+als -q "$file" > "$file_contents"
+
+bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
+if [ -n "$bdir" -a "$bdir" != "$bname" ]
+then
+   echo "dir='$bdir'" >> "$recipedir/Recipe"
+fi
+
+if { grep "configure.in$" "$file_contents" &> /dev/null ;} \
+|| { grep "configure.ac$" "$file_contents" &> /dev/null ;}
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
+   echo "is_compileprogram=yes" >> "$recipedir/Recipe"
+elif grep "Makefile.PL$" "$file_contents" &> /dev/null
+then
+   Log_Normal "$packagename $versionnumber seems to be a Perl module."
+   echo "is_perl=yes" >> "$recipedir/Recipe"
+   perlprefixed="$recipedir/Perl-$packagename"
+   notprefixed=$(readlink -f "$recipedir/..")
+   if [ -e "$perlprefixed" ]
+   then
+      mv "$recipedir" "$perlprefixed"
+      Quiet rmdir "$notprefixed"
+   else
+      mv "$notprefixed" "$perlprefixed"
+   fi
+   Log_Normal "Renamed $packagename to Perl-$packagename"
+elif grep "Imakefile$" "$file_contents" &> /dev/null
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on imake."
+   echo "is_xmkmf=yes" >> "$recipedir/Recipe"
+elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -i makefile &> /dev/null && \
+       grep .py "$file_contents" &> /dev/null
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on Python."
+   echo "is_python=yes" >> "$recipedir/Recipe"
+else
+   basemakefile=`grep -i "^[^/]*/Makefile$" "$file_contents" 2>/dev/null`
+   if [ "$basemakefile" ]
+   then
+      Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
+      echo "is_makefile=yes" >> "$recipedir/Recipe"
+      aunpack "$file" "$basemakefile"
+      if [ "$basemakefile" != "Makefile" ]
+      then echo "makefile='$(basename $basemakefile)'" >> "$recipedir/Recipe"
+      fi
+      makevars=()
+      for var in BASEDIR DESTDIR PREFIX basedir destdir prefix
+      do
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*=" &> /dev/null
+         then
+            makevars=("${makevars[@]}" "\"$var=\$target\"")
+            Log_Normal "Detected Makefile variable $var."
+         fi
+      done
+      if [ "${makevars[*]}" ]
+      then
+         echo "make_variables=(" >> "$recipedir/Recipe"
+         for mv in "${makevars[@]}"
+         do
+            echo "   $mv" >> "$recipedir/Recipe"
+         done
+         echo ")" >> "$recipedir/Recipe"
+      else
+         Log_Normal "No variables detected. Do you want to look at the top Makefile? (Y/n)"
+         read
+         if [ "$REPLY" != "n" ]
+         then
+            $PAGER "$basemakefile"
+         fi
+      fi
+      rm "$basemakefile"
+      rmdir -p $(dirname "$basemakefile")
+   else
+      Log_Terse "Could not detect recipe type. Recipe needs to be completed manually."
+   fi
+fi
+
+Log_Verbose "Done creating recipe template for $packagename $versionnumber."
+rm -f "$file_contents"
+
+if [ "$makeRecipeLog" ]
+then
+   echo "$packagename $versionnumber" >> "$makeRecipeLog"
+fi

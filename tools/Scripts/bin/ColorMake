@@ -1,0 +1,32 @@
+#!/bin/sh
+
+### Changelog #################################################################
+# 10/11/2004 - move menuconfig workaround in here
+# 03/06/2002 - Return proper exit
+# 28/03/2002 - GoboLinux compliant
+# 14/09/2001 - First version
+
+. ScriptFunctions
+Import File
+
+# XXX "Real vs. rootless" support
+if [ -x /bin/make ]
+then makecmd=/bin/make
+elif [ -x /usr/bin/make ]
+then makecmd=/usr/bin/make
+fi
+
+if [ "$1" = "menuconfig" ]
+then exec $makecmd "$@"
+fi
+
+workaround=`Temporary_File`
+
+{ $makecmd "$@" 2>&1
+  echo $? > $workaround
+} | mtail --config=${goboSettings}/Scripts/ColorMake.mtailrc -q
+
+returnvalue=`cat $workaround`
+rm $workaround
+
+exit $returnvalue

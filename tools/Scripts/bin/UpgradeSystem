@@ -1,0 +1,32 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 23/11/2003 - [hisham] Reformatted changelog
+# 15/11/2003 - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import GoboLinux
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="Online automated upgrade of the system."
+scriptCredits="Copyright (C) 2003 Hisham Muhammad. Released under the GNU GPL."
+#helpOnNoArguments=yes
+scriptUsage=""
+scriptExample=""
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+Verify_Superuser
+
+cd "$goboTemp"
+rm UpgradeScript
+wget http://gobolinux.org/upgrade/UpgradeScript
+chmod +x UpgradeScript
+./UpgradeScript `cat /System/Settings/GoboLinuxVersion`

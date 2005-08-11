@@ -1,0 +1,6 @@
+# Source application environment settings.
+local envcachefile="${goboPrefix}/System/Links/Environment/Cache"
+[[ -e "$envcachefile" ]] || { cat "${goboPrefix}/System/Links/Environment"/* > "$envcachefile" } 2> /dev/null
+{ source "$envcachefile" } 2> /dev/null
+unset envcachefile
+

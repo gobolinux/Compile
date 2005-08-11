@@ -1,0 +1,300 @@
+#!/bin/sh
+
+### Changelog ############################################################
+
+# 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
+# 05/12/2004 - [hisham] -A,--no-autoconf switch
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+#                       (currently commented out to decide if we want this or not)
+# 08/06/2004 - [hisham] -a,--autoconf switch
+# 26/05/2004 - [detsch] Ask_Option instead of "read -p"
+# 09/05/2004 - [hisham] /System/Links/Tasks
+# 30/11/2003 - [hisham] -n,--no-modify switch
+#            - -c,--configure switch
+# 23/11/2003 - [hisham] Reformatted changelog
+# 15/08/2003 - [detsch] Arch no more hardcoded
+# 20/06/2003 - [hisham] -t switch
+#            - "Modify Makefiles" was accidentally disabled
+# 19/06/2003 - [hisham] Fix Shared for -k
+# 09/06/2003 - [hisham] 'Variable' directory
+# 31/05/2003 - [hisham] Cleanups
+# 13/01/2003 - [hisham] Minor documentation fix
+# 07/06/2002 - [hisham] Added argument count check
+# 30/05/2002 - [hisham] Autodetection for running as superuser
+# 26/03/2002 - [hisham] GoboLinux compliant, -n switch
+# 08/09/2001 - [hisham] Changed to catch more Makefiles
+# 03/09/2001 - [hisham] Converted option parser
+# 31/08/2001 - [hisham] switch to /Programs/App/Version scheme
+# 26/04/2001 - [hisham] -k -r switches
+# XX/XX/XXXX - [hisham] Gradual improvements
+# XX/XX/XXXX - [hisham] First version
+
+### Imports ##############################################################
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+
+
+### Options ##############################################################
+
+helpOnNoArguments=yes
+scriptDescription="prepares applications for instalation, running the 'configure' script."
+scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU GPL."
+scriptUsage="[ <target_name> [<version_nr>] ] [ -- <additional_options> ]"
+scriptExample="KDE 2.2"
+scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."
+Add_Option_Boolean "b" "batch" "batch mode: no user interaction (even when modifying Makefiles)" 
+Add_Option_Boolean "t" "tree" "prepare directories only, do not attempt to run or modify configure or Makefiles."
+Add_Option_Boolean "T" "tree-cleanup" "like --tree, but instead of creating directories, remove empty ones"
+Add_Option_Boolean "k" "keep" "keep the directory if it already exists in the ${goboPrograms} hierarchy."
+Add_Option_Boolean "r" "remove" "remove the directory if it already exists in the ${goboPrograms} hierarchy."
+#Add_Option_Boolean "n" "no-modify" "Do not attempt to modify configure or Makefiles."
+Add_Option_Entry "c" "configure" "specify program to be used as 'configure' script." "./configure"
+Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
+Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
+	
+Parse_Options "$@"
+shift $parsedArguments
+
+### Functions ############################################################
+
+function config_is_autoconf() {
+   Boolean "autoconf" && return 0
+   Boolean "no-autoconf" && return 1
+   grep -i "Generated .* autoconf" "$configureprogram" &> /dev/null
+}
+
+function config_accepts_prefix() {
+   grep -- "--prefix" "$configureprogram" &> /dev/null
+}
+
+#function modify_files() {
+#   Parameters "$@" file
+#
+#   Log_Normal "Attempting to modify files..."
+#   for m in `find -name "$file"`
+#   do
+#      Log_Verbose "Processing file " $m "..."
+#      mv $m $m.old
+#      cat $m.old | sed $changes > $m
+#      chmod +x $m
+#      {
+#      echo "-------------------------------------------------" 
+#      echo "The following changes were made to $m:"
+#      diff $m $m.old
+#      echo "-------------------------------------------------"
+#      } >> $scriptName.changes.log
+#   done
+#   Log_Normal "Done. No guarantees that this will help, though."
+#   Log_Normal "(Your original files are stored with an .old suffix)"
+#}
+#
+#function inspect_changes() {
+#   read -p "Do you wish to inspect the generated changes now? ([Y]es, [n]o)"
+#   if [ "$REPLY" = "y" -o "$REPLY" = "Y" -o "$REPLY" = "yes" -o "$REPLY" = "Yes" ]
+#   then
+#      $PAGER $scriptName.changes.log
+#   fi
+#   Ask_Continue "Proceed with installation? ([Y]es, [n]o)"
+#}
+
+function build_change() {
+   echo "/-L/!s/"$1"/"$2"/g;"
+}
+
+function color_command() {
+   mtailrc=$1
+   shift
+   workaround=`Temporary_File`
+   { "$@" 2>&1
+     echo $? > $workaround
+   } | mtail --config=${mtailrc} -q
+   returnvalue=`cat $workaround`
+   rm $workaround
+   return $returnvalue
+}
+
+make_symlink() {
+    local bname=`basename $1`
+    Exists "${goboPrograms}/$programname/${bname}" && ln -nsf "${goboPrograms}/$programname/${bname}" "$1"
+}
+
+remove_symlink() {
+    Exists `RealPath $1` || rm -f "$1"
+}
+
+### Operation #############################################################
+
+if Boolean "cross-compile"
+then
+	. GoboPath Reload
+fi
+
+if [ "$goboInstall" = "" ]
+then
+    export goboInstall="$goboPrograms"
+fi
+
+#programname=`GuessProgramCase $1 $2`
+programname="$1"
+versionnumber="$2"
+
+[ "$1" -a "$2" ] || Die "Missing arguments."
+
+shift 2
+
+programdir="${goboPrograms}/$programname/$versionnumber"
+slashprogramdir=`echo "$programdir" | sed "s/\//\\\\\\\\\//g"`
+settingsdir="${goboPrograms}/$programname/Settings"
+slashsettingsdir=`echo "$settingsdir" | sed "s/\//\\\\\\\\\//g"`
+variabledir="${goboPrograms}/$programname/Variable"
+slashvariabledir=`echo "$variabledir" | sed "s/\//\\\\\\\\\//g"`
+
+installdir="${goboInstall}/$programname/$versionnumber"
+if Boolean "tree"
+then
+   Is_Writable ${goboPrograms} || Verify_Superuser
+   Is_Writable ${goboInstall} || Verify_Superuser
+
+   ask=yes
+   unset keepdir
+   Boolean "remove" && unset ask
+   Boolean "keep" && { unset ask; keepdir=yes; }
+
+   if [ "$ask" -a -e "$programdir" ]
+   then
+      Ask_Option "$programdir already exists. [r]emove, [k]eep, [C]ancel?"
+      if [ "$REPLY" = "r" ]
+      then rm -rf "$programdir"
+      elif [ "$REPLY" = "k" ]
+      then keepdir=yes
+      else exit 1
+      fi
+   fi
+
+   if [ ! "$keepdir" ]
+   then
+      rm -f "${goboPrograms}/$programname/Current"
+      Make_Directory "${goboInstall}/$programname"
+      Make_Directory "$installdir"
+      if [ "$goboInstall" != "$goboPrograms" ]
+      then
+         Make_Directory "${goboPrograms}/$programname"
+         #Make_Directory "$programdir"
+         ( cd "${goboPrograms}/$programname" ; ln -s "$installdir" "$versionnumber")
+      fi
+      ( cd "$programdir"/.. ; ln -s "$versionnumber" "Current" )
+   fi
+
+   [ -L "$programdir/share" ] && rm "$programdir/share"
+   ln -nsf "$programdir/Shared" "$programdir/share"
+   
+   dirop="Make_Directory"
+   linkop="make_symlink"
+
+elif Boolean "tree-cleanup"
+then
+   Is_Writable ${goboPrograms} || Verify_Superuser
+   Is_Writable ${goboInstall} || Verify_Superuser
+
+   Is_Real_Directory "$programdir/Shared" || Quiet rm "$programdir/share"
+   dirop="Quiet rmdir -p"
+   linkop="remove_symlink"
+fi
+
+if Boolean "tree" || Boolean "tree-cleanup"
+then
+   
+   $dirop "${goboPrograms}/$programname/Settings"
+   $dirop "${goboPrograms}/$programname/Variable"
+   $dirop "$programdir/Resources"
+   $dirop "$programdir/Resources/Daemons"
+   $dirop "$programdir/Resources/Tasks"
+   $dirop "$programdir/Shared"
+   $dirop "$programdir/sbin"
+   $dirop "$programdir/bin"
+   $dirop "$programdir/lib"
+   $dirop "$programdir/include"
+   $dirop "$programdir/info"
+   $dirop "$programdir/man"
+   $dirop "$programdir/doc"
+   $dirop "$programdir/libexec"
+   $dirop "$programdir/man/man1"
+   $dirop "$programdir/man/man2"
+   $dirop "$programdir/man/man3"
+   $dirop "$programdir/man/man4"
+   $dirop "$programdir/man/man5"
+   $dirop "$programdir/man/man6"
+   $dirop "$programdir/man/man7"
+   $dirop "$programdir/man/man8"
+   $dirop "$programdir/man/man9"
+
+   if [ "$goboInstall" != "$goboPrograms" ]
+   then
+      $linkop "${goboInstall}/$programname/Settings"
+      $linkop "${goboInstall}/$programname/Variable"
+   fi
+
+   exit 0
+
+fi
+
+#unset changes
+#changes=$changes`build_change "\/usr\/local" "$slashprogramdir"`
+#changes=$changes`build_change "\/usr\/X11R6" "$slashprogramdir"`
+#changes=$changes`build_change "\/usr\/X11" "$slashprogramdir"`
+#changes=$changes`build_change "\/opt[$\/]?" "$slashprogramdir"`
+#changes=$changes`build_change "\/usr" "$slashprogramdir"`
+#changes=$changes`build_change "\/etc" "$slashsettingsdir"`
+#changes=$changes`build_change "\/var" "$slashvariabledir"`
+
+configureprogram=`Entry "configure"`
+
+echo
+Log_Normal "Preparing..."
+rm -f config.cache
+if Exists "$configureprogram"
+then
+   if config_is_autoconf
+   then
+      Log_Normal "Autoconf configure script detected."
+      color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" --prefix="$programdir" --sysconfdir="$settingsdir" --localstatedir="$variabledir" "$@" >&$normalFD || Die "configure failed."
+   else
+      if config_accepts_prefix
+      then
+         Log_Normal "Non-autoconf configure script detected (with --prefix)."
+         "$configureprogram" --prefix="$programdir" "$@" >&$normalFD || Die "configure failed."
+      else
+#         anyold=`find -iname "$configureprogram.old"`
+#         if [ "$anyold" ] || Exists ".Do.not.modify.configures" || Boolean "no-modify"
+#         then
+#            Log_Verbose "Old configure exist. Will not attempt to modify configure."
+#         else
+#            Log_Normal "Non-autoconf configure script detected (without --prefix)."
+#	    ! Boolean "batch" && Ask_Continue "Proceed attempting modification? [Y]es, [n]o "
+#            modify_files "$configureprogram"
+#            touch ".Do.not.modify.configures"
+#            ! Boolean "batch" && inspect_changes
+#         fi
+         "$configureprogram" "$@" >&$normalFD || Die "configure failed."
+      fi
+   fi
+#else
+#   Log_Terse "No configure script detected."
+#   anyold=`find -iname 'Makefile*.old'`
+#   if [ "$anyold" ] || Exists ".Do.not.modify.Makefiles" || Boolean "no-modify"
+#   then
+#      Log_Verbose "Old Makefiles exist. Will not attempt to modify Makefiles."
+#   else
+#      ! Boolean "batch" && Ask_Continue "Proceed attempting modification of Makefiles? ([Y]es, [n]o)"
+#      modify_files "Makefile*"
+#      touch ".Do.not.modify.Makefiles"
+#      ! Boolean "batch" && inspect_changes
+#   fi
+fi
+
+exit 0

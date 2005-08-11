@@ -1,0 +1,72 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 21/0921/09 - [calica] Fix --batch
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+# 13/04/2004 - [detsch] Smart RemoveBroken on ${goboLinks}
+# 10/04/2004 - [detsch] --batch option
+# 10/04/2004 - [detsch] Try to remove app dir if empty
+# 31/03/2004 - [detsch] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import GoboLinux 
+Import OptionParser
+
+
+### Options ###################################################################
+
+scriptDescription="Removes a program version from the system."
+scriptCredits="Copyright (C) 2004 Andre Detsch. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<program> <version>"
+scriptExample="Qt 3.2.3"
+Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
+Parse_Options "$@"
+shift $parsedArguments
+
+
+### Operation #################################################################
+
+Verify_Superuser
+
+[ "$1" ] || Die "Argument missing: specify the program name."
+[ "$2" ] || Die "Argument missing: specify the program version."
+
+program=`GuessProgramCase $1 $2`
+version=$2
+
+if [ ! -d ${goboPrograms}/${program}/${version} ]
+then
+   Die "${program} ${version} not found at ${goboPrograms}"
+fi
+
+Boolean "batch" || Ask_Continue "Removing $program, version $version."
+
+Log_Verbose "Getting program file list..."
+filesdir=`mktemp`
+cd ${goboPrograms}/${program}/${version}
+find > $filesdir
+GrepReplace "./lib/"     "./Libraries/"    $filesdir
+GrepReplace "./sbin/"    "./Executables/"  $filesdir
+GrepReplace "./bin/"     "./Executables/"  $filesdir
+GrepReplace "./man/"     "./Manuals/"      $filesdir
+GrepReplace "./include/" "./Headers/"      $filesdir
+GrepReplace "./info/"    "./Manuals/info/" $filesdir
+GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
+
+Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
+rm -rf ${goboPrograms}/${program}/${version}
+
+# TODO relink current?
+Quiet RemoveBroken "${goboPrograms}/${program}/Current"
+Quiet rmdir ${goboPrograms}/${program}
+
+Log_Normal "Removing broken links..."
+cd ${goboLinks}
+cat $filesdir | RemoveBroken
+rm $filesdir
+Log_Normal "${program} ${version} removed."
+

@@ -1,0 +1,56 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 08/12/2003 - [rafasgj] Removed RealPath
+# 23/11/2003 - [hisham] Reformatted changelogs
+# 02/02/2003 - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="Special 'find' utility for searches in the ${goboSystem} hierarchy"
+scriptCredits="Copyright (C) 2003 Hisham Muhammad. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="[<flags>] <search_pattern>"
+scriptExample="-i -l freetype"
+scriptNotes="If no flags are set, all four system locations are scanned."
+Add_Option_Boolean "e" "executables" "Search for executables in ${goboExecutables}."
+Add_Option_Boolean "l" "libraries" "Search for libraries in ${goboLibraries}."
+Add_Option_Boolean "i" "headers" "Search for include headers in ${goboHeaders}."
+Add_Option_Boolean "s" "settings" "Search for settings in ${goboSettings}."
+Add_Option_Boolean "m" "manuals" "Search for settings in ${goboManuals}."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+{
+    function FindInPath() {
+        Boolean "$3" && {
+            f "$1" "$2"
+            usedOptions=yes
+        }
+    }
+    usedOptions=no
+    FindInPath "$1" "${goboExecutables}" "executables"
+    FindInPath  "$1" "${goboLibraries}" "libraries"
+    FindInPath  "$1" "${goboHeaders}" "headers"
+    FindInPath  "$1" "${goboSettings}" "settings"
+    FindInPath  "$1" "${goboManuals}" "manuals"
+    if [ "$usedOptions" = "no" ]
+    then
+        FindQuick "$1" "${goboExecutables}"
+        FindQuick "$1" "${goboLibraries}"
+        FindQuick "$1" "${goboHeaders}"
+        FindQuick "$1" "${goboSettings}"
+        FindQuick "$1" "${goboManuals}"
+    fi
+} | while read i
+do
+    readlink -f "$i"
+done | sort | uniq

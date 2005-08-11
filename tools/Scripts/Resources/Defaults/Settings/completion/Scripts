@@ -1,0 +1,131 @@
+#!/bin/bash
+
+. GoboPath
+
+complete -f -X '!*.@(rpm|gz|bz2|tgz|tar|tgz|zip|jar|rar|shar)' abrir
+complete -d pacote package pd
+
+function _lprep() {
+	local cur first
+
+	COMPREPLY=()
+	cur=${COMP_WORDS[COMP_CWORD]}
+	
+	first=1
+	while [[ "${COMP_WORDS[first]}" == -* ]]
+	do first=$[first+1]
+	done
+
+	if { [ "$COMP_CWORD" -lt "$first" ] && [[ "$cur" == -* ]] ;}
+	then
+    	    COMPREPLY=( $( compgen -W "`lprep --list-options`" -- $cur ) )
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" == $first ]
+	then
+	    PACKBASE=`basename $PWD`
+  	    PACKNAME=`echo $PACKBASE | sed 's/-[[:digit:]].*//g'`
+    	    PACKNAME=`gobo_name "$PACKNAME"`
+	    COMPREPLY=( $( compgen -W "$PACKNAME" -- $cur) )
+	    return 0
+	fi
+	
+	if [ "$COMP_CWORD" == $[first+1] ]
+	then
+	    PACKBASE=`basename $PWD`
+	    VERSNUM=`echo $PACKBASE | sed 's/-lode//;s/-gobo//;s/.*-//;s/\///g;'`
+	    COMPREPLY=( $( compgen -W "$VERSNUM" -- $cur) )
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" == $[first+2] ]
+	then
+	    COMPREPLY=( $( compgen -W "--" -- $cur) )
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" -ge $[first+3] ]
+	then
+	    cr=$cur
+	    [ "$cr" ] || cr=-
+     	    COMPREPLY=( $( configure --help | grep "^  $cr" | sed "s|^ *\($cr[^ ]*\)[ ]*.*$|\1|g;s|\[.*\]||g;s|=.*|=|g" ) )
+	    return 0
+	fi
+
+}
+complete -F _lprep lprep
+
+function _ins() {
+	local cur first cfg
+
+	COMPREPLY=()
+	cur=${COMP_WORDS[COMP_CWORD]}
+	
+	first=1
+	while [[ "${COMP_WORDS[first]}" == -* ]]
+	do first=$[first+1]
+	done
+
+	if { [ "$COMP_CWORD" -lt "$first" ] && [[ "$cur" == -* ]] ;}
+	then
+    	    COMPREPLY=( $( compgen -W "`ins --list-options`" -- $cur ) )
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" == $first ]
+	then
+	    _filedir
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" == $[first+1] ]
+	then
+	    PACKBASE=`basename $PWD`
+  	    PACKNAME=`echo $PACKBASE | sed 's/-[[:digit:]].*//g'`
+    	    PACKNAME=`gobo_name "$PACKNAME"`
+	    COMPREPLY=( $( compgen -W "$PACKNAME" -- $cur) )
+	    return 0
+	fi
+
+	# position after --. 99999 means there is no --.
+	cfg=99999
+	# Order matters. Array overflow always returns last element.
+	[ "${COMP_WORDS[first+3]}" == "--" ] && cfg=$[first+4]
+	[ "${COMP_WORDS[first+2]}" == "--" ] && cfg=$[first+3]
+	[ "${COMP_WORDS[first+1]}" == "--" ] && cfg=$[first+2]
+
+	# When there is no --, cfg will be too high (I assume there'll never be 99999 cmdline params :) )
+	if [ "$COMP_CWORD" -ge $cfg ]
+	then
+	    cr=$cur
+	    [ "$cr" ] || cr=-
+     	    COMPREPLY=( $( configure --help | grep "^  $cr" | sed "s|^ *\($cr[^ ]*\)[ ]*.*$|\1|g;s|\[.*\]||g;s|=.*|=|g" ) )
+	    return 0
+	fi
+
+	if [ "$COMP_CWORD" == $[first+2] ]
+	then
+	    PACKBASE=`basename $PWD`
+	    VERSNUM=`echo $PACKBASE | sed 's/-lode//;s/-gobo//;s/.*-//;s/\///g;'`
+	    COMPREPLY=( $( compgen -W "$VERSNUM" -- $cur) )
+	    return 0
+	fi
+
+	# When there is no --, cfg will be 99999
+	if [ "$cfg" = "99999" -a "$COMP_CWORD" == $[first+3] ]
+	then
+	    COMPREPLY=( $( compgen -W "--" -- $cur) )
+	    return 0
+	fi
+
+}
+complete -F _ins ins
+
+function _sc() {
+	COMPREPLY=()
+	cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=( $( ls $GOBO_SCRIPTS | grep "^$cur" ) )
+        return 0
+}
+complete -F _sc sc

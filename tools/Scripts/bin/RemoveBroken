@@ -1,0 +1,36 @@
+#!/bin/env python
+
+### Changelog ######################################################################
+
+# 26/04/2004 - [detsch] Do not show filename if file does not exists 
+# 02/04/2004 - [detsch] Catch exception if file being unlinked does not exists
+# 23/11/2003 - [hisham] Reformatted changelog
+# 31/05/2003 - [hisham] No more tabs :)
+# 19/05/2002 - [hisham] simplified it to take files from stdin instead
+# 07/05/2002 - [hisham] added -R (recurse) option
+# XX/XX/XXXX - [detsch] First version
+
+### Imports ########################################################################
+
+import os, sys
+
+### Operation ######################################################################
+
+verbose = 1
+if len(sys.argv) == 1:
+    def delnewline(s):
+        if s[-1] == "\n":
+            return s[:-1]
+        return s
+    files = map(delnewline, sys.stdin.readlines())
+else:
+    files = sys.argv[1:]
+
+for filename in files :
+    if not os.access(filename, os.F_OK) :
+        try :
+            os.unlink(filename)
+            if verbose == 1 :
+               print filename
+        except :
+            pass

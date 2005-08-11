@@ -1,0 +1,178 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+Import String
+
+### Changelog #################################################################
+
+# 10/10/2004 - [calica] much improved md5sum check routines
+#               use a /P/Scripts/Current/
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+#              change Changelog format
+#              use /S/S/Scripts/gpg/pubring.gpg as an additonal keyring
+# 2003/12/15 - [calica] First version
+
+### Options ###################################################################
+
+scriptDescription="Manages FileHash and FileHash.sig in a GoboLinux package."
+scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{ [-c] <package> [<version>] }"
+scriptNotes="If no version is specified, Current is assumed."
+Add_Option_Boolean "c" "check" "check the package's dependency file"
+Add_Option_Boolean "s" "sign" "Generate, then sign the hash file"
+Add_Option_Boolean "g" "generate" "Generate the hash file."
+Add_Option_Boolean "l" "list" "List hash file, if any (generate if not present)."
+Add_Option_Entry "u" "local-user" "Use <entry> as the user ID to sign with."
+Add_Option_Entry "r" "keyring" "GPG option to an additional the keyring location."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Utility functions #################################################################
+FileHash_loc="Resources/FileHash"
+FileHash_sig="${FileHash_loc}.sig"
+GPG_gobo_keyring="/System/Settings/Scripts/gpg/pubring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring}"
+
+GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring}"
+
+if Is_Entry_Set "local-user" 
+then
+   localuser=`Entry "local-user"`
+   GPG_opts="${GPG_opts} -u $localuser"
+fi
+
+if Is_Entry_Set "keyring"
+then
+   keyring=`Entry "keyring"`
+   GPG_opts="${GPG_opts} --keyring ${keyring}"
+fi
+
+### Parse options #######################################################################
+
+package=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   version=`Get_Version "$package" "$2"`
+else
+   version=`Get_Version "$package" "Current"`
+fi
+
+prefix="$goboPrograms/$package/$version"
+
+Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+cd "$prefix"
+
+### --generate: create Resources/FileHash################################################
+
+function gen_filehashes() {
+  mkdir -p "Resources"
+  find * -type f | grep -v "Resources/FileHash" | xargs md5sum >"Resources/FileHash"
+}
+
+function check_filehashes() {
+### python check_filehashes CHANGELOG
+# 10/10/2004 - [calica] First version
+   Parameters "$@" file
+   
+python -c """
+import re, os, string, os.path, sys
+
+hashfile='Resources/FileHash'
+
+file_checksums={}
+errors=0
+
+hashes = file(hashfile, 'r')
+for line in hashes:
+   fields = re.split('\s+', line)
+   file_checksums[fields[1]]=fields[0]
+   
+# Walk file tree
+for line in sys.stdin:
+   line = line.rstrip()
+   try:
+      good_md5 = file_checksums[line]
+      test_md5 = re.split('\s+', os.popen('md5sum %s'%line).read().rstrip())[0]
+      if good_md5 != test_md5:
+         print line, 'has been modified!'
+         errors+=1
+   except:
+      print line, 'not found in hashfile'
+      errors+=1
+
+sys.exit(errors)
+
+"""
+}
+
+if Boolean "generate"
+then
+   gen_filehashes
+   exit 0
+fi
+
+### --list: List Resources/FileHash ########################################################
+
+if Boolean "list"
+then
+   if ! Exists "Resources/FileHash"
+   then
+      # Generate FileHash
+      gen_filehashes
+   fi
+   cat "$prefix/Resources/FileHash"
+   exit 0
+fi
+
+### --sign: sign Resources/FileHash################################################
+
+if Boolean "sign"
+then
+   gen_filehashes
+
+   gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee ""${FileHash_sig}"
+   
+   exit 0
+fi
+
+### --check: Verify dependencies ########################################################
+
+if true #Boolean "check"
+then
+   result=0
+   if Exists "${FileHash_sig}"
+   then
+      Quiet gpg ${GPG_opts} --verify "${FileHash_sig}" "${FileHash_loc}"
+      rtn=$?
+      if [ $rtn -eq "0" ]
+      then
+         Log_Normal "Digital Signature verified"
+      else
+         result=$rtn
+         Log_Error "Digital Signature check failed: $rtn"
+         exit $result
+      fi
+   fi
+   output=`find * -type f | grep -v "Resources/FileHash" | check_filehashes`
+#   md5sum --check "Resources/FileHash"
+   rtn=$?
+   if [ $rtn -eq "0" ]
+   then
+      Log_Normal "Program integrity verified"
+   else
+     result=$rtn
+     Log_Error "Integrity inconsistency found: $rtn"
+     echo "$output"
+   fi
+   exit $result
+fi
+

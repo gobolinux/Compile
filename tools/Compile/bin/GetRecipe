@@ -1,0 +1,141 @@
+#!/bin/sh
+
+##################################################
+# Changelog
+##################################################
+
+# 27/09/2004 - [detsch] can receive now more than 1 path
+# 23/08/2004 - [detsch] full rewrite. Now it receives a full path or url
+#                       and downloads and/or uncompress and/or copies the
+#                       recipe. ("GetRecipe $app $version"-like functionality
+#                       is at FindPackage)
+#  
+# 03/03/2004 - [hisham] local search, help screen
+# 04/02/2004 - [calica] Add http (wget) support
+#            - assert_dir to ensure environment
+# 10/12/2003 - [hisham] minor cleanups, no functionality change
+# 09/12/2003 - [calica] first version
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import GoboLinux
+Import Compile
+
+##################################################
+# Options and configuration
+##################################################
+
+Parse_Conf Compile.conf
+
+helpOnNoArguments=yes
+scriptDescription="Fetch a recipe and insert it in the recipes tree."
+scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
+scriptUsage="[<recipe-url>|<recipe-path>]"
+#scriptNotes="A full path to a recipe [that can be an url, a compressed local" \
+#"recipe or an uncompressed one] is received, and the recipe is placed in" \
+#"$getRecipeRecipeDir"
+#Add_Option_Boolean "C" "nocvs" "Do not find CVS based recipes (TODO)"
+Parse_Options "$@"
+shift $parsedArguments
+
+if Is_Writable "$getRecipeRecipeDir"
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+##################################################
+# Prepare Environment
+##################################################
+
+assert_dir $getRecipeRecipeDir
+
+for rawrecipe in $@
+do
+   rawrecipe="$1"
+   # Getting program name and version
+   if [ -d "$rawrecipe" ]
+   then
+      app=`Get_Token "$rawrecipe" "/" "-2"`
+      version=`Get_Token "$rawrecipe" "/" "-1"`
+   else
+      x=`basename "$rawrecipe"`
+      app=`Get_Token "$x" "--" "0"`
+      version=`Get_Token "$x" "--" "1"`
+   fi
+   
+   Log_Verbose "Trying to get $app $version from $rawrecipe"
+   Log_Normal "Trying to get $rawrecipe"
+   
+   
+   #####################################################
+   # Case #1 and #2: recipe is a local directory
+   #####################################################
+   if [ -d "$1" ] 
+   then
+      #####################################################
+      # Case #1: recipe is already in $compileRecipeDirs[@]
+      #####################################################
+   
+      for compileRecipeDir in "${compileRecipeDirs[@]}"
+      do
+         if Starts_With $compileRecipeDir "$rawrecipe"
+         then
+            echo "$compileRecipeDir/$app/$version"
+            exit 0
+         fi
+      done
+      
+      #####################################################
+      # Case #2: recipe is a local directory, but not at $compileRecipeDirs[@]
+      #####################################################
+   
+      $sudo mkdir -p "$getRecipeRecipeDir/$app/"
+      $sudo cp -R "$rawrecipe" "$getRecipeRecipeDir/$app/"
+      echo "$getRecipeRecipeDir/$app/$version"
+      exit 0
+   fi
+   
+   
+   #####################################################
+   # Case #3: recipe is a local compressed file
+   #####################################################
+   
+   if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
+   then
+      $sudo tar xjvf "$rawrecipe" -C "$getRecipeRecipeDir"  2> /dev/null >&$verboseFD
+      echo "$getRecipeRecipeDir/$app/$version"
+      exit 0
+   fi
+   
+   
+   #####################################################
+   # Case #4: recipe is a remote compressed file (url)
+   #####################################################
+   
+   if Is_URL "$rawrecipe"
+   then
+      Log_Normal "Downloading recipe from $rawrecipe"
+      wget -t 5 "$rawrecipe" -O - 2>&$verboseFD | $sudo tar xjvf - -C "$getRecipeRecipeDir" 2> /dev/null >&$verboseFD
+      #wget $rawrecipe -O - | $sudo tar xjvf - -C "$getRecipeRecipeDir"
+      if [ -d "$getRecipeRecipeDir/$app/$version" ]
+      then
+         echo "$getRecipeRecipeDir/$app/$version"
+         exit 0
+      fi
+   fi
+   
+   #####################################################
+   # Case #5: error...
+   #####################################################
+   
+   Log_Normal "Error getting recipe $rawrecipe"
+   
+   
+done
+
+Die "Could not get recipe"

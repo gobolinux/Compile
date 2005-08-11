@@ -1,0 +1,48 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import Log
+Import OptionParser
+Import File
+
+### Changelog #################################################################
+
+# 04/03/2005 - Changed $pwd to $PWD. Seems that this script was not working 
+#              at all since a long time...
+# 07/05/2003 - First version
+
+### Options ###################################################################
+
+scriptDescription="Convert a .la file created by libtool to make it GoboLinux-compliant."
+scriptCredits="Copyright (C) Hisham H. Muhammad 2003. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<files...>"
+scriptExample="-b *.la"
+Add_Option_Boolean "b" "backup" "Keep a backup file of the original .la file."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+Is_Writable "$PWD" || exit 0
+
+for i in "$@"
+do
+   Log_Verbose "Converting $i..."
+
+   old="$i~"
+   while [ -e "$old" ]
+   do old="$old~"
+   done
+   cp "$i" "$old"
+   cat "$old" | sed '
+
+s%/Programs/[^ /]*/*[^ /]*/*lib/*%/System/Links/Libraries/%g;
+s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%/System/Links/Libraries/\1%g;
+
+' > "$i"
+
+   Boolean "backup" || rm "$old"
+
+done
+
+# Why the hell does libtool keep hardcoded paths?

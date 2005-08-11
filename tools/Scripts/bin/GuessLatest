@@ -1,0 +1,176 @@
+#!/usr/bin/python
+
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+
+# GuessLatest
+# Try to guess the most recent package version based on the version number
+
+### Changelog ########################################################
+
+# 30/03/2004 - [detsch] First version
+# 30/03/2004 - [detsch] '-s' option
+# 07/04/2004 - [detsch] Breaking in switches (0.1c1 x 0.12d2)
+# 08/04/2004 - [detsch] Command line and importable by python scripts
+
+import types
+
+def GuessLatest(versions, stableOnly = 0, returnList = 0) :
+	if not versions :
+	    if returnList :
+		return []
+	    else :
+		return ""
+	
+	def breakInSwitches(s) :
+		#breaks string when it switches from number to character 2a = [2,a], 3rc1 = [3,rc,1], and so on
+		from string import digits
+		toReturn = []
+		w = ""
+		for i in range(len(s)) :
+			c = s[i]
+			if w :
+				if (w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits) :
+					toReturn.append(w)
+					w = c
+				else :
+					w = w + c
+			else :
+				w = w + c
+	
+		toReturn.append(w)
+	
+		return toReturn
+	
+	
+	built_versions = []
+	built_versions_stable = []
+	#greaterl = [-1]
+	#greater = ''
+	
+	#stable_greaterl = [ -1]
+	#stable_greater = ''
+	
+	for parameter in versions :
+		if type(parameter) == types.TupleType :
+			l = parameter[0].split("--")
+		else :
+			l = parameter.split("--")
+	
+		if len(l) > 1 :
+			#program = l[0]
+			version = l[1]
+		else :
+			#program = None
+			version = l[0]
+		
+		minors = []
+		
+		# if the version is cvs, must be the last choice. 
+		if version.lower() == 'cvs' :
+			minors.append(-1)
+		
+		unstable = 0
+		for k in version.lower().split(".") :
+			internalStrings = breakInSwitches(k)
+			internalminors = []
+			for i in internalStrings :
+				# remove '-' form, e.g., '1.0-rc2'
+				if len(i) > 0 and i[0] == '-' :
+					i = i[1:]
+					
+				try :
+					internalminors.append(int(i))
+				except :
+					if i in [ 'rc', 'pre', 'pr' ] :
+						unstable = 1
+						if internalminors:
+							internalminors[-1] = internalminors[-1] - 0.001
+						else :
+							internalminors.append(i)
+
+					elif i in ['beta'] :
+						unstable = 1
+						if internalminors:
+							internalminors[-1] = internalminors[-1] - 0.01
+						else :
+							internalminors.append(i)
+	
+					elif i in ['alpha'] :
+						unstable = 1
+						if internalminors :
+							internalminors[-1] = internalminors[-1] - 0.1
+						else :
+							internalminors.append(i)
+					else :
+						internalminors.append(i)
+	
+			minors.append(internalminors)
+	
+		if not unstable :
+			built_versions_stable.append((minors,parameter))
+			
+		built_versions.append((minors,parameter))
+	
+	built_versions_stable.sort()
+	built_versions.sort()
+	
+	bv = []
+	sbv = []
+	for i in built_versions :
+		bv.append(i[1])
+	
+	for i in built_versions_stable :
+		sbv.append(i[1])
+	
+	if returnList :
+		if stableOnly and built_versions_stable:
+			return sbv
+			#return stable_greater
+		else :
+			return bv
+			#return greater
+	else :
+		if stableOnly and built_versions_stable:
+			return sbv[-1]
+			#return stable_greater
+		else :
+			return bv[-1]
+			#return greater
+
+
+if __name__ == '__main__' :
+	import sys
+	try :
+		from optparse import OptionParser
+	
+		parser = OptionParser("usage: %prog [-s] <version1> [version2] ...\n \
+		Accepts package names, recipe names or version numbers as parameter ")
+	
+		parser.add_option("-s", "--stable", action="store_true", dest='stable',
+						default=False,  help="try to return a stable version as result")
+		
+		parser.add_option("-l", "--list", action="store_true", dest='return_list',
+						default=False,  help="returns a sorted list of versions")
+		
+		#parser.add_option("-u", "--unstable", action="store_false", dest='stable', default=False)
+		(options, args) = parser.parse_args()
+		just_stable = options.stable
+		return_list = options.return_list
+	except :
+		just_stable = 0
+		args = sys.argv[1:]
+		sys.exit(1)
+	
+	if len(args) < 1:
+		print "Please pass at least one version number"
+                sys.exit(1)
+	
+	
+	r =  GuessLatest(args, just_stable, options.return_list)
+	if options.return_list :
+		r.reverse()
+		for i in r :
+			print i
+	else :
+		print r
+

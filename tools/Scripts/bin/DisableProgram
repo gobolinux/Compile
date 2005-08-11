@@ -1,0 +1,74 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+
+### Changelog #################################################################
+
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+# 26/04/2004 - [detsch] Smart RemoveBroken on ${goboLinks}
+# 01/06/2003 - First version
+
+### Options ###################################################################
+
+scriptDescription="Unlink a program from the ${goboLinks} hierarchy."
+scriptCredits="Copyright (C) 2003 Hisham Muhammad. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<program> [<version>]"
+scriptExample="GCC 2.95.3"
+scriptNotes="This script 'disables' a program in the system, while keeping "\
+"it in the ${goboPrograms} hierarchy. To 're-enable' it, run SymlinkProgram(1) "\
+"again. If version is not specified, Current is assumed."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+Is_Writable "${goboPrograms}" || Verify_Superuser
+
+programname=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   versionnumber="$2"
+else
+   versionnumber=`Get_Version "$programname" "Current"`
+fi
+
+prefix="${goboPrograms}/$programname/$versionnumber/"
+
+Is_Directory "$prefix" || Die "$programname version $versionnumber was not found."
+
+Log_Normal "Disabling ${programname}, version ${versionnumber}."
+
+disabled="${goboPrograms}/$programname/$versionnumber-Disabled/"
+
+mv "$prefix" "$disabled" || Die "Couldn't disable $programname $versionnumber."
+
+filesdir=`mktemp`
+cd "$disabled"
+find > $filesdir
+GrepReplace "./lib/"     "./Libraries/"    $filesdir
+GrepReplace "./sbin/"    "./Executables/"  $filesdir
+GrepReplace "./bin/"     "./Executables/"  $filesdir
+GrepReplace "./man/"     "./Manuals/"      $filesdir
+GrepReplace "./include/" "./Headers/"      $filesdir
+GrepReplace "./info/"    "./Manuals/info/" $filesdir
+GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
+find ${goboEnvironment} >> $filesdir
+cd ${goboLinks}
+
+Log_Normal "Removing links..."
+
+{ cat $filesdir | RemoveBroken ;} || Die "Couldn't cleanup links."
+rm $filesdir
+
+#{ find "${goboLinks}" | RemoveBroken ;} || Die "Couldn't cleanup links."
+
+
+mv "$disabled" "$prefix" || Die "Please check $disabled."
+Log_Normal "${programname} ${versionnumber} disabled."
+
+# TODO unlink current if it's the one that was disabled.

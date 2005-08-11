@@ -1,0 +1,42 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# INSERT_DATE_HERE - [yourname] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+# Import GoboLinux # if you want Verify_Superuser
+Import OptionParser
+
+
+### Options ###################################################################
+
+#scriptDescription="[[description]]"
+scriptCredits="Copyright (C) INSERT_YEAR_HERE. Released under the GNU GPL."
+#helpOnNoArguments=yes
+##scriptUsage="<options> <files...>"
+#scriptExample="-b -e entry_value File1"
+#scriptNotes="add notes here if any."
+#Add_Option_Boolean "b" "bool" "A boolean option."
+#Add_Option_Entry "e" "entry" "Specify <entry>." "default_value"
+#Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
+Parse_Options "$@"
+shift $parsedArguments
+
+# Use this to parse attributions from
+# ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
+# ~/${goboUserSettings}/.Scripts/INSERT_NAME_HERE.conf 
+
+# ParseConf xxxxx.conf
+
+### Operation #################################################################
+
+#Uncomment this if the script is meant to be run with superuser privileges.
+#Verify_Superuser
+
+for i in "$@"
+do
+   : # stuff to do
+done

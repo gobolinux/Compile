@@ -1,0 +1,340 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+
+### Changelog #################################################################
+
+# 04/08/2005 - [detsch] --dont-ask-confirmation option
+# 04/03/2004 - [calica] "--verify" option, continue if hash failure.
+# 10/12/2004 - [calica] verify superuser before download.
+#                       Add support for VerifyProgram
+# 15/12/2004 - [detsch] '--no-install' option
+# 26/08/2004 - [detsch] '--keep' option, to not remove downloaded packages
+#                       Less questions when finding a package 
+# 23/08/2004 - [detsch] Using new Is_URL function
+#              - Changed dependencies installing: passing '-e' to Dependencies
+# 23/07/2004 - [detsch] '-C' parameter to tar, some $goboPrograms, and two 
+#                       'cd -' to keep the script running on original $PWD,
+#                       enabling local packages on $PWD to be allways found
+# 27/07/2004 - [detsch] Changed dependencies installing mechanism
+# 24/07/2004 - [detsch] Added support for url (http://.../package.tar.bz2)
+#                       Added support for program name / version passing
+#                       (calling FindPackage)
+# 10/06/2004 - [calica] Use "GuessProgramCase" in dependency check
+#              Handle versions with -PersonalBackup modifier
+# 26/05/2004 - [detsch] Ask and Ask_Option instead of "read -p"
+#                       When directory, changed to packagedir=`readlink -f "$1"`
+# 02/04/2004 - [detsch] Removed Source package code (obsoleted by Compile)
+# 08/12/2003 - [rafasgj] Removed RealPath
+# 12/11/2003 - [detsch] Included '.' in search path
+# 14/10/2003 - [detsch] Support for directories
+# 10/04/2003 - [hisham] Recursive search of packages
+# 07/07/2002 - [hisham] Step-by-step execution on source packages
+# 29/06/2002 - [hisham] Source packages!
+# 30/05/2002 - [hisham] 's' option, better checks
+# 27/04/2002 - [hisham] First version
+
+### Options ###################################################################
+
+scriptDescription="Install GoboLinux packages."
+scriptCredits="Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<package_file>|<package_dir>"
+scriptExample="Gimp--2.0.5.tar.gz"
+scriptNotes="Default behavior for --same is 'cancel', for --old is 'keep'.
+   Notice that 'remove' may be dangerous for important system packages
+   as it can leave the system in an inconsistent state during installation."
+Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
+Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
+Add_Option_Boolean "I" "no-install" "Do not install, only locate and fetch the package.
+        Automatically enables '--keep'"
+Add_Option_Boolean "k" "keep" "Do not remove downloaded packages."
+Add_Option_Boolean "c" "verify" "Verify package checksum and sig."
+Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
+        'keep', 'remove', 'ask' or 'cancel'." "ask"
+Add_Option_Entry "o" "old" "What to do with a previously existing
+        version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
+Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
+  
+Add_Option_Boolean "A" "dont-ask-confirmation" "Ask for confirmation."
+
+
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+if [ "$goboInstall" = "" ]
+then
+    export goboInstall="$goboPrograms"
+fi
+
+Boolean "batch"      && batch="--batch"
+Boolean "keep"       && keep="--keep"
+Boolean "no-install" && noinstall="--no-install" && keep="--keep"
+Boolean "dont-ask-confirmation" && dontask="--dont-ask-confirmation"
+Is_Writable "${goboPrograms}" || Verify_Superuser
+Is_Writable "${goboInstall}"  || Verify_Superuser
+
+# if $1 is an url: 
+#  1 - Download; 
+#  2 - Call InstallPackage on local file; 
+#  3 - Remove local file (if not '--keep').
+
+if Is_URL "$1"
+then
+   if [ "${batch}" ] || [ "${dontask}" ] || { Ask_Continue "Downloading $1" ;}
+   then
+      #rm -f ${goboTemp}/`basename $1`
+      Log_Normal "Downloading package to ${goboTemp}/`basename $1`."
+      wget -c $1 -O ${goboTemp}/`basename $1` || Die "Error downloading package."
+      
+      if [ "${keep}" ]
+      then   
+         . "${goboSettings}/Scripts/GetAvailable.conf"
+         [ -d ${defaultLocalPackagesPaths[0]} ] || mkdir -p ${defaultLocalPackagesPaths[0]}
+         Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/`basename $1`."
+         
+         if mv ${goboTemp}/`basename $1` ${defaultLocalPackagesPaths[0]}/`basename $1` 
+         then 
+            InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1` 
+         else
+            Log_Error "Coud not move package."
+            InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+         fi
+      else
+         InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+         Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
+         rm -f ${goboTemp}/`basename $1`
+      fi
+      exit 0
+   else
+      Log_Normal "Package installation aborted."
+      exit 1
+   fi
+fi
+
+# if $1 is not a existing file nor a existing directory: 
+#  1 - Try to find a package matching the exact version, or try to find any package for that program;
+#  2 - Calls InstallPackage passing the found url, or abort.
+
+if [ ! -e "$1" ]
+then
+   # checking if there is not a '/' in $1
+   if ! { echo "$1" | Quiet grep "/" ;} 
+   then
+      Log_Normal "Locating a binary package for $1 $2..."
+      noweb=`Forward_Boolean_Entry "no-web"` 
+      if [ $2 ] 
+      then 
+         found=`FindPackage $noweb $1 $2`
+         if [ "${found}" ]
+         then 
+            Log_Normal "Found package for $1 $2: ${found}"
+            InstallPackage ${noinstall} ${keep} ${batch} "${found}"
+         else
+            Die "Package for $1 $2 not found."
+         fi
+      else
+         found=`FindPackage $noweb $1`
+         if [ "${found}" ]
+         then
+            Log_Normal "Found package for $1: ${found}"
+            InstallPackage ${dontask} ${noinstall} ${keep} ${batch} "${found}"
+         else
+            Die "Package for $1 not found."
+         fi
+      fi
+      exit 0
+   else     
+      Die "$1 is not an existing file or directory."
+   fi
+fi
+
+
+if [ "${noinstall}" ] 
+then
+   Log_Normal "Skipping instalation of $1."
+   exit 0
+fi
+
+if [ -d "$1" ] # $1 is a directory
+then
+   if [ -L "$1/../Current" ]
+   then
+      packagedir=`readlink -f "$1"`
+   elif [ -L "$1/Current" ]
+   then
+      packagedir=`readlink -f "$1/Current"`
+   else
+      Die "$1 does not seem to be a valid GoboLinux package."
+   fi
+
+   basedir=`echo "$packagedir" | sed 's/\(.*\)\/\([^\/].*\)\/\([^\/].*\)/\1/'`
+   if [ "$basedir" == "${goboPrograms}" ]
+   then
+      Die "Source and destination directory are the same ($packagedir)"
+   fi
+
+   packagename=`Get_Token    "$packagedir" "/" "-2"`
+   packageversion=`Get_Token "$packagedir" "/" "-1"`
+   packagearch="i686" # General assumption
+   packagetype="directory"
+
+else # $1 is a file
+   if ! { echo "$1" | grep -- "--" &> /dev/null ;}
+   then
+      Die "$1 does not seem to be a valid GoboLinux package."
+   fi
+
+   # Removing all possible extensions...
+   noext=`basename "$1"`
+   for extension in ".gz" ".bz2" ".zip" ".tgz" ".tbz" ".tar"
+   do
+      noext=`basename "$noext" "$extension"`
+   done
+      
+   packagename=`Get_Token    "$noext" "--" "0"`
+   packageversion=`Get_Token "$noext" "--" "1"`
+   if echo "$noext" | Quiet grep ".*--.*--.*"
+   then
+      packagearch=`Get_Token "$noext" "--" "2"`
+   else
+      packagearch="i686" # All old packages are i686
+   fi
+   packagetype="file"
+   
+   packageversion=`echo $packageversion | sed 's/-PersonalBackup//'`
+   archive=`readlink -f "$1"`
+fi
+
+unset sameversion
+
+existingpackage=`ls ${goboPrograms} | grep -i "^$packagename$"`
+
+[ "$existingpackage" ] && {
+
+   Is_Entry "old" "cancel" && Pass_Away "An old version of $packagename already exists."
+   Is_Entry "old" "remove" && doremove=yes
+   Is_Entry "old" "ask" && {
+      Log_Terse "Another version of this package already exists."
+      doremove=yes
+      doask=yes
+   }
+   
+   existingversion=$(Which_Version "${goboPrograms}/$existingpackage/Current")
+   
+   [ "$packageversion" = "$existingversion" ] && {
+      Is_Entry "same" "cancel" && Pass_Away "Attempting to install $packagename over same version."
+      Is_Entry "same" "remove" && doremove=yes
+      Is_Entry "same" "ask" && {
+         Log_Question "An installation of this same version already exists."
+         doremove=yes
+         doask=yes
+      }
+   }
+}
+
+function try_remove() {
+   [ "$doremove" = "yes" ] && {
+      [ "$doask" = "yes" ] && {
+         Ask_Option "Remove existing? [R]emove/[k]eep/[c]ancel "
+         echo
+         [ "$REPLY" = "C" -o "$REPLY" = "c" ] && exit 1
+         [ "$REPLY" = "K" -o "$REPLY" = "k" ] && return
+      }
+      rm -rf "${goboPrograms}/$existingpackage/$existingversion"
+   }
+}
+
+try_remove
+
+if Boolean "batch" || [ "${dontask}" ]
+then
+   Log_Normal "Installing $packagename, version $packageversion."
+else
+   Ask_Continue "Installing $packagename, version $packageversion."
+fi
+
+if [ "$goboInstall" != "$goboPrograms" ]
+then
+    if ! Is_Directory "${goboPrograms}/$packagename/$packageversion"
+    then
+       Make_Directory "${goboInstall}/$packagename/$packageversion"
+       Make_Directory "${goboPrograms}/$packagename"
+       ln -nsf "${goboInstall}/$packagename/$packageversion" "${goboPrograms}/$packagename/$packageversion"
+    fi
+fi
+
+if [ "$packagetype" = "directory" ]
+then
+   if [ ! -d ${goboPrograms}/$packagename ]
+      then mkdir ${goboPrograms}/$packagename
+   fi
+   cp -ra "$packagedir" "${goboPrograms}/$packagename"
+else
+   # XXX should use aunpack
+   if Is_Extension "bz2" "$archive"
+   then taroption="jxvpf"
+   else taroption="zxvpf"
+   fi
+
+   Log_Normal "Uncompressing to ${goboPrograms}..."
+   tar "$taroption" "$archive" --backup=numbered -C ${goboPrograms} >&$verboseFD
+fi
+
+if Boolean "verify"
+then
+   VerifyProgram "$packagename" "$packageversion"
+#   Succeeded || Die "Unable to verify $1"
+fi
+
+cd "${goboPrograms}/$packagename"
+ln -sfn "$packageversion" "Current"
+
+#Backward compatibility:
+if [ -d "Current/Wrappers" ]
+then
+    Log_Normal "Moving \"Wrappers\" directory inside \"Resources\""
+    [ -d "Current/Resources" ] || mkdir "Current/Resources"
+    mv "Current/Wrappers" "Current/Resources"
+fi
+if [ -d "Current/Defaults" ]
+then
+    Log_Normal "Moving \"Defaults\" directory inside \"Resources\""
+    [ -d "Current/Resources" ] || mkdir "Current/Resources"
+    mv "Current/Defaults" "Current/Resources/"
+fi
+Quiet cd -
+
+
+if [ "$packagename" = "Scripts" ]
+then
+    cd "${goboPrograms}/$packagename/Current/bin"
+    PATH=$PWD:$PATH ./SymlinkProgram Scripts
+    Quiet cd -
+    exit 0
+fi
+
+SymlinkProgram "$packagename" "$packageversion"
+
+
+if ! Boolean "no-dependencies"
+then
+   Dependencies -c -h ${batch} -e $0 "$packagename" "$packageversion"
+fi
+
+Log_Verbose "Done."
+if [ "$existingpackage" ]
+then
+   if [ "$existingpackage" != "$packagename" ]
+   then
+      Log_Verbose "The capitalization of the package name has changed"
+      Log_Verbose "from '$existingpackage' to '$packagename'."
+   fi
+fi

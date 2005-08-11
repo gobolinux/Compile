@@ -1,0 +1,474 @@
+#!/usr/bin/python
+
+#
+# GetAvailable
+#  Get available packages, recipes and tracked versions.
+#
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+#
+
+
+### Changelog ###############################################################
+
+# 12/11/2004 - [detsch] Two small fixes regarding Recipes matching
+# 07/09/2004 - [detsch] Parsing GetAvailable.conf
+# 08/07/2004 - [detsch] First version, mostly based on Manager source code
+# 
+
+import os.path, sys, string, time, os, threading
+
+from PythonUtils import *
+
+#removing files from old cachedir
+os.system('rm -rf ~/.Scripts/available_cache &> /dev/null')
+os.system('rmdir ~/.Scripts/ &> /dev/null')
+
+cacheDir = os.path.expanduser('~/.Settings/cache/')
+
+def loadConfig() :
+	goboSettings = getGoboVariable('goboSettings')
+	
+	tr = {}
+	for i in ['timeout'] :
+		try :
+			tr[i] = getGoboVariable(i, 'Scripts/GetAvailable.conf')
+		except :
+			tr[i] = 0
+	
+	for i in ['defaultLocalPackagesPaths'] :
+		try :
+			tr[i] = getGoboVariable(i, 'Scripts/GetAvailable.conf', True)
+		except :
+			tr[i] = []
+			
+	for listType in ['contribPackagesLists', 'officialPackagesLists', 'trackedVersionsLists'] :
+		try :
+			tr[listType] = getGoboVariable(listType, 'Scripts/GetAvailable.conf', True)
+			for j in range(len(tr[listType])) :
+				if '.' in tr[listType][j].split('/')[-1] :
+					extension = '.' + tr[listType][j].split('/')[-1].split('.')[-1]
+				else :
+					extension = ''
+				tr[listType][j] = (tr[listType][j], listType+str(j)+extension)
+
+		except :
+			tr[listType] = []
+			
+	tr['defaultLocalPackagesPaths'] = map(os.path.abspath, tr['defaultLocalPackagesPaths'])
+	tr['defaultLocalPackagesPaths'] = map(os.path.expanduser, tr['defaultLocalPackagesPaths'])
+
+	
+	return tr
+	
+globalSettings = loadConfig()
+
+downloadedCount = 0
+
+def downloadFiles(files, force = False, hook = None, message = '') :
+	global downloadedCount
+	downloadedCount = 0
+	
+	def doDownload(url, localfile, timeout = 10) :
+		has_wget = not os.system('wget --help &> /dev/null')
+		if has_wget :
+			cmd = 'wget --timeout=%d --quiet %s -O %s && touch %s'%(timeout, url, localfile, localfile)
+			os.popen(cmd)
+		else :
+			try :
+				urllib.urlretrieve(url, localfile)
+			except :
+				sys.stderr.write('Timeout\n')
+
+		global downloadedCount
+		downloadedCount = downloadedCount + 1
+		if hook :
+			hook(message, downloadedCount, len(files), False)
+			
+	
+	threads = []
+	if files and not os.access(cacheDir, os.W_OK) :
+		os.makedirs(cacheDir)
+	
+	# Clean up old and empty files
+	currentTime = time.time()
+	ageLimit = 60*60 # an hour
+	for filename in os.listdir(cacheDir) :
+		st = os.stat(cacheDir+filename)
+		if st.st_size == 0 or currentTime > (ageLimit + st.st_mtime) :
+			os.unlink(cacheDir+filename)
+	
+	timeout = int(globalSettings['timeout'])
+	
+	for url, filename in files :
+		if force or not os.access(cacheDir+filename, os.R_OK) : # or time.time() > (60*60 + os.stat(cacheDir+filename).st_mtime) :
+			import urllib
+			t = threading.Thread(target=doDownload, args=(url, cacheDir+filename, timeout))
+			t.setDaemon(True) # program exits on long timeout
+			t.start()
+			threads.append(t)
+ 		else :
+			downloadedCount = downloadedCount + 1
+
+	if threads and hook :
+		hook(message, downloadedCount, len(files))
+	
+	begin = time.time()
+	try :
+		for thread in threads :
+			loopStartDownloadedCount = downloadedCount
+			while downloadedCount < len(files) and loopStartDownloadedCount == downloadedCount:
+				waitTime = 0.05
+				if hook :
+					aborted = hook(message, downloadedCount, len(files), False)
+					if aborted :
+						return downloadedCount >= len(threads)
+					
+				#if (timeout + begin) > time.time() :
+				thread.join(waitTime)
+				#else :
+				#	sys.stderr.write('<Timeout>')
+				#	if not hook :
+				#		sys.stderr.write('\n')
+				#	return downloadedCount >= len(threads)
+	except KeyboardInterrupt:
+		sys.stderr.write('<Interrupted>')
+		if not hook :
+			sys.stderr.write('\n')
+		
+	# returns false if a timeout has occured
+	return downloadedCount >= len(threads)
+	
+
+def UpdateCache(types, force = True, hook = None) :
+	files = []
+	
+	if 'official_package' in types :
+		for url, file in globalSettings['officialPackagesLists'] :
+			files.append((url, file))
+
+	if 'contrib_package' in types :
+		for url, file in globalSettings['contribPackagesLists'] :
+			files.append((url, file))
+	
+	if 'recipe' in types :
+		compileRecipeDirs, getRecipeStores = getCompileOptions()
+		i=0
+		for getRecipeStore in getRecipeStores :
+			files.append((getRecipeStore+'/MANIFEST.bz2', 'RecipeList'+str(i)+'.bz2'))
+			i = i + 1
+	
+	if 'tracked' in types :
+		for url, file in globalSettings['trackedVersionsLists'] :
+			files.append((url, file))
+		
+	if not files:
+		return
+	
+	ret = downloadFiles(files, force, hook, 'Downloading updated remote lists')
+	return ret
+
+def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
+	import os, os.path
+
+	if not d :
+		d = KeyInsensitiveDict();
+	
+	if not os.path.isdir(directory) :
+		return d
+
+	programs = os.listdir(directory)
+
+	for i in range(len(programs)) :
+		p = programs[i]
+		
+		if p == 'Linux' and requireCurrent :
+			continue
+		
+		if not os.path.isdir(directory+'/'+p):
+			continue
+
+		try :
+			ds = os.listdir(directory+'/'+p)
+		except :
+			return d
+		
+		if requireCurrent and not 'Current' in ds :
+			continue
+		
+		versions = [ v for v in ds if v not in ['Current', 'Settings', 'Variable', 'Headers'] ]
+		versions = [ v for v in versions if os.path.isdir(directory+'/'+p+'/'+v) ]
+
+		# Verify: what to do with an empty program entrie?
+		if not versions :
+			continue
+		
+		if not d.has_key(p) :
+			d[p] = {}
+		
+		for v in versions:
+			# detsch, 12/11/2004: quick fix -> if not requireCurrent, assuming it is looking for recipes
+			if not requireCurrent and not os.access(directory+'/'+p+'/'+v+'/'+'Recipe', os.R_OK) :
+				continue
+
+			if not d[p].has_key(v) :
+				d[p][v] = []
+			d[p][v].append(directory+'/'+p+'/'+v)
+			
+	return d
+
+def getPackedLocalPackages(directory, d = None) :
+	import os.path
+	if directory and directory[-1] != '/' :
+		directory = directory + '/'
+	
+	if not d : 
+		d = KeyInsensitiveDict()
+		
+	if not os.path.isdir(directory) :
+		return d
+		
+	files = os.listdir(directory)
+	for file in files :
+		l = file.split('--')
+		if len(l) > 2 :
+			if not d.has_key(l[0]) :
+				d[l[0]] = {}
+			if not d[l[0]].has_key(l[1]) :
+				d[l[0]][l[1]] = []
+			d[l[0]][l[1]].append(directory+file)
+	return d
+
+def getVersionsFromList(file, d = None) :
+	try :
+		if file[-4:] == '.bz2' :
+			import bz2
+			f = bz2.BZ2File(file)
+		elif file[-3:] == '.gz' :
+			import gzip
+			f = gzip.GzipFile(file)
+		else :
+			f = open(file)
+			
+		lines = f.readlines()
+		f.close()
+
+		if not d :
+			d = KeyInsensitiveDict()
+	except :
+		return d
+	
+	for line in lines :
+		l = line.split()
+		if len(l) >= 2 :
+			d[l[0]] = {}
+			d[l[0]][l[1]] = [str(l[0])+' '+str(l[1])+ ' ' + '<TRACKED>' ]
+	return d
+
+def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
+	if path_prefix and path_prefix[-1] != '/' :
+		path_prefix = path_prefix + '/'
+	
+	if not d : 
+		d = KeyInsensitiveDict()
+	
+	try :
+		if file[-4:] == '.bz2' :
+			import bz2
+			f = bz2.BZ2File(file)
+		elif file[-3:] == '.gz' :
+			import gzip
+			f = gzip.GzipFile(file)
+		else :
+			f = open(file)
+			
+		lines = f.readlines()
+		f.close()
+		
+		for line in lines :
+			l = line.split('--')
+			if len(l) > 2 :
+				if not d.has_key(l[0]) :
+					d[l[0]] = {}
+				
+				if not d[l[0]].has_key(l[1]) :
+					d[l[0]][l[1]] = []
+				d[l[0]][l[1]].append(path_prefix+line.strip())
+		return d
+	except :
+		return d
+
+
+def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, availables = None, accessWeb = True, doNotUpdate = False) :
+	if 'recipe' in types :
+		compileRecipeDirs, getRecipeStores = getCompileOptions()
+
+	if not availables :
+		availables = {}
+	
+	if 'local_package' in types :
+		if not availables.has_key('local_package') or not availables['local_package'] :
+			availables['local_package'] = {}
+		
+		if not availables['local_package'].has_key('programs') or not availables['local_package']['programs']:
+			availables['local_package']['programs'] = KeyInsensitiveDict()
+
+		if not localdirs :
+			localdirs = globalSettings['defaultLocalPackagesPaths']
+		
+		import os
+		for directory in localdirs :
+			getPackedLocalPackages(os.path.expanduser(directory.strip()), availables['local_package']['programs'])
+			getUnpackedLocalPackages(os.path.expanduser(directory.strip()), True, availables['local_package']['programs'])
+
+	if accessWeb and (not doNotUpdate or forceupdate):
+		UpdateCache(types, forceupdate, hook)
+
+	if hook :
+		hook('Loading lists', 0, 4)
+	
+	
+	if 'official_package' in types :
+		if not availables.has_key('official_package') or not availables['official_package']:
+			availables['official_package'] = {}
+		availables['official_package']['programs']= KeyInsensitiveDict()
+		for url, file in globalSettings['officialPackagesLists'] :
+			availables['official_package']['programs'] = getVersionsFromPackagesList(cacheDir+'/'+file, string.join(url.split('/')[:-1], '/'), availables['official_package']['programs'])
+
+	if hook :
+		hook('Loading lists', 1, 4)
+		
+	if 'contrib_package' in types :
+		if not availables.has_key('contrib_package') or not availables['contrib_package']:
+			availables['contrib_package'] = {}
+		
+		availables['contrib_package']['programs']= KeyInsensitiveDict()
+		for url, file in globalSettings['contribPackagesLists'] :
+			availables['contrib_package']['programs'] = getVersionsFromPackagesList(cacheDir+'/'+file, string.join(url.split('/')[:-1], '/'), availables['contrib_package']['programs'])
+
+	if hook :
+		hook('Loading lists', 2, 4)
+
+	if 'recipe' in types :
+		if not availables.has_key('recipe') or not availables['recipe'] :
+			availables['recipe'] = {}
+			
+		if not availables['recipe'].has_key('programs') or not availables['recipe']['programs'] :
+			availables['recipe']['programs'] = KeyInsensitiveDict()
+		
+		# searches local recipes first
+		for compileRecipeDir in compileRecipeDirs :
+			availables['recipe']['programs'] = getPackedLocalPackages(compileRecipeDir, availables['recipe']['programs'])
+			availables['recipe']['programs'] = getUnpackedLocalPackages(compileRecipeDir,  False, availables['recipe']['programs'])
+		
+		if accessWeb :
+			i=0
+			for getRecipeStore in getRecipeStores :
+				availables['recipe']['programs'] = getVersionsFromPackagesList(cacheDir+'/RecipeList'+str(i)+'.bz2', getRecipeStore, availables['recipe']['programs'])
+				i = i + 1
+			
+	if hook :
+		hook('Loading lists', 3, 4)
+	
+	if 'tracked' in types :
+		if not availables.has_key('tracked') or not availables['tracked']:
+			availables['tracked'] = {}
+		availables['tracked']['programs']= KeyInsensitiveDict()
+		for url, file in globalSettings['trackedVersionsLists'] :
+			availables['tracked']['programs'] = getVersionsFromList(cacheDir+'/'+file, availables['tracked']['programs'])
+		
+	if hook :
+		hook('Loading lists', 4, 4)
+		
+	return availables
+
+
+#############################################################################
+#  'main()'
+#############################################################################
+
+if __name__ == '__main__' :
+	import sys
+	import getopt, os
+
+	try :
+		opts, args = getopt.getopt(sys.argv[1:], 't:Wh', ['types=', 'local-dirs=', 'full-list', 'force-update', 'no-web', 'help'])
+	except getopt.GetoptError, detail :
+		print sys.argv[0].split('/')[-1]+': '+str(detail)
+		sys.exit(1)
+
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	types      = [ 'local_package', 'official_package' ]
+	typesChanged = False
+	localdirs = None
+	forceupdate = False
+	noWeb = False
+	
+	for o, a in opts :
+		if o in ['--types','--type', '-t'] :
+			typesChanged = True
+			types = a.split(',')
+			for i in range(len(types)) :
+				if len (types[i]) == 1 :
+					for t in validTypes :
+						if types[i][0] == t[0] :
+							types[i] = t
+							break
+			if 'all' in types :
+				types = validTypes[:-1] # don't include 'all'
+		if o == '--local-dirs' :
+			localdirs = a.split(',')
+		elif o == '--force-update' :
+			forceupdate = True
+		elif o in ['--no-web', '-W'] :
+			noWeb = True
+			if not typesChanged :
+				types =  [ 'local_package' ]
+		elif o in ['--help', '-h'] :
+			print """
+GetAvailable
+ Get available packages, recipes and tracked versions.
+ 
+
+Options:
+ -t [t1,t2,...]
+ --types=[t1,t2,...]  sets what kind of packages can be searched, in the 
+                      passed order. Valid types are: 
+                       local_package, official_package, contrib_package, 
+                       recipe, tracked, all
+                      using only the first character from any of the above 
+                      is also valid:
+                       l, o, c, r, t, a     
+                      Default types are:
+                       local_package, official_package
+                      notice that when "recipe" type is used, Compile.conf is 
+                      read to set recipe-store locations and local recipes 
+                      locations. 
+ 
+ --local-dirs=[d1,..] where to look for local binary packages. By default,
+                      uses the paths defined at GetAvailable.conf
+
+ --force-update       downloads required packages list even if there is a
+                      local copy (cached in ~/.Settings/cache/) newer than one hour.
+
+ -W, --no-web         do not try to download anything and don't lists 
+                      remote recipes and packages (if not explicitly listed
+                      in '--types='). Overrides '--force-update'
+ 
+Examples of usage:
+ GetAvailable --types=recipe
+ 
+ """
+			sys.exit(0)
+	
+	
+	hook = consoleProgressHook
+	
+	availables = GetAvailable(types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)
+
+	for t in availables.keys() :
+		for p in caseinsensitive_sort(availables[t]['programs'].keys()) :
+			for v in availables[t]['programs'][p].keys() :
+				print t,p,v,availables[t]['programs'][p][v]
+	
+	#print availables
+	

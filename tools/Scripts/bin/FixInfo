@@ -1,0 +1,64 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import Log
+Import OptionParser
+
+### Changelog #################################################################
+
+# 31/05/2003 - [hisham] Minor updates/cleanups
+# 03/01/2003 - [hisham] Uses the option parser
+# 24/12/2002 - [lmb] First version
+
+### Options ###################################################################
+
+scriptDescription="Remakes the entries in the info 'dir' file."
+scriptCredits="Copyright (C) 2002-2003 Leandro Motta Barros. Released under the GNU GPL."
+Add_Option_Entry "m" "mode" "Operation mode: 'links', 'dir' or 'both'." "both"
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+
+# if mode=links or mode=both...
+Is_Entry "mode" "dir" || {
+
+Log_Verbose "Removing previous info files..."
+rm "${goboManuals}/info"/*
+
+Log_Verbose "Symlinking info files..."
+for prog in "${goboPrograms}"/*
+do
+   if Is_Directory "${prog}/Current/info"
+   then
+      ls -A "${prog}/Current/info" | while read basef
+      do
+         f="${prog}/Current/info/$basef"
+         if [ ! "$basef" == "dir" ]
+         then
+            if Is_File "${goboManuals}/info/`basename $f`"
+            then
+               echo "$basef will not be symlinked because it already exists."
+            else
+               ln -s $f "${goboManuals}/info/"
+            fi
+         fi
+      done
+   fi
+done
+
+}
+
+# if mode=dir or mode=both...
+Is_Entry "mode" "links" || {
+
+rm "${goboManuals}/info/dir"
+
+Log_Verbose "Creating 'dir' file..."
+for f in `ls -1 "${goboManuals}/info/" | grep "[^0-9]$"`
+do
+   install-info "${goboManuals}/info/$f" "${goboManuals}/info/dir"
+done
+
+}

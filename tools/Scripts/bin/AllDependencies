@@ -1,0 +1,65 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
+#                       Initial Changelog entry
+
+. ScriptFunctions
+Import OptionParser
+
+scriptDescription="Show the entire dependency hierarchy for a package."
+scriptCredits="(C) 2003 Hisham H. Muhammad. Relesed under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<package> [<version>]"
+scriptExample="-t -r GTK+"
+Add_Option_Boolean "t" "tree" "Hierarchic view."
+Add_Option_Boolean "L" "no-list" "Don't use the 'cached' dependency file, recompute everything."
+Add_Option_Boolean "r" "repeat" "Allow repeated entries (circular dependencies will loop endlessly!)"
+Parse_Options "$@"
+shift "$parsedArguments"
+
+scanned=()
+
+function append_list() {
+   list="$1"
+   shift
+   eval "$list=(\${$list[@]}" "$@" ")"
+}
+
+function already_scanned() {
+   for prog in "${scanned[@]}"
+   do
+      if [ "$prog" = "$1" ]
+      then
+         return 0
+      fi
+   done
+   return 1
+}
+
+function check_program() {
+   [ "$1" = "Glibc" ] && return 0
+   if Boolean "repeat" || ! already_scanned "$1"
+   then
+      append_list scanned "$1"
+      if Boolean "tree"
+      then
+         echo "$3$1" "$2"
+      else
+         echo "$1" "$2"
+      fi
+      for dep in `Dependencies $uselist "$1" "$2" 2> /dev/null | sed 's/ /@/g' | grep -v "#"`
+      do
+         name=`echo "$dep" | cut -d"@" -f1`
+         ver=`echo "$dep" | cut -d"@" -f2`
+         check_program "$name" "$ver" "   $3"
+      done
+   fi
+}
+
+uselist="--list"
+Boolean "no-list" && uselist=""
+
+program_name=`GuessProgramCase $1 $2`
+check_program "$program_name" "$2"

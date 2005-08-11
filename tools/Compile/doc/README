@@ -1,0 +1,306 @@
+
+Configuration
+`````````````
+
+Configuration is performed at Compile.conf. You can store per-user
+customized settings at ~/.Compile.conf. In particular, the
+compileRecipeDirs array can be used to specify a list of recipe trees.
+
+Shell functions
+```````````````
+
+Besides the declarative variables, recipes can also contain imperative
+commands, in form of shell functions. This is the order the functions
+are called for each operation mode:
+
+compileprogram:
+   pre_build()
+   configure
+   make
+   pre_install()
+   make install
+   pre_link()
+   symlink
+   post_install()
+
+makefile:
+   pre_build()
+   make
+   pre_install()
+   make install
+   pre_link()
+   symlink
+   post_install()
+
+perl:
+   same as 'makefile'
+
+python:
+   pre_build()
+   python setup.py build
+   pre_install()
+   python setup.py install
+   pre_link()
+   symlink
+   post_install()
+
+xmkmf:
+   pre_build()
+   xmkmf
+   make
+   pre_install()
+   make install
+   pre_link()
+   symlink
+   post_install()
+
+manifest:
+   pre_install()
+   copy files
+   pre_link()
+   symlink
+   post_install()
+
+Supported options:
+``````````````````
+
+Mode indicators:
+   is_compileprogram=yes
+   is_makefile=yes
+   is_xmkmf=yes
+   is_meta=yes
+   is_manifest=yes
+   is_perl=yes
+
+compile_version=<version-number>
+   Valid modes: all
+   The version number of Compile used to create this recipe.
+
+environment=(<array of variables>)
+   Valid modes: all
+   Environment variables to be applied to the shell where
+   the compilation takes place. Each entry of the array must
+   be in the format "variable=value".
+   For example:
+   environment=(
+      "PYTHONOPTIMIZE=2"
+   )
+
+url=<url>
+urls=(<array of urls>)
+   Valid modes: all
+   The URL (or URLs) to be fetched in order to obtain the program's
+   source package(s). If the file exists partially, resumption is
+   attempted. FTP transfers are always performed in passive mode.
+
+mirror_url=<url>
+mirror_urls=(<array of urls>)
+   Valid modes: all
+   URLs to be used, in case the URLs listed in 'url'/'urls' fail.
+   Multiple mirrors may be specified. For sets of URLs, each mirror
+   needs to specify the same number of URLs.
+   For example:
+   urls=(
+      "http://www.main-site.org/file1"
+      "http://www.main-site.org/file2"
+   )
+   mirror_urls=(
+      "http://www.mirror1.org/file1"
+      "http://www.mirror1.org/file2"
+      "http://www.mirror2.org/file1"
+      "http://www.mirror2.org/file2"
+   )
+
+file=<filename>
+files=(<array of filenames>)
+   Valid modes: all
+   The name of the package file containing the program's sources.
+   If not specified, it is assumed to be the same as the final part
+   of the URL, after the last slash.
+   If "urls" is used instead of "url", "files" is expected to
+   contain the same number of entries as "urls". All of them are
+   unpacked relative to the same directory by default, unless
+   'drop_all_in_first_dir' is used, where files are unpacked relative
+   to "dirs[0]" (equivalent to "dir").
+
+unpack_files=inside_first
+unpack_files=contents_inside_first
+unpack_files=dirs
+   Valid modes: all
+   By default, all entries in "files" are unpacked in the same
+   directory. This flag can be used to override this behavior.
+   "inside_first" tells it to unpack "files[0]" and then unpack
+   all subsequent files inside it.
+   "contents_inside_first" tells it to unpack "files[0]" and then
+   put the contents of subsequent unpacked "dirs" entries inside it.
+   "dirs" tells it to use the directories explicitly specified in
+   the "dirs" array as destinations.
+   For example, if "files" is (foo.tar.gz bar.tar.gz) and
+   foo.tar.gz contains
+      foo/1      foo/2
+   and bar.tar.gz contains
+      foo/3      bar/4      bar/5
+   The default unpacking behavior, without redefining "dirs"
+   explicitly, generates:
+      foo/1      foo/2      foo/3      bar/3      bar/4
+   "unpack_files=inside_first" generates:
+      foo/1      foo/2      foo/foo/3      foo/bar/3      foo/bar/4
+   "unpack_files=contents_inside_first" generates:
+      foo/1      foo/2      foo/3      foo/4      foo/5
+   Using "dirs", virtually any path structure can be used. Since
+   the first entry in the "dirs" array is special, it is not used
+   by "unpack_files".
+   If any of the "dirs" entries contains the value of the "target"
+   array, the "keep_existing_target" is implied (it can still be
+   explicitly overridden in the recipe, but then the user might
+   delete the data that was just unpacked).
+
+docs=(<array of filenames>)
+   Valid modes: all
+   A list of filenames, relative to the program's sources root,
+   of files to be copied to the program's doc/ dir (or doc/$app/ 
+   for meta-packages)
+
+dir=<directory>
+dirs=(<array of directories>)
+   Valid modes: all
+   Indicates the directory to "cd" into after the package is unpacked.
+   If not specified, the name of the package file (stripped of its
+   extension) is assumed.
+   If "dirs" is used instead of "dir", "dirs" is expected to
+   contain the same number of entries as "urls".
+   The first entry in the array is special: the compilation method
+   is applied only on the first directory. To compile multiple packages
+   into a single program, use meta-packages ('is_meta').
+   The usage of "dirs" affects the way files are unpacked. See 
+   "unpack_files" for details.
+
+include=(<array of recipes>)
+   Valid modes: meta
+   In a meta-recipe, this array holds the list of recipes that should
+   be built to constitute the complete program. Recipe names should
+   be in the format "App--1.0". The order of the entries in the
+   array is significant, because it is the order in which the recipes
+   are built. Note: be careful with the order, because re-building
+   a meta-package that's already installed may cover up ordering
+   problems.
+
+keep_existing_target=yes
+   Valid modes: compileprogram, makefile
+   When set, it will not ask the user if they want to erase the
+   contents (if any) prior to compiling the program.
+   This is implicitly set if the "dirs" array contains any reference
+   to "target". See "unpack_files" for details.
+
+configure_options=(<array of options>)
+   Valid modes: compileprogram
+
+autogen_before_configure=yes
+   Valid_modes: compileprogram
+   Use it if you need to run ./autogen.sh in order to generate the configure
+   script.
+
+modify_configure=no
+   Valid modes: compileprogram
+
+build_variables=(<array of assignments>)
+   An array used when redefining variables for the first execution
+   of make
+   Example: build_variables=(
+      "DESTDIR=$target"
+      "MANDIR=$target/man/man1"
+   )
+   Valid modes: compileprogram, makefile
+
+install_variables=(<array of assignments>)
+   Variables to be passed to "make install".
+   Valid modes: compileprogram, makefile
+
+make_variables=(<array of assignments>)
+   Variables to be passed to both "make" and "make install".
+   A shorthand to avoid having to set everything twice, once
+   in build_variables and then again in install_variables.
+   Valid modes: compileprogram, makefile
+
+configure=<program name>
+   Valid modes: compileprogram
+
+makefile=<makefile name>
+   Valid modes: compileprogram, makefile, xmkmf
+
+build_target=<make target>
+   The target to be used when calling make or equivalent build
+   script/program to build the program.
+   Example: build_target=all
+   Valid modes: compileprogram, makefile, xmkmf, python
+
+install_target=<make target>
+   The target to be used when calling make or equivalent build
+   script/program to build the program.
+   Example: install_target=all
+   Valid modes: compileprogram, makefile, xmkmf, python
+
+do_build=no
+   Valid modes: makefile, python
+
+do_install=no
+   Valid modes: makefile, xmkmf, python
+
+needs_build_directory=yes
+   Valid modes: compileprogram
+
+needs_safe_linking=yes
+   Valid modes: all
+
+sandbox_options=(<array of options>)
+   Valid modes: all
+
+symlink_options=(<array of options>)
+   Valid modes: all
+
+manifest=(<array of "file:dir">)
+   Valid modes: manifest
+
+without=(<array of submodules>)
+   Valid modes: perl
+
+create_dirs_first=yes
+   Valid modes: compileprogram, makefile, perl
+
+python_options=(<array of options>)
+   Valid modes: python
+   Array of options to be passed to the Python build script.
+
+override_default_options=yes
+   Valid modes: python
+   Compile chooses some options by default according to
+   the specified target type for the Python build script.
+   Use this option to disable those options and have your own
+   options (given in python_options) overwrite instead of append
+   the option list.
+
+build_script=<name>
+   Valid modes: python
+   Specify the same for the Python build script. If none
+   is given, Compile tries a few default ones, such as setup.py.
+
+build_target=<name>
+   Valid modes: python
+
+Experimental options:
+`````````````````````
+cvs=<CVS server>
+   Valid modes: all
+   cvs=:pserver:anonymous@anoncvs.gimp.org:/cvs/gnome
+   
+cvs_module=<module name to co>
+   Valid modes: all
+   
+cvs_opts=<string added to cvs co operation>
+   Valid modes: all
+   
+is_interactive=yes
+build_command=<program name>
+build_answers=(<array of answers>)
+install_command=<program name>
+install_answers=(<array of answers>)

@@ -1,0 +1,173 @@
+#!/bin/sh (source)
+
+# Some utility functions for common tests
+function Make_Directory() { mkdir -p "$@" ;}
+
+function Exists() { [ -e "$1" ] ;}
+
+function Is_Alias() { alias "$1" &> /dev/null ;}
+
+function Is_Real_Directory() { [ -d "$1" -a ! -L "$1" ] ;}
+
+function Is_Directory() { [ -d "$1" ] ;}
+
+function Is_Executable() { [ -x "$1" ] ;}
+
+function Is_File() { [ -f "$1" ] ;}
+
+function Is_Process() { pidof "$1" &> /dev/null ;}
+
+function Is_Writable() { [ -w "$1" ] ;}
+
+function Is_Link() { [ -L "$1" -a -e "$1" ] ;}
+
+function Is_Broken_Link() { [ -L "$1" -a ! -e "$1" ] ;}
+
+function Make_Directory() {
+    Parameters "$@" dir
+    mkdir -p "$dir"
+}
+
+function Is_Empty_Directory() {
+   local anyfiles
+   anyfiles=`ls "$1" 2> /dev/null`
+   ! test "$anyfiles"
+}
+
+function Is_Nonempty_Directory() {
+   local anyfiles
+   anyfiles=`ls "$1" 2> /dev/null`
+   [ -d "$1" -a -n "$anyfiles" ]
+}
+
+function Assert_Dir() {
+   local dir=$1
+   if ! Is_Directory "$dir"
+   then
+      mkdir -p "$dir" || \
+      $sudo mkdir -p "$dir"
+      if [ "$?" != "0" ]
+      then
+         Die "Unable to create $dir"
+      fi
+   fi
+}
+
+# Returns the given filename if it does not exist,
+# or a variation if it does.
+# (not perfect due to multiuser/multitasking)
+function Unique_Name() {
+   if [ ! -e "$1" ]
+   then
+      echo "$1"
+      return
+   fi
+   local i=1
+   while [ -e "$1-$i" ]
+   do i=$[i+1]
+   done
+   echo "$1-$i"
+}
+
+# Returns a new temporary file
+function Temporary_File() {
+   mktemp "$goboTemp/$scriptName.temp.XXXXXXXX"
+}
+
+# Returns a new temporary directory
+function Temporary_Dir() {
+   mktemp -d "$goboTemp/$scriptName.temp.XXXXXXXX"
+}
+
+# Returns line $1 of file $2
+function Read_Line() {
+    head -n "$1" "$2" | tail -n 1
+}
+
+# Count lines of file $1 avoiding the "is-last-line-empty" problem
+function Count_Lines() {
+    cat -n "$1" | tail -1 | cut -b 1-7
+}
+
+function Is_Extension() {
+   Parameters "$@" extension filename
+   [ "`basename "$filename" "$extension"`" != "`basename $filename`" ]
+}
+
+#detsch, 23/08/2004
+function Is_URL() {
+   [ "`echo "$1" | cut -b-5`" = "http:" -o "`echo "$1" | cut -b-4`" = "ftp:" ]
+}
+
+#calica 14/09/2004 -
+function Line_Match() {
+   Exists "$1" || return $?
+   cat $1 | grep -E -e "^.*$2.*$" 2>&1 >/dev/null
+   [ "$?" = "0" ]
+}
+
+#calica 11-10-2004 - These routines handle package/recipe signing and verification
+function Gen_FileHash() {
+   Parameters "$@" prefix hash_file
+   local bname=`basename $hash_file`
+   # Validate password
+   $sudo -v
+   [ "$bname" ] && Is_Directory || $sudo mkdir -p "$bname"
+   # Below may seem odd.  We can't just Verify_Superuser script because
+   # gog must run as normal user.
+   Quiet pushd $prefix
+   $sudo find * -type f | grep -v "$hash_file" | $sudo xargs md5sum | $sudo tee "$hash_file" >/dev/null
+   Quiet popd
+}
+
+function Sign_File() {
+   Parameters "$@" file sig
+   
+   gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo tee "$sig"
+}
+
+function Check_FileHash() {
+### python check_filehashes CHANGELOG
+# 10/10/2004 - [calica] First version
+   Parameters "$@" prefix file
+   local rtn
+   
+   Quiet pushd $prefix
+   find * -type f | grep -v "$file" | python -c """
+import re, os, string, os.path, sys
+
+hashfile='$file'
+
+file_checksums={}
+errors=0
+
+hashes = file(hashfile, 'r')
+for line in hashes:
+   fields = re.split('\s+', line)
+   file_checksums[fields[1]]=fields[0]
+   
+# Walk file tree
+for line in sys.stdin:
+   line = line.rstrip()
+   try:
+      good_md5 = file_checksums[line]
+      test_md5 = re.split('\s+', os.popen('md5sum %s'%line).read().rstrip())[0]
+      del file_checksums[line]
+      if good_md5 != test_md5:
+         print line, 'has been modified!'
+         errors+=1
+   except:
+      print line, 'not found in hashfile'
+      errors+=1
+
+for missing in file_checksums:
+   print missing, 'is missing'
+   errors+=1
+      
+sys.exit(errors)
+
+"""
+   rtn=$?
+   Quiet popd
+   exit $rtn
+}

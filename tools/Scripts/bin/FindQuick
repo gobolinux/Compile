@@ -1,0 +1,53 @@
+#!/bin/sh
+
+. ScriptFunctions
+Import OptionParser
+Import String
+
+### Options ##########################################################
+
+helpOnNoArguments=yes
+scriptDescription="find files."
+scriptUsage="<file_to_search> [<path>]"
+scriptNotes='
+    if <file_to_search> contains "*", it is used directly
+    as an expression for the search. If not, "*" is added to the
+    beginning and the end.
+    if <path> is not specified, the working directory is assumed.
+'
+scriptExample="\"*.c\" ..
+    # Note the added quotes to avoid shell expansion."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Functions ########################################################
+
+function full_expression() {
+   echo "$1" | grep "\*" &> /dev/null
+}
+
+function is_path() {
+   echo "$1" | grep "/" &> /dev/null
+}
+
+### Operation ########################################################
+
+if full_expression "$@"
+then expression="$1"
+else expression="*$1*"
+fi
+
+if is_path "$@"
+then modetype=path
+else modetype=name
+fi
+
+if Has_Uppercase "$expression"
+then mode=-$modetype
+else mode=-i$modetype
+fi
+
+if [ "$2" ]
+then find $2/. $mode "$expression" -print
+else find . $mode "$expression" -print
+fi

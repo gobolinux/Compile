@@ -1,0 +1,51 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+Import String
+
+### Changelog #################################################################
+#
+# 10/10/2004 - [calica] Use Data/gpg/goboring.pub instead.
+# 2003/12/15 - [calica] First version
+
+### Options ###################################################################
+
+scriptDescription="Manage digital signature keys for GoboLinux packages."
+scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{ <key_file> }"
+Add_Option_Boolean "i" "import" "Import key"
+Add_Option_Boolean "l" "list" "List public keys"
+Parse_Options "$@"
+shift $parsedArguments
+
+### Utility functions #################################################################
+GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring} --no-default-keyring"
+
+
+### Parse options #######################################################################
+
+### --import: import key################################################
+
+if Boolean "import"
+then
+   Verify_Superuser
+   mkdir -p `basename $GPG_gobo_keyring`
+   gpg ${GPG_opts} --import "$@"
+   exit 0
+fi
+
+### --list: list public keys ########################################################
+
+if Boolean "list"
+then
+   gpg ${GPG_opts} --list-keys
+   exit 0
+fi
+

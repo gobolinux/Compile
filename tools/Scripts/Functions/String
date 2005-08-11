@@ -1,0 +1,70 @@
+#!/bin/sh (source)
+
+# //////////////////////////////////////////////////
+# STRING OPERATIONS
+# //////////////////////////////////////////////////
+
+function Is_Empty() { [ -z "$*" ] ;}
+
+function Has_Uppercase() {
+   echo "$1" | grep "[[:upper:]]" &> /dev/null
+}
+
+# example: Starts_With "oper" "operations"
+function Starts_With() {
+   l=${#1}                                           
+   [[ "${2:0:l}" = "$1" ]]
+}
+
+#detsch, 23/08/2004
+# example: Ends_With "tions" "operations"
+function Ends_With() {
+   l2=${#2}                                    
+   l3=$[ ${#2} - ${#1} ]
+   [[ "${2:l3:l2}" = "$1" ]]
+}
+
+function Has_Uppercase() {
+   echo "$1" | grep "[[:upper:]]" &> /dev/null
+}
+
+function Capitalize() {
+   python -c "
+
+import sys,string
+
+word = sys.argv[1]
+
+def breakWord(word):
+    for ch in ['-', '_']:
+        pos = string.find(word, ch)
+        if pos != -1:
+            return [ word[:pos], ch ] + breakWord(word[pos+1:])
+    return [ word ]
+
+parts = breakWord(word)
+for part in parts:
+    sys.stdout.write(string.capitalize(part))
+
+" "$1"
+}
+
+function Split() {
+   python -c "
+
+import sys,string
+sys.stdout.write(string.split(sys.argv[1]))
+
+" "$1"
+}
+
+#detsch, 23/08/2004
+# shell/sed/awk/cut implementation is welcome, but don't forget 
+# negative values at "$3"
+function Get_Token() {
+   python -c "
+import sys,string
+sys.stdout.write(string.split(sys.argv[1], sys.argv[2])[int(sys.argv[3])])
+" "$1" "$2" "$3"
+}
+

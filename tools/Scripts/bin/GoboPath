@@ -1,0 +1,68 @@
+#!/bin/sh
+
+### Changelog ############################################################
+
+# 06/08/2004 - [detsch] Moved 'export goboInstall=$goboPrograms'
+#                       to InstallPackage and PrepareProgram,
+#                       due to Rootless-on-GoboLinux issues
+# 03/08/2004 - [detsch] removed (readlink -f) when rootless 
+# 13/06/2004 - [calica] Add goboInstall variable
+#                       Initial Changelog entry
+
+# It's probably a bad idea to change some of those.
+
+export goboPrefix=
+if [ "$ROOTLESS_GOBOLINUX" ]
+then
+   export goboPrefix="${HOME}"
+else
+   if [ ! -z "$crossPrefixDir" -a "$1" = "Reload" ]
+   then export goboPrefix="$crossPrefixDir"
+   fi
+fi
+
+export goboUsers=${goboPrefix}/Users
+export goboMount=${goboPrefix}/Mount
+export goboPrograms=${goboPrefix}/Programs
+export goboSystem=${goboPrefix}/System
+
+#if [ "$goboInstall" = "" ]
+#then
+#    export goboInstall="$goboPrograms"
+#fi
+
+export goboScripts=${goboPrograms}/Scripts/Current/bin
+
+export goboLinks=${goboSystem}/Links
+export goboVariable=${goboSystem}/Variable
+export goboSettings=${goboSystem}/Settings
+export goboKernel=${goboSystem}/Kernel
+
+export goboExecutables=${goboLinks}/Executables
+export goboDaemons=${goboLinks}/Daemons
+export goboTasks=${goboLinks}/Tasks
+export goboLibraries=${goboLinks}/Libraries
+export goboHeaders=${goboLinks}/Headers
+export goboManuals=${goboLinks}/Manuals
+export goboShared=${goboLinks}/Shared
+export goboEnvironment=${goboLinks}/Environment
+
+export goboTemp=${goboVariable}/tmp
+
+export goboBoot=${goboKernel}/Boot
+export goboDevices=${goboKernel}/Devices
+export goboStatus=${goboKernel}/Status
+export goboObjects=${goboKernel}/Objects
+export goboModules=${goboKernel}/Modules
+
+if [ "$ROOTLESS_GOBOLINUX" ]
+then
+   export goboUsers=/home
+   export goboMount=/mnt
+   export goboTemp=/tmp
+   export goboStatus=/proc
+fi
+
+# This is relative to the user's home directory.
+
+export goboUserSettings=.Settings

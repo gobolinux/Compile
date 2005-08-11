@@ -1,0 +1,139 @@
+#!/bin/sh
+
+##################################################
+# Changelog
+##################################################
+
+# 21/06/2005 - [detsch] Dying on error fetching. 
+#              (do not checking for -e file, since even a 404 produces a file)
+# 23/08/2004 - [detsch] TODO: gen_md5 and gen_size on Recipe file
+#              rigth after downloading 
+# 06/02/2003 - [hisham] forked from Compile
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import Terminal
+Import GoboLinux
+Import Array
+
+##################################################
+# Options and configuration
+##################################################
+
+Parse_Conf Compile.conf
+Import Compile
+
+helpOnNoArguments=yes
+scriptDescription="Given a recipe, download the files required to compile it."
+scriptUsage="<recipe>"
+scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
+Parse_Options "$@"
+shift $parsedArguments
+
+if Is_Writable "$compileArchivesDir"
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+##################################################
+# Helper functions
+##################################################
+
+##################################################
+# Fundamental variables
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
+smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+if (( svnr > 5 )) || \
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle ]
+then
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+[ "$1" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
+
+recipe="$1"
+. "$recipe"
+
+##################################################
+# Get sources
+##################################################
+
+if ! [ -n "$url${urls[*]}" ]
+then Die "Missing URL in recipe '$recipe'."
+fi
+
+for var in url mirror_url file file_size file_md5
+do
+   eval '
+      if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
+      then '$var's=("$'$var'")
+      fi
+   '
+done
+
+if ! [ "${files[*]}" ]
+then files=(`Map basename "${urls[@]}"`)
+fi
+
+Quiet pushd "$compileArchivesDir"
+for i in `seq 0 $[${#urls[@]}-1]`
+do
+   if Exists "${files[i]}"
+   then
+      siz=`Get_Size "${files[i]}"`
+      md5=`Get_MD5 "${files[i]}"`
+      if [ -n "${file_sizes[i]}" ] && [ "${file_sizes[i]}" -eq "$siz" ]
+      then
+         if [ -z "${file_md5s[i]}" ]
+         then
+            Log_Normal "Warning: no MD5 checksum in recipe."
+            Log_Normal "Assuming file is complete based only in size."
+            continue
+         elif [ "${file_md5s[i]}" = "$md5" ]
+         then
+            Log_Verbose "File is complete and matches MD5 checksum."
+            continue
+         else
+            Log_Error "According to MD5 checksum in recipe, ${files[i]} is corrupted."
+            if Ask "Remove and download again?"
+            then rm "${files[i]}"
+            else continue
+            fi
+         fi
+      fi
+   fi
+
+   function wget_url() {
+      fileindex=$1
+      mirrorlevel=$2
+      urlcount="${#urls[@]}"
+      if [ "$mirrorlevel" = 0 ]
+      then fetch="${urls[fileindex]}"
+      else fetch="${mirror_urls[(mirrorlevel-1)*urlcount+fileindex]}"
+      fi
+      if [ -z "$fetch" ]
+      then
+         # Fail! No more mirrors!
+         return 1
+      fi
+      $sudo wget -O "${files[fileindex]}" -c --passive-ftp "$fetch" || {
+         wget_url "$fileindex" "$[mirrorlevel+1]"
+      }
+   }
+
+   wget_url "$i" 0 || {
+      Die "Could not fetch '$url'."
+      #if ! Exists "${files[i]}"
+      #then Die "Could not fetch '$url'."
+      #fi
+   }
+done
+Quiet popd

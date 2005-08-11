@@ -1,0 +1,78 @@
+#!/bin/bash
+
+### Global Bash settings.
+### Source this in your .bashrc to have it applied to your shell.
+
+# This line has to come first
+export SHELL=/bin/bash
+
+source ${goboPrefix}/System/Settings/completion.bash
+
+shopt -s cdable_vars cdspell checkhash checkwinsize histappend histreedit histverify 
+
+eval `dircolors`
+
+alias ll='ls -la'
+alias ls='ls --color=tty'
+alias sl='ls'
+alias lsd='find -type d -maxdepth 1'
+alias lsh='ls -A .* -d'
+alias mkdir='mkdir -p'
+alias man='pinfo'
+alias info='pinfo'
+alias off='clear ; shutdown -h -t 0 now "This system is powering off now."'
+
+unset OPS1
+
+#function su() {
+# [ "$@" ] && /sbin/su "$@" || /sbin/su gobo
+#}
+
+
+function pd() {
+ [ -z "$*" ] && param="$HOME" || param="$*"
+ [ "$OPS1" ] || OPS1="$PS1"
+ pushd "$param"
+ DRS="`dirs -p | sed 's@/.*/.*/@.../@g' | tail -n +2 | tac | xargs echo`"
+ [ "$DRS" ] && DRS="$DRS "
+ PS1="`echo $OPS1 | sed "s@.w@$DRS&@"`"
+}
+
+function p() {
+ [ "$OPS1" ] || OPS1="$PS1"
+ popd
+ DRS="`dirs -p | sed 's@/.*/.*/@.../@g' | tail -n +2 | tac | xargs echo`"
+ [ "$DRS" ] && DRS="$DRS "
+ PS1="`echo $OPS1 | sed "s@.w@$DRS&@"`"
+}
+
+export PS1="\[\033[0;36m\]\u\[\033[1m\]@\[\033[0;36m\]\h \[\033[1m\]\w]\[\033[0m\]"
+
+#export QTDIR="/Programs/QT/Current/bin"
+#export KDEDIR="/Programs/KDE/Current/bin"
+
+export PAGER=less
+export LESS=-MQi
+export LESSCHARSET=latin1
+export EDITOR=mcedit
+export VISUAL=$EDITOR
+export HISTCONTROL=ignoredups
+
+
+export               PATH="${goboPrefix}/System/Links/Executables:${PATH}:."
+export            MANPATH="${goboPrefix}/System/Links/Manuals:${MANPATH}"
+export           INFOPATH="${goboPrefix}/System/Links/Manuals/info:${INFOPATH}"
+export    LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries:${LD_LIBRARY_PATH}"
+export     C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers:${C_INCLUDE_PATH}"
+export CPLUS_INCLUDE_PATH="${goboPrefix}/System/Links/Headers:${CPLUS_INCLUDE_PATH}"
+
+
+# java plugin netscape
+#export NPX_PLUGIN_PATH=/Programs/JDK/Current/jre/plugin/i386/ns4/
+#export CLASSPATH=$CLASSPATH:/Programs/Netscape/Current/java/classes/java40.jar
+
+envcachefile="${goboPrefix}/System/Links/Environment/Cache"
+[[ -e "$envcachefile" ]] || cat "${goboPrefix}/System/Links/Environment"/* > "$envcachefile"
+source "$envcachefile"
+unset envcachefile
+

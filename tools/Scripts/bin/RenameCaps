@@ -1,0 +1,208 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 23/11/2003 - [hisham] Reformatted changelog
+# 13/01/2003 - [hisham] minor fixes in documentation
+# 17/05/2002 - [hisham] use new option parser
+# 13/05/2002 - [gbedin] Added missing quotes
+# 10/04/2002 - [hisham] GoboLinux compliance
+# 21/09/2001 - [hisham] Fixed silly bug on upc_cap
+# XX/XX/XXXX - [hisham] First version
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import OptionParser
+Import Process
+
+### Options ###################################################################
+
+scriptDescription="rename files, capitalizing them"
+scriptCredits="Copyright (C) 2001-2002, Hisham Muhammad. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<options> <files...>"
+scriptExample="-i \"Does It Really Happen - Yes.mp3\""
+#scriptNotes="add notes here if any."
+Add_Option_Boolean "m" "media" "rename file using special rules:
+        'Any_file.mp3' becomes 'Any File.mp3'"
+Add_Option_Boolean "u" "upper" "rename file to all capitals:
+        'Any_file.ext' becomes 'ANY_FILE.EXT'"
+Add_Option_Boolean "l" "lower" "rename file to lowercase:
+        'Any_file.ext' becomes 'any_file.ext'
+        This is the default mode if no option is selected."
+Add_Option_Boolean "i" "inverse" "inverse \"artist and track names\":
+        'Bar Bar - Foo Foo.ext' becomes 'Foo Foo - Bar Bar.ext'"
+Parse_Options "$@"
+shift $parsedArguments
+
+##############################################################################
+
+# Rename file to ALL CAPS
+
+function upc_cap() {
+
+mv "$1" "`echo "$1" | tr "[:lower:]" "[:upper:]"`"
+
+}
+
+##############################################################################
+
+# Rename file to lowercase
+
+function low_cap() {
+
+mv "$1" "`echo "$1" | tr "[:upper:]" "[:lower:]"`"
+
+}
+
+##############################################################################
+
+# Invert artist and track name
+
+function inv_name() {
+
+function invert_function() {
+python -c '
+# Invert an mp3 name from "song-band.xxx" to "band-song.xxx"
+import sys,string
+fname = sys.argv[1]
+pos_ext = string.rindex(fname, ".")
+ext = fname[pos_ext:]
+name = fname[:pos_ext]
+parts = string.split(name,"-")
+if len(parts) != 2:
+    sys.stdout.write ( fname )
+    sys.exit(100)
+if parts[0][-1:] != " " or parts[1][0] != " ":
+    sys.stdout.write ( fname )
+    sys.exit(100)
+part1 = parts[0][:-1]
+part2 = parts[1][1:]
+sys.stdout.write ( part2 + " - " + part1 + ext )
+' "$1"
+}
+
+mv "$1" "`invert_function "$1"`"
+
+}
+
+##############################################################################
+
+# Properly capitalize media names
+
+function media_cap() {
+
+# Avoid directories
+if :
+#[ ! -d "$1" ]
+then
+   # Step 1: all to uppercase
+   extension=.`echo "$1" | sed 's/.*\.//g' | tr "[:upper:]" "[:lower:]"`
+   UPPERCASE=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
+
+if [ "`echo "$1" | grep "\."`" = "" ]
+then
+   extension=""
+fi
+
+if [ "`echo "$1" | grep "^[0-9][0-9].[A-Za-z]"`" != "" ]
+then
+   prefix="`echo "$1" | cut -b-2` - "
+   UPPERCASE="`echo "$1" | cut -b4-`"
+fi
+
+
+#awk
+NEW_NAME="$prefix`echo "$UPPERCASE" | sed "s/_/ /g" | awk '
+
+BEGIN {
+   excep["I"] = 1
+   excep["II"] = 1
+   excep["III"] = 1
+   excep["IV"] = 1
+   excep["ELP"] = 1
+   excep["REM"] = 1
+   excep["INXS"] = 1
+   excep["LA"] = 1
+   excep["EP"] = 1
+   excep["LP"] = 1
+   excep["CD"] = 1
+   excep["TNT"] = 1                # for the AC/DC song!!!
+   excep["MTV"] = 1
+   excep["RPM"] = 1
+   excep["MPB4"] = 1
+}
+
+function capitalize(s,     i,t) {
+
+   if (match(s,"\\\.")) {
+      split(s,t,"\\\.")
+      for (i = 1; i in t; i++) {
+         if (i>1) printf "."
+         capitalize(t[i])
+      }
+   } else if (s == "-") {
+      printf s
+   } else if (match(s,"-")) {
+      split(s,t,"-")
+      for (i = 1; i in t; i++) {
+         if (i>1) printf " - "
+         capitalize(t[i])
+      }
+   } else {
+
+      car = toupper(substr(s, 1, 1))
+      cdr = tolower(substr(s, 2))
+      if (car == "(") {
+         printf car
+         capitalize(cdr)
+      } else if (s in excep) {
+         printf s
+      } else {
+         printf car cdr
+      }
+
+   }
+
+}
+
+{
+   for (i = 1; i <= NF; i++) {
+      if (i>1) printf " "
+      capitalize($(i))
+   }
+}
+
+'`$extension"
+#awk
+
+if [ "$1" != "$NEW_NAME" ]
+then
+   echo $1
+   printf "=> $NEW_NAME"
+   if Quiet mv "$1" "$NEW_NAME"
+   then echo " [ok]"
+   else echo " [error]"
+   fi
+fi
+
+#Avoid directories
+fi
+
+}
+
+##############################################################################
+
+# Options
+
+capFunction=low_cap
+
+Boolean "media" && capFunction=media_cap
+Boolean "inverse" && capFunction=inv_name
+Boolean "upper" && capFunction=upc_cap
+Boolean "lower" && capFunction=low_cap
+
+for i in "$@"
+do $capFunction "$i"
+done
