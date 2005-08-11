@@ -1,0 +1,106 @@
+#!/bin/sh
+
+##################################################
+# Changelog
+##################################################
+
+# 24/08/2004 - [detsch] - major overal changes, but external interface kept
+#            - script is not more used at Compile
+#            - using new GetRecipe interface (full url/path,
+#              not more <app> <version>)
+# 30/03/2004 - [hisham] can now update a single program ($1)
+#              help screen
+# 08/02/2004 - [calica] add -f(ull) option
+# 04/02/2004 - [calica] Add http (wget) support
+#            - assert_dir to ensure environment
+# 10/12/2003 - [hisham] minor cleanups
+# 09/12/2003 - [calica] first version
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import GoboLinux
+Import Compile
+
+##################################################
+# Options and configuration
+##################################################
+
+Parse_Conf Compile.conf
+
+scriptDescription="Update local recipe list from recipe stores."
+scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
+scriptUsage="[<program>]"
+scriptNotes="When updating a single program, $scriptName will download "\
+"all its available recipes. When no program is specified, $scriptName will "\
+"fetch the recipe list and populate $getRecipeRecipeDir with directory "\
+"entries (and download the recipes only if --all is used)."
+Add_Option_Boolean "a" "all" "Download contents of updated recipes. "\
+"By default, $scriptName will only fetch the recipe list and generate "\
+"empty recipe directories (except when updating a single program)."
+Add_Option_Boolean "t" "thorough" "Check all availabe mirrors for updates. "\
+"By default, only the first working mirror (as configured in Compile.conf) is used."
+Parse_Options "$@"
+shift $parsedArguments
+
+if Is_Writable "$getRecipeRecipeDir"
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+##################################################
+# Prepare Environment
+##################################################
+
+assert_dir $getRecipeRecipeDir
+
+##################################################
+# Operation
+##################################################
+
+app="$1"
+
+function get_recipes_for_app() {
+   for recipe in `FindPackage --types=recipe --full-list $1`
+   do
+      #[detsch], getrecipe now receives a full url/path
+      GetRecipe "$recipe" > /dev/null
+   done
+}
+
+if [ "$app" ]
+then       
+   get_recipes_for_app "$app"
+else
+   for getRecipeStoreHttp in "${getRecipeStores[@]}"
+   do
+      lsfile="$getRecipeStoreHttp/RecipeList"
+      Log_Normal "Updating recipes from store $getRecipeStoreHttp"
+      tmplsfile=`Temporary_File`
+      Quiet wget $lsfile -O $tmplsfile
+      
+      # [detsch], '$getRecipeStoreHttp/$recipename', is a recipe url
+      cat $tmplsfile | while read recipename
+      do
+         noext="$recipename"
+         noext=${noext%--recipe.tar.bz2}
+         packagename=${noext%--*}
+         packageversion=${noext##*--}
+         if Boolean "all"
+         then # getrecipe
+            GetRecipe "$getRecipeStoreHttp/$recipename" > /dev/null
+         else # only create stub directory
+            $sudo mkdir -p "$getRecipeRecipeDir/$packagename/$packageversion"
+         fi
+      done
+      rm $tmplsfile
+      if [ "$?" == "0" ] && ! Boolean "thorough"
+      then
+         break 2
+      fi
+   done
+fi

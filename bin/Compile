@@ -1,0 +1,906 @@
+#!/bin/sh
+
+# Welcome back to Hacklandia.
+
+##################################################
+# Changelog
+##################################################
+# 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
+# 21/06/2005 - [detsch] Die on FetchArchive failure
+# 13/05/2005 - [detsch] Die on patch failure
+# 27/04/2005 - [lucasv] added support to ext cvs servers
+# 17/02/2005 - [hisham] environment array
+# 11/01/2005 - [lucasvr] installprefix for cross-compiling
+# 26/11/2004 - [hisham] pre-patch
+#            - fixed CVS version dir
+# 02/09/2004 - [detsch] AddHoc --no-configure option
+# 30/08/2004 - [calica] Initial CVS support
+# 23/08/2004 - [detsch] Major changes. 
+#            - Rewrote code for finding, getting 
+#              and sourcing the Recipe, improving modularity
+#            - Rewrote code for dependencies checking
+#              (dependencies are now dealt within Dependencies script ->
+#               no more code replication between InstallPackage and Compile)
+#            - No more 'echo's for questions -> replaced to 'Ask_Option'
+#            - Added funcionality on wrapup() when recipe was locally created
+#            - "--no-web" option  
+#            - suport for dir/file/url passing (e.g. Compile LocalRecipes/Atool/0.29.0,
+#              Compile /Depot/KDE--3.3.0--recipe.tar.bz2 or 
+#              Compile http://www.anysite.org/recipes/KDE--3.3.0--recipe.tar.bz2)
+#
+# 11/07/2004 - [lucasvr] Added cross-compile support
+# 23/04/2004 - [hisham] Whoa, the changelog has not kept
+#              up with the updates. The 'what's new' lists
+#              from the preview releases (in the list archives)
+#              can give you a good idea of what happened
+#              in the last crazy months.
+# 05/02/2004 - [calica] Added http support
+#            - Make Compile a package
+#            - Setup Environment in /Files using assert_dir()
+# 05/02/2004 - [hisham] "file_sizes" "file_md5s"
+# 09/01/2004 - [hisham] improved documentation
+# 29/12/2003 - [hisham] --no-build
+# 26/12/2003 - [hisham] is_perl
+# 24/12/2003 - [hisham] "urls" and "files"
+# 13/12/2003 - [hisham] use SandboxInstall
+# 11/12/2003 - [hisham] abort if an -old version is found
+#            - generate dependencies
+# 10/12/2003 - [hisham] support multiple recipe trees
+# 30/11/2003 - [hisham] new source and archive paths
+# 20/11/2003 - [hisham] always chmod +x configure
+# XX/XX/2003 - [hisham] first version
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import Terminal
+Import GoboLinux
+Import Array
+
+##################################################
+# Options and configuration
+##################################################
+
+helpOnNoArguments=yes
+scriptDescription="Automated program compilation tool."
+scriptCredits="(C)2003-2004 by Hisham Muhammad et al. Released under the GNU GPL."
+scriptUsage="<program> [<version>]"
+Add_Option_Entry "n" "app-name" "Override application name." ""
+Add_Option_Entry "e" "version-number" "Override version number." ""
+Add_Option_Entry "c" "cross-compile" "Cross-compile to another architecture." ""
+Add_Option_Boolean "k" "keep" "Keep files is program directory already exists."
+Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
+Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
+Add_Option_Boolean "I" "no-install" "Do not actually install the program."
+Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
+Add_Option_Boolean "C" "no-configure" "Do not run ./configure." # useful when resuming or retrying
+
+Parse_Options "$@"
+shift $parsedArguments
+
+Parse_Conf Compile.conf
+
+if Is_Writable "$goboExecutables"
+then sudo=
+else sudo="sudo -u #0"
+fi
+
+##################################################
+# Helper functions
+##################################################
+
+Import Compile
+
+function do_symlink() {
+   if [ "$1" = "--no-make" ]
+   then
+      local nomake=yes
+      shift
+   else
+      local nomake=no
+   fi
+   
+   unset symlinkopts
+   symlinkopts=$(merge_array "symlink_options")
+   sandboxopts=$(merge_array "sandbox_options")
+
+   subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
+   if [ $subdirs -gt 1 ]
+   then
+      sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+   fi
+   
+   if [ "$needs_safe_linking" = "yes" ]
+   then safeopts="--libraries safe --executables safe"
+   fi
+   if ! [ "$nomake" = "yes" ]
+   then
+      SandboxInstall ${sandboxopts[@]} $prepareCross -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+   fi
+
+   is_function_set pre_link && pre_link
+ 
+   SymlinkProgram $safeopts $prepareCross $symlinkopts "$1" "$2" || Die "Linking step failed."
+}
+
+function install_extras() {
+   [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
+   [ -d "$recipedaemons" ]   && $sudo cp -R "$recipedaemons" "$installprefix"
+   if [ "$compileMetaRecipe" = 1 ]
+   then docdir="$installprefix/doc/$app"
+   else docdir="$installprefix/doc"
+   fi
+   for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT "${docs[@]}"
+   do
+      c=0
+      for d in "${dirs[@]}"
+      do
+         docd="$docdir"
+         if [ "$c" -gt 1 ]
+         then
+            c=
+         fi
+         if [ -e "$d/$i" ]
+         then
+            $sudo mkdir -p "$docdir"
+            $sudo cp "$d/$i" "$docdir"
+         fi
+      done
+   done
+}
+
+function wrapup() {
+   recipedeps="$reciperesources/Dependencies"
+   Quiet mkdir -p "$reciperesources"
+   
+   # Generated recipes (located at $genRecipeRecipeDir) 
+   if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   then
+      Log_Normal "Generating dependencies list for recipe..."
+      Dependencies $prepareCross $appname > "$recipedeps"
+      cat "$recipedeps"
+       
+      Log_Normal "Packing recipe directory..."
+      tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
+      Log_Normal "Recipe packed in $genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+
+      # experimental 'callback': you can create a script that automatically 
+      # uploads the recipe to somewhere, or asks for confirmation and sends 
+      # it to the a recipe-store mantainer
+      [ `which LocalRecipeCompiled 2> /dev/null` ] && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+   fi
+   
+   cleanup
+}
+
+function cleanup() {
+   if [ -d "$installprefix-Compile-old" ]
+   then
+      if Boolean "batch"
+      then REPLY=y
+      else Ask_Option "Remove $installprefix-Compile-old (backup from safe linking)? [y/N]"
+      fi
+      [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
+   fi
+   exit 0
+}
+
+function Die() {
+   Log_Error "$@"
+   exit 1
+}
+
+##################################################
+# Prepare Environment
+##################################################
+
+assert_dir $compileDir
+for compileRecipeDir in "${compileRecipeDirs[@]}"
+do
+   assert_dir $compileRecipeDir
+done
+assert_dir $compileDependenciesDir
+assert_dir $compileArchivesDir
+assert_dir $compileSourcesDir
+assert_dir $genRecipeStoreDir
+
+##################################################
+# Checking Scripts package version
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
+smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+if (( svnr > 5 )) || \
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle ]
+then
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+##################################################
+# Find, Get and source Recipe
+##################################################
+
+# suport for direct recipe passing
+if [ -d "$1" -a "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
+then
+   rawrecipes="$1"
+   shift 1
+   Log_Normal "Using passed recipe $rawrecipes"
+else
+   app=$1
+   version=$2
+   shift 2
+   # Find recipe:
+   Log_Normal "Locating a recipe for $app $version..."
+   noweb=`Forward_Boolean_Entry "no-web"`
+   rawrecipes=`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`
+   [ "$rawrecipes" ] || Die "Could not find recipe for $app $version"
+   #Log_Normal "Found recipe for $app $version at $rawrecipe"
+   Log_Normal "Found recipe for $app $version"
+fi
+
+bakedrecipedir=`GetRecipe $rawrecipes`
+[ "$bakedrecipedir" ] || Die "Error getting recipe"
+Log_Normal "Recipe placed in $bakedrecipedir"
+
+[ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
+recipe=$bakedrecipedir/Recipe
+
+app=`Get_Token "$bakedrecipedir" "/" "-2"`
+version=`Get_Token "$bakedrecipedir" "/" "-1"`
+
+recipedir="$bakedrecipedir"
+reciperesources="$recipedir/Resources"
+recipedaemons="$recipedir/Daemons"
+
+
+##################################################
+# Set name and version (used in Meta-recipes)
+##################################################
+
+if Is_Entry "app-name"
+then appname=`Entry "app-name"`
+else appname="$app"
+fi
+
+if Is_Entry "version-number"
+then versionnumber=`Entry "version-number"`
+else versionnumber="$version"
+fi
+
+if [ "$versionnumber" = "CVS" ]
+then versionnumber=`date +%Y%m%d`"-CVS"
+fi
+
+target="${goboPrograms}/$appname/$versionnumber"
+
+. $recipe
+
+Log_Normal "Compiling $app version $versionnumber."
+
+##################################################
+# Set up enviroment
+##################################################
+
+if [ "${environment[*]}" ]
+then
+   for i in "${environment[@]}"
+   do
+      var=`echo $i | cut -d= -f 1`
+      val=`echo $i | cut -d= -f 2-`
+      eval export $var=\'$val\'
+   done
+fi
+
+##################################################
+# Check if we are cross-compiling
+##################################################
+
+if Is_Entry "cross-compile"
+then 
+   arch=`Entry "cross-compile"`
+   Log_Normal "Cross-Compiling for $arch"
+   
+   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch.conf
+   if [ ! -f "$crossConfFile" ]
+   then
+      Die "Could not find $crossConfFile."
+   fi
+   
+   . ${crossConfFile}
+   installprefix="$crossPrefixDir/$target"
+
+   # Configure flag passed to PrepareProgram and SandboxInstall
+   prepareCross="--cross-compile"
+
+   # Extra arguments to be passed to 'make'
+   cross_make_variables=(
+   	"CC=$CC"
+   	"CPP=$CPP"
+   	"CXX=$CXX"
+	"CROSS=$crossCompiler"
+   	"LD=$LD"
+   	"NM=$NM"
+   	"AS=$AS"
+	"STRIPTOOL=$STRIP"
+   )
+   
+   cross_install_variables=(
+   	"$cross_make_variables"
+   	"PREFIX=$installprefix"
+   	"EPREFIX=$installprefix"
+   	"PREFIXDIR=$installprefix"
+	"BINDIR=$installprefix/bin"
+	"SBINDIR=$installprefix/sbin"
+	"DATADIR=$installprefix/Shared"
+	"MANDIR=$installprefix/man"
+	"SYSCONFDIR=$installprefix/../Settings"
+   )
+   
+   # Extra parameters to be passed to 'configure' 
+   # TODO: this brokens build on non-autoconf configure scripts 
+   cross_configure_options=(
+	"--host=$HOST"
+	"--target=$MACHINE"
+	"--x-includes=$crossPrefixDir/$goboHeaders"
+	"--x-libraries=$crossPrefixDir/$goboLibraries"
+   )
+
+   # Keep cross-compile flags so that Meta-Recipes follow cross compilation rules
+   crossCompile="--cross-compile $arch"
+else
+   prepareCross=""
+   cross_make_variables=""
+   cross_configure_options=""
+   installprefix="$target"
+   crossCompile=""
+fi
+
+##################################################
+# Check recipe's Compile version
+##################################################
+
+if [ -n "$compile_version" ]
+then
+   develrelease=`echo $compile_version | sed 's/\([0-9]*\).*/\1/g'`
+   if [ "$develrelease" -gt "20000000" ]
+   then
+      compiledate=$(ls -l --time-style=+%Y%m%d $(which Compile) | awk '{print $6}')
+      if [ "$compiledate" -lt "$develrelease" ]
+      then Boolean "batch" || Ask_Continue "Recipe was created with a development snapshot from $develrelease,\n"\
+"which is more recent than the Compile version you have installed.\n"\
+"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+      fi
+   elif [ "$compile_version" != "$scriptVersion" ]
+   then
+      compilemm=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+      recipemm=`echo $compile_version | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+      if [ `GuessLatest $compilemm $recipemm` != $compilemm ]
+      then Boolean "batch" || Ask_Continue "Recipe was created with Compile $compile_version,\n"\
+"which is more recent than the one you have installed.\n"\
+"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+      fi
+   fi
+fi
+
+##################################################
+# Check dependencies
+##################################################
+
+if ! Boolean "no-dependencies" && ! Boolean "no-build"
+then
+   dep="$recipedir/Resources/Dependencies"
+   Boolean no-build && batch="--batch"
+   [ -f "$dep" ] && Dependencies $prepareCross $batch -d -c -h -e $0 "$dep"
+fi
+
+##################################################
+# Meta-recipe
+##################################################
+
+foreach_if_array_set "include" '
+   iname=`echo $item | sed '\''s/--.*//'\''`
+   iversion=`echo $item | sed '\''s/.*--//'\''`
+   Boolean no-build && nobuild=--no-build
+   noweb=`Forward_Boolean_Entry "no-web"`
+   export compileMetaRecipe=1
+   $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+   if [ "$?" -gt 0 ]
+   then
+      Die "Compilation of $iname $iversion failed."
+   fi
+'
+
+if [ "$is_meta" = "yes" ]
+then
+   wrapup
+   exit 0
+fi
+
+##################################################
+# Construct some variable arrays
+##################################################
+
+if ! [ -n "${cvs}${url}${urls[*]}" ]
+then Die "Missing URL or CVS in recipe '$recipe'."
+fi
+
+for var in url file file_size file_md5
+do
+   eval '
+      if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
+      then '$var's=("$'$var'")
+      fi
+   '
+done
+
+if ! [ "${files[*]}" ]
+then files=(`Map basename "${urls[@]}"`)
+fi
+
+if [ "$cvs_module" ]
+then
+   
+   if ! [ "$dir" ]
+   then
+      dir="$cvs_module"
+   fi
+fi
+
+if [ "$dir" ]
+then
+   if [ ! -n "${dirs[*]}" ]
+   then dirs=("$dir")
+   fi
+else
+   if [ ! -n "${dirs[*]}" ]
+   then
+      remove_tar_extension() { echo "$1" | sed "s/\.t.*//" ;}
+      dirs=(`Map remove_tar_extension "${files[@]}"`)
+   fi
+fi
+
+odirs=("${dirs[@]}")
+odir=${dirs[0]}
+
+make_basedir() { echo "$compileSourcesDir/"`echo "$1" | sed 's,/.*,,'` ;}
+basedirs=(`Map make_basedir "${dirs[@]}"`)
+
+make_absolute() {
+   if [ ${1:0:1} = "/" ]
+   then echo "$1"
+   else echo "$compileSourcesDir/$1"
+   fi
+}
+dirs=(`Map make_absolute "${dirs[@]}"`)
+dir="${dirs[0]}"
+
+##################################################
+# Get & Unpack sources
+##################################################
+if [ "$cvs" ]
+then
+   if ! Boolean "no-web"
+   then
+      cd "$compileSourcesDir"
+      [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
+      echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
+
+      login_method=`echo ${cvs} | cut -b-5`
+      [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
+      cvs -d${cvs} ${cvs_opts} co ${cvs_module}
+   fi
+else
+   Boolean "no-web" || FetchArchive "$recipe" || Die "Error fetching archive(s)."
+   
+   pfiles=(`
+      for i in "${files[@]}"
+      do find "$compileArchivesDir" -name "$i"
+      done
+   `)
+   files=("${pfiles[@]}")
+   
+   Boolean "no-build" && exit 0
+   
+   unpack=yes
+   if [ -d "${dirs[0]}" ]
+   then
+      if Boolean "batch"
+      then REPLY=r
+      else
+         Log_Question "Directory '${basedirs[0]}' already exists."
+         Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
+      fi
+      case $REPLY in
+      [Rr]) rm -rf "${basedirs[0]}" || $sudo rm -rf "${basedirs[0]}" ;;
+      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" ;;
+      [Uu]) unpack=no ;;
+      [Cc]) exit 0 ;;
+      esac # esac is ridiculous.
+   fi
+   
+   tempdir="$appname.$versionnumber.Compile.temp"
+   [ "$unpack" = "yes" ] && \
+   for ((i=0; i < ${#files[@]}; i++))
+   do
+      drop=.
+      skipdir=
+      if [ "$unpack_files" = "inside_first" ]
+      then
+         if [ $i -gt 0 ]
+         then
+            drop="${dirs[0]}"
+         fi
+      elif [ "$unpack_files" = "contents_inside_first" ]
+      then
+         drop="${dirs[0]}"
+         skipdir="${odirs[i]}"
+      elif [ "$unpack_files" = "dirs" ]
+      then
+         if [ "$i" -eq 0 ]
+         then
+            drop=.
+         else
+            drop="${dirs[i]}"
+            if [ ! "$keep_existing_target" ] && echo "$drop" | Quiet grep "$target"
+            then keep_existing_target=yes
+            fi
+         fi
+      fi
+
+      if [ "$unpack_files" -o $i -eq 0 ]; then
+         Quiet pushd "$compileSourcesDir"
+         mkdir "${tempdir}"
+      fi
+
+      Log_Normal "Unpacking file ${files[i]}..."
+      aunpack --extract-to="${tempdir}" -f "${files[i]}" >&$verboseFD || Die "Could not unpack '$f'."
+
+      if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
+         mkdir -p "$drop"
+         chown -R --reference="${tempdir}" "${tempdir}"
+         Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
+         rm -rf "${tempdir}"
+         Quiet popd
+      fi
+   done
+fi # [ "$cvs" ]
+
+cd "$dir" || Die "Directory $dir not found."
+
+##################################################
+# Apply patches
+##################################################
+
+if ! [ "$unpack" = "no" ]
+then
+
+   is_function_set pre_patch && pre_patch
+
+   for i in `find "$recipedir" -name "*.patch" | sort`
+   do
+      patch -Np1 -i $i || Die "Failed patching"
+   done
+
+   #find "$recipedir" -name "*.patch" | sort | while read i
+   #do
+   #   Log_Verbose "Applying patch $i..."
+   #   patch -Np1 -i $i
+   #done
+fi
+
+##################################################
+# Gather common options from the recipe
+##################################################
+
+unset makevars
+makevars=$(merge_array "make_variables")
+
+
+function combine_arrays() {
+   merge="$1=("
+   shift
+   while [ "$1" ]
+   do eval '[ -n "${'$1'[*]}" ] && merge=$merge'\'' "${'$1'[@]}" '\'
+      shift
+   done
+   merge=$merge")"
+   echo "$merge"
+}
+
+
+unset buildmerged
+eval `combine_arrays buildmerged make_variables build_variables cross_make_variables`
+! [ "$install_target" ] && install_target="install"
+unset installmerged
+eval `combine_arrays installmerged make_variables install_variables cross_install_variables`
+
+unset configureoption
+if [ "$configure" != "" ]
+then configureoption="-c ${configure}"
+else configure="./configure"
+fi
+
+if [ "$makefile" = "" ]
+then makefile=Makefile
+fi
+
+unset keep
+if Boolean "keep" || [ "$keep_existing_target" = "yes" ]
+then keep="--keep"
+fi
+
+##################################################
+# Safe linking
+##################################################
+
+if [ -d "$installprefix" -a "$needs_safe_linking" = "yes" ]
+then
+   if [ -d "$installprefix-Compile-old" ]
+   then Log_Terse "Warning: backup version of this program already exists at $installprefix-Compile-old. Aborting."
+   else
+      cp -R "$installprefix" "$installprefix-Compile-old"
+      do_symlink --no-make "$appname" "$version-Compile-old"
+   fi
+fi
+
+##################################################
+# Compile!
+##################################################
+
+if [ "$is_compileprogram" = "yes" ]
+then
+   eval `combine_arrays config configure_options cross_configure_options`
+   batch="--batch"; [ "$batch" = "no" ] && unset batch
+   unset nomodifyoption; [ "$modify_configure" = "no" ] && nomodifyoption="--no-modify"
+   if [ "$needs_build_directory" = "yes" ]
+   then
+      builddir="${dir}-build"
+      mkdir "$builddir"
+      cd "$builddir"
+      configureoption="-c ${dir}/$configure"
+      #sandbox_options="--expand-sandbox 1 $sandbox_options"
+      sandbox_options="--add-allowed ${dir} $sandbox_options"
+   fi
+   [ "$create_dirs_first" = "yes" ] && {
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+   }
+   is_function_set pre_build && pre_build
+   if ! Boolean "no-configure"
+   then
+      chmod +x "${dir}/$configure"
+      (
+         for i in "${configure_variables[@]}"
+         do
+            var=`echo $i | cut -d= -f 1`
+            val=`echo $i | cut -d= -f 2-`
+            eval export $var=\'$val\'
+         done
+         [ "$autogen_before_configure" = "yes" ] && ./autogen.sh
+         PrepareProgram -V $prepareCross $nomodifyoption $configureoption $batch "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+      )
+   fi
+   ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
+   Boolean "no-install" && exit
+   [ ! "$create_dirs_first" = "yes" ] && {
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+   }
+   install_extras
+   is_function_set pre_install && pre_install
+   do_symlink "$appname" "$versionnumber"
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+build_python_options() {
+   # should exist in other modes too (eg, configure)
+   if [ "$override_default_options" = "yes" ]
+   then default_python_options=()
+   else
+      case "$1" in
+      build)
+         default_python_options=(
+            "--build-base $target"
+         )
+         ;;
+      build_ext)
+         default_python_options=(
+            "--build-lib $sitepackages"
+         )
+         ;;
+      install)
+         default_python_options=(
+            "--prefix $target"
+         )
+         ;;
+      esac
+   fi
+   eval `combine_arrays opts python_options default_python_options`
+}
+
+if [ "$is_python" = "yes" ]
+then
+   Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
+   [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
+   PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   sitepackages="$target/lib/python${PYTHONPATH##*/python}"
+   mkdir -p "$sitepackages"
+   if [ ! "$build_script" ]
+   then
+      for i in setup.py configure.py build.py
+      do [ -e "$i" ] && build_script="$i"
+      done
+   fi
+   if ! [ "$do_build" = "no" ]
+   then
+      [ "$build_target" ] || build_target="build"
+      build_python_options $build_target
+      is_function_set pre_build && pre_build
+      python $build_script $build_target ${opts[*]}
+   fi
+   Boolean "no-install" && exit
+   is_function_set pre_install && pre_install
+   if ! [ "$do_install" = "no" ]
+   then
+      [ "$install_target" ] || install_target="install"
+      build_python_options $install_target
+      echo "opts is {${opts[@]}}"
+      subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
+      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+      sandboxopts=$(merge_array "sandbox_options")
+      SandboxInstall ${sandboxopts[@]} $prepareCross -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || Die "Installation step failed."
+   fi
+   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+if [ "$is_perl" = "yes" ]
+then
+   [ "$PERL5LIB" ] || {
+      export PERL5LIB="/System/Links/Libraries/perl5/site_perl/$(basename $(readlink -f /Programs/Perl/Current))/"
+   }
+
+   # Quick hack: won't add these to the dependencies list because
+   # that would be like adding GCC to all C-based packages.
+   if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
+   then
+      [ -e "$goboPrograms/Perl-XML-Parser" ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e "$goboPrograms/Perl-XML-Writer" ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+   fi
+
+   if [ "${without[*]}" ]
+   then
+      withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
+   fi
+   perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
+   is_makefile=yes # fall through!
+fi
+
+##################################################
+
+if [ "$is_makefile" = "yes" ]
+then 
+   [ "$create_dirs_first" = "yes" ] && {
+      PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   }
+   if ! [ "$do_build" = "no" ]
+   then
+      is_function_set pre_build && pre_build
+      ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build failed."
+   fi
+   Boolean "no-install" && exit
+   [ ! "$create_dirs_first" = "yes" ] && {
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+   }
+   install_extras
+   is_function_set pre_install && pre_install
+   if ! [ "$do_install" = "no" ]
+   then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
+   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   fi
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+if [ "$is_xmkmf" = "yes" ]
+then
+   is_function_set pre_build && pre_build
+   xmkmf
+   make Makefiles
+   imakevars=(
+      "BINDIR=$target/bin"
+      "LIBDIR=$target/lib"
+      "LIBEXECDIR=$target/libexec"
+      "INCDIR=$target/include"
+   )
+   make -f "$makefile" $imakevars $build_target || Die "Build failed."
+   Boolean "no-install" && exit
+   PrepareProgram $prepareCross $configureoption -t "$appname" "$versionnumber"
+   install_extras
+   if ! [ "$install_target" ]
+   then install_target="install"
+   fi
+   is_function_set pre_install && pre_install
+   imakevars=(
+      "BINDIR=$installprefix/bin"
+      "LIBDIR=$installprefix/lib"
+      "LIBEXECDIR=$installprefix/libexec"
+      "INCDIR=$installprefix/include"
+   )
+   installmerged=(
+      "${imakevars[@]}"
+   )
+   if ! [ "$do_install" = "no" ]
+   then do_symlink "$appname" "$versionnumber"
+   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   fi
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+# Manifest mode is experimental.
+
+if [ "$is_manifest" = "yes" ]
+then
+   is_function_set pre_install && pre_install
+   PrepareProgram $prepareCross $configureoption -t "$appname" "$versionnumber"
+   install_extras
+   for i in "${manifest[@]}"
+   do
+      src=`echo $i | cut -d: -f1`
+      dst=`echo $i | cut -d: -f2-`
+      mv "$src" "$installprefix/$dst"
+   done
+   is_function_set pre_link && pre_link
+   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+# Interactive mode is still experimental.
+if [ "$is_interactive" = "yes" ]
+then
+   is_function_set pre_build && pre_build
+   if ! [ "$do_build" = "no" ]
+   then
+      is_function_set pre_install && pre_install
+      {
+         for i in "${build_answers[@]}"
+         do
+            echo $i
+         done
+      } | ./$build_command
+   fi
+   Boolean "no-install" && exit
+   install_extras
+   is_function_set pre_install && pre_install
+   {
+      for i in "${install_answers[@]}"
+      do
+         echo $i
+      done
+   } | ./$install_command
+   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
+Die "Unsupported configuration in recipe '$recipe'."
