@@ -250,6 +250,7 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 recipe=$bakedrecipedir/Recipe
+archrecipe=$bakedrecipedir/`uname -m`/Recipe
 
 app=`Get_Token "$bakedrecipedir" "/" "-2"`
 version=`Get_Token "$bakedrecipedir" "/" "-1"`
@@ -280,6 +281,7 @@ fi
 target="${goboPrograms}/$appname/$versionnumber"
 
 . $recipe
+[ -e "$archrecipe" ] && . "$archrecipe"
 
 Log_Normal "Compiling $app version $versionnumber."
 
@@ -582,16 +584,11 @@ then
 
    is_function_set pre_patch && pre_patch
 
-   for i in `find "$recipedir" -name "*.patch" | sort`
+   for i in `find "$recipedir" -name "*.patch" | sort` `find "$recipedir/$(uname -m)" -name "*.patch" 2> /dev/null | sort`
    do
       patch -Np1 -i $i || Die "Failed patching"
    done
 
-   #find "$recipedir" -name "*.patch" | sort | while read i
-   #do
-   #   Log_Verbose "Applying patch $i..."
-   #   patch -Np1 -i $i
-   #done
 fi
 
 ##################################################
