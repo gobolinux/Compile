@@ -584,11 +584,12 @@ then
 
    is_function_set pre_patch && pre_patch
 
+   pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `find "$recipedir" -name "*.patch" | sort` `find "$recipedir/$(uname -m)" -name "*.patch" 2> /dev/null | sort`
    do
       patch -Np1 -i $i || Die "Failed patching"
    done
-
+   popd &> /dev/null
 fi
 
 ##################################################
