@@ -861,7 +861,12 @@ then
    do
       src=`echo $i | cut -d: -f1`
       dst=`echo $i | cut -d: -f2-`
-      mv "$src" "$installprefix/$dst"
+      fulldst="$installprefix/$dst"
+      mkdir -p $(dirname "$fulldst")
+      if [ -d "$src" -a -d "$fulldst" ]
+      then mv "$src"/* "$fulldst"
+      else mv "$src" "$fulldst"
+      fi
    done
    is_function_set pre_link && pre_link
    do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
