@@ -184,7 +184,7 @@ then
    Log_Normal "$packagename $versionnumber build system seems to be based on imake."
    echo "is_xmkmf=yes" >> "$recipedir/Recipe"
 elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -i makefile &> /dev/null && \
-       grep .py "$file_contents" &> /dev/null
+       grep "\.py$" "$file_contents" &> /dev/null
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Python."
    echo "is_python=yes" >> "$recipedir/Recipe"
