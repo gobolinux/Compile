@@ -494,6 +494,7 @@ then
       echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
 
       login_method=`echo ${cvs} | cut -b-5`
+      [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
       cvs -d${cvs} ${cvs_opts} co ${cvs_module}
    fi

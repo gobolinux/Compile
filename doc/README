@@ -298,6 +298,11 @@ cvs_module=<module name to co>
    
 cvs_opts=<string added to cvs co operation>
    Valid modes: all
+
+cvs_rsh=<string>
+   Valid modes: all
+   Specify a value for the CVS_RSH variable (see cvs documentation
+   for details). If unset, "ssh" is used by default.
    
 is_interactive=yes
 build_command=<program name>
