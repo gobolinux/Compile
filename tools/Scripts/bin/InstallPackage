@@ -9,6 +9,8 @@ Import Process
 
 ### Changelog #################################################################
 
+# 16/08/2005 - [detsch] Removed --dont-ask-confirmation option
+#                       now asking only when the package version is guessed
 # 04/08/2005 - [detsch] --dont-ask-confirmation option
 # 04/03/2004 - [calica] "--verify" option, continue if hash failure.
 # 10/12/2004 - [calica] verify superuser before download.
@@ -61,9 +63,6 @@ Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
-Add_Option_Boolean "A" "dont-ask-confirmation" "Ask for confirmation."
-
-
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -77,7 +76,6 @@ fi
 Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
-Boolean "dont-ask-confirmation" && dontask="--dont-ask-confirmation"
 Is_Writable "${goboPrograms}" || Verify_Superuser
 Is_Writable "${goboInstall}"  || Verify_Superuser
 
@@ -88,35 +86,29 @@ Is_Writable "${goboInstall}"  || Verify_Superuser
 
 if Is_URL "$1"
 then
-   if [ "${batch}" ] || [ "${dontask}" ] || { Ask_Continue "Downloading $1" ;}
-   then
-      #rm -f ${goboTemp}/`basename $1`
-      Log_Normal "Downloading package to ${goboTemp}/`basename $1`."
-      wget -c $1 -O ${goboTemp}/`basename $1` || Die "Error downloading package."
-      
-      if [ "${keep}" ]
-      then   
-         . "${goboSettings}/Scripts/GetAvailable.conf"
-         [ -d ${defaultLocalPackagesPaths[0]} ] || mkdir -p ${defaultLocalPackagesPaths[0]}
-         Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/`basename $1`."
-         
-         if mv ${goboTemp}/`basename $1` ${defaultLocalPackagesPaths[0]}/`basename $1` 
-         then 
-            InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1` 
-         else
-            Log_Error "Coud not move package."
-            InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
-         fi
+   #rm -f ${goboTemp}/`basename $1`
+   Log_Normal "Downloading package to ${goboTemp}/`basename $1`."
+   wget -c $1 -O ${goboTemp}/`basename $1` || Die "Error downloading package."
+
+   if [ "${keep}" ]
+   then   
+      . "${goboSettings}/Scripts/GetAvailable.conf"
+      [ -d ${defaultLocalPackagesPaths[0]} ] || mkdir -p ${defaultLocalPackagesPaths[0]}
+      Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/`basename $1`."
+
+      if mv ${goboTemp}/`basename $1` ${defaultLocalPackagesPaths[0]}/`basename $1` 
+      then 
+         InstallPackage ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1`
       else
-         InstallPackage --dont-ask-confirmation ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
-         Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
-         rm -f ${goboTemp}/`basename $1`
+         Log_Error "Coud not move package."
+         InstallPackage ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
       fi
-      exit 0
    else
-      Log_Normal "Package installation aborted."
-      exit 1
+      InstallPackage ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+      Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
+      rm -f ${goboTemp}/`basename $1`
    fi
+   exit 0
 fi
 
 # if $1 is not a existing file nor a existing directory: 
@@ -144,14 +136,14 @@ then
          found=`FindPackage $noweb $1`
          if [ "${found}" ]
          then
-            Log_Normal "Found package for $1: ${found}"
-            InstallPackage ${dontask} ${noinstall} ${keep} ${batch} "${found}"
+            Ask_Continue "Installing ${found}"
+            InstallPackage ${noinstall} ${keep} ${batch} "${found}"
          else
             Die "Package for $1 not found."
          fi
       fi
       exit 0
-   else     
+   else
       Die "$1 is not an existing file or directory."
    fi
 fi
@@ -198,7 +190,7 @@ else # $1 is a file
    do
       noext=`basename "$noext" "$extension"`
    done
-      
+
    packagename=`Get_Token    "$noext" "--" "0"`
    packageversion=`Get_Token "$noext" "--" "1"`
    if echo "$noext" | Quiet grep ".*--.*--.*"
@@ -208,7 +200,7 @@ else # $1 is a file
       packagearch="i686" # All old packages are i686
    fi
    packagetype="file"
-   
+
    packageversion=`echo $packageversion | sed 's/-PersonalBackup//'`
    archive=`readlink -f "$1"`
 fi
@@ -254,12 +246,7 @@ function try_remove() {
 
 try_remove
 
-if Boolean "batch" || [ "${dontask}" ]
-then
-   Log_Normal "Installing $packagename, version $packageversion."
-else
-   Ask_Continue "Installing $packagename, version $packageversion."
-fi
+Log_Normal "Installing $packagename, version $packageversion."
 
 if [ "$goboInstall" != "$goboPrograms" ]
 then
