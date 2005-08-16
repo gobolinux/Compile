@@ -1,0 +1,41 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 11/08/2005 - [lucasvr] First version
+
+source GoboPath
+
+if [ "$#" != "1" ]
+then
+        echo "Syntax: $0 <package name>"
+        exit 1
+fi
+
+function search_packages() {
+        i=2
+        while true
+        do
+                package=`echo "$1" | cut -d" " -f$i`
+                if [ "$package" = "" ]
+                then
+                    return
+                fi
+                    
+                let i=i+1
+                if [ -d "$goboPrograms/$package" ]
+                then
+                    echo "$package"
+                    return
+                fi
+        done
+}
+
+cat "$goboSettings"/Scripts/CompatibilityList | while read line
+do
+        package=`echo "$line" | cut -d: -f1`
+        if [ "$package" = "$1" ]
+        then
+                search_packages "$line"
+        fi
+done
