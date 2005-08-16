@@ -1,0 +1,188 @@
+#!/bin/env python
+
+# Manager Runner
+#
+#
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+#          detsch at gobolinux.org
+#
+# Class responsible of run commands ordered within Manager, and 
+#   talk with the backend scripts
+#
+
+#############################################################################
+# Changelog
+#############################################################################
+#
+# 23/08/2004 - [detsch] - forked from Manager
+#
+import sys
+from threading import Thread
+from select    import *
+from tempfile  import *
+from qt import *
+
+from LoggersWrapper import *
+
+import os, time, string, urllib, popen2, sys
+
+class Runner(Thread) :
+	def __init__(self, widget, qApp, logger, cmd, runningModule = None) :
+		Thread.__init__(self)
+		self.widget = widget
+		self.qApp = qApp
+		self.logger = logger
+		self.cmd = cmd
+		self.runningModule = runningModule
+	
+	def getMessageLettersWords(self, line) :
+		letters = []
+		words   = []
+		current = 0
+		
+		beg = line.find('?') + 1
+		if beg == 0 :
+			beg = line.find('[')
+		if beg != -1 :
+			current = beg
+		else :
+			beg = line.find(':')
+			
+		while 1 :
+			current = line.find('[', current)
+			if current == -1 :
+				break
+			begin = current + 1
+			current = line.find(']', current)
+			if current == -1 :
+				break
+			end = current
+			letter = line[begin:end]
+			if letter.lower() == 'y/n' :
+				words = ['Yes', 'No']
+				letters = ['y', 'n']
+				break
+			else :
+				word = letter
+				k = end + 1
+				for k in range(k, len(line)):
+					if line[k] in string.letters + ' ' :
+						word  = word + line[k]
+					else :
+						break
+				
+				if len(letter) > 1:
+					word = word[len(letter):]
+
+				letters.append(letter)
+				words.append(word)
+		
+		return line[:beg], letters, words
+		
+	
+	def call(self, fp) :
+		self.qApp.postEvent(self.widget, QCustomEvent(QEvent.User, fp))
+		
+	def run(self) :
+		aborted = not self.runCommand(self.cmd)
+		self.call((self.logger.finished,None))
+		self.call((self.widget.commandFinished,(aborted,self.logger, self.cmd, self.runningModule)))
+
+	def askQuestion(self, scriptName, message, words, letters, t, i) :
+		if t == 1 :
+			if len(words) == 1:
+				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0])
+			elif len(words) == 2:
+				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0], words[1])
+			
+			#TODO: deal with more than 3 options 
+			elif len(words) >= 3:
+				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0], words[1], words[2])
+			else :
+				print 'Too many options...'
+			current_question = ''
+		
+			i.write(letters[resp].strip())
+			i.write('\n')
+			i.flush()
+		else :
+			ask = not self.widget.configWindow.doNotAskForConfirmation.isChecked()
+			if ask:
+				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message+'\nProceed?', 'Ok', 'Cancel')
+			else :
+				resp = 0
+			current_question = ''
+			if resp == 0 : 
+				i.write('\n')
+			else :
+				i.write('n')
+			
+			i.write('\n')
+			i.flush()
+
+	def runCommand(self, cmd) :
+		compatMode = self.widget.configWindow.useCompatibilityModeInteraction.isChecked()
+		if compatMode :
+			os.system(cmd)
+			print 'Done'
+			return True
+		
+		self.call((self.logger.append,cmd))
+		
+		subProcess = popen2.Popen4(cmd)
+		(i, oe) = (subProcess.tochild, subProcess.fromchild)
+		self.call((self.logger.setSubprocessPid,subProcess.pid))
+		
+		errline=''
+		do_break = 0
+		current_question = ''
+		
+		def filterEscapes(s) :
+			colors = ['\033[1;30m' , '\033[1;34m' , '\033[33m'   ,'\033[1;33m' , '\033[1;32m','\033[1;31m','\033[36m'  ,'\033[1;36m','\033[41;37m','\033[0m']
+			for c in colors :
+				s = s.replace(c, '')
+			return s
+		
+		def dealWithQuestionLine(line, current_question) :
+			line = filterEscapes(line)
+			try :
+				scriptName = line[:line.index(':')]
+				message = line[line.index(':')+1:].strip()
+			except :
+				scriptName = ''
+				message = line.strip()
+			
+			if not line :
+				pass
+			else:
+				if line.find('[') < line.find(']') :
+					(message, letters, words) = self.getMessageLettersWords(line)
+					self.call((self.askQuestion, (scriptName, current_question+'\n'+message, words,letters, 1, i)))
+					current_question = ''
+				elif line.find('Enter to continue or Ctrl-C') > -1 :
+					self.call((self.askQuestion, (scriptName, current_question, [], [], 2, i)))
+					current_question = ''
+				else :
+					current_question += message
+			
+			return current_question
+		
+		while not do_break :
+			line = oe.readline()
+			if not line :
+				break
+			else :
+				if line[:len('\033[0m\033[0m')] == '\033[0m\033[0m' : #NormalNormal
+					current_question = dealWithQuestionLine(line,current_question)
+				else :
+					self.call((self.logger.append,line))
+				continue
+
+		if self.logger.abortOrdered :
+			self.call((self.widget.playButton.setOn,False))
+			self.call((self.logger.append,"\n"))
+			return False
+		else :
+			self.call((self.logger.append,"Done\n"))
+			self.call((self.logger.append,"\n"))
+			return True

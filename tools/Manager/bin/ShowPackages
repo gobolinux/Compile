@@ -1,0 +1,187 @@
+#!/usr/bin/python
+
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+
+### Changelog ###############################################################
+
+# 08/07/2004 - [detsch] First version
+#
+
+#############################################################################
+#  'main()'
+#############################################################################
+from GetAvailable import *
+from GetInstalled import *
+from GuessLatest import *
+
+def applyFilter(installed, availables, filter_rule, report_missing = False) :
+	availables['installed'] = {}
+	availables['installed']['programs'] = KeyInsensitiveDict()
+	for p in installed.keys() :
+		availables['installed']['programs'][p] = {}
+		for v in installed[p]['versions'] :
+			availables['installed']['programs'][p][v] = []
+	
+	p1 = []
+	for i in filter_rule[0] :
+		p1.append(i)
+
+	op = filter_rule[1]
+	
+	p2 = []
+	for i in filter_rule[2] :
+		p2.append(i)
+	
+	toReturn = []
+	
+	leftPrograms = []
+	for t in p1 :
+		for p in availables[t]['programs'].keys() :
+			if p.lower() not in leftPrograms :
+				leftPrograms.append(p.lower())
+	 
+	rightPrograms = []
+	for t in p2 :
+		for p in availables[t]['programs'].keys() :
+			if p.lower() not in rightPrograms :
+				rightPrograms.append(p.lower())
+	
+				
+	for p in leftPrograms :
+		if p in rightPrograms :
+			leftLatestVersion = '0'
+			for t in p1 :
+				try :
+					leftLatestVersion = GuessLatest(availables[t]['programs'][p].keys() + [leftLatestVersion])
+				except :
+					pass
+			
+			rigthLatestVersion = '0'
+			for t in p2 :
+				try :
+					rigthLatestVersion = GuessLatest(availables[t]['programs'][p].keys() + [rigthLatestVersion])
+				except :
+					pass
+			
+			latestVersion = GuessLatest([leftLatestVersion,rigthLatestVersion]) 
+			
+			if  rigthLatestVersion  == leftLatestVersion :
+				if '=' in op:
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' = '+string.ljust(rigthLatestVersion,8))
+			
+			elif latestVersion == rigthLatestVersion :
+				if '<' in op :
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' < '+string.ljust(rigthLatestVersion,8))
+			
+			elif latestVersion == leftLatestVersion :
+				if '>' in op:
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' > '+string.ljust(rigthLatestVersion,8))
+		else :
+			if report_missing :
+				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
+	return toReturn
+			 
+if __name__ == '__main__' :
+	import sys
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
+	fulllist = False
+	forceupdate = False
+	import getopt, os
+	noWeb = False
+	try :
+		opts, args = getopt.getopt(sys.argv[1:], 'Wmh', ['report-missing', 'help', 'no-web', 'force-update'])
+	except getopt.GetoptError, detail :
+		print sys.argv[0].split('/')[-1]+': '+str(detail)
+		sys.exit(1)
+	reportmissing = False
+	for o, a in opts :
+		if o == '--local-dirs' :
+			localdirs = a.split(',')
+		elif o == '--force-update' :
+			forceupdate = True
+		elif o in ['--no-web', '-W'] :
+			noWeb = True
+		elif o in ['--report-missing', '-m'] :
+			reportmissing = True
+		elif o in ['--help', '-h'] :
+			print """
+ShowPackages
+ Lists packages according a given rule.
+ 
+
+Options:
+ -m, --report-missing  prints a message for each program that has a match to the 
+                       left side of the operand does not has a match to the types
+                       at rhe right side of the operand
+
+ --local-dirs=[d1,..]  where to look for local binary packages. By default,
+                       ., /Mount/Cloop/Programs, /Mount/CD-ROM/Depot/Packages/, 
+                       /Depot/Packages
+
+ --force-update        downloads required packages list even if there is a
+                       local copy (cached in ~/.Settings/cache/) newer than one hour.
+
+ -W, --no-web          do not try to download anything and don't lists 
+                       remote recipes and packages (if not explicitly listed
+                       in '--types='). Overrides '--force-update'
+
+Examples of usage:
+ ShowPackages installed '<' recipe,official_package,local_package
+ #lists packages where the higher installed version is lower than the higher 
+ # available recipe, official or local package.
+  
+ ShowPackages --report-missing installed '>' official_package,contrib_package
+ #lists packages where the higher installed version is higher than the higher 
+ # available official or contrib package (aka, packages that could be 
+ # contributed).
+ 
+ ShowPackages recipe '<' tracked
+ #recipes that can be updated (NewVersion) because there exists a new version 
+ # for that program.
+ """
+			sys.exit(0)
+
+	import sys
+	if len (args) < 3 :
+		print '3 arguments, please'
+		print "Example:\n ShowPackages installed '<' recipe,official_package"
+		sys.exit(1)
+	
+	filter_rule = args[:3]
+	
+	#['recipe', '<', 'installed']
+	filter_rule[0] = filter_rule[0].split(',')
+	filter_rule[2] = filter_rule[2].split(',')
+	
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'installed']
+	for l in [ filter_rule[0], filter_rule[2]] :
+		for i in range(len(l)) :
+			for t in validTypes :
+				if l[i] == t[0] :
+					l[i] = t
+	
+	
+	for t in filter_rule[0] + filter_rule[2] :
+		if not t in validTypes + ['installed'] :
+			print 'Invalid type:',t
+			
+			print 'Valid types are:',validTypes+['installed']
+			sys.exit(1)
+	
+	types = [t for t in validTypes if t in filter_rule[0] + filter_rule[2]]
+	
+	availables = GetAvailable(types, localdirs, forceupdate, hook=consoleProgressHook, accessWeb = not noWeb)
+	try :
+		goboPrograms = os.environ['goboPrograms']
+	except :
+		goboPrograms = os.popen('. GoboPath; echo -n $goboPrograms').read()
+	installed = GetInstalled(goboPrograms)
+	
+
+	#filter_rule = ['recipe', '<', 'installed']
+	l = applyFilter(installed, availables, filter_rule, reportmissing)
+	l.sort()
+	for i in l:
+		print i
+

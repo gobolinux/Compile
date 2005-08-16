@@ -1,0 +1,416 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>ManagerConfigForm</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>ManagerConfigForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>476</width>
+            <height>419</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Manager Settings</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QTabWidget" row="0" column="0" rowspan="1" colspan="3">
+            <property name="name">
+                <cstring>tabWidget2</cstring>
+            </property>
+            <property name="enabled">
+                <bool>true</bool>
+            </property>
+            <widget class="QWidget">
+                <property name="name">
+                    <cstring>TabPage</cstring>
+                </property>
+                <attribute name="title">
+                    <string>Manager</string>
+                </attribute>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QGroupBox" row="0" column="0">
+                        <property name="name">
+                            <cstring>groupBox14</cstring>
+                        </property>
+                        <property name="title">
+                            <string>General</string>
+                        </property>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QCheckBox" row="0" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>doNotAskForConfirmation</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Do not ask for confirmation</string>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="1" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>splitDownload</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Split download and processing of recipes/packages</string>
+                                </property>
+                            </widget>
+                            <widget class="QLineEdit" row="2" column="1">
+                                <property name="name">
+                                    <cstring>defaultCreatePackageDirectory</cstring>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="2" column="0">
+                                <property name="name">
+                                    <cstring>useDefaultCreatePackageDirectory</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>CreatePackage default path</string>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>keepDownloadedPackages</cstring>
+                                </property>
+                                <property name="enabled">
+                                    <bool>true</bool>
+                                </property>
+                                <property name="text">
+                                    <string>Allways keep downloaded packages</string>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>noWeb</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Do not access the Web</string>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QGroupBox" row="2" column="0">
+                        <property name="name">
+                            <cstring>groupBox5</cstring>
+                        </property>
+                        <property name="title">
+                            <string>Troubleshooting</string>
+                        </property>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QCheckBox" row="1" column="0">
+                                <property name="name">
+                                    <cstring>useCompatibilityModeInteraction</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Use terminal for interaction</string>
+                                </property>
+                            </widget>
+                        </grid>
+                    </widget>
+                    <widget class="QGroupBox" row="1" column="0">
+                        <property name="name">
+                            <cstring>groupBox3</cstring>
+                        </property>
+                        <property name="title">
+                            <string>Running threads</string>
+                        </property>
+                        <property name="toolTip" stdset="0">
+                            <string>You have to save the settings and restart Manager in order to change the number of running threads</string>
+                        </property>
+                        <grid>
+                            <property name="name">
+                                <cstring>unnamed</cstring>
+                            </property>
+                            <widget class="QLayoutWidget" row="0" column="0">
+                                <property name="name">
+                                    <cstring>layout3</cstring>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLabel">
+                                        <property name="name">
+                                            <cstring>textLabel1</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Downloads:</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QSpinBox">
+                                        <property name="name">
+                                            <cstring>threadsBandwidth</cstring>
+                                        </property>
+                                        <property name="maxValue">
+                                            <number>10</number>
+                                        </property>
+                                        <property name="minValue">
+                                            <number>1</number>
+                                        </property>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <widget class="QLayoutWidget" row="0" column="2">
+                                <property name="name">
+                                    <cstring>layout1</cstring>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLabel">
+                                        <property name="name">
+                                            <cstring>textLabel1_2</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Compilations:</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QSpinBox">
+                                        <property name="name">
+                                            <cstring>threadsCPU</cstring>
+                                        </property>
+                                        <property name="maxValue">
+                                            <number>10</number>
+                                        </property>
+                                        <property name="minValue">
+                                            <number>1</number>
+                                        </property>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <widget class="QLayoutWidget" row="0" column="4">
+                                <property name="name">
+                                    <cstring>layout2</cstring>
+                                </property>
+                                <hbox>
+                                    <property name="name">
+                                        <cstring>unnamed</cstring>
+                                    </property>
+                                    <widget class="QLabel">
+                                        <property name="name">
+                                            <cstring>textLabel1_2_2</cstring>
+                                        </property>
+                                        <property name="text">
+                                            <string>Other:</string>
+                                        </property>
+                                    </widget>
+                                    <widget class="QSpinBox">
+                                        <property name="name">
+                                            <cstring>threadsOther</cstring>
+                                        </property>
+                                        <property name="maxValue">
+                                            <number>10</number>
+                                        </property>
+                                        <property name="minValue">
+                                            <number>1</number>
+                                        </property>
+                                    </widget>
+                                </hbox>
+                            </widget>
+                            <spacer row="0" column="3">
+                                <property name="name">
+                                    <cstring>spacer4_2</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Horizontal</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>20</width>
+                                        <height>20</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                            <spacer row="0" column="1">
+                                <property name="name">
+                                    <cstring>spacer4</cstring>
+                                </property>
+                                <property name="orientation">
+                                    <enum>Horizontal</enum>
+                                </property>
+                                <property name="sizeType">
+                                    <enum>Expanding</enum>
+                                </property>
+                                <property name="sizeHint">
+                                    <size>
+                                        <width>16</width>
+                                        <height>20</height>
+                                    </size>
+                                </property>
+                            </spacer>
+                        </grid>
+                    </widget>
+                    <spacer row="3" column="0">
+                        <property name="name">
+                            <cstring>spacer6</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Vertical</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>20</width>
+                                <height>31</height>
+                            </size>
+                        </property>
+                    </spacer>
+                </grid>
+            </widget>
+            <widget class="QWidget">
+                <property name="name">
+                    <cstring>TabPage</cstring>
+                </property>
+                <attribute name="title">
+                    <string>Config.conf</string>
+                </attribute>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                    <widget class="QTextEdit" row="0" column="0" rowspan="1" colspan="5">
+                        <property name="name">
+                            <cstring>textEdit1</cstring>
+                        </property>
+                    </widget>
+                    <widget class="QToolButton" row="1" column="4">
+                        <property name="name">
+                            <cstring>reloadButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                        <property name="iconSet">
+                            <iconset>image0</iconset>
+                        </property>
+                    </widget>
+                    <widget class="QToolButton" row="1" column="3">
+                        <property name="name">
+                            <cstring>saveButton</cstring>
+                        </property>
+                        <property name="text">
+                            <string></string>
+                        </property>
+                        <property name="iconSet">
+                            <iconset>image1</iconset>
+                        </property>
+                    </widget>
+                    <spacer row="1" column="0">
+                        <property name="name">
+                            <cstring>spacer3_2</cstring>
+                        </property>
+                        <property name="orientation">
+                            <enum>Horizontal</enum>
+                        </property>
+                        <property name="sizeType">
+                            <enum>Expanding</enum>
+                        </property>
+                        <property name="sizeHint">
+                            <size>
+                                <width>330</width>
+                                <height>20</height>
+                            </size>
+                        </property>
+                    </spacer>
+                </grid>
+            </widget>
+        </widget>
+        <spacer row="1" column="0">
+            <property name="name">
+                <cstring>spacer7</cstring>
+            </property>
+            <property name="orientation">
+                <enum>Horizontal</enum>
+            </property>
+            <property name="sizeType">
+                <enum>Expanding</enum>
+            </property>
+            <property name="sizeHint">
+                <size>
+                    <width>280</width>
+                    <height>20</height>
+                </size>
+            </property>
+        </spacer>
+        <widget class="QPushButton" row="1" column="2">
+            <property name="name">
+                <cstring>okButton</cstring>
+            </property>
+            <property name="text">
+                <string>&amp;OK</string>
+            </property>
+            <property name="accel">
+                <string>Alt+O</string>
+            </property>
+        </widget>
+        <widget class="QPushButton" row="1" column="1">
+            <property name="name">
+                <cstring>cancelButton</cstring>
+            </property>
+            <property name="text">
+                <string>&amp;Cancel</string>
+            </property>
+            <property name="accel">
+                <string>Alt+C</string>
+            </property>
+        </widget>
+    </grid>
+</widget>
+<images>
+    <image name="image0">
+        <data format="PNG" length="1363">89504e470d0a1a0a0000000d4948445200000016000000160806000000c4b46c3b0000051a49444154789c7d954d6c5cd515c77ff7def7de7ccf388e3dd8900c0e264e214a1a1c65c106a1566d496115d14afdd8548d10ecd820f6a888158b8a45d55aaa94a695828422241644a4952a210ab4c1d48190849004db49ec99f17ccf9bf779ef653149dae22a473aababf3bb7f9df33f3a827bc4e20b2b2ed86930b3589b070bd8006b36ddb4d95888df8c4f9e3cf97f6bc53da08f033f057b08410de1160030d108abd7811561d2b70e267ff82008027dead4a97b83175f589907f122cafd79b1909f98992acbfb7666d9373520e76aaeb68b7cdd306c359ba6dd0b0293061fb876f89b47e23f7d1886617ae703e75bd00741bc81573e7ae8a11c3f3e52e2c06e4b7542a1e40e60dc8cce20e5da6655bebb1c16deffacf3c33810bb2f7b3f7b79aff9cb1920f91fc5b795be512c977ff4d4918a7c66d163b2a41002a238c55a8b520aa524528ccbfc50f38f8b234efdbd6d1badee154fb77fbd6778e2c3288af47f29b62fe1958efe60b1c2d38fb9b88e6063cb4727219e2bc9655ca2446370715c0fd79180e5c8de1c493a294efcd52c8c06fab942a1b092c964866aacf693c785cabcf6ddf972f6e8a28b9410c53195ac66cf0313ecaa96a8ee2c3059ce3059f6b8d94a8813439858e2d4325994f8b1c35a3399dbd2bb5766d5e5eb6af1f9732ef062a9547ae2fb870a624711822064b662d9b7679a8ce720a50440298952922b37034691254ac61926064fc55cab1bcf0fd344a5bdf71d601a38542e57e44436a5d3b7dc3f6198af4d03300c34cb5f0de90c34a5bcc418cbcdad847c76dceb7a2fe5dc7a858e9f6740511abafbfba25673805984ac4d9504416cc83896b9991c8e92748729ef7cd4268c0d008deed8155995323359e6c84291ac27f9d5efa1e9038e0342cda2bc9a03e4919942de4de8fa06cfb15427c7bb70a319d3f735c68ec7bbc3eb71606186a9b2c303d5e2b6a5124280cce484a174d715fdd0a5deb3e43ceef6b43d927cbc5a204a25471fedf2cba7beb30d668c050442dc36392030d2011b60a251ddcfe1eb2cd592a1de89d95dcd315576d0c2a13e52f493641b14a0eba7c4a94288b1fdd061286c1a49acd9c4eaf5dec8d08bb2ac753cfe7925411bcb23bb1c5e7956736097e5c2468eab377adbc09da1c6188b2b218e23b0ba218dbf29ddb4d9005688dac655168be2cc852c5737538480f9d90cafffc2f0ea4f12e67755b62b1e6ab01acfd188b8651cc22f27ecea865c88df8c8549dfd251afe7ea0ed3799f240af9e3df02be588b082283e73a4ced28612d0c43c36a2321880dd6426b602838235cddc1841d3fabeb672b6aabadce9f3fcf338bf2c62d0eee11363d5c9b76286752ac49b9b41ed2ec25b40729ebcd84cb37433ebae873f6df3e8d4e4cabafb9b016311cc5ac6fb488fcce9903e2ed1340e38e2bb432a3df0e06e2e1d55b3c79f0a1a2f4dcf1d3b58d88eb9b11428019db99ac0bd7eb31ab8d98284e59bd3534c37eef939de6e29f91d48140012c2f2ff3f4a2db6ad9dab95ee0ecef8fd2b952de65b2e4e0b912d711b84ae039ff4957c15637e1b36b3d369bfd73d3e9a7afd5e4f2bf802d40ab3b43387cf8b0ad72a9ddb2739ff602956ff692b9c128f5b24e2a0a3907474aa4006b35ad8ecfe75f8fcca5b5c1b0dbed9fd9a92ffcee36b401244b4b4bdb2fc8f1e3c72550f85c3cfbbd54168f19dcfd528ad9524ee50006810e8d360d87f0cbacae9fddcb7b1f1b63ea52ca9694325d5a5ababd24df8a63c78e512e9705e035e3fba67d31b3d70ab54f662a562a2f11368da4f13727ecea8617affbc6986e1445beb5363d7dfaf45dce371c9896f3876949f20000000049454e44ae426082</data>
+    </image>
+    <image name="image1">
+        <data format="PNG" length="1067">89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7af4000003f249444154789ccd574b6f5b4514fe6e12c796f37240ad1aa54d9608046ac563851052792c412cf8096c59b146eabe7f00fe0212d920b1028104ab2e4ad50542a4521195424ca08ee37b7def9cef9c6131d7f715278e5910461acdcc99f13ddff9ce63c691f71e97d9162e55fbff01c05253f0e5de0f5e8410a78822805490844839d6e704591deb321145ffe8184fff3ec14ff73f8bce05b0b7f7a37fe3cd9b200d6a86ebd73601000f7f7952fbd14bcf5d9fcbcaafbf7f083ac1edb73ef1df7e73b706a2064048a499204e32504b00afbd7f075b577ae8745ae8b45bb8ffd59db900ecffd687aae2f63baf626beb437f70f04501a20e4014aa066118276da5dbc6cb2fee6273bd8bde46772ee54070a3aac13987a5a57ad82d350f522d746a215f6e2d61eb6a0fbdf52e7aebff0e00d530180c6166b5bd0603849a05262a07af5dd9c0d6d58d1cc0cadc00848ae1f109c6490ab37add39c580d240adbbe083775fc1cde777b0da6d6375a5333780c16088e42446e604cdc2772a08a95a5036699f7efcdedc4a01c0ccd0ef0f301a8e2024c4c9f92ea028543d840655c3af8f0f61e661dec3e7a399c17be47283f7be3863e68bb588e0e8cf01e23885730449b8990ce4be27c3f8f3fe416dad798056c7300fc0a9a1f89c0c63c4a3b82c6042080927727e0c0899d3af45313a4b913680644e108f1224719257c2504dc337f3b5cc60803903c1053ad56256c064994396398c93145926a5622128a5f28961e2382b08b5a801aa86673757616650f3c5e832419a3a8cc7295a510bedc508ddd66250225ab91772a5241e3fe983125c3023065858471ade7efd85624fd5902419b2cce517543813c06a45a6a7f6ef7ebe97039b9505b9e5cd4294658224496b1f9d7455cd4bb84eddafde9494592e90b214ab86140b6924533f5c0772f6be08410d6eb9980bf21f8e4663dcbbf77bc808d52230eb63a97cdadeeeee33100a348f87994138b90d9338459a0a7676361a7eb686cf9beb3a1b938cd08b304021a886f13843324e4112834152b1b0aef0acf564aeaa585b6b8394e26535930121311a25c5736a3018d768ad525d754d5d5ece3b9dc5fc96bd0800d150549c0345e11c71e3c6fad4d46a66c2594119029b3055e84c004e90a6195cc6a2983c787000558559955a6bb052326156976d6f6f401962409500ce019039818886b49300627b7bed548e572dae065c95feb24610a414056e661a5298e77d8881e5e505901e5134e911a26821b724c880084084288a8ab9f7a10717288c13172c9e0dc08d1d467f3dc5f0a00f21f1e8d1fea91c276d4ab0552eaf29411af7ff809907b30cded7df945193925bb73ef2c7c7233847f47adde269e6bdcf3b0a1aebeb72de941d1e1ee5e701f2bbe85c00ff75bbf4ff86970ee01f8070ef0cb27b70f60000000049454e44ae426082</data>
+    </image>
+</images>
+<connections>
+    <connection>
+        <sender>okButton</sender>
+        <signal>released()</signal>
+        <receiver>ManagerConfigForm</receiver>
+        <slot>accept()</slot>
+    </connection>
+    <connection>
+        <sender>saveButton</sender>
+        <signal>released()</signal>
+        <receiver>ManagerConfigForm</receiver>
+        <slot>saveFile()</slot>
+    </connection>
+    <connection>
+        <sender>reloadButton</sender>
+        <signal>released()</signal>
+        <receiver>ManagerConfigForm</receiver>
+        <slot>reloadFile()</slot>
+    </connection>
+    <connection>
+        <sender>cancelButton</sender>
+        <signal>clicked()</signal>
+        <receiver>ManagerConfigForm</receiver>
+        <slot>accept()</slot>
+    </connection>
+</connections>
+<slots>
+    <slot>saveFile()</slot>
+    <slot>reloadFile()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

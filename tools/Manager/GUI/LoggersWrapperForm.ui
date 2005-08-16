@@ -1,0 +1,48 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>LoggersWrapperForm</class>
+<widget class="QDialog">
+    <property name="name">
+        <cstring>LoggersWrapperForm</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>561</width>
+            <height>484</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>GoboLinux Manager</string>
+    </property>
+    <grid>
+        <property name="name">
+            <cstring>unnamed</cstring>
+        </property>
+        <widget class="QTabWidget" row="0" column="0" rowspan="1" colspan="2">
+            <property name="name">
+                <cstring>tabWidget2</cstring>
+            </property>
+            <widget class="QWidget">
+                <property name="name">
+                    <cstring>tab</cstring>
+                </property>
+                <attribute name="title">
+                    <string>Tab 1</string>
+                </attribute>
+                <grid>
+                    <property name="name">
+                        <cstring>unnamed</cstring>
+                    </property>
+                </grid>
+            </widget>
+        </widget>
+    </grid>
+</widget>
+<slots>
+    <slot>abortSubprocess()</slot>
+    <slot>pauseSubprocess()</slot>
+    <slot>resumeSubprocess()</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

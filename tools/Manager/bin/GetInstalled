@@ -1,0 +1,165 @@
+#!/usr/bin/python
+
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+
+### Changelog ###############################################################
+
+# 19/07/2004 - [detsch] Based on Manager source code
+#
+#############################################################################
+
+ 
+from GuessProgramCase import GuessProgramCase
+import string
+
+from PythonUtils import *
+
+# just for progress indication (updated in runtime)
+linksAtSystemLinks = 25000
+def GetInstalled(path, detectUnlinked = False, callback = consoleProgressHook, dict = None) :
+	if dict :
+		toReturn = dict
+	else :
+		toReturn = KeyInsensitiveDict()
+
+	programs = os.listdir(path)
+	programs = caseinsensitive_sort(programs)
+	otherCaptionVersions = []
+
+	linksList = ''
+	if detectUnlinked :
+		try :
+			goboLinks = os.environ['goboLinks']
+		except :
+			goboLinks = os.popen('. GoboPath; echo -n $goboLinks').read()
+
+		cmd = 'find '+goboLinks+' -printf "%l\n"'
+		x = os.popen(cmd)
+		i = 0
+		global linksAtSystemLinks
+		while 1 :
+			l = x.readlines(1000)
+			if not l :
+				break
+			linksList = linksList + string.join(l, '\n')
+			i = i + len(l)
+			if i >= linksAtSystemLinks :
+				linksAtSystemLinks = i + 10
+				
+			abort = callback('Building links list', i, linksAtSystemLinks)
+			if abort :
+				linksList = ''
+				break
+		
+	for i in range(len(programs)) :
+		abort = callback('Scanning installed programs', i, len(programs))
+	
+		if abort :
+			toReturn = {}
+			break
+
+		p = programs[i]
+
+		# /Program/Linux is a special case, so we ignore it here
+		if p == 'Linux' :
+			continue
+
+		if not os.path.isdir(path+'/'+p):
+			continue
+
+		ds = os.listdir(path+'/'+p)
+
+		versions = [ d for d in ds if d not in ['Current','Settings', 'Variable'] and os.path.isdir(path+'/'+p+'/'+d) ]
+		#versions = [ d for d in versions if os.path.isdir(path+'/'+p+'/'+d) ]
+
+		if (i < len(programs) - 1)  and  p.lower() == programs[i+1].lower() :
+			otherCaptionVersions = otherCaptionVersions + versions
+			continue
+
+		versions = versions + otherCaptionVersions
+		otherCaptionVersions = []
+
+		# Verify: what to do with an empty program entry?
+		if not versions :
+			continue
+
+		currents    = [] # list because of multiple captions
+		unlinkeds   = [] # list of versions that contain have no link at /S/L ou /S/S
+		toReturn[p] = {}
+
+		for v in versions:
+			try :
+				if not os.access(path+'/'+p+'/'+v, os.R_OK) or os.path.samefile(path+'/'+p+'/'+v, path+'/'+p+'/'+'Current') :
+					currents.append(v)
+			except :
+				pass
+			
+			pp = GuessProgramCase(p, v)
+			
+			if linksList :
+				if linksList.find(pp+'/'+v+'/') == -1 :
+					if not v in currents or linksList.find(pp+'/'+'Current') == -1 :
+						unlinkeds.append(v)
+		
+		toReturn[p]['versions'] = versions
+		toReturn[p]['currents'] = currents
+		toReturn[p]['unlinkeds'] = unlinkeds
+	
+	callback('', len(programs), len(programs))
+	
+	return toReturn
+
+
+#############################################################################
+#  'main()'
+#############################################################################
+
+
+if __name__ == '__main__' :
+	import sys
+	import getopt, os
+
+	try :
+		opts, args = getopt.getopt(sys.argv[1:], 'uh', ['detect-unlinked', 'help'])
+	except getopt.GetoptError, detail :
+		print sys.argv[0].split('/')[-1]+': '+str(detail)
+		sys.exit(1)
+		
+	detectUnlinked = False
+	for o, a in opts :
+		if o in ['--detect-unlinked', '-u'] :
+			detectUnlinked = True
+		elif o in [ '--help', '-h' ] :
+			print """
+GetInstalled
+ ...
+ 
+
+Options:
+ -u, --detect-unlinked  detect programs that do not have any linked file
+                        in $goboLinks (printing an 'X' right after them)
+
+Examples of usage:
+ GetInstalled
+ GetInstalled --detect-unlinked
+ 
+ """
+			sys.exit(0)
+			
+	try :
+		goboPrograms = os.environ['goboPrograms']
+	except :
+		goboPrograms = os.popen('. GoboPath; echo -n $goboPrograms').read()
+	
+	d = GetInstalled(goboPrograms, detectUnlinked)
+	ps = d.keys()
+	ps.sort()
+	for p in ps :
+		for v in d[p]['versions'] :
+			if v in d[p]['unlinkeds'] :
+				print p, v, 'X'
+			elif v in d[p]['currents'] :
+				print p, v, '*'
+			else :
+				print p, v
+	

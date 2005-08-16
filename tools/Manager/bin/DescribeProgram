@@ -1,0 +1,253 @@
+#!/usr/bin/python
+
+# (C) 2004 Andre Detsch. Released under the GNU GPL.
+
+
+### Changelog ###############################################################
+
+# 24/08/2004 - [detsch] First functional version, mostly based on Manager source code
+#
+
+from GetAvailable      import getGoboVariable
+from PythonUtils import *
+
+def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', updateall = False, noweb = False, categories = ['Summary', 'Description', 'License', 'Homepage']) :
+	import os
+	goboPrograms = getGoboVariable('goboPrograms')
+	
+	
+	rawDescription = ''
+	if not updateall and os.access(goboPrograms+'/'+p, os.R_OK) :
+		if v :
+			d = v
+		else :
+			d = 'Current'
+		
+		if os.access(goboPrograms+'/'+p+'/'+d+'/Resources/Description', os.R_OK) :
+			f = open(goboPrograms+'/'+p+'/'+d+'/Resources/Description')
+			rawDescription = f.read().strip()
+			f.close()
+	
+	
+	if not rawDescription and not updateall and v:
+		recipesLocalDirs = getCompileOptions()[0]
+		for directory in recipesLocalDirs :
+			path = directory+'/'+p+'/'+v+'/Resources/Description'
+			if os.access(path, os.R_OK) :
+				f = open(path)
+				rawDescription = f.read().strip()
+				f.close()
+				break
+
+	# insert subdirs too
+	if not descriptionsPaths :
+		descriptionsPaths = getGoboVariable('descriptionsLocalPath', 'Manager/DescribeProgram.conf', True)
+		if not descriptionsPaths :
+		    return ''
+	
+	
+	if updateall :
+		localpath = descriptionsPaths[0]
+		import string
+		urls = getGoboVariable('descriptionsSources', 'Manager/DescribeProgram.conf', True)
+		for j in range(len(urls)) :
+			url = string.join(urls[j].split('/')[:-1], '/') + '/'+ "AllDescriptions.tar.bz2"
+			ret = os.system('wget '+url+' -O /tmp/AllDescriptions.tar.bz2')
+			if ret != 0 :
+				print 'Failed to download '+url
+				continue
+			os.system('cd '+localpath+'; tar xvfj /tmp/AllDescriptions.tar.bz2')
+			os.system('rm /tmp/AllDescriptions.tar.bz2')
+		return ''
+		
+		
+		
+	expandendDescriptionsPaths = descriptionsPaths
+	
+	for directory in expandendDescriptionsPaths :
+		directory = os.path.expanduser(directory.strip())
+		if os.access(directory, os.R_OK) :
+			for file in os.listdir(directory) :
+				if os.path.isdir(directory+'/'+file) :
+					expandendDescriptionsPaths.append(directory+'/'+file)
+	
+	if not rawDescription and not updateall:
+		for directory in expandendDescriptionsPaths : 
+			if os.access(directory+'/'+p.lower(), os.R_OK) :
+				try :
+					fff = open(directory+'/'+p.lower())
+					rawDescription = fff.read()
+					fff.close()
+					break
+				except :
+					break
+	
+	
+	if not noweb and (updateall or not rawDescription)  :
+		
+		import GetAvailable
+		
+		try :
+			urls = getGoboVariable('descriptionsSources', 'Manager/DescribeProgram.conf', True)
+			for j in range(len(urls)) :
+				if '.' in urls[j].split('/')[-1] :
+					extension = '.' + urls[j].split('/')[-1].split('.')[-1]
+				else :
+					extension = ''
+				urls[j] = (urls[j], 'descriptions'+str(j)+extension)
+		
+		except :
+			urls = []
+				
+		p = p.lower()
+		GetAvailable.downloadFiles(urls)
+		
+		for url, file in urls :
+				import bz2, os, string
+				
+				if not os.access(GetAvailable.cacheDir+'/'+file, os.R_OK) :
+					continue
+					
+				f = bz2.BZ2File(GetAvailable.cacheDir+'/'+file)
+				
+				try :
+				    lines = f.readlines()
+				except :
+				    continue
+				
+				availableDescriptions = map(string.strip, lines)
+				if not updateall :
+					if p in availableDescriptions :
+						programsList = [p]
+					else :
+						programsList = []
+				else :
+					programsList = availableDescriptions
+				for name in programsList :
+					localpath = descriptionsPaths[0]
+					if not os.access(localpath, os.R_OK) :
+						os.makedirs(localpath)
+						os.chmod(localpath, os.S_ISVTX)
+						os.chmod(localpath, os.S_IWGRP)
+						os.chmod(localpath, os.S_IWOTH)
+					
+					base_url = string.join(url.split('/')[:-1], '/')
+					import urllib
+					try :
+						if os.access(localpath+'/'+name, os.R_OK) :
+							os.unlink(localpath+'/'+name)
+						has_wget = not os.system('wget --help &> /dev/null')
+						if has_wget :
+							timeout = 5
+							cmd = 'wget --timeout=%d --quiet %s -O %s && touch %s'%(timeout, base_url+'/'+name, localpath+'/'+name, localpath+'/'+name)
+							os.popen(cmd)
+							print 'has',cmd
+						else :
+							try :
+								urllib.urlretrieve(base_url+'/'+name, localpath+'/'+name)
+							except :
+								sys.stderr.write('Timeout\n')
+					except :
+						sys.stderr.write('Could not save file '+localpath+'/'+name+'\n')
+						return ''
+					
+					if not updateall :
+						rawDescription = open(localpath+'/'+name).read().strip()
+				f.close()
+
+				
+	rawDescription = rawDescription.strip()
+	
+	if not rawDescription or not mode in ['html', 'terminal']:
+		return rawDescription
+	
+	h = TextHarvester(rawDescription)
+	
+	doBreak = False
+	
+	if h.contains('[') :
+		bakedDescription = h.getUntilNext('[')
+	else :
+		bakedDescription = ''
+		category = 'Description'
+		text = h.getUntilEnd()
+		if mode == 'terminal' :
+			bakedDescription = bakedDescription + '\033[32m' + '[' + category + ']' + "\033[0m" + '\n'
+			bakedDescription = bakedDescription + text.strip() + '\n'+'\n'
+		elif mode == 'html' :
+			bakedDescription = bakedDescription + '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
+
+	while True :
+		if h.contains('[') :
+			h.skipUntilNext('[')
+			category = h.getUntilNext(']')
+			h.skipUntilNext(']')
+			if h.contains('[') :
+				text = h.getUntilNext('[')
+			else :
+				text = h.getUntilEnd()
+				doBreak = True
+				
+			if not categories or category in categories :
+				if mode == 'terminal' :
+					bakedDescription = bakedDescription + '\033[32m' + '[' + category + ']' + "\033[0m" + '\n'
+					bakedDescription = bakedDescription + text.strip() + '\n'+'\n'
+				elif mode == 'html' :
+					bakedDescription = bakedDescription + '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
+				
+			if doBreak :
+				break
+		else :
+			break
+	
+	return bakedDescription
+
+if __name__ == '__main__' :
+	import sys
+	import getopt, os
+	
+	try : 
+		opts, args = getopt.getopt(sys.argv[1:], 'aWh', ['update-all', 'no-web', 'help'])
+	except getopt.GetoptError, detail :
+		print sys.argv[0].split('/')[-1]+': '+str(detail)
+		sys.exit(1)
+	
+	updateall = False
+	noWeb = False
+	for o, a in opts :
+		if o in ['-a', '--update-all'] :
+			updateall = True
+		elif o in ['--no-web', '-W'] :
+			noWeb = True
+		elif o in [ '--help', '-h' ] :
+			print """
+DescribeProgram
+ Returns the description of the program, if available.
+ <under construction, features listed may not be implemented>
+Options:
+ 
+ -a, --update-all     downloads all descriptions available at the servers and 
+                      cache them locally
+
+ -W, --no-web         do not try to download remote descriptions if they are not
+                      locally available
+ 
+Examples of usage:
+ DescribeProgram gimp
+ DescribeProgram -W gimp
+ DescribeProgram -a
+ """
+			sys.exit(0)
+	if len (args) >= 2 :
+		v = args[1]
+	else :
+		v = ''
+	if len (args) >= 1 :
+		p = args[0]
+	elif updateall :
+		p = ''
+	else :
+		sys.exit(1)
+	
+	ret = DescribeProgram(p, v, [], 'terminal', updateall, noWeb)
+	print ret
