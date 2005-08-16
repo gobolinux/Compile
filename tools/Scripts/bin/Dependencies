@@ -226,6 +226,14 @@ then
          result=1
          if [ "$execute" -a ! "$skipall" -a ! "$installall" ] 
          then
+            # Look for the existance of a compatible package
+            compatible_package=`HasCompatiblePackage $program`
+            if [ "$compatible_package" != "" ]
+            then
+                Log_Normal "Dependency $program is not installed, but compatible package $compatible_package is"
+                continue
+            fi
+            
             Log_Question "Dependency $program $version is not installed."
             Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
             [ "$REPLY" = "I" -o "$REPLY" = "i" ] && { $execute "$program" "$version" || $execute "$program" ;}
