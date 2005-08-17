@@ -1,11 +1,15 @@
 
 DIR=../lib/python2.3/site-packages/
 
-all: $(DIR)/ManagerUI.py $(DIR)/ManagerConfigForm.py $(DIR)/LoggersWrapperForm.py
+all: $(DIR)/ManagerUI.py $(DIR)/ManagerConfigForm.py $(DIR)/LoggersWrapperForm.py $(DIR)/GenericEditor.py
 
 
 $(DIR)/LoggersWrapperForm.py: LoggersWrapperForm.ui
 	pyuic LoggersWrapperForm.ui > $(DIR)/LoggersWrapperForm.py
+
+$(DIR)/GenericEditor.py: GenericEditor.ui
+	pyuic GenericEditor.ui > $(DIR)/GenericEditor.py
+
 
 $(DIR)/ManagerUI.py: ManagerUI.ui
 	pyuic ManagerUI.ui > $(DIR)/ManagerUI.py
