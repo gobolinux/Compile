@@ -8,7 +8,7 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>476</width>
+            <width>481</width>
             <height>419</height>
         </rect>
     </property>
@@ -125,9 +125,6 @@
                         </property>
                         <property name="title">
                             <string>Running threads</string>
-                        </property>
-                        <property name="toolTip" stdset="0">
-                            <string>You have to save the settings and restart Manager in order to change the number of running threads</string>
                         </property>
                         <grid>
                             <property name="name">

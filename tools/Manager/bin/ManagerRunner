@@ -34,6 +34,7 @@ class Runner(Thread) :
 		self.logger = logger
 		self.cmd = cmd
 		self.runningModule = runningModule
+		
 	
 	def getMessageLettersWords(self, line) :
 		letters = []

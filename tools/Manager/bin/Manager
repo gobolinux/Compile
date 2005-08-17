@@ -273,6 +273,7 @@ class ManagerUIImpl(ManagerUI) :
 		for item, default in self.getSettings():
 			self.writeSetting(item)
 		self.forceAvailablesRescan()
+		self.updateLoggersWindow()
 		
 	def readSettings(self) : #
 		for item, default in self.getSettings():
@@ -303,8 +304,6 @@ class ManagerUIImpl(ManagerUI) :
 		self.running  = False
 		#self.mustStop = False
 		
-		self.multimode = 1
-
 		self.installedProgramActions = [self.symlinkProgramAction, self.symlinkProgramOverwriteAction, self.removeProgramAction, self.disableProgramAction, self.createPackageAction]
 		
 		self.visualTree = None
@@ -315,27 +314,22 @@ class ManagerUIImpl(ManagerUI) :
 		self.availables['local_package']['pixmap']     = QPixmap(iconsDir+'/'+localBinaryIcon)
 		self.availables['local_package']['show']       = self.show_local_package.isOn 
 		self.availables['local_package']['actions']    = [self.installPackageAction]
-		self.availables['local_package']['selectable'] = self.localpackageSelectable.isOn 
 		
 		self.availables['official_package']['pixmap']     = QPixmap(iconsDir+'/'+officialBinaryIcon)
 		self.availables['official_package']['show']       = self.show_official_package.isOn
 		self.availables['official_package']['actions']    = [self.installPackageAction, self.downloadPackageAction]
-		self.availables['official_package']['selectable'] = self.officialpackageSelectable.isOn 
 		
 		self.availables['contrib_package']['pixmap']     = QPixmap(iconsDir+'/'+contribBinaryIcon)
 		self.availables['contrib_package']['show']       = self.show_contrib_package.isOn 
 		self.availables['contrib_package']['actions']    = [self.installPackageAction,self.downloadPackageAction]
-		self.availables['contrib_package']['selectable'] = self.contributedpackageSelectable.isOn 
 		
 		self.availables['recipe']['pixmap']   = QPixmap(iconsDir+'/'+recipeIcon)
 		self.availables['recipe']['show']     = self.show_recipe.isOn 
 		self.availables['recipe']['actions']  = [self.compileRecipeAction, self.fetchRecipeAction, self.newVersionAction, self.doEditRecipeAction]
-		self.availables['recipe']['selectable'] = self.recipeSelectable.isOn 
 		
 		self.availables['tracked']['pixmap']  = QPixmap(iconsDir+'/'+trackedIcon)
 		self.availables['tracked']['show']    = self.show_tracked.isOn 
 		self.availables['tracked']['actions'] = [self.newVersionAction] #, self.newVersionAndCompileAction]
-		self.availables['tracked']['selectable'] = self.trackedSelectable.isOn 
 		
 		self.allActions = self.installedProgramActions[:]
 		for t in self.availables.keys() :
@@ -354,33 +348,62 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.loggers = LoggersWrapper(self.queueToggleShowRunWindowAction.setOn)
 		
-		if self.multimode :
-			self.runningModules = {}
-			
-			# warning, the folowing lines sets are strongly corelated...
-			self.cmdDict = {}
-			self.cmdDict["CPU"]       =  r"((Compile(?! -B))|(CreatePackage))"
-			self.cmdDict["Bandwidth"] =  r"((InstallPackage -I)|(Compile -B))"
-			self.cmdDict["Other"]     =  '('+self.cmdDict["CPU"] + '|' + self.cmdDict["Bandwidth"] + ')'
-			
-			self.threasNumberDict = {}
-			self.threasNumberDict["CPU"]       =  self.configWindow.threadsCPU.value()
-			self.threasNumberDict["Bandwidth"] =  self.configWindow.threadsBandwidth.value()
-			self.threasNumberDict["Other"]     =  self.configWindow.threadsOther.value()
-			
-			for cmdType in self.cmdDict.keys() :
-				for i in range(self.threasNumberDict[cmdType]) :
-					name = cmdType + '-' + str(i+1)
+		self.runningModules = {}
+
+		self.prepareLoggersWindow()
+		self.enableOrDisableQueueActions()
+		self.initialized = True
+	
+	def prepareLoggersWindow(self) :
+		self.cmdDict = {}
+		self.cmdDict["Compilation"] =  r"((Compile(?! -B))|(CreatePackage))"
+		self.cmdDict["Download"]    =  r"((InstallPackage -I)|(Compile -B))"
+		self.cmdDict["Other"]       =  '('+self.cmdDict["Compilation"] + '|' + self.cmdDict["Download"] + ')'
+		
+		self.threasNumberDict = {}
+		self.threasNumberDict["Compilation"] =  self.configWindow.threadsCPU.value()
+		self.threasNumberDict["Download"]    =  self.configWindow.threadsBandwidth.value()
+		self.threasNumberDict["Other"]       =  self.configWindow.threadsOther.value()
+		
+		t = self.cmdDict.keys()
+		t.sort()
+		for cmdType in t :
+			for i in range(self.threasNumberDict[cmdType]) :
+				name = cmdType + '-' + str(i+1)
+				self.runningModules[name] = {}
+				self.runningModules[name]["name"] = name
+				self.runningModules[name]["logger"] = Logger(name, self.loggers)
+				self.runningModules[name]["commands"] = self.cmdDict[cmdType]
+				self.runningModules[name]["inverse_regex"] = (cmdType == "Other")
+				self.runningModules[name]["running"]  = False
+	
+	def updateLoggersWindow(self) :
+		self.threasNumberDict = {}
+		self.threasNumberDict["Compilation"] =  self.configWindow.threadsCPU.value()
+		self.threasNumberDict["Download"]    =  self.configWindow.threadsBandwidth.value()
+		self.threasNumberDict["Other"]       =  self.configWindow.threadsOther.value()
+		
+		for name in self.runningModules.keys() :
+			t = name.split('-')[0]
+			n = int(name.split('-')[1])
+			if self.threasNumberDict[t] < n :
+				self.runningModules[name]["logger"].remove()
+				del self.runningModules[name]
+						
+		t = self.cmdDict.keys()
+		t.sort()
+		for cmdType in t :
+			for i in range(self.threasNumberDict[cmdType]) :
+				name = cmdType + '-' + str(i+1)
+				if not self.runningModules.has_key(name) or not self.runningModules[name] :
 					self.runningModules[name] = {}
 					self.runningModules[name]["name"] = name
 					self.runningModules[name]["logger"] = Logger(name, self.loggers)
 					self.runningModules[name]["commands"] = self.cmdDict[cmdType]
 					self.runningModules[name]["inverse_regex"] = (cmdType == "Other")
 					self.runningModules[name]["running"]  = False
-				
-		self.enableOrDisableQueueActions()
-		self.initialized = True
-		
+	
+	
 	def doUpdateCache(self) : #
 		for t in self.availables.keys() :
 			self.availables[t]['programs'] = {}
@@ -496,16 +519,15 @@ class ManagerUIImpl(ManagerUI) :
 		for p in programs :
 			pp = QListViewItem(pList, p)
 			pp.setPixmap(0, openProgramPixmap)
-			pp.setSelectable(self.programSelectable.isOn())
+			pp.setSelectable(False)
 			pList.insertItem(pp)
 			pp.setOpen(1)
 			x = pp
 			versions = GuessLatest(self.visualTree[p],returnList=1)
 			versions.reverse()
-			for (v,pixmap,selectable) in versions :
+			for (v,pixmap) in versions :
 				vv = QListViewItem(pList, v)
 				vv.setPixmap(0, pixmap)
-				vv.setSelectable(selectable)
 				x.insertItem(vv)
 
 		pList.setContentsPos(0, before)
@@ -554,11 +576,11 @@ class ManagerUIImpl(ManagerUI) :
 
 				for v in versions :
 					if v in unlinkeds :
-						self.visualTree[p].append((v, unlinkedVersionPixmap, self.installedUnlinkedSelectable.isOn()))
+						self.visualTree[p].append((v, unlinkedVersionPixmap))
 					elif v in currents:
-						self.visualTree[p].append((v, currentVersionPixmap, self.installedCurrentSelectable.isOn()))
+						self.visualTree[p].append((v, currentVersionPixmap))
 					else :
-						self.visualTree[p].append((v, otherVersionPixmap, self.installedOtherSelectable.isOn()))
+						self.visualTree[p].append((v, otherVersionPixmap))
 
 		added = map(string.lower, self.installed.keys())
 		toAdd = []
@@ -590,13 +612,13 @@ class ManagerUIImpl(ManagerUI) :
 						
 						if self.showOutdatedAvailableAction.isOn():
 							for i in self.availables[t]['programs'][p].keys() :
-								self.visualTree[p].append((i,self.availables[t]['pixmap'], self.availables[t]['selectable']()))
+								self.visualTree[p].append((i,self.availables[t]['pixmap'] ))
 						
 						elif not self.installed.has_key(p) :
-							self.visualTree[p].append((v,self.availables[t]['pixmap'], self.availables[t]['selectable']()))
+							self.visualTree[p].append((v,self.availables[t]['pixmap']))
 						
 						elif GuessLatest([v, GuessLatest(self.installed[p]['versions'])]) != GuessLatest(self.installed[p]['versions']) :
-							self.visualTree[p].append((v,self.availables[t]['pixmap'], self.availables[t]['selectable']()))
+							self.visualTree[p].append((v,self.availables[t]['pixmap']))
 
 	def getTypeOfPixmap(self, px) :
 		#TODO: complete this list
@@ -871,10 +893,10 @@ class ManagerUIImpl(ManagerUI) :
 		for p, v in self.getSelectedProgramsAndVersions() :
 			assert p
 			if self.configWindow.splitDownload.isChecked() :
-					cmds.append('Compile -B '+p+' '+v)
-					apps.append(p)
-					cmds.append('nice Compile -W '+p+' '+v)
-					apps.append(p)
+				cmds.append('Compile -B '+p+' '+v)
+				apps.append(p)
+				cmds.append('nice Compile -W '+p+' '+v)
+				apps.append(p)
 			else :
 				cmds.append('nice Compile '+p+' '+v)
 				apps.append(p)
@@ -1082,7 +1104,6 @@ class ManagerUIImpl(ManagerUI) :
 		
 		elif (not queueEmpty or isSomethingRunning) and not actionsWereEnabled :
 			enable = True
-		
 		else :
 			return
 		

@@ -14,7 +14,6 @@ $(DIR)/ManagerConfigForm.py: ManagerConfigForm.ui
 	pyuic ManagerConfigForm.ui > $(DIR)/ManagerConfigForm.py
 	
 
-
 $(DIR)/GraphicalTailForm.py: graphicaltailform.ui
 	pyuic graphicaltailform.ui > $(DIR)/GraphicalTailForm.py
 
