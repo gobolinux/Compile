@@ -1062,7 +1062,6 @@ class ManagerUIImpl(ManagerUI) :
 		QMessageBox.about(self, 'About', 'Manager 1.1.0alpha\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
 
 	def commandFinished(self, aborted, logger, cmd, runningModule) :
-		# TODO: replace command in queue if not sucessful
 		if aborted or self.commandsQueue.count() == 0:
 			if aborted :
 				self.commandsQueue.insertItem(cmd)
@@ -1071,6 +1070,8 @@ class ManagerUIImpl(ManagerUI) :
 			self.mustStop = True
 			self.running = False
 			self.enableOrDisableQueueActions()
+			
+			self.rescan()
 		
 		self.programsAtQueue[cmd] = self.programsOnRun[cmd]
 		del(self.programsOnRun[cmd])
