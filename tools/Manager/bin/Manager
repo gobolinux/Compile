@@ -33,6 +33,8 @@ from GetAvailable      import GetAvailable, getGoboVariable
 from DescribeProgram   import DescribeProgram
 from GuessProgramCase  import GuessProgramCase 
 
+from GenericEditor import *
+
 from PythonUtils import *
 #from GraphicalTail import GraphicalTail
 from LoggersWrapper import *
@@ -352,6 +354,8 @@ class ManagerUIImpl(ManagerUI) :
 
 		self.prepareLoggersWindow()
 		self.enableOrDisableQueueActions()
+		
+		self.genericEditor = GenericEditor(modal=1)
 		self.initialized = True
 	
 	def prepareLoggersWindow(self) :
@@ -944,7 +948,32 @@ class ManagerUIImpl(ManagerUI) :
 			cmds.append('SymlinkProgram -c overwrite '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
-
+	
+	def doEditRecipe(self) :
+		cmds = []
+		apps = []
+		for p, v in self.getSelectedProgramsAndVersions() :
+			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][0])
+			localRecipe = x.read().strip() + '/Recipe'
+			x.close()
+			
+			print localRecipe
+			if localRecipe and os.path.isfile(localRecipe):
+				f = open(localRecipe)
+				self.genericEditor.textEdit.setText(f.read())
+				self.genericEditor.setCaption(localRecipe)
+				f.close()
+				self.connect(self.genericEditor.okButton,SIGNAL("clicked()"),self.editRecipeOK)
+				self.genericEditor.show()
+				
+				
+	def editRecipeOK(self) :
+		t = str(self.genericEditor.textEdit.text())
+		f = open(str(self.genericEditor.caption()), 'w')
+		f.write(t)
+		f.close()
+		
+		
 	def doCreatePackage(self) :
 		cmds = []
 		apps = []
@@ -1083,6 +1112,7 @@ class ManagerUIImpl(ManagerUI) :
 	
  	def showCommandsQueueMenu(self, item, point) :
 		self.Queue.popup(point)
+
 
 	def enableOrDisableQueueActions(self) :
 		queueEmpty = (self.commandsQueue.count() == 0)

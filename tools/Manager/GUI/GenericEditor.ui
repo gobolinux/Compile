@@ -65,5 +65,19 @@
         </widget>
     </grid>
 </widget>
+<connections>
+    <connection>
+        <sender>cancelButton</sender>
+        <signal>clicked()</signal>
+        <receiver>GenericEditor</receiver>
+        <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>okButton</sender>
+        <signal>clicked()</signal>
+        <receiver>GenericEditor</receiver>
+        <slot>close()</slot>
+    </connection>
+</connections>
 <layoutdefaults spacing="6" margin="11"/>
 </UI>
