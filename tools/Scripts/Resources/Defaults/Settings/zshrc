@@ -4,7 +4,7 @@
 ### Global ZShell settings.
 
 # This line has to come first for dircolors.
-export SHELL=/bin/zsh
+export SHELL=/System/Links/Executables/zsh
 
 # Disable flow control. (Ctrl-S, Ctrl-Q is annoying)
 stty -ixon
