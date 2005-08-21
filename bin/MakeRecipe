@@ -29,6 +29,7 @@ scriptUsage="[<app_name> [<app_version>]] <url>"
 scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
 Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
+Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -78,7 +79,7 @@ then
 fi
 
 
-if ! Boolean "no-check"
+if ! Boolean "no-check" && ! Boolean "batch"
 then
    sameversionrecipe=`FindPackage --types=recipe $packagename $versionnumber 2> /dev/null`
    if [ "$sameversionrecipe" ]
@@ -105,8 +106,7 @@ then
    fi
 fi
 
-
-Ask_Continue "Creating recipe template for $packagename version $versionnumber."
+Boolean "batch" || Ask_Continue "Creating recipe template for $packagename version $versionnumber."
 
 recipedir="$genRecipeRecipeDir/$packagename/$versionnumber"
 
