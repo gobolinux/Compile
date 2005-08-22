@@ -13,22 +13,15 @@ then
 fi
 
 function search_packages() {
-        i=2
-        while true
-        do
-                package=`echo "$1" | cut -d" " -f$i`
-                if [ "$package" = "" ]
-                then
-                    return
-                fi
-                    
-                let i=i+1
-                if [ -d "$goboPrograms/$package" ]
-                then
-                    echo "$package"
-                    return
-                fi
-        done
+   for package in $1
+   do
+      if [ -d "$goboPrograms/$package" ]
+      then
+         echo "$package"
+	 return
+      fi
+   done
+   return
 }
 
 cat "$goboSettings"/Scripts/CompatibilityList | while read line
