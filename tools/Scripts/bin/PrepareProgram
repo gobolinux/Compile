@@ -60,6 +60,8 @@ Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf,
 Parse_Options "$@"
 shift $parsedArguments
 
+Is_Entry "configure" && export PATH="$PATH:."
+
 ### Functions ############################################################
 
 function config_is_autoconf() {
