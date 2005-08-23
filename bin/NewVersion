@@ -88,7 +88,7 @@ fi
 if [ "$newurl" ]
 then
    . Recipe.old
-   switchurls="s,$url,$newurl,g;"
+   switchurls="s,$url,$newurl,g;s,^url=.*$,url='$newurl',g;"
 fi
 
 # do not copy version-specific values
