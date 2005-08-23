@@ -99,7 +99,7 @@ then
          Log_Question "$sameprogramrecipe"
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
 	 then
-	    NewVersion $packagename $versionnumber
+	    NewVersion "$packagename" "$versionnumber" "$1"
 	    exit 0
 	 fi
       fi
