@@ -43,6 +43,11 @@ then sudo=
 else sudo="sudo -u #0"
 fi
 
+if wget --help | grep -q no-check-certificate
+then wget="wget --no-check-certificate"
+else wget="wget"
+fi
+
 [ "$PAGER" ] || PAGER=less
 
 assert_dir $genRecipeRecipeDir
@@ -132,9 +137,9 @@ Quiet pushd "$compileArchivesDir"
 file="$PWD/$(basename "$1")"
 if ! Boolean "no-fetch"
 then
-   wget --passive-ftp -c "$1" || \
-   wget --passive-ftp "$1" || \
-   wget "$1" || {
+   $wget --passive-ftp -c "$1" || \
+   $wget --passive-ftp "$1" || \
+   $wget "$1" || {
       Log_Error "Couldn't fetch file, URL may be invalid."
       exit 1
    }

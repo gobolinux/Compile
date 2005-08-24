@@ -40,6 +40,11 @@ then sudo=
 else sudo="sudo -u #0"
 fi
 
+if wget --help | grep -q no-check-certificate
+then wget="wget --no-check-certificate"
+else wget="wget"
+fi
+
 ##################################################
 # Helper functions
 ##################################################
@@ -124,7 +129,7 @@ do
          # Fail! No more mirrors!
          return 1
       fi
-      $sudo wget -O "${files[fileindex]}" -c --passive-ftp "$fetch" || {
+      $sudo $wget -O "${files[fileindex]}" -c --passive-ftp "$fetch" || {
          wget_url "$fileindex" "$[mirrorlevel+1]"
       }
    }
