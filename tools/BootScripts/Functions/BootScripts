@@ -5,6 +5,9 @@ TimeOut=1200 # 1200*BusyWait = 2 minutes
 
 execCtr=0
 forkCtr=0
+logpath=${goboVariable}/log
+dateformat=+%F' '%R
+export templog="\n`date $dateformat` \n----------------"
 
 ### User-available commands ###
 
@@ -16,6 +19,7 @@ forkCtr=0
 
 Exec() {
    local message="$1"
+   LogBoot "\n$message"
    shift
    ThemeBefore "$execCtr" "$message" || return 1
    case "$1" in
@@ -150,8 +154,21 @@ Quit() {
 }
 
 ExecBackend() {
-   "$@" 1> $ThemeStdoutStream 2> $ThemeStderrStream
-   ThemeAfter "$execCtr" "$?"
+    command=$@
+    local message=`"$@" 2>&1`
+    exitstatus=$?
+    ThemeAfter "$execCtr" "$exitstatus"
+   
+    if test $exitstatus -lt 1
+	then
+	echo $message > $ThemeStdoutStream
+	test -z "$message" && message="ok"
+	LogBoot $command " -- " $message
+    else
+	echo $message > $ThemeStderrStream
+	test -z "$message" && message="error"
+	LogBoot $command " -- " $message
+    fi
 }
 
 WaitBackend() {
@@ -166,4 +183,18 @@ WaitBackend() {
    then echo -1
    else cat "$ForksDir/$id"
    fi
+}
+
+LogBoot() {
+    if touch ${logpath}/boot.log 2>/dev/null
+	then
+	if test -n "$templog"
+	    then
+	    echo -e $templog >> ${logpath}/boot.log
+	    unset templog
+	fi
+	echo -e $@ >> ${logpath}/boot.log
+    else
+	export templog="$templog\n$@"
+    fi
 }
