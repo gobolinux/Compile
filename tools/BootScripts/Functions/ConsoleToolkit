@@ -1,0 +1,161 @@
+#!/bin/sh
+
+size=$(stty size)
+COLUMNS=${size##* }
+ROWS=${size% *}
+
+### Console toolkit :) ###
+
+function HideOutputHack() {
+   echo -en "\033[$[ROWS-1];$[ROWS]r\033[$[ROWS-1];1H\033[0;$[$1+30];$[$1+40]m"
+}
+
+function PrintAt() {
+   [ "$4" ] && color="\033[${4}${5}m" || color=
+   echo -en "\033[${2};${1}H"${color}"$3"
+}
+
+function GotoXY() {
+   echo -en "\033[${2};${1}H"
+}
+
+function ClearEOL() {
+   echo -en "\033[K"
+}
+
+function ClearLine() {
+   echo -en "\033[2K"
+}
+
+function ScrollArea() {
+   echo -en "\033[${1};${2}r"
+}
+
+function SetPalette() {
+   echo -en "\033]P${1}${2}"
+}
+
+function ResetPalette() {
+   echo -en "\033]R"
+}
+
+function Cursor() {
+   case "$1" in
+                 [Ss]ave) echo -en "\033[s" ;;
+              [Rr]estore) echo -en "\033[u" ;;
+                   [Oo]n) echo -en "\033[?25h" ;;
+                  [Oo]ff) echo -en "\033[?25l" ;;
+   esac # is ridiculous
+}
+
+function FillLineWith() {
+   echo -en "[K(U"
+   for (( i=0 ; i < COLUMNS ; i++ ))
+   do echo -n "$1"
+   done
+   echo -en "(B"
+}
+
+RepeatAt() {
+   local i=0
+   line=
+   for (( i=0 ; i < $3; i++ ))
+   do line=$line"$4"
+   done
+   [ "$5" ] && color="\033[${5}${6}m" || color=
+   echo -en "\033[0;${2};${1}H$color$line"
+}
+
+FillBox() {
+   local i=0
+   line=
+   for (( i=$1 ; i < $3; i++ ))
+   do line=$line"$5"
+   done
+   for (( i=$2 ; i < $4; i++ ))
+   do echo -en "\033[${i};${1}H$line"
+   done
+}
+
+function Box() {
+   local i=0
+   for (( i=$1+1 ; i < $3; i++ ))
+   do line=$line" "
+      border=$border"-"
+   done
+   GotoXY $1 $2
+   echo -n "+$border+"
+   for (( i=$2+1 ; i < $4; i++ ))
+   do GotoXY $1 $i
+      echo -n "|$line|"
+   done
+   GotoXY $1 $4
+   echo -n "+$border+"
+}
+
+function Window() {
+   local border=""
+   local shadow=""
+   local line=""
+   for (( i=$1+1 ; i < $3-1; i++ ))
+   do line=$line" "
+      border=$border"-"
+      shadow=$shadow"a"
+   done
+   GotoXY $1 $2
+   echo -n "+$border+"
+   for (( i=$2+1 ; i < $4-1; i++ ))
+   do GotoXY $1 $i
+      echo -n "|$line|aa"
+   done
+   GotoXY $1 $[$4-1]
+   echo -n "+$border+aa"
+   GotoXY $[$1+2] $4
+   echo -n "${shadow}aa"
+}
+
+FGDefault="0;39"
+FGBold="1;39"
+FGBlack="0;30"
+FGGray="1;30"
+FGBoldGray="1;37"
+FGWhite="1;37"
+FGBrown="0;33"
+FGYellow="1;33"
+FGRed="0;31"
+FGBoldRed="1;31"
+FGGreen="0;32"
+FGBoldGreen="1;32"
+FGBlue="0;34"
+FGBoldBlue="1;34"
+FGMagenta=35
+FGBoldMagenta="1;35"
+FGCyan=36
+FGBoldCyan="1;36"
+
+BGBlack=";40"
+BGRed=";41"
+BGGreen=";42"
+BGBrown=";43"
+BGBlue=";44"
+BGMagenta=";45"
+BGCyan=";46"
+BGWhite=";47"
+BGDefault=";49"
+
+Black=0
+Red=1
+Green=2
+Brown=3
+Blue=4
+Magenta=5
+Cyan=6
+White=7
+Default=9
+
+Color() {
+   fground=$1
+   bground=$2
+   [ "$3" ] && bold="1;" || bold="0;"
+   echo -en '\033['${bold}$[fground+30]';'$[bground+40]'m'
+}

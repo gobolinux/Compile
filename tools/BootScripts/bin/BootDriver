@@ -1,0 +1,42 @@
+#!/bin/sh
+
+# GoboLinux Init Script
+# Written by Hisham Muhammad
+
+trap "" INT QUIT TSTP
+umask 022
+
+### Sourcing necessary files ###
+
+source GoboPath
+BootScriptsDir=/Programs/BootScripts/Current/
+source ${goboSettings}/BootOptions
+source ${BootScriptsDir}/Functions/BootScripts
+source ${goboEnvironment}/Cache
+
+### Variables ###
+
+ForksDir=${goboVariable}/BootScripts
+export PATH="$PATH":/System/Links/Tasks:${goboSettings}/BootScripts
+modescript="$1"
+
+mount ${goboStatus} &> /dev/null
+cmdline=`cat ${goboStatus}/cmdline`" "
+while [ "$cmdline" ]
+do
+   switch="${cmdline%% *}"
+   key="${switch%%=*}"
+   value="${switch#*=}"
+   [ "$PREVLEVEL" = "N" -a "$key" = "Boot" ] && modescript="$value"
+   [ "$key" = "BootTheme" ] && BootTheme="$value"
+   cmdline="${cmdline#* }"
+done
+
+### Launch the actual scripts ###
+
+source "$BootScriptsDir/Themes/$BootTheme"
+
+ThemeInit
+ThemeFile "$modescript"
+source /System/Settings/BootScripts/"$modescript"
+ThemeFinish "/System/Settings/issue"

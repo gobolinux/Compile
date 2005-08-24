@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#
+# Simple wrapper to create empty files and give it
+# a specific permission.
+# Example: CreateChmod 644 "$goboVariable/run/wtmp" "foo" "bar"
+# Written by Hisham Muhammad, xx/xx/2002
+#
+
+mod="$1"
+shift
+while [ "$1" ]
+do
+   touch "$1" && chmod "$mod" "$1"
+   shift
+done

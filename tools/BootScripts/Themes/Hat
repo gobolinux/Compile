@@ -1,0 +1,110 @@
+#!/bin/sh
+
+COLUMNS=$(stty size)
+COLUMNS=${COLUMNS##* }
+COL=$[ COLUMNS - 10 ]
+TCOL=$[ COLUMNS / 2 - 20 ]
+SetCol="echo -en \\033[${COL}G"
+SetTCol="echo -en \\033[${TCOL}G"
+CursUp="echo -en \\033[A"
+
+ColorWhite="echo -en \\033[0;39m"
+ColorGreen="echo -en \\033[1;32m"
+ColorYellow="echo -en \\033[1;33m"
+ColorRed="echo -en \\033[1;31m"
+
+Interactive=no
+
+ThemeInit() {
+   ThemeStdoutStream=/dev/null
+   ThemeStderrStream=/dev/null
+}
+
+ThemeFile() {
+if [ "$1" = "Init" ]
+then
+    echo
+    $SetTCol
+    echo -en "         Welcome to "
+    $ColorGreen
+    echo "GoboLinux"
+    $ColorWhite
+    $SetTCol
+    read -t 1 -n 1 -p "Press 'Y' now for interactive startup. "
+    [ "$REPLY" = "Y" -o "$REPLY" = "y" ] && Interactive=yes
+    echo
+    echo
+fi
+}
+
+function PrintStatus()
+{
+    $CursUp
+    case "$1" in
+    Success)
+        $SetCol
+        echo -n "[  "
+        $ColorGreen
+        echo -n "OK"
+        $ColorWhite
+        echo "  ]"
+        ;;
+    Warning)
+        $SetCol
+        echo -n "["
+        $ColorYellow
+        echo -n "PASSED"
+        $ColorWhite
+        echo "]"
+        ;;
+    Failure)
+        $SetCol
+        echo -n "["
+        $ColorRed
+        echo -n "FAILED"
+        $ColorWhite
+        echo "]"
+        ;;
+    esac # ...is ridiculous
+}
+
+function ThemeBefore() {
+   id=$1
+   shift
+   [ "$Interactive" = "yes" ] && {
+      read -p "$*. Do it? [Y]es, [N]o, [C]ontinue " -n 1
+      echo
+      [ "$REPLY" = "n" -o "$REPLY" = "N" ] && return 1
+      [ "$REPLY" = "c" -o "$REPLY" = "C" ] && Interactive=no
+   }
+   [ "$Interactive" = "no" ] && echo "$*"
+   lastid=$1
+}
+
+function ThemeAfter() {
+   ExecReturn=$2
+   [ $ExecReturn = 0 ] && PrintStatus Success || PrintStatus Failure
+   return $ExecReturn
+}
+
+function ThemeFinish() {
+   {
+      clear
+      echo
+      case $[RANDOM%10] in
+      0) codename="Frobenius" ;; 
+      1) codename="Cheeseman" ;;
+      2) codename="Cyanhat" ;;
+      3) codename="Atmorkov" ;;
+      4) codename="Turquoise" ;;
+      5) codename="Helvetica" ;;
+      6) codename="Visigoth" ;;
+      7) codename="Fibonacci" ;;
+      8) codename="Xunilobog" ;;
+      9) codename="Yoyo" ;;
+      esac # ...is ridiculous
+      echo "GoboLinux version `cat /etc/GoboLinuxVersion` ($codename)"
+      echo "Kernel `uname -r` on an `uname -m`"
+      echo
+   } > "$1"
+}

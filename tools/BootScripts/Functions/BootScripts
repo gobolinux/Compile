@@ -1,0 +1,169 @@
+#!/bin/sh
+
+BusyWait=100000 # 1/10 of a second
+TimeOut=1200 # 1200*BusyWait = 2 minutes
+
+execCtr=0
+forkCtr=0
+
+### User-available commands ###
+
+##
+# Exec is the themeing hook, where you can specify a message
+# to a given command line.
+# Usage: Exec "message" <cmd>
+##
+
+Exec() {
+   local message="$1"
+   shift
+   ThemeBefore "$execCtr" "$message" || return 1
+   case "$1" in
+   Wait|Fork) "$@" ;;
+   *) ExecBackend "$@" ;;
+   esac # ...is ridiculous.
+   execCtr=$[execCtr+1]
+}
+
+##
+# Fork launches a command in background. Its completion and
+# result code can be tracked with the Wait family of commands,
+# through the use of the identifier.
+# Usage: Fork <id> <cmd>
+##
+
+Fork() {
+   local forkid="$1"
+   shift
+   mkdir -p "$ForksDir"
+   rm -f "$ForksDir/$forkid"
+   {
+      [ "$1" = "Fork" -o "$1" = "Wait" ] && wrap= || wrap=ExecBackend
+      $wrap "$@"
+      ret=$?
+      echo $ret > "$ForksDir/$forkid"
+   } &
+   forks[$forkCtr]=$!
+   forkCtr=$[forkCtr+1]
+}
+
+##
+# A command to be executed only after the command launched with
+# the given id exits successfully. 
+# Usage: Wait <id> <cmd...>
+##
+
+Wait() {
+   WaitOn -eq 0 "$@"
+}
+
+##
+# A command to be executed only after the command launched with
+# the given id exits with a non-zero error code.
+# Usage: WaitFailed <id> <cmd...>
+##
+
+WaitFailed() {
+   WaitOn -gt 0 "$@"
+}
+
+##
+# The lower-level Wait command. The exit code of the forked
+# command verified according to a numeric comparison operator
+# of the 'test' shell command (-eq, -ne, -le, -lt, -ge, -gt).
+# Usage: WaitOn <op> <num> <id> <cmd...>
+# Example: WaitOn -eq 2 'fsck' reboot -f
+##
+
+WaitOn() {
+   cond=$1
+   exitcode=$2
+   id=$3
+   shift 3
+   result=`WaitBackend "$id"`
+   [ $result $cond $exitcode ] || {
+      ThemeAfter "$execCtr" "$result"
+      return 1
+   }
+   [ "$1" = "Fork" -o "$1" = "Wait" ] && wrap= || wrap=ExecBackend
+   $wrap "$@"
+}
+
+###
+# Implement simplified daemon management when there is no
+# provided third-party system (e.g. Runit).
+###
+
+### if [ ! -e /bin/Daemon ]
+### then
+### 
+###    Daemon() {
+###       {
+###          while true
+###          do "$@"
+###          done
+###       } &
+###    }
+### 
+###    DaemonTask() {
+###       cmd="$1"
+###       shift
+###       {
+###          while true
+###          do "$goboSettings/BootScripts/Tasks/$cmd" "$@"
+###          done
+###       } &
+###    }
+### 
+### fi
+
+if [ ! -e /bin/Daemon ]
+then
+
+   Daemon() {
+      "$@" &
+   }
+
+   DaemonTask() {
+      cmd="$1"
+      "$goboSettings/BootScripts/Tasks/$cmd" "$@" &
+   }
+
+fi
+
+###
+# Syntactic sugar of sorts :)
+###
+
+Background() {
+   "$@" &
+}
+
+### For internal use only ###
+
+Quit() {
+   for pid in ${forks[@]}
+   do
+      wait $pid &> /dev/null
+   done
+   ThemeFinish "$1"
+}
+
+ExecBackend() {
+   "$@" 1> $ThemeStdoutStream 2> $ThemeStderrStream
+   ThemeAfter "$execCtr" "$?"
+}
+
+WaitBackend() {
+   local id="$1"
+   shift
+   local waited=0
+   while ! [ -e "$ForksDir/$id" -a "$waited" -lt "$TimeOut" ]
+   do usleep "$BusyWait"
+      waited=$[waited+1]
+   done
+   if [ "$waited" = "$TimeOut" ]
+   then echo -1
+   else cat "$ForksDir/$id"
+   fi
+}

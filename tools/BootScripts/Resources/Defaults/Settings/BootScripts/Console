@@ -1,0 +1,6 @@
+#!/bin/sh
+
+source BootUp
+
+Exec "Setting console font"                   setfont "$ConsoleFont"
+#Exec "Starting console mouse GPM..."          Mouse Start

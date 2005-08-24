@@ -1,0 +1,4 @@
+#!/bin/sh
+source Shutdown
+
+Exec "Rebooting system..." reboot -d -f -i -h

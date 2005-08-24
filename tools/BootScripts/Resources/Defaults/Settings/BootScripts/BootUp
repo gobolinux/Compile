@@ -1,0 +1,35 @@
+#!/bin/sh
+Exec "Remounting root file system..."          mount -n -o remount,rw /
+Exec "Starting Udev..."                        Udev
+Exec "Mounting system filesystems..."          mount -a -t tmpfs,sysfs,procfs
+Exec "Starting Hotplug..."                     Hotplug start
+Exec "Activating all swap files/partitions..." swapon -a
+
+#Daemon                                       sshd -D 
+Daemon                                        klogd -n
+Daemon                                        syslogd -n -m 0
+#Exec "Starting service management daemon..."  Background runsvdir "$goboVariable/Daemons"
+
+Exec "Checking remaining file systems..."     fsck -p -C -T -A -R
+Exec "Hiding legacy tree..."                  GoboHide start
+Exec "Setting clock..."                       SetClock
+
+Exec "Creating new mtab..."                   mount -o remount,rw /
+
+Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap
+Exec "Linking kernel modules directory..."    ln -nfs "$goboModules"/`uname -r` "$goboLibraries"/modules/`uname -r`
+Exec "Setting hostname to $HostName..."       hostname "$HostName"
+
+[ "${UserDefinedModules[*]}" ] && \
+Exec "Loading user-defined kernel modules..." LoadModules
+
+Exec "Cleaning up any stale lock files..."    rm -rf $goboVariable/{run,lock}/* $goboTemp/.X*-lock
+Exec "Creating utmp and wtmp..."              CreateChmod 644 $goboVariable/run/{u,w}tmp
+Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastboot /forcefsck
+
+#Exec "Starting PCMCIA daemon..."             PCMCIA Start
+Exec "Setting max timer frequency..."         echo 1024 > $goboStatus/sys/dev/rtc/max-user-freq
+Exec "Initializing network..."                Network Start
+
+Exec "Loading keymap..."                      loadkeys "$KeymapLayout"
+

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+source /System/Settings/BootOptions
+
+#
+# Synchronize hardware and system clocks.
+# Adapted from Linux From Scratch by Hisham Muhammad
+#
+if [ "$ClockMode" = "GMT" ]
+then
+   hwclockMode="--utc"
+else
+   hwclockMode="--localtime"
+fi
+hwclock --hctosys $hwclockMode
+
