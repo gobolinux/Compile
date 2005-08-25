@@ -170,6 +170,10 @@ if { grep "configure.in$" "$file_contents" &> /dev/null ;} \
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
    echo "is_compileprogram=yes" >> "$recipedir/Recipe"
+elif grep "/configure$" "$file_contents" &> /dev/null
+then
+   Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
+   echo "is_compileprogram=yes" >> "$recipedir/Recipe"
 elif grep "Makefile.PL$" "$file_contents" &> /dev/null
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
