@@ -215,15 +215,6 @@ then
 
 fi
 
-#unset changes
-#changes=$changes`build_change "\/usr\/local" "$slashprogramdir"`
-#changes=$changes`build_change "\/usr\/X11R6" "$slashprogramdir"`
-#changes=$changes`build_change "\/usr\/X11" "$slashprogramdir"`
-#changes=$changes`build_change "\/opt[$\/]?" "$slashprogramdir"`
-#changes=$changes`build_change "\/usr" "$slashprogramdir"`
-#changes=$changes`build_change "\/etc" "$slashsettingsdir"`
-#changes=$changes`build_change "\/var" "$slashvariabledir"`
-
 configureprogram=`Entry "configure"`
 
 echo
