@@ -631,12 +631,6 @@ eval `combine_arrays buildmerged make_variables build_variables cross_make_varia
 unset installmerged
 eval `combine_arrays installmerged make_variables install_variables cross_install_variables`
 
-unset configureoption
-if [ "$configure" != "" ]
-then configureoption="-c ${configure}"
-else configure="./configure"
-fi
-
 if [ "$makefile" = "" ]
 then makefile=Makefile
 fi
@@ -669,12 +663,13 @@ then
    eval `combine_arrays config configure_options cross_configure_options`
    batch="--batch"; [ "$batch" = "no" ] && unset batch
    unset nomodifyoption; [ "$modify_configure" = "no" ] && nomodifyoption="--no-modify"
+   [ "$configure" = "" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
       builddir="${dir}-build"
       mkdir "$builddir"
       cd "$builddir"
-      configureoption="-c ${dir}/$configure"
+      configure="${dir}/$configure"
       #sandbox_options="--expand-sandbox 1 $sandbox_options"
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
@@ -684,7 +679,7 @@ then
    is_function_set pre_build && pre_build
    if ! Boolean "no-configure"
    then
-      chmod +x "${dir}/$configure"
+      chmod +x "$configure"
       (
          for i in "${configure_variables[@]}"
          do
@@ -693,7 +688,7 @@ then
             eval export $var=\'$val\'
          done
          [ "$autogen_before_configure" = "yes" ] && ./autogen.sh
-         PrepareProgram -V $prepareCross $nomodifyoption $configureoption $batch "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         PrepareProgram -c $configure -V $prepareCross $nomodifyoption $batch "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
    ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
@@ -838,7 +833,7 @@ then
    )
    make -f "$makefile" $imakevars $build_target || Die "Build failed."
    Boolean "no-install" && exit
-   PrepareProgram $prepareCross $configureoption -t "$appname" "$versionnumber"
+   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
    install_extras
    if ! [ "$install_target" ]
    then install_target="install"
@@ -868,7 +863,7 @@ fi
 if [ "$is_manifest" = "yes" ]
 then
    is_function_set pre_install && pre_install
-   PrepareProgram $prepareCross $configureoption -t "$appname" "$versionnumber"
+   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
    install_extras
    for i in "${manifest[@]}"
    do
