@@ -2,6 +2,7 @@
 
 ### Changelog ############################################################
 
+# 25/08/2005 - [hisham] remove remains of 'modify files' features
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
 # 05/12/2004 - [hisham] -A,--no-autoconf switch
 # 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
@@ -46,12 +47,11 @@ scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU 
 scriptUsage="[ <target_name> [<version_nr>] ] [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
 scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."
-Add_Option_Boolean "b" "batch" "batch mode: no user interaction (even when modifying Makefiles)" 
-Add_Option_Boolean "t" "tree" "prepare directories only, do not attempt to run or modify configure or Makefiles."
+Add_Option_Boolean "b" "batch" "batch mode: no user interaction" 
+Add_Option_Boolean "t" "tree" "prepare directories only, do not attempt to run configure."
 Add_Option_Boolean "T" "tree-cleanup" "like --tree, but instead of creating directories, remove empty ones"
 Add_Option_Boolean "k" "keep" "keep the directory if it already exists in the ${goboPrograms} hierarchy."
 Add_Option_Boolean "r" "remove" "remove the directory if it already exists in the ${goboPrograms} hierarchy."
-#Add_Option_Boolean "n" "no-modify" "Do not attempt to modify configure or Makefiles."
 Add_Option_Entry "c" "configure" "specify program to be used as 'configure' script." "./configure"
 Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
@@ -73,36 +73,6 @@ function config_is_autoconf() {
 function config_accepts_prefix() {
    grep -- "--prefix" "$configureprogram" &> /dev/null
 }
-
-#function modify_files() {
-#   Parameters "$@" file
-#
-#   Log_Normal "Attempting to modify files..."
-#   for m in `find -name "$file"`
-#   do
-#      Log_Verbose "Processing file " $m "..."
-#      mv $m $m.old
-#      cat $m.old | sed $changes > $m
-#      chmod +x $m
-#      {
-#      echo "-------------------------------------------------" 
-#      echo "The following changes were made to $m:"
-#      diff $m $m.old
-#      echo "-------------------------------------------------"
-#      } >> $scriptName.changes.log
-#   done
-#   Log_Normal "Done. No guarantees that this will help, though."
-#   Log_Normal "(Your original files are stored with an .old suffix)"
-#}
-#
-#function inspect_changes() {
-#   read -p "Do you wish to inspect the generated changes now? ([Y]es, [n]o)"
-#   if [ "$REPLY" = "y" -o "$REPLY" = "Y" -o "$REPLY" = "yes" -o "$REPLY" = "Yes" ]
-#   then
-#      $PAGER $scriptName.changes.log
-#   fi
-#   Ask_Continue "Proceed with installation? ([Y]es, [n]o)"
-#}
 
 function build_change() {
    echo "/-L/!s/"$1"/"$2"/g;"
@@ -271,32 +241,9 @@ then
          Log_Normal "Non-autoconf configure script detected (with --prefix)."
          "$configureprogram" --prefix="$programdir" "$@" >&$normalFD || Die "configure failed."
       else
-#         anyold=`find -iname "$configureprogram.old"`
-#         if [ "$anyold" ] || Exists ".Do.not.modify.configures" || Boolean "no-modify"
-#         then
-#            Log_Verbose "Old configure exist. Will not attempt to modify configure."
-#         else
-#            Log_Normal "Non-autoconf configure script detected (without --prefix)."
-#	    ! Boolean "batch" && Ask_Continue "Proceed attempting modification? [Y]es, [n]o "
-#            modify_files "$configureprogram"
-#            touch ".Do.not.modify.configures"
-#            ! Boolean "batch" && inspect_changes
-#         fi
          "$configureprogram" "$@" >&$normalFD || Die "configure failed."
       fi
    fi
-#else
-#   Log_Terse "No configure script detected."
-#   anyold=`find -iname 'Makefile*.old'`
-#   if [ "$anyold" ] || Exists ".Do.not.modify.Makefiles" || Boolean "no-modify"
-#   then
-#      Log_Verbose "Old Makefiles exist. Will not attempt to modify Makefiles."
-#   else
-#      ! Boolean "batch" && Ask_Continue "Proceed attempting modification of Makefiles? ([Y]es, [n]o)"
-#      modify_files "Makefile*"
-#      touch ".Do.not.modify.Makefiles"
-#      ! Boolean "batch" && inspect_changes
-#   fi
 fi
 
 exit 0
