@@ -2,6 +2,7 @@
 
 ### Changelog ############################################################
 
+# 25/08/2005 - [hisham] general cleanup, -D,--no-default-options switch
 # 25/08/2005 - [hisham] remove remains of 'modify files' features
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
 # 05/12/2004 - [hisham] -A,--no-autoconf switch
@@ -47,7 +48,10 @@ scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU 
 scriptUsage="[ <target_name> [<version_nr>] ] [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
 scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."
+
+# This option should be removed; there's no more interaction in this script.
 Add_Option_Boolean "b" "batch" "batch mode: no user interaction" 
+
 Add_Option_Boolean "t" "tree" "prepare directories only, do not attempt to run configure."
 Add_Option_Boolean "T" "tree-cleanup" "like --tree, but instead of creating directories, remove empty ones"
 Add_Option_Boolean "k" "keep" "keep the directory if it already exists in the ${goboPrograms} hierarchy."
@@ -56,6 +60,7 @@ Add_Option_Entry "c" "configure" "specify program to be used as 'configure' scri
 Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
+Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
 	
 Parse_Options "$@"
 shift $parsedArguments
@@ -220,21 +225,30 @@ configureprogram=`Entry "configure"`
 echo
 Log_Normal "Preparing..."
 rm -f config.cache
-if Exists "$configureprogram"
+
+Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
+
+if Boolean "no-default-options"
 then
-   if config_is_autoconf
-   then
-      Log_Normal "Autoconf configure script detected."
-      color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" --prefix="$programdir" --sysconfdir="$settingsdir" --localstatedir="$variabledir" "$@" >&$normalFD || Die "configure failed."
-   else
-      if config_accepts_prefix
-      then
-         Log_Normal "Non-autoconf configure script detected (with --prefix)."
-         "$configureprogram" --prefix="$programdir" "$@" >&$normalFD || Die "configure failed."
-      else
-         "$configureprogram" "$@" >&$normalFD || Die "configure failed."
-      fi
-   fi
+   configure_options=()
+elif config_is_autoconf
+then
+   Log_Normal "Autoconf configure script detected."
+   configure_options=(
+      --prefix="$programdir"
+      --sysconfdir="$settingsdir"
+      --localstatedir="$variabledir" 
+   )
+elif config_accepts_prefix
+then
+   Log_Normal "Non-autoconf configure script detected (accepts --prefix)."
+   configure_options=(
+      --prefix="$programdir"
+   )
+else
+   configure_options=()
 fi
+
+color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0
