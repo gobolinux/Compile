@@ -89,6 +89,10 @@ then sudo=
 else sudo="sudo -u #0"
 fi
 
+### Temporary test for those tracking CVS ###
+PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
+#############################################
+
 ##################################################
 # Helper functions
 ##################################################
@@ -661,16 +665,13 @@ fi
 if [ "$is_compileprogram" = "yes" ]
 then
    eval `combine_arrays config configure_options cross_configure_options`
-   batch="--batch"; [ "$batch" = "no" ] && unset batch
-   unset nomodifyoption; [ "$modify_configure" = "no" ] && nomodifyoption="--no-modify"
-   [ "$configure" = "" ] || configure="./configure"
+   [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
       builddir="${dir}-build"
-      mkdir "$builddir"
+      mkdir -p "$builddir"
       cd "$builddir"
       configure="${dir}/$configure"
-      #sandbox_options="--expand-sandbox 1 $sandbox_options"
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
    [ "$create_dirs_first" = "yes" ] && {
@@ -688,7 +689,14 @@ then
             eval export $var=\'$val\'
          done
          [ "$autogen_before_configure" = "yes" ] && ./autogen.sh
-         PrepareProgram -c $configure -V $prepareCross $nomodifyoption $batch "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         prepareoptions=(
+            --verbose
+            --configure $configure
+            $prepareCross
+            `[ "$modify_configure" = "no" ] && echo "--no-modify"`
+            `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
+         )
+         PrepareProgram ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
    ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."

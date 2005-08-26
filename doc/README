@@ -272,12 +272,14 @@ python_options=(<array of options>)
    Array of options to be passed to the Python build script.
 
 override_default_options=yes
-   Valid modes: python
+   Valid modes: compileprogram, python
    Compile chooses some options by default according to
-   the specified target type for the Python build script.
+   the specified target type. In compileprogram recipes, it
+   passes some standard autoconf options to the configure script;
+   in python recipes, distutils options for the Python build script.
    Use this option to disable those options and have your own
-   options (given in python_options) overwrite instead of append
-   the option list.
+   options (given in configure_options or python_options) overwrite
+   instead of append the option list.
 
 build_script=<name>
    Valid modes: python
