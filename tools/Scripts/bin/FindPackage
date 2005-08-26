@@ -22,6 +22,8 @@ if __name__ == '__main__' :
 	import getopt, os
 
 	try :
+		if not sys.argv[1:] :
+			sys.argv[1:] = [ '--help' ]
 		opts, args = getopt.getopt(sys.argv[1:], 't:Wslh', ['types=', 'type=', 'local-dirs=', 'full-list', 'force-update', 'substring', 'no-web', 'help'])
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
