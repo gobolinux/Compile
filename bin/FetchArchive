@@ -130,7 +130,22 @@ do
          # Fail! No more mirrors!
          return 1
       fi
-      $sudo $wget -O "${files[fileindex]}" -c --passive-ftp "$fetch" || {
+      local file="${files[fileindex]}"
+      unset LANG LC_ALL # So that wget's output is not translated
+      if [ -e "$file" ]
+      then
+         if Starts_With "http:" "$fetch"
+         then
+            expectedlength=`$sudo $wget --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
+            locallength=`wc -c "$file" | cut -d" " -f1`
+            if [ "$expectedlength" = "$locallength" ]
+            then
+               Log_Normal "File is already fully retrieved."
+               return 0
+            fi
+         fi
+      fi
+      $sudo $wget -O "$file" -c --passive-ftp "$fetch" || {
          wget_url "$fileindex" "$[mirrorlevel+1]"
       }
    }
