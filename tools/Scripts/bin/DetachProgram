@@ -23,7 +23,7 @@ scriptNotes="This script 'moves' a program from the ${goboPrograms} hierarchy to
 "is used."
 Add_Option_Boolean "c" "copy" "Copy program.  Keep existing on rootfs."
 Add_Option_Boolean "b" "batch" "Batch operation.  Minimize warning output"
-Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
+Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
 Parse_Options "$@"
 shift $parsedArguments
 
