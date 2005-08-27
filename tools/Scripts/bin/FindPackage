@@ -65,41 +65,41 @@ if __name__ == '__main__' :
 		elif o in ['--help', '-h'] :
 			print """
 FindPackage
- Search, chooses an occurence and prints where some package (or recipe) can 
+ Searches, chooses an occurence and prints where some package (or recipe) can 
  be found, based only on the program name (case insesitive) or on the 
  program name and program version.
  
 
 Options:
  -t [t1,t2,...]
- --types=[t1,t2,...]  sets what kind of packages can be searched, in the 
+ --types=[t1,t2,...]  Sets what kind of packages can be searched, in the 
                       passed order. Valid types are: 
                        local_package, official_package, contrib_package, 
                        recipe, tracked, all
-                      using only the first character from any of the above 
+                      Using only the first character from any of the above 
                       is also valid:
                        l, o, c, r, t, a     
                       Default types are:
                        local_package, official_package
-                      notice that when "recipe" type is used, Compile.conf is 
+                      Notice that when "recipe" type is used, Compile.conf is 
                       read to set recipe-store locations and local recipes 
                       locations. 
  
- --local-dirs=[d1,..] where to look for local binary packages. By default,
-                      uses the paths defined at GetAvailable.conf
+ --local-dirs=[d1,..] Where to look for local binary packages. By default,
+                      uses the paths defined at GetAvailable.conf.
 
- --force-update       downloads required packages list even if there is a
+ --force-update       Downloads required packages list even if there is a
                       local copy (cached in ~/.Settings/cache/) newer than one hour.
 
- -l, --full-list      prints all the occurences that match the passed 
-                      parameters, not only the "best"
+ -l, --full-list      Prints all the occurences that match the passed 
+                      parameters, not only the "best".
  
- -s, --substring      match packages whose names contains the passed substring
-                      automatically enables '--full-list' 
+ -s, --substring      Match packages whose names contains the passed substring.
+                      Automatically enables '--full-list'.
  
- -W, --no-web         do not try to download anything and don't lists 
+ -W, --no-web         Do not try to download anything and don't lists 
                       remote recipes and packages (if not explicitly listed
-                      in '--types='). Overrides '--force-update'
+                      in '--types='). Overrides '--force-update'.
 
 Examples of usage:
  FindPackage kde
