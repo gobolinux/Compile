@@ -21,7 +21,7 @@ scriptCredits="Copyright (C) 2001-2002 Hisham Muhammad. Released under the GNU G
 helpOnNoArguments=yes
 scriptUsage="<pattern> [<files...>]"
 Add_Option_Boolean "r" "recursive" "Recursive."
-Add_Option_Boolean "s" "source" "Special mode for C/C++/Java sources: skips comments."
+Add_Option_Boolean "s" "source" "Special mode for C/C++/Java sources: skips comments if FilterComments is available."
 Add_Option_Boolean "w" "whole-word" "Match whole words only."
 Add_Option_Boolean "C" "no-color" "Avoid coloring (for grep's that don't support it)."
 scriptNotes="
@@ -48,8 +48,13 @@ Boolean "no-color" && export color=
 Boolean "source" && {
 
 function source_grep() {
-   cat "$1" |\
-   FilterComments |\
+   function fcat() {
+      if which FilterComments 2> /dev/null
+      then cat "$1" | FilterComments
+      else cat "$1"
+      fi
+   }
+   fcat "$1" |\
    grep -n $whole --color=always "$2" |\
    awk -v fil="$1" '
       {
