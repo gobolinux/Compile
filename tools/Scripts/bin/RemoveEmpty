@@ -14,7 +14,7 @@ Import File
 scriptDescription="remove all empty directories inside current (or a given) directory"
 scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU GPL."
 Add_Option_Entry "d" "depth" "Depth of search for empty directories."
-Add_Option_Boolean "D" "no-defaults" "Do not remove emptys in Defaults."
+Add_Option_Boolean "D" "no-defaults" "Do not remove empty entries in Defaults."
 
 Parse_Options "$@"
 shift $parsedArguments
