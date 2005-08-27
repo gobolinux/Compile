@@ -19,6 +19,8 @@ Import Process
 
 ### Options ###################################################################
 
+sandboxroot="${goboTemp}/.FiboSandbox$$"
+
 scriptDescription="Run the program in a protected sandbox, as a restricted user."
 scriptCredits="Copyright (C) 2003. Released under the GNU GPL."
 helpOnNoArguments=yes
@@ -26,19 +28,17 @@ scriptUsage="[<options>] <program> [<command-parameters...>]"
 scriptExample="-r 0.0 -s '.:${goboPrograms}/NaughtyApp/Current' make install"
 scriptNotes="
 To allow mobility within the sandbox, the '.' directory is mounted at
-'$sandboxroot'. For this reason, use of relative paths like '..' to reach
+a sandbox root (like $sandboxroot). For this reason, use of relative paths like '..' to reach
 directories higher in the hierarchy than '.' may produce unexpected results.
 It may also confuse symbolic links that flow through the sandbox.
 "
 Add_Option_Boolean "o" "original" "Restore original owners."
 Add_Option_Entry "r" "restore" "Restore ownership to <entry>."
 Add_Option_Entry "d" "directory" "The program should be run at <entry>. "\
-"This path should be either absolute, or relative to '$sandboxroot'."
+"This path should be either absolute, or relative to the sandbox root."
 Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted user has write access to." "."
 Parse_Options "$@"
 shift $parsedArguments
-
-sandboxroot="${goboTemp}/.FiboSandbox$$"
 
 ### Operation #################################################################
 
