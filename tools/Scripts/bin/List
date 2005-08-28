@@ -25,6 +25,32 @@ while true
 do
    [ "$1" ] || break
    case "$1" in
+   --help)
+      cat <<EOF
+A pretty ls wrapper.
+
+Usage:
+
+    l [<options>...] <pattern>
+
+-p, --pager
+    Run the output through a pager, so you can scroll back on very long directories.
+-t, --time
+    Sort by time, most recent file shown last.
+-s, --size
+    Sort by size, largest size shown last.
+-d, --directories
+    List directories only.
+-h, --hidden
+    List dot-files only.
+-a, --all
+    List both regular and dot-files.
+-L, --no-links
+    List only files that are not symbolic links.
+
+EOF
+      exit 0
+      ;;
    -p|--pager|--page)
       declare -a newoptions
       for (( i = 0, j = 0; i < ${#options[@]}; i++ ))
@@ -65,14 +91,6 @@ do
       export SKIP_LINKS=yes
       shift
       ;;
-   -S|--search)
-      export DIR_OPTS="$DIR_OPTS -R "
-      export SHOW_ALL=yes
-      export DO_SEARCH=yes
-      shift
-      export SEARCH_PATTERN="$1"
-      shift
-      ;;
    --)
       shift
       break
@@ -105,8 +123,6 @@ sort $SORT_OPTS |\
      -v dirs_only="$DIRS_ONLY" \
      -v show_all="$SHOW_ALL" \
      -v skip_links="$SKIP_LINKS" \
-     -v do_search="$DO_SEARCH" \
-     -v search_pattern="$SEARCH_PATTERN" \
      -v columns="$COLUMNS" \
      -f "group.awk" --source '
       function mega(inp      ,out,l) {
@@ -192,11 +208,6 @@ sort $SORT_OPTS |\
         }
         if (skip_links=="yes") {
           if (name ~ /.* -> .*/) {
-            next
-          }
-        }
-        if (do_search=="yes") {
-          if (! match(simplename, search_pattern)) {
             next
           }
         }
