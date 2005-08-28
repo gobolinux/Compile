@@ -1,0 +1,25 @@
+#!/bin/sh
+
+cat <<EOF
+NoRecipe 1.0a - check for installed packages which need recipes
+ (Copyright 2004 MJ Ray. Released under GNU GPL v2.)
+
+EOF
+
+if [ -n "$*" ] ; then
+  echo "Usage: $0"
+  exit 127
+fi
+
+source /System/Settings/Compile/Compile.conf
+find /Programs/ -maxdepth 2 -mindepth 2 -name Current -printf '%P/%l\n' | \
+  tr '/' ' ' | \
+  while read prog cur ver junk ; do
+    newver=$(find "${compileRecipeDirs[@]}" -name $prog -exec ls '{}' ';' | sort -n | tail -n 1)
+    if [ -z "$newver" ] ; then
+      echo "[R] $prog $ver not found"
+    fi
+  done
+
+echo '--- End of list'
+

@@ -1,0 +1,66 @@
+#!/usr/bin/env zsh
+
+# print banner
+cat >&2 <<EOF
+SuggestUpdates 1.4a - check for known newer versions
+ (Copyright 2005 MJ Ray. Released under GNU GPL v2.)
+
+EOF
+
+# set defaults
+export limit=""
+export stable=""
+code="InstallPackage"
+debug=""
+updates=0
+
+while [ -n "$*" ] ; do
+  case "$1" in
+    "--debug"|"-d")
+      echo Setting debug
+      debug=1 ;;
+    "--recipe"|"-C")
+      export limit="--type=recipe"
+      code="Compile" ;;
+    *)
+      echo "Usage: $0 [--recipe|--debug]"
+      exit 127 ;;
+  esac
+  shift
+done
+
+versionsort() {
+  sort -n -t. -k1 -k2 -k3 -k4
+}
+
+# get list of latest versions
+typeset -A latest
+GetAvailable $limit | versionsort | while read type pkg ver junk ; do
+  latest["$pkg"]="$ver"
+done
+
+# Iterate over installed programs, reading Current symlink
+find /Programs/ -maxdepth 2 -mindepth 2 -name Current -printf '%h %l\n' | \
+  cut -d/ -f3 | \
+  while read prog ver junk ; do
+    # deduce whether it is the newest version
+    newver="$latest["$prog"]"
+    newnewver=$(echo "$ver\n$newver" | versionsort | tail -n 1)
+    [ -n "$debug" ] && echo "  # Debug: Is $prog $newver > $ver?"
+    # output update message if needed
+    if [ "$newver" != "" -a "$newnewver" != "$ver" -a "$ver" != "$newver" ] ; then
+      echo "'$code' $prog $newver #(current: $ver)"
+      updates="x$updates"
+    fi
+  done
+
+# output trailing banner
+echo "--- End of list: $#updates suggested update(s)" >&2
+
+exit 0
+
+# Changelog:
+# 1.3 - use GuessLatest and remove $stable (FindPackage has no support)
+# 1.4 - use GetAvailable instead of FindPackage and versionsort instead
+# of GuessLatest
+
