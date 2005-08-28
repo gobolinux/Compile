@@ -92,7 +92,7 @@ else sudo="sudo -u #0"
 fi
 
 ### Temporary test for those tracking CVS ###
-#PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
+PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
 #############################################
 
 ##################################################
