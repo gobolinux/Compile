@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 27/08/2005 - [lucasvr] Cross compiling cleanups, supporting arch-specific patches
 # 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when checking version
 # 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
 # 21/06/2005 - [detsch] Die on FetchArchive failure
@@ -255,7 +256,14 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 recipe=$bakedrecipedir/Recipe
-archrecipe=$bakedrecipedir/`uname -m`/Recipe
+if Is_Entry "cross-compile"
+then
+   archsubdir=$bakedrecipedir/$ARCH
+   archrecipe=$bakedrecipedir/$ARCH/Recipe
+else
+   archsubdir=$bakedrecipedir/`uname -m`
+   archrecipe=$bakedrecipedir/`uname -m`/Recipe
+fi
 
 app=`Get_Token "$bakedrecipedir" "/" "-2"`
 version=`Get_Token "$bakedrecipedir" "/" "-1"`
@@ -327,26 +335,19 @@ then
 
    # Extra arguments to be passed to 'make'
    cross_make_variables=(
-   	"CC=$CC"
-   	"CPP=$CPP"
-   	"CXX=$CXX"
+   #	"CC=$CC"
+   #	"CPP=$CPP"
+   #	"CXX=$CXX"
 	"CROSS=$crossCompiler"
-   	"LD=$LD"
-   	"NM=$NM"
-   	"AS=$AS"
+   #	"LD=$LD"
+   #	"NM=$NM"
+   #	"AS=$AS"
 	"STRIPTOOL=$STRIP"
    )
    
    cross_install_variables=(
    	"$cross_make_variables"
-   	"PREFIX=$installprefix"
-   	"EPREFIX=$installprefix"
-   	"PREFIXDIR=$installprefix"
-	"BINDIR=$installprefix/bin"
-	"SBINDIR=$installprefix/sbin"
-	"DATADIR=$installprefix/Shared"
-	"MANDIR=$installprefix/man"
-	"SYSCONFDIR=$installprefix/../Settings"
+   	"DESTDIR=$crossPrefixDir"
    )
    
    # Extra parameters to be passed to 'configure' 
@@ -602,8 +603,15 @@ then
 
    is_function_set pre_patch && pre_patch
 
+   # apply common patches
    pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$recipedir/$(uname -m)/"*.patch 2> /dev/null | sort`
+   do
+      patch -Np1 -i $i || Die "Failed patching"
+   done
+   
+   # apply arch-specific patches
+   for i in `ls "$archsubdir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/$(uname -m)/"*.patch 2> /dev/null | sort`
    do
       patch -Np1 -i $i || Die "Failed patching"
    done
