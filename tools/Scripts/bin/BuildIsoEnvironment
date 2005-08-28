@@ -16,7 +16,7 @@ Import OptionParser
 
 scriptDescription="Builds an environment on which a GoboLinux ISO can be edited
 and rebuilt. For use mainly by GoboLinux developers and people interested in
-tunning the GoboLinux ISO."
+tuning the GoboLinux ISO."
 scriptCredits="Copyright (C) 2005. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<iso-file> <target>"
