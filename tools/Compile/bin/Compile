@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when checking version
 # 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
 # 21/06/2005 - [detsch] Die on FetchArchive failure
 # 13/05/2005 - [detsch] Die on patch failure
@@ -90,7 +91,7 @@ else sudo="sudo -u #0"
 fi
 
 ### Temporary test for those tracking CVS ###
-PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
+#PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
 #############################################
 
 ##################################################
@@ -220,7 +221,7 @@ scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
 if (( svnr > 5 )) || \
-   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle ]
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a "$scriptsversion" != "CVS" ]
 then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
 fi
@@ -377,7 +378,7 @@ then
    if [ "$develrelease" -gt "20000000" ]
    then
       compiledate=$(ls -l --time-style=+%Y%m%d $(which Compile) | awk '{print $6}')
-      if [ "$compiledate" -lt "$develrelease" ]
+      if [ "$compiledate" -lt "$develrelease" -a "$compilemm" != "CVS" ]
       then Boolean "batch" || Ask_Continue "Recipe was created with a development snapshot from $develrelease,\n"\
 "which is more recent than the Compile version you have installed.\n"\
 "Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
@@ -386,7 +387,7 @@ then
    then
       compilemm=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
       recipemm=`echo $compile_version | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-      if [ `GuessLatest $compilemm $recipemm` != $compilemm ]
+      if [ `GuessLatest $compilemm $recipemm` != $compilemm -a "$compilemm" != "CVS" ]
       then Boolean "batch" || Ask_Continue "Recipe was created with Compile $compile_version,\n"\
 "which is more recent than the one you have installed.\n"\
 "Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
