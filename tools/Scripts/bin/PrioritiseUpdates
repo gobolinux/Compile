@@ -1,0 +1,63 @@
+#!/usr/bin/env zsh
+
+# print banner
+cat >&2 <<EOF
+PrioritiseUpdates 1.0 - ordigu SuggestUpdates-eliron
+ (Copyright 2005 MJ Ray. Released under GNU GPL v2.)
+
+EOF
+
+if [ -z "$1" ] ; then
+  echo "Usage: $0 <Install-or-Compile-Scriptfile>"
+  exit 127
+fi
+
+sekvudepoj() {
+  depdos=/Programs/$1/Current/Resources/Dependencies
+  for dep in $([ -e $depdos ] && grep -v '^ *#' $depdos | cut -f1 '-d ') ; do
+    echo $dep D 
+  done
+}
+
+ordigu() {
+typeset -A vidita
+# Iterate over requested programs, reading Current symlink
+cut -f2 '-d ' $1 | while read prog ; do
+  sekvudepoj $prog
+  echo $prog R
+done | tr A-Z a-z | while read prog type ; do
+  if [ -z "${vidita[$prog]}" ] ; then
+    if [ "$type" = "d" ] ; then
+      vidita[$prog]="BEZONANTA"
+    else
+      vidita[$prog]="farita"
+    fi
+    grep -iw $prog $1 || vidita[$prog]="ignorita"
+  fi
+  case "$type" in
+    "r") echo faru $prog >&2 ;;
+    "d") if [ -n "${vidita[$prog]}" ] ; then
+           echo -n "${vidita[$prog]} " >&2
+         fi
+         echo -n "$prog, " >&2 ;;
+  esac
+done
+echo >&2
+}
+
+i=0
+while ! cmp -s $1.orig $1 ; do
+  mv $1 $1.orig
+  i=$(($i + 1))
+  echo "Provo $i:"
+  ordigu $1.orig >$1
+done
+
+# output trailing banner
+echo "--- Fino: $i provo(j)" >&2
+
+exit 0
+
+# Changelog:
+# 1.0 - new script
+
