@@ -106,7 +106,7 @@ function ThemeFile() {
    # Hello/Goodbye message
    #
 
-   if [ "$Mode" = "Init" ]
+   if [ "$PREVLEVEL" = "N" ]
    then
       echo
       echo
@@ -115,8 +115,7 @@ function ThemeFile() {
       echo -e -n "${ColorHighlight}GoboLinux"
       echo -e "${ColorDefault} is initializing..."
       echo -e "${ColorLowdark}  -------------------------------------------------${ColorDefault}"
-   elif [ "$Mode" = "Done" ]
-   then
+   else
       echo
       echo
       echo -e "${ColorLowdark}  --------------------------------------------------------"

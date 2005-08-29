@@ -21,7 +21,7 @@ ThemeInit() {
 }
 
 ThemeFile() {
-if [ "$1" = "Init" ]
+if [ "$PREVLEVEL" = "N" ]
 then
     echo
     $SetTCol
