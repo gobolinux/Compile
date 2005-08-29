@@ -283,7 +283,7 @@ then
    srcProgram=`readlink -f $goboPrograms/$package/$version`
    Log_Normal "Copying $srcProgram to $goboPrograms/$package."
    # Copy to root partition
-   rm -f "$goboPrograms/$package/$version"
+   rm -f -- "$goboPrograms/$package/$version"
    cp -fRp "$srcProgram" "$goboPrograms/$package"
 fi
 
