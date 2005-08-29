@@ -132,7 +132,7 @@ if __name__ == '__main__' :
 		elif o in [ '--help', '-h' ] :
 			print """
 GetInstalled
- ...
+ List installed packages
  
 
 Options:
