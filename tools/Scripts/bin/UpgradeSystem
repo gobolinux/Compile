@@ -27,6 +27,6 @@ Verify_Superuser
 
 cd "$goboTemp"
 rm UpgradeScript
-wget http://gobolinux.org/upgrade/UpgradeScript
+wget http://gobolinux.org/upgrade/UpgradeScript || Die "Automated upgrade not available at this time."
 chmod +x UpgradeScript
 ./UpgradeScript `cat /System/Settings/GoboLinuxVersion`
