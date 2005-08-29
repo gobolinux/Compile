@@ -75,10 +75,17 @@ exit 0
 
 ### Normal mode ###############################################################
 
+function all() {
+if [ -L share -a $(dirname $(dirname $PWD)) = "$goboPrograms" ]
+then ls -d -- * .[A-Za-z0-9]* 2> /dev/null | grep -v share
+else ls -d -- * .[A-Za-z0-9]* 2> /dev/null 
+fi
+}
+
 pattern="$1"
 shift
 Has_Uppercase "$pattern" || insensitive=-i
 if [ "$*" ]
 then grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" "$@"
-else grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" * .[A-Za-z0-9]*
+else grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" `all`
 fi
