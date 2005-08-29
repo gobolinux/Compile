@@ -63,7 +63,7 @@ cd ${goboLinks}
 Log_Normal "Removing links..."
 
 { cat $filesdir | RemoveBroken ;} || Die "Couldn't cleanup links."
-rm $filesdir
+rm -- $filesdir
 
 #{ find "${goboLinks}" | RemoveBroken ;} || Die "Couldn't cleanup links."
 

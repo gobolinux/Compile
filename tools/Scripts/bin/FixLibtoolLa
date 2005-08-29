@@ -41,7 +41,7 @@ s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%/System/Links/Libraries/\1%g;
 
 ' > "$i"
 
-   Boolean "backup" || rm "$old"
+   Boolean "backup" || rm -- "$old"
 
 done
 

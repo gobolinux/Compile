@@ -92,9 +92,9 @@ then
       cd $package/$versionnumber/lib/python2.3/site-packages
       tmpfile=`Temporary_File`
       export PYTHONPATH=.
-      for i in *.py; do rm $goboLibraries/python2.3/site-packages/${i}o; echo import `basename $i .py`; done > $tmpfile
+      for i in *.py; do rm -- $goboLibraries/python2.3/site-packages/${i}o; echo import `basename $i .py`; done > $tmpfile
       python $tmpfile
-      rm -f $tmpfile
+      rm -f -- $tmpfile
       Quiet cd -
    fi
 
@@ -152,7 +152,7 @@ then
    if [ "$tree_symlinked" = "yes" ]
    then
       Quiet popd
-      rm $package/$versionnumber
+      rm -- $package/$versionnumber
       ln -s $real_package/$newversion $package/$newversion
    fi
    ln -nsf $newversion $package/Current
@@ -191,8 +191,8 @@ then
 fi
 
 # XXX Backwards compatibility
-Quiet rm "$package/.dependencies"
-Quiet rm "$package/$versionnumber/.dependencies"
+Quiet rm -- "$package/.dependencies"
+Quiet rm -- "$package/$versionnumber/.dependencies"
 
 # Try to remove unneeded directories
 Quiet rmdir "$package/$versionnumber/bin"
@@ -206,7 +206,7 @@ Quiet rmdir "$package/$versionnumber/share"
 Quiet rmdir "$package/$versionnumber/Shared"
 if [ ! -e "$package/$versionnumber/Shared" ]
 then
-   Quiet rm "$package/$versionnumber/share"
+   Quiet rm -- "$package/$versionnumber/share"
 fi
 
 

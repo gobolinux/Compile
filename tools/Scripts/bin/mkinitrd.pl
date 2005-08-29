@@ -125,7 +125,7 @@ sub copy_gobo_programs {
 sub create_initrd() {
 
    chdir($initrd_dir);
-   system("rm -rf *");
+   system("rm -rf -- *");
    
    # Create base dir structure
    mkdir("Programs");

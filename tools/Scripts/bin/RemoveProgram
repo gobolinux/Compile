@@ -58,7 +58,7 @@ GrepReplace "./info/"    "./Manuals/info/" $filesdir
 GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
-rm -rf ${goboPrograms}/${program}/${version}
+rm -rf -- ${goboPrograms}/${program}/${version}
 
 # TODO relink current?
 Quiet RemoveBroken "${goboPrograms}/${program}/Current"
@@ -67,6 +67,6 @@ Quiet rmdir ${goboPrograms}/${program}
 Log_Normal "Removing broken links..."
 cd ${goboLinks}
 cat $filesdir | RemoveBroken
-rm $filesdir
+rm -- $filesdir
 Log_Normal "${program} ${version} removed."
 

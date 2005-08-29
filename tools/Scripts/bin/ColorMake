@@ -27,6 +27,6 @@ workaround=`Temporary_File`
 } | mtail --config=${goboSettings}/Scripts/ColorMake.mtailrc -q
 
 returnvalue=`cat $workaround`
-rm $workaround
+rm -- $workaround
 
 exit $returnvalue

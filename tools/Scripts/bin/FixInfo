@@ -25,7 +25,7 @@ shift $parsedArguments
 Is_Entry "mode" "dir" || {
 
 Log_Verbose "Removing previous info files..."
-rm "${goboManuals}/info"/*
+rm -- "${goboManuals}/info"/*
 
 Log_Verbose "Symlinking info files..."
 for prog in "${goboPrograms}"/*
@@ -53,7 +53,7 @@ done
 # if mode=dir or mode=both...
 Is_Entry "mode" "links" || {
 
-rm "${goboManuals}/info/dir"
+rm -- "${goboManuals}/info/dir"
 
 Log_Verbose "Creating 'dir' file..."
 for f in `ls -1 "${goboManuals}/info/" | grep "[^0-9]$"`

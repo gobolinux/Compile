@@ -179,7 +179,7 @@ else
 
     . "$permfile"
 
-    rm -f "$permfile"
+    rm -f -- "$permfile"
 fi
 
 # Restore setuid
@@ -188,7 +188,7 @@ cat "$suidfile" >&$verboseFD
 
 . "$suidfile"
 
-rm -f "$suidfile"
+rm -f -- "$suidfile"
 
 rmdir "$sandboxroot"
 

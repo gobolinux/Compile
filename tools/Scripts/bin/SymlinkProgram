@@ -366,7 +366,7 @@ fi
 if ! Boolean "no-doc"
 then
    Log_Normal "Symlinking info..."
-   Quiet rm "$current/info/dir"
+   Quiet rm -- "$current/info/dir"
    link_directory "$current/info" "$goboManuals/info"
    Log_Normal "Updating info dir..."
    for f in `ls -1 "${current}/info/" 2> /dev/null | grep "[^0-9]$" | sed 's%.*/%%g'`
@@ -428,7 +428,7 @@ then
       link=`readlink -f share` 
       if ! [ "$link" = "$goboShared" ]
       then
-         rm share
+         rm "share"
          [ "`echo ${goboShared:${#goboPrefix}:${#goboShared}} | cut -b1`" != "/" ] && slash="/"
          if Boolean "relative" && [ -d "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" ]
          then
@@ -458,7 +458,7 @@ then
       ln -sfv "$envfile" "$goboEnvironment/$package--$version" >&$verboseFD
       Log_Verbose "Rebuilding environment cache..."
       cache="$goboEnvironment"/Cache
-      rm "$cache"
+      rm -- "$cache"
       for linkedfile in "$goboEnvironment"/*
       do 
          [ -f "$linkedfile" ] && cat "$linkedfile" >> "$cache"

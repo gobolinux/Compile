@@ -103,7 +103,7 @@ then
    #####################################################################
 
    echo "Cleaning up /tmp..."
-   rm -fr ${mp}/tmp/*
+   rm -fr -- ${mp}/tmp/*
 
    for dir in System/Kernel/Status \
               System/Kernel/Devices \
@@ -226,10 +226,10 @@ Tip: if you dont have enough free space in one partition, you can create symlink
 function cleanup() {
 	Log_Terse 
 	umount "${squash_mount}"
-	rm -rf "${squash_mount}"
+	rm -rf -- "${squash_mount}"
 	umount "${iso_mount}"
-	rm -rf "${iso_mount}"
-	rm -rf "${target}"
+	rm -rf -- "${iso_mount}"
+	rm -rf -- "${target}"
 	Die "$1"
 }
 
@@ -260,7 +260,7 @@ cp -a  ${squash_mount}/* "${target}/Environment/"
 #   umount /Mount/SquashFS
 
 umount $squash_mount
-rm -rf $squash_mount 
+rm -rf -- $squash_mount 
 Log_Normal "Unmounting squashfs loopback..."
  
 # => Step 3 - Copy the "isolinux" directory from LiveCD (about 1.8 GB):
@@ -274,7 +274,7 @@ cp -a "$iso_mount"/{isolinux,README} "${target}/LiveCD"
 #   umount /Mount/CD-ROM
 
 umount "${iso_mount}"
-rm -rf "${iso_mount}"
+rm -rf -- "${iso_mount}"
 Log_Normal "Unmounting iso file..."
 
 Log_Terse "ISO building environment prepared at ${target}."

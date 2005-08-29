@@ -83,7 +83,7 @@ function display_file() {
          cat "$1"
       } > $temp
       less $temp
-      rm $temp
+      rm -- $temp
    fi
 }
 

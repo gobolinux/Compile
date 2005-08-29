@@ -64,7 +64,7 @@ mkfs.cramfs "$initrd_path" "$initrd"
 
 exit
 # The Hardway
-rm "$raw_initrd"
+rm -- "$raw_initrd"
 size=`du -sk /tmp/initrd| cut -d / -f 1`
 Log_Normal "Create initrd of size $size KB"
 dd "if=/dev/zero" of=$raw_initrd bs=1k seek=$size count=$size   # Yes 2x the size

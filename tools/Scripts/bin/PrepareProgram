@@ -91,7 +91,7 @@ function color_command() {
      echo $? > $workaround
    } | mtail --config=${mtailrc} -q
    returnvalue=`cat $workaround`
-   rm $workaround
+   rm -- $workaround
    return $returnvalue
 }
 
@@ -101,7 +101,7 @@ make_symlink() {
 }
 
 remove_symlink() {
-    Exists `RealPath $1` || rm -f "$1"
+    Exists `RealPath $1` || rm -f -- "$1"
 }
 
 ### Operation #############################################################
@@ -146,7 +146,7 @@ then
    then
       Ask_Option "$programdir already exists. [r]emove, [k]eep, [C]ancel?"
       if [ "$REPLY" = "r" ]
-      then rm -rf "$programdir"
+      then rm -rf -- "$programdir"
       elif [ "$REPLY" = "k" ]
       then keepdir=yes
       else exit 1
@@ -155,7 +155,7 @@ then
 
    if [ ! "$keepdir" ]
    then
-      rm -f "${goboPrograms}/$programname/Current"
+      rm -f -- "${goboPrograms}/$programname/Current"
       Make_Directory "${goboInstall}/$programname"
       Make_Directory "$installdir"
       if [ "$goboInstall" != "$goboPrograms" ]
@@ -167,7 +167,7 @@ then
       ( cd "$programdir"/.. ; ln -s "$versionnumber" "Current" )
    fi
 
-   [ -L "$programdir/share" ] && rm "$programdir/share"
+   [ -L "$programdir/share" ] && rm -- "$programdir/share"
    ln -nsf "$programdir/Shared" "$programdir/share"
    
    dirop="Make_Directory"
@@ -178,7 +178,7 @@ then
    Is_Writable ${goboPrograms} || Verify_Superuser
    Is_Writable ${goboInstall} || Verify_Superuser
 
-   Is_Real_Directory "$programdir/Shared" || Quiet rm "$programdir/share"
+   Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
    dirop="Quiet rmdir -p"
    linkop="remove_symlink"
 fi

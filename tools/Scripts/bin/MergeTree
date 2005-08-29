@@ -52,7 +52,7 @@ do
             if Boolean "delete"
             then
                Log_Normal "File $file exists in $destination... REPLACING."
-               rm $destination/$file
+               rm -- $destination/$file
                ln -s $PWD/$file $destination/$file
             else
                Log_Verbose "File $file exists in $destination... skipping"

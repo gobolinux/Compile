@@ -106,7 +106,7 @@ then
    else
       InstallPackage ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
       Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
-      rm -f ${goboTemp}/`basename $1`
+      rm -f -- ${goboTemp}/`basename $1`
    fi
    exit 0
 fi
@@ -240,7 +240,7 @@ function try_remove() {
          [ "$REPLY" = "C" -o "$REPLY" = "c" ] && exit 1
          [ "$REPLY" = "K" -o "$REPLY" = "k" ] && return
       }
-      rm -rf "${goboPrograms}/$existingpackage/$existingversion"
+      rm -rf -- "${goboPrograms}/$existingpackage/$existingversion"
    }
 }
 
