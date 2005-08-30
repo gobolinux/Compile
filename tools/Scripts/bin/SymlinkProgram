@@ -72,7 +72,7 @@ Import String
 
 helpOnNoArguments=yes
 scriptDescription="Link a program from the ${goboPrograms} hierarchy in the ${goboSystem} tree."
-scriptCredits="Copyright (C) Hisham Muhammad, 2001-2003 - Released under the GNU GPL."
+scriptCredits="Copyright (C) Hisham Muhammad, 2001-2005 - Released under the GNU GPL."
 scriptUsage="[<options>] <program_name> [<program_version>]"
 scriptExample="WeirdSuperLib 2.4"
 scriptNotes="

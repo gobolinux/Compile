@@ -44,7 +44,7 @@ Import OptionParser
 
 helpOnNoArguments=yes
 scriptDescription="prepares applications for instalation, running the 'configure' script."
-scriptCredits="Copyright (C) 2001-2003 Hisham Muhammad - Released under the GNU GPL."
+scriptCredits="Copyright (C) 2001-2005 Hisham Muhammad - Released under the GNU GPL."
 scriptUsage="[ <target_name> [<version_nr>] ] [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
 scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."

@@ -14,7 +14,7 @@ Import String
 
 helpOnNoArguments=yes
 scriptDescription="Runs 'make install', using a sandbox environment."
-scriptCredits="Copyright (C) Hisham Muhammad, 2001-2003 - Released under the GNU GPL."
+scriptCredits="Copyright (C) Hisham Muhammad, 2001-2005 - Released under the GNU GPL."
 scriptUsage="[<options>] <program_name> [<program_version>] [ -- <extra_arguments> ]"
 scriptExample="--makefile makefile.unix --target install_shared WeirdSuperLib 2.4"
 scriptNotes="

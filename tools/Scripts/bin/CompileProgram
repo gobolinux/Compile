@@ -18,8 +18,8 @@ Import OptionParser
 
 ### Options ###################################################################
 
-scriptDescription="Install LodeLinux/GoboLinux packages :-)"
-scriptCredits="Copyright (C) 2001-2002, Hisham Muhammad - Released under the GNU GPL."
+scriptDescription="Install GoboLinux packages"
+scriptCredits="Copyright (C) 2001-2005, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<options> <archive-file> [<package-name> [<version>]] [ -- <extra-options>]"
 scriptNotes="Any extra options passed after '--' will be passed to 'configure'."

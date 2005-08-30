@@ -14,7 +14,7 @@ Import OptionParser
 ### Options ###################################################################
 
 scriptDescription="Special 'find' utility for searches in the ${goboSystem} hierarchy"
-scriptCredits="Copyright (C) 2003 Hisham Muhammad. Released under the GNU GPL."
+scriptCredits="Copyright (C) 2003-2005 Hisham Muhammad. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="[<flags>] <search_pattern>"
 scriptExample="-i -l freetype"
