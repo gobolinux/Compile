@@ -245,7 +245,15 @@ else
    Log_Normal "Locating a recipe for $app $version..."
    noweb=`Forward_Boolean_Entry "no-web"`
    rawrecipes=`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`
-   [ "$rawrecipes" ] || Die "Could not find recipe for $app $version"
+   [ "$rawrecipes" ] || {
+      FindPackage $noweb --type=recipe "$app" &> /dev/null && {
+         Log_Terse "Could not find recipe for $app $version."
+         { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
+         } && NewVersion $app $version  && {
+            rawrecipes=`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`
+         }
+      }
+   } || Die "Could not find recipe for $app $version"
    #Log_Normal "Found recipe for $app $version at $rawrecipe"
    Log_Normal "Found recipe for $app $version"
 fi
@@ -692,7 +700,6 @@ then
             --verbose
             --configure $configure
             $prepareCross
-            `[ "$modify_configure" = "no" ] && echo "--no-modify"`
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
          PrepareProgram ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
