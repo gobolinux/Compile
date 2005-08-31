@@ -78,6 +78,7 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 
 [ -e "Recipe" ] || Die "Recipe file not found."
 
+# TODO: Support for arch-specific Recipe
 mv Recipe Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
@@ -97,6 +98,7 @@ sed "${switchurls};s:$oldversion:$newversion:g" Recipe.old | grep -v "file_md5" 
 
 rm Recipe.old
 
+# TODO: support for arch-specific recipe
 . Recipe
 
 if [ "$newurl" ]
