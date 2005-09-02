@@ -10,6 +10,7 @@ Import String
 
 ### Changelog #################################################################
 
+# 31/08/2005 - [lucasvr] passing cross-compile flags to child Compile processes
 # 15/12/2004 - [lucasvr] integrated with Compile's cross-compiling feature
 # 04/12/2004 - [hisham] circumvent CVS snapshot dependencies
 # 24/11/2004 - [hisham] support for a Dependencies.blacklist conf file
@@ -53,7 +54,7 @@ scriptNotes="If no version is specified, Current is assumed. "
 Add_Option_Boolean "f" "file" "show dependencies of one file only."
 Add_Option_Boolean "c" "check" "check the package's dependency file,\
  instead of generating one."
-Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Entry   "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
 Add_Option_Boolean "a" "all" "inspect all files, not only those in 'bin', 'sbin' and 'lib'."
 Add_Option_Boolean "m" "missing-only" "Display missing dependencies only. (check mode only)"
 Add_Option_Boolean "H" "higher-or-missing-only" "Display missing dependencies or higher versions only. (check mode only)"
@@ -67,9 +68,11 @@ Add_Option_Boolean "w" "write" "Write dependencies to $deps_file."
 Parse_Options "$@"
 shift $parsedArguments
 
-if Boolean "cross-compile"
+if Is_Entry "cross-compile"
 then
-	. GoboPath Reload
+   arch=`Entry "cross-compile"`
+   crossCompile="--cross-compile $arch"
+   . GoboPath Reload
 fi
 
 ### Utility functions #################################################################
@@ -170,6 +173,8 @@ fi
 
 execute=`Entry "execute"`
 prefix=`readlink -f $goboPrograms/$package/$version`
+
+[ "`basename $execute`" = "Compile" ] && { execute="$execute $crossCompile"; }
 
 if Boolean "dependencies-file"
 then
