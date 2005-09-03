@@ -189,7 +189,7 @@ else
 fi
 
 
-### --check: Verify dependencies ########################################################
+### --list: Print dependencies ##########################################################
 
 if Boolean "list"
 then
