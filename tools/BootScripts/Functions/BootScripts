@@ -7,7 +7,7 @@ execCtr=0
 forkCtr=0
 logpath=${goboVariable}/log
 dateformat=+%F' '%R
-export templog="\n`date $dateformat` \n----------------"
+export templog="\n`date "$dateformat"` \n----------------"
 
 ### User-available commands ###
 
