@@ -52,7 +52,7 @@ fi
 # Prepare Environment
 ##################################################
 
-assert_dir $getRecipeRecipeDir
+assert_dir "$getRecipeRecipeDir"
 
 for rawrecipe in $@
 do

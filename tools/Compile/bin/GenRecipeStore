@@ -50,8 +50,8 @@ Import Compile
 # Prepare Environment
 ##################################################
 
-assert_dir $genRecipeStoreDir
-assert_dir $genRecipeRecipeDir
+assert_dir "$genRecipeStoreDir"
+assert_dir "$genRecipeRecipeDir"
 
 ##################################################
 # Operation
@@ -61,14 +61,14 @@ lsfile="$genRecipeStoreDir/RecipeList"
 $sudo echo -n >"$lsfile"
 for name in "$genRecipeRecipeDir/"*
 do
-    name=`basename $name`
+    name=`basename "$name"`
     for version in "$genRecipeRecipeDir/$name/"*
     do
         if [ -L "$version" ]
         then
             continue
         fi
-        version=`basename $version`
+        version=`basename "$version"`
         archive="$name--$version--recipe.tar.bz2"
         $sudo echo $archive >>"$lsfile"
         Log_Verbose "Package: $archive"
