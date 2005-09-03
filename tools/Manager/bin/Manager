@@ -771,8 +771,11 @@ class ManagerUIImpl(ManagerUI) :
 		
 		if self.getSelectedType() in ['official_package', 'contrib_package','local_package', 'recipe'] :
 			def availability(p,v,t) :
-				T = string.capwords(string.replace(t, '_',' '))
-				return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+string.join(self.availables[t]['programs'][p][v],'<br>')+'</p>'
+				try :
+					T = string.capwords(string.replace(t, '_',' '))
+					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+string.join(self.availables[t]['programs'][p][v],'<br>')+'</p>'
+				except :
+					return ''
 				
 			methods.append(availability)
 		
