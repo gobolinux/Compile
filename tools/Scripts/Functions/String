@@ -6,10 +6,6 @@
 
 function Is_Empty() { [ -z "$*" ] ;}
 
-function Has_Uppercase() {
-   echo "$1" | grep "[[:upper:]]" &> /dev/null
-}
-
 # example: Starts_With "oper" "operations"
 function Starts_With() {
    l=${#1}                                           
@@ -49,22 +45,45 @@ for part in parts:
 " "$1"
 }
 
-function Split() {
-   python -c "
-
-import sys,string
-sys.stdout.write(string.split(sys.argv[1]))
-
-" "$1"
-}
+# obsolete?
+#function Split() {
+#   python -c "
+#
+#import sys,string
+#sys.stdout.write(string.split(sys.argv[1]))
+#
+#" "$1"
+#}
 
 #detsch, 23/08/2004
 # shell/sed/awk/cut implementation is welcome, but don't forget 
 # negative values at "$3"
-function Get_Token() {
-   python -c "
-import sys,string
-sys.stdout.write(string.split(sys.argv[1], sys.argv[2])[int(sys.argv[3])])
-" "$1" "$2" "$3"
-}
+#function Get_Token() {
+#   python -c "
+#import sys,string
+#sys.stdout.write(string.split(sys.argv[1], sys.argv[2])[int(sys.argv[3])])
+#" "$1" "$2" "$3"
+#}
 
+# splits $1 by $2, returns entry $3 (may be negative)
+function Get_Token() {
+   local i=0 tokens=() len=${#2}
+   local start rest=$1
+   while [ "$rest" ]
+   do
+       start=${rest%%$2*}
+       if [ $i -eq $3 ]
+       then
+           echo -n $start
+           return 0
+       fi
+       tokens[$i]=$start
+       rest=${rest:${#start}}
+       if [ "$rest" ]
+       then
+           rest=${rest:$len}
+           let i++
+       fi
+   done
+   [ $3 -lt 0 ] && echo -n ${tokens[$(( $i+$3+1 ))]}
+}
