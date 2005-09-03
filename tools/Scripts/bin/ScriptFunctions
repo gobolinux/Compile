@@ -52,7 +52,7 @@ function Parameters() {
    local i
    for (( i = 0 ; i < middle; i++ ))
    do
-      eval ${entries[$[middle+i]]}'="'${entries[$i]}'"'
+      eval ${entries[$[middle+i]]}'="'"${entries[$i]}"'"'
    done
 }
 
