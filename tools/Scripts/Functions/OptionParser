@@ -10,7 +10,7 @@ Import Process
 #declare -a optionsTypeList
 #declare -a optionsStateList
 optionsListSize=0
-export parsedArguments=0
+parsedArguments=0
 
 function Add_Option() {
    local i

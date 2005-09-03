@@ -18,7 +18,7 @@ function Link_Or_Expand_All() {
 
 ### python Link_Or_Expand_All CHANGELOG
 
-# 14/09/2004 - [detsch] Experimtntal relative option
+# 14/09/2004 - [detsch] Experimental relative option
 # 10/09/2004 - [detsch] Changed Log() function following David Smith sugestion & code
 # 23/05/2004 - [detsch] try:except and checking goboPrograms[-1]=='/' on belongs_to_same_app()
 # 01/04/2004 - [detsch] bugfix: now checking if os.path.islink(bn) when 
@@ -447,7 +447,8 @@ function Parse_Conf() {
       Exists "$1" && source "$1"
    }
    dirzero=$(dirname $(readlink -f $0))
-   progname=$(echo $dirzero | sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@" | tr "/" " " | awk '{print $1}') #"
+#   progname=$(echo $dirzero | sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@" | tr "/" " " | awk '{print $1}') #"
+   progname=`Which_Package "$dirzero"`
    process_conf "${goboSettings}/$progname/$1"
    process_conf "${goboSettings}/$progname/$1"
    process_conf "$dirzero/$1"
@@ -501,7 +502,7 @@ function Try_Superuser() {
 # Whenever you need to strip ${goboPrograms} off from a path,
 # use this function. It's the bullet-proof way to do so.
 function Strip_Gobo_Programs() {
-   sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@"
+   sed "s@^${goboPrograms}@@;s@^$(readlink -f ${goboPrograms})@@;s@^/*@@"
 }
 
 # Inspect to which package a linked file points to
@@ -512,10 +513,4 @@ function Which_Package() {
 # Inspect the version of the package a linked file points to
 function Which_Version() {
    readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f2
-}
-
-# Whenever you need to strip ${goboPrograms} off from a path,
-# use this function. It's the bullet-proof way to do so.
-function Strip_Gobo_Programs() {
-   sed "s@${goboPrograms}@@;s@^/*@@"
 }
