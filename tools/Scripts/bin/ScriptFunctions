@@ -17,10 +17,10 @@ userOptions="${goboUserSettings}/Scripts/Options"
 [ -e "$userOptions" ] && source "$userOptions"
 
 function Import() {
-   cmd="echo \${Imported$1}"
+   local cmd="echo \${Imported$1}"
    if ! [ `eval $cmd` ]
    then
-      eval "export Imported\${$1}=\${$1}"
+      eval "Imported$1=$1"
       if [ -e "${scriptPath}/../Functions/$1" ]
       then    . "${scriptPath}/../Functions/$1"
       elif [ -e "${goboScripts}/../Functions/$1" ]
@@ -47,9 +47,9 @@ function Parameters() {
    shopt -s expand_aliases
    $assert "Invalid number of parameters" "(( $# % 2 == 0 ))"
    shopt -u expand_aliases
+   local entries middle i
    entries=("$@")
    (( middle=$#/2 ))
-   local i
    for (( i = 0 ; i < middle; i++ ))
    do
       eval ${entries[$[middle+i]]}'="'"${entries[$i]}"'"'
