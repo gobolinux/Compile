@@ -26,6 +26,27 @@ function List_To_Array() {
    return 2
 }
 
+# this is similar to Get_Token, \n is default separator
+function String_To_Array() {
+   local arrayname rest sep
+   Parameters "$@" arrayname rest sep
+   [ "$sep" ] || sep=$'\n'
+   local lensep=${#sep} i=0
+   eval "$arrayname"'=()'
+   while [ "$rest" ]
+   do
+      start=${rest%%$sep*}
+      eval "$arrayname[$i]=\"$start\""
+      rest=${rest:${#start}}
+      if [ "$rest" ]
+      then
+         rest=${rest:$lensep}
+         let i++
+         [ "$rest" ] || eval "$arrayname[$i]="
+      fi
+   done
+}
+
 function For_Each() {
    local arrayname="$1"
    local lambda="$2"
@@ -47,4 +68,51 @@ function Map() {
       "$fun" "$1"
       shift      
    done
+}
+
+function Append_To_Array() {
+   local arrayname="$1"
+   local length=`eval echo '${#'"$arrayname"'[@]}'`
+   local i
+   shift
+   for i in $(seq $length $(($length+$#-1)))
+   do
+      eval "$arrayname[$i]=\"$1\""
+      shift
+   done
+}
+
+function Remove_From_Array() {
+   local arrayname="$1"
+   local element
+   shift
+   while [ $# -gt 0 ]
+   do
+      element=$1
+      eval '
+         for i in `seq 0 $(( ${#'"$arrayname"'[@]}-1 ))`
+         do
+            if [ "${'"$arrayname"'[i]}" = "'"$element"'" ]
+            then unset '"$arrayname"'[i]
+            fi
+         done
+         '"$arrayname"'=(${'"$arrayname"'[@]})
+      '
+      shift
+   done
+}
+
+function Array_Contains() {
+   local arrayname="$1"
+   local element="$2"
+   local each
+   eval '
+      for each in ${'"$arrayname"'[@]}
+      do
+         if [ "$each" = "'"$element"'" ]
+         then return 0
+         fi
+      done
+      return 1
+   '
 }
