@@ -204,15 +204,15 @@ function Die() {
 # Prepare Environment
 ##################################################
 
-assert_dir $compileDir
+assert_dir "$compileDir"
 for compileRecipeDir in "${compileRecipeDirs[@]}"
 do
-   assert_dir $compileRecipeDir
+   assert_dir "$compileRecipeDir"
 done
-assert_dir $compileDependenciesDir
-assert_dir $compileArchivesDir
-assert_dir $compileSourcesDir
-assert_dir $genRecipeStoreDir
+assert_dir "$compileDependenciesDir"
+assert_dir "$compileArchivesDir"
+assert_dir "$compileSourcesDir"
+assert_dir "$genRecipeStoreDir"
 
 ##################################################
 # Checking Scripts package version
@@ -244,13 +244,13 @@ else
    # Find recipe:
    Log_Normal "Locating a recipe for $app $version..."
    noweb=`Forward_Boolean_Entry "no-web"`
-   rawrecipes=`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`
-   [ "$rawrecipes" ] || {
+   String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
+   [ "${rawrecipes[*]}" ] || {
       FindPackage $noweb --type=recipe "$app" &> /dev/null && {
          Log_Terse "Could not find recipe for $app $version."
          { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
          } && NewVersion $app $version  && {
-            rawrecipes=`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`
+            String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
          }
       }
    } || Die "Could not find recipe for $app $version"
@@ -258,7 +258,7 @@ else
    Log_Normal "Found recipe for $app $version"
 fi
 
-bakedrecipedir=`GetRecipe $rawrecipes`
+bakedrecipedir=`GetRecipe "${rawrecipes[@]}"`
 [ "$bakedrecipedir" ] || Die "Error getting recipe"
 Log_Normal "Recipe placed in $bakedrecipedir"
 
@@ -356,7 +356,7 @@ else
    archrecipe=$bakedrecipedir/`uname -m`/Recipe
 fi
 
-. $recipe
+. "$recipe"
 [ -e "$archrecipe" ] && . "$archrecipe"
 
 Log_Normal "Compiling $app version $versionnumber."
@@ -475,7 +475,7 @@ else
    if [ ! -n "${dirs[*]}" ]
    then
       remove_tar_extension() { echo "$1" | sed "s/\.t.*//" ;}
-      dirs=(`Map remove_tar_extension "${files[@]}"`)
+      String_To_Array dirs "`Map remove_tar_extension "${files[@]}"`"
    fi
 fi
 
@@ -483,7 +483,7 @@ odirs=("${dirs[@]}")
 odir=${dirs[0]}
 
 make_basedir() { echo "$compileSourcesDir/"`echo "$1" | sed 's,/.*,,'` ;}
-basedirs=(`Map make_basedir "${dirs[@]}"`)
+String_To_Array "basedirs" "`Map make_basedir "${dirs[@]}"`"
 
 make_absolute() {
    if [ ${1:0:1} = "/" ]
@@ -491,7 +491,7 @@ make_absolute() {
    else echo "$compileSourcesDir/$1"
    fi
 }
-dirs=(`Map make_absolute "${dirs[@]}"`)
+String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 dir="${dirs[0]}"
 
 ##################################################
@@ -517,12 +517,12 @@ then
 else
    Boolean "no-web" || FetchArchive "$recipe" || Die "Error fetching archive(s)."
    
-   pfiles=(`
+   pfiles=`
       for i in "${files[@]}"
       do find "$compileArchivesDir" -name "$i"
       done
-   `)
-   files=("${pfiles[@]}")
+   `
+   String_To_Array files "$pfiles"
    
    Boolean "no-build" && exit 0
    
