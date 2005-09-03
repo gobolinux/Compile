@@ -195,11 +195,6 @@ function cleanup() {
    exit 0
 }
 
-function Die() {
-   Log_Error "$@"
-   exit 1
-}
-
 ##################################################
 # Prepare Environment
 ##################################################
