@@ -18,11 +18,6 @@ Questions
      a part of the URL?
 2.5. I've already downloaded the source URL. How do I use it?
 
-3. Troubleshooting
-
-3.5. Compilation of Perl modules fails with "Environment variable PERL5LIB is
-     not set."
-
 1. About Compile
 
 1.1. What are Compile, Recipes and source packages?
@@ -125,14 +120,3 @@ Specify both the "url" variable and the "file" variable.
 2.5. I've already downloaded the source URL. How do I use it?
 
 Put the file in the Archives directory.
-
-3. Troubleshooting
-
-3.1. Compilation of Perl modules fails with "Environment variable
-     PERL5LIB is not set."
-
-Create a Resources/Environment entry for PERL, containing something like
-"export PERL5LIB=/System/Links/Libraries/perl5/5.8.0/site_perl/" and
-SymlinkProgram Perl again. You may need to restart your shell (or your X
-session) in order to make the environment variable take effect globally.
-
