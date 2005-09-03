@@ -10,6 +10,7 @@ function Break_Into_Array() {
 function List_To_Array() {
    local option="$1" 
    local array="$2"
+   local i
    
    for i in `seq $optionsListSize`
    do
@@ -17,10 +18,10 @@ function List_To_Array() {
       then
          value="${optionsStateList[i]}"
          if [ "$value" = "#@unset@#" ]
-    then return 1
-    else Break_Into_Array "$value" "$array" ":"
-         return 0
-    fi
+         then return 1
+         else Break_Into_Array "$value" "$array" ":"
+             return 0
+         fi
       fi
    done
    return 2
@@ -62,11 +63,10 @@ function For_Each() {
 function Map() {
    local fun="$1"
    shift
-   local c=$#
-   for (( i = 0; i < c; i++ ))
+   while [ $# -gt 0 ]
    do
       "$fun" "$1"
-      shift      
+      shift
    done
 }
 
