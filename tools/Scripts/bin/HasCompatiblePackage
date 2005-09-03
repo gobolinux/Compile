@@ -23,11 +23,14 @@ function search_packages() {
    return
 }
 
-cat "$goboSettings"/Scripts/CompatibilityList | while read line
-do
-        package=`echo "$line" | cut -d: -f1`
-        if [ "$package" = "$1" ]
-        then
-                search_packages "$line"
-        fi
-done
+file="$goboSettings/Scripts/CompatibilityList"
+if [ -r "$file" ]
+then cat "$file" | while read line
+   do
+      package=`echo "$line" | cut -d: -f1`
+      if [ "$package" = "$1" ]
+      then
+         search_packages "$line"
+      fi
+   done
+fi
