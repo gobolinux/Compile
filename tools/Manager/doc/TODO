@@ -2,4 +2,3 @@
 - Vazamento no progresso
 - Tratar close event
 - Tratamento de sinais para os processos filho -> atualmente, se aplica a todos os filhos, e nao apenas o do runner atual :(
-- 'Edit Recipe'

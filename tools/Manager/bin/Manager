@@ -3,7 +3,7 @@
 # GoboLinux Manager
 #
 #
-# (C) 2004 Andre Detsch. Released under the GNU GPL.
+# (C) 2004-2005 Andre Detsch. Released under the GNU GPL.
 #          detsch at gobolinux.org
 #
 # PyQT based front-end to easy the task of managing the installed packages
@@ -35,8 +35,7 @@ from GuessProgramCase  import GuessProgramCase
 
 from GenericEditor import *
 
-from PythonUtils import *
-#from GraphicalTail import GraphicalTail
+from PythonUtils    import *
 from LoggersWrapper import *
 
 
@@ -303,7 +302,7 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.needToUpdateInstalled  = 1
 		self.needToUpdateAvailables = 0
-		self.running  = False
+		#self.running  = False
 		#self.mustStop = False
 		
 		self.installedProgramActions = [self.symlinkProgramAction, self.symlinkProgramOverwriteAction, self.removeProgramAction, self.disableProgramAction, self.createPackageAction]
@@ -541,9 +540,7 @@ class ManagerUIImpl(ManagerUI) :
 	#
 	def updateVisualTree(self) :
 		self.visualTree = KeyInsensitiveDict()
-
 		installed = self.installed
-
 		for p in installed.keys() :
 			if self.hideInstalledAction.isOn() :
 				break
@@ -684,6 +681,14 @@ class ManagerUIImpl(ManagerUI) :
 		else:
 			return "",""
 
+	def getMode(self) :
+		if self.modeTab.currentPageIndex() == 1 :
+			return 'outdated'
+		elif self.modeTab.currentPageIndex() == 2 :
+			return 'duplicated'
+		else :
+			return 'all'
+
 	def adjustCommandsMenu(self) :
 		selectedActions = self.getValidActions()
 		
@@ -695,7 +700,9 @@ class ManagerUIImpl(ManagerUI) :
 		
 		for action in selectedActions :
 			action.addTo(self.Actions)
-		
+	
+	def showCommandsQueueMenu(self, item, point) :
+		self.Queue.popup(point)
 	
 	def listClicked(self, item) :
 		if not item :
@@ -814,15 +821,12 @@ class ManagerUIImpl(ManagerUI) :
 			else :
 				data[0]()
 	
-	def getMode(self) :
-		if self.modeTab.currentPageIndex() == 1 :
-			return 'outdated'
-		elif self.modeTab.currentPageIndex() == 2 :
-			return 'duplicated'
-		else :
-			return 'all'
-	
-	# =========================================================================
+	def helpAbout(self) :
+		QMessageBox.about(self, 'About', 'Manager 1.1.0alpha\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
+			
+	################################################################################################
+	# Management commands
+	################################################################################################
 	def doUpdateDescriptions(self) :
 		cmd = 'DescribeProgram --update-all'
 		self.do([cmd], [ None ])
@@ -995,30 +999,9 @@ class ManagerUIImpl(ManagerUI) :
 			apps.append(p)
 		self.do(cmds, apps)
 
-	def do(self, cmds, apps = []) :
-		if len(cmds) == 0 :
-			return 
-			
-		for cmd, app in zip(cmds,apps) :
-			self.commandsQueue.insertItem(cmd)
-			self.programsAtQueue[cmd] = app
-		
-		self.enableOrDisableQueueActions()
-		
-		if self.running :
-			self.activateNotRunningModules()
-			
-		if self.autorunAction.isOn() :
-			self.startRunning()
-
-	def playToggled(self, pressed) :
-		if pressed :
-			self.queueToggleShowRunWindowAction.setOn(True)
-			somethingToDo = self.startRunning()
-			if not somethingToDo:
-				self.queueToggleRunningAction.setOn(False)
-		else :
-			self.stopRunning()
+	################################################################################################
+	# Tasks execution
+	################################################################################################
 	
 	def toggleShowRunWindow(self, pressed) :
 		if pressed :
@@ -1026,16 +1009,22 @@ class ManagerUIImpl(ManagerUI) :
 		else :
 			self.loggers.hide()
 	
-	def initiateCommandThread(self, cmd, logger, cmdsRegex) :
-		r = Runner(self, qApp, logger, cmd, cmdsRegex)
-		r.start()
-
+	def playToggled(self, pressed) :
+		if pressed :
+			if self.commandsQueue.count() == 0:
+				self.queueToggleRunningAction.setOn(False)
+			else :
+				self.queueToggleShowRunWindowAction.setOn(True)
+				self.mustStop = False
+				self.activateNotRunningModules()
+		else :
+			self.stopRunning()
+	
 	def activateNotRunningModules(self) :
-		if self.running :
-			for module in self.runningModules.keys() :
-				if not self.runningModules[module]["running"] :
-					started = self.runNextCommand(self.runningModules[module]["logger"], self.runningModules[module])
-					
+		for module in self.runningModules.keys() :
+			if not self.runningModules[module]["running"] :
+				started = self.runNextCommand(self.runningModules[module]["logger"], self.runningModules[module])
+	
 	def runNextCommand(self, logger, runningModule) :
 		import re
 		if self.commandsQueue.count() == 0 :
@@ -1067,75 +1056,63 @@ class ManagerUIImpl(ManagerUI) :
 					blockedPrograms.append(self.programsAtQueue[cmd])
 		
 		runningModule["running"] = False
-		
 		return runningModule["running"]
-
-
-	def startRunning(self) :
-		if not self.running and self.commandsQueue.count() == 0:
-			return False
-		
-		if not self.running and self.commandsQueue.count() > 0:
-			self.running = True
-			self.mustStop = False
-			self.activateNotRunningModules()
-		else :
-			self.mustStop = False
-		return True
 	
 	def stopRunning(self) :
-		#runner checks this attribute
 		self.mustStop = True
 	
-	def setRunning(self, b) :
-		self.running = b
-	
-	def helpAbout(self) :
-		QMessageBox.about(self, 'About', 'Manager 1.1.0alpha\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
+	def do(self, cmds, apps = []) :
+		if len(cmds) == 0 :
+			return
+			
+		for cmd, app in zip(cmds,apps) :
+			self.commandsQueue.insertItem(cmd)
+			self.programsAtQueue[cmd] = app
+		
+		self.enableOrDisableQueueActions()
+		
+		if self.queueToggleRunningAction.isOn() or self.autorunAction.isOn() :
+			self.mustStop = False
+			self.activateNotRunningModules()
 
+	def initiateCommandThread(self, cmd, logger, cmdsRegex) :
+		r = Runner(self, qApp, logger, cmd, cmdsRegex)
+		r.start()
+	
 	def commandFinished(self, aborted, logger, cmd, runningModule) :
 		if aborted or self.commandsQueue.count() == 0:
 			if aborted :
 				self.commandsQueue.insertItem(cmd)
-				
 			runningModule["running"] = False
 			self.mustStop = True
-			self.running = False
 			self.enableOrDisableQueueActions()
-			
 			self.rescan()
 		
 		self.programsAtQueue[cmd] = self.programsOnRun[cmd]
 		del(self.programsOnRun[cmd])
 		
 		import thread
-		if not self.mustStop :
+		if not self.mustStop and self.queueToggleRunningAction.isOn():
 			found = self.runNextCommand(logger, runningModule)
 			self.activateNotRunningModules()
 	
- 	def showCommandsQueueMenu(self, item, point) :
-		self.Queue.popup(point)
-
-
 	def enableOrDisableQueueActions(self) :
-		queueEmpty = (self.commandsQueue.count() == 0)
-		
+		# Adjusting 4 variables that may interfer in enabling or disabling the actions:
 		isSomethingRunning = False
 		for name in self.runningModules.keys() :
 			if self.runningModules[name]['running'] :
 				isSomethingRunning = True
 				break
-			
 		actionsWereEnabled = self.queueRemoveItemAction.isEnabled()
-		
 		isPlayPressed = self.queueToggleRunningAction.isOn()
+		queueEmpty = (self.commandsQueue.count() == 0)
 		
+		# Enabling/disabling based on the above variables
 		if isPlayPressed and (not isSomethingRunning and queueEmpty) :
 			self.queueToggleRunningAction.setOn(False)
 		
 		if (queueEmpty and not isSomethingRunning) and actionsWereEnabled :
 			enable = False
-		
 		elif (not queueEmpty or isSomethingRunning) and not actionsWereEnabled :
 			enable = True
 		else :
