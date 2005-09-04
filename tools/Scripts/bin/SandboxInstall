@@ -56,6 +56,7 @@ fi
 [ "$1" -o "$1" = "--" ] || Die "Argument missing: specify the program name."
 
 package="`basename "$1" /`"
+package="`GuessProgramCase "$1"`"
 packageDir="$goboPrograms/$package"
 installPackageDir="$goboInstall/$package"
 current="$packageDir/Current"

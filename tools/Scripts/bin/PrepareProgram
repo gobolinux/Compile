@@ -45,7 +45,7 @@ Import OptionParser
 helpOnNoArguments=yes
 scriptDescription="prepares applications for instalation, running the 'configure' script."
 scriptCredits="Copyright (C) 2001-2005 Hisham Muhammad - Released under the GNU GPL."
-scriptUsage="[ <target_name> [<version_nr>] ] [ -- <additional_options> ]"
+scriptUsage="<target_name> [<version_nr>] [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
 scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."
 
@@ -116,13 +116,21 @@ then
     export goboInstall="$goboPrograms"
 fi
 
-#programname=`GuessProgramCase $1 $2`
 programname="$1"
-versionnumber="$2"
-
-[ "$1" -a "$2" ] || Die "Missing arguments."
-
-shift 2
+[ "$1" ] || Die "Missing argument."
+programname=`GuessProgramCase "$1"`
+shift
+if [ "$1" -a "$1" != "--" ]
+then
+   versionnumber="$1"
+   shift
+else
+echo Get_Version "${goboPrograms}/${programname}/Current"
+   versionnumber=`Which_Version "${goboPrograms}/${programname}/Current"`
+   [ "$versionnumber" ] || Die "Please specify version."
+fi
+[ "$1" == "--" ] && shift
+programname=`NamingConventions "$programname"`
 
 programdir="${goboPrograms}/$programname/$versionnumber"
 slashprogramdir=`echo "$programdir" | sed "s/\//\\\\\\\\\//g"`
