@@ -152,13 +152,23 @@ then
 
    if [ "$ask" -a -e "$programdir" ]
    then
-      Ask_Option "$programdir already exists. [r]emove, [k]eep, [C]ancel?"
-      if [ "$REPLY" = "r" ]
-      then rm -rf -- "$programdir"
-      elif [ "$REPLY" = "k" ]
-      then keepdir=yes
-      else exit 1
-      fi
+      while true
+      do
+         Ask_Option "$programdir already exists. [r]emove, [k]eep, [C]ancel?" || exit 1
+         case "$REPLY" in
+         [Rr])
+            rm -rf -- "$programdir"
+            break
+            ;;
+         [Kk])
+            keepdir=yes
+            break
+            ;;
+         [Cc])
+            exit 1
+            ;;
+         esac # esac is ridiculous.
+      done
    fi
 
    if [ ! "$keepdir" ]
