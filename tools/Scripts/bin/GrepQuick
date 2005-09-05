@@ -24,10 +24,11 @@ Add_Option_Boolean "r" "recursive" "Recursive."
 Add_Option_Boolean "s" "source" "Special mode for C/C++/Java sources: skips comments if FilterComments is available."
 Add_Option_Boolean "w" "whole-word" "Match whole words only."
 Add_Option_Boolean "C" "no-color" "Avoid coloring (for grep's that don't support it)."
+Add_Option_Boolean "b" "binaries" "Also search binary files."
 scriptNotes="
 Search is case sensitive only if there is at least one uppercase character
 in the pattern.
-Binary files are not searched.
+Binary files are not searched unless --binaries is given.
 Error messages are not displayed.
 Line numbers are displayed.
 If no files are specified, all files are selected (except in \"source\" mode, where
@@ -82,10 +83,13 @@ else ls -d -- * .[A-Za-z0-9]* 2> /dev/null
 fi
 }
 
+nobins=-I
+Boolean "binaries" && nobins=
+
 pattern="$1"
 shift
 Has_Uppercase "$pattern" || insensitive=-i
 if [ "$*" ]
-then grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" "$@"
-else grep $insensitive $whole $recursive $color -sInH --mmap -- "$pattern" `all`
+then grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@"
+else grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" `all`
 fi
