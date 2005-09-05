@@ -4,6 +4,7 @@
 # Changelog
 ##################################################
 
+# 05/09/2005 - [detsch] Support for <program-name> [version] as input
 # 27/09/2004 - [detsch] can receive now more than 1 path
 # 23/08/2004 - [detsch] full rewrite. Now it receives a full path or url
 #                       and downloads and/or uncompress and/or copies the
@@ -35,7 +36,7 @@ Parse_Conf Compile.conf
 helpOnNoArguments=yes
 scriptDescription="Fetch a recipe and insert it in the recipes tree."
 scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
-scriptUsage="[<recipe-url>|<recipe-path>]"
+scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #scriptNotes="A full path to a recipe [that can be an url, a compressed local" \
 #"recipe or an uncompressed one] is received, and the recipe is placed in" \
 #"$getRecipeRecipeDir"
@@ -54,9 +55,14 @@ fi
 
 assert_dir "$getRecipeRecipeDir"
 
+if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;}
+then
+   GetRecipe `FindPackage --type=recipe $@`
+   exit 0
+fi
+
 for rawrecipe in $@
 do
-   rawrecipe="$1"
    # Getting program name and version
    if [ -d "$rawrecipe" ]
    then
