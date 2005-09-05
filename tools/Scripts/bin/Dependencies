@@ -174,7 +174,9 @@ fi
 execute=`Entry "execute"`
 prefix=`readlink -f $goboPrograms/$package/$version`
 
-[ "`basename $execute`" = "Compile" ] && { execute="$execute $crossCompile"; }
+if [ "$execute" ] && [ "`basename $execute`" = "Compile" ]
+then execute="$execute $crossCompile"
+fi
 
 if Boolean "dependencies-file"
 then
