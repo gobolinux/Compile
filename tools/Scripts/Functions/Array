@@ -36,9 +36,10 @@ function String_To_Array() {
    eval "$arrayname"'=()'
    while [ "$rest" ]
    do
-      start=${rest%%$sep*}
+      start="${rest%%$sep*}"
       eval "$arrayname[$i]=\"$start\""
-      rest=${rest:${#start}}
+      rest="${rest:${#start}}"
+      rest="${rest#$sep}"
       if [ "$rest" ]
       then
          rest=${rest:$lensep}
