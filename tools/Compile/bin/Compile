@@ -691,7 +691,8 @@ then
             val=`echo $i | cut -d= -f 2-`
             eval export $var=\'$val\'
          done
-         [ "$autogen_before_configure" = "yes" ] && ./autogen.sh
+         [ "$autogen" ] || autogen="autogen.sh"
+         [ "$autogen_before_configure" = "yes" ] && ./"$autogen"
          prepareoptions=(
             --verbose
             --configure $configure
