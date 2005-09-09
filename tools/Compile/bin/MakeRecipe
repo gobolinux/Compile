@@ -24,8 +24,8 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="[<app_name> [<app_version>]] <url>"
-#scriptNotes="Any extra options passed after '--' will be passed to 'configure'."
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>}}"
+scriptNotes="A URL or a cvs command line should be passed as a parameter."
 scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
 Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
@@ -63,26 +63,59 @@ then
    shift
 fi
 
-bname=`basename "$1" .tar.gz`
-bname=`basename "$bname" .tar.bz2`
-bname=`basename "$bname" .tgz`
-bname=`basename "$bname" .zip`
+[ "$1" ] || Die "Missing parameter."
 
-if [ ! "$packagename" ]
+# catch parameter errors using cvs
+if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = "-" ]
+then Die "You must pass the program name when using a cvs command."
+fi
+
+cvs=no
+if [ "$versionnumber" = "cvs" ]
 then
-   packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
-   deduced=`DeduceName "README" "$packagename"`
-   [ "$deduced" ] && packagename=$deduced
+   cvs=yes
+   while [ "$1" ]
+   do
+      case "$1" in
+      -d)
+         shift
+         cvs_server="$1"
+         ;;
+      -d*)
+         cvs_server="${1:2}"
+         ;;
+      co|checkout)
+         shift
+         cvs_module="$1"
+         ;;
+      esac # esac is ridiculous.
+      shift
+   done
+   cvs_server=`echo "$cvs_server" | sed 's,anonymous@,anonymous:@,g'`
+else
+   # TODO: generalize mirror system
+   url=`echo "$1" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
+   url=`echo "$url" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
+
+   bname=`basename "$1" .tar.gz`
+   bname=`basename "$bname" .tar.bz2`
+   bname=`basename "$bname" .tgz`
+   bname=`basename "$bname" .zip`
+
+   if [ ! "$packagename" ]
+   then
+      packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
+      deduced=`DeduceName "README" "$packagename"`
+      [ "$deduced" ] && packagename=$deduced
+   fi
+   if [ ! "$versionnumber" ]
+   then
+      versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
+   fi
 fi
 
 # Enforce some naming conventions
 packagename=`NamingConventions "$packagename"`
-
-if [ ! "$versionnumber" ]
-then
-   versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
-fi
-
 
 if ! Boolean "no-check" && ! Boolean "batch"
 then
@@ -111,16 +144,19 @@ then
    fi
 fi
 
-Boolean "batch" || Ask_Continue "Creating recipe template for $packagename version $versionnumber."
+if ! Boolean "batch"
+then
+   if [ "$cvs" = "yes" ]
+   then Ask_Continue "Creating recipe template for CVS build of $packagename."
+   else Ask_Continue "Creating recipe template for $packagename version $versionnumber."
+   fi
+fi
 
 recipedir="$genRecipeRecipeDir/$packagename/$versionnumber"
 
 $sudo mkdir -p $recipedir
 [ "$sudo" ] && Quiet $sudo chown $USER $recipedir
-    
-# TODO: generalize mirror system
-url=`echo $1 | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
-url=`echo $url | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
+
 
 ${sudo} Quiet rm "$recipedir/Recipe"
 
@@ -131,69 +167,85 @@ else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/C
 fi
 
 echo "compile_version=$scriptVersion" >> "$recipedir/Recipe"
-echo "url=\"$url\"" >> "$recipedir/Recipe"
-
-Quiet pushd "$compileArchivesDir"
-file="$PWD/$(basename "$1")"
-if ! Boolean "no-fetch"
+if [ "$cvs" = "yes" ]
 then
-   $wget --passive-ftp -c "$1" || \
-   $wget --passive-ftp "$1" || \
-   $wget "$1" || {
-      Log_Error "Couldn't fetch file, URL may be invalid."
-      exit 1
-   }
+   echo "cvs=$cvs_server" >> "$recipedir/Recipe"
+   echo "cvs_module=$cvs_module" >> "$recipedir/Recipe"
+
+   Quiet pushd "$compileSourcesDir"
+   cvs -d "$cvs_server" checkout "$cvs_module"
+   cd "$cvs_module"
+   Quiet popd
+   file_contents=`mktemp`
+   find "$cvs_module" >> "$file_contents"
 else
-   if ! [ -e "$file" ]
+   echo "url=\"$url\"" >> "$recipedir/Recipe"
+
+   Quiet pushd "$compileArchivesDir"
+   file="$PWD/$(basename "$1")"
+   if ! Boolean "no-fetch"
    then
-      Log_Error "--no-fetch used, but file is not available."
-      exit 1
+      $wget --passive-ftp -c "$1" || \
+      $wget --passive-ftp "$1" || \
+      $wget "$1" || {
+         Log_Error "Couldn't fetch file, URL may be invalid."
+         exit 1
+      }
+   else
+      if ! [ -e "$file" ]
+      then
+         Log_Error "--no-fetch used, but file is not available."
+         exit 1
+      fi
+   fi
+   Quiet popd
+   
+   echo "file_size="`Get_Size "$file"` >> "$recipedir/Recipe"
+   echo "file_md5="`Get_MD5 "$file"` >> "$recipedir/Recipe"
+   
+   # TODO: report if multiple directories, tell the user to verify it
+   file_contents=`mktemp`
+   als -q "$file" >> "$file_contents"
+
+   bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
+   if [ -n "$bdir" -a "$bdir" != "$bname" ]
+   then
+      echo "dir='$bdir'" >> "$recipedir/Recipe"
    fi
 fi
-Quiet popd
 
-echo "file_size="`Get_Size "$file"` >> "$recipedir/Recipe"
-echo "file_md5="`Get_MD5 "$file"` >> "$recipedir/Recipe"
-
-# TODO: report if multiple directories, tell the user to verify it
-file_contents=`mktemp`
-als -q "$file" > "$file_contents"
-
-bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
-if [ -n "$bdir" -a "$bdir" != "$bname" ]
-then
-   echo "dir='$bdir'" >> "$recipedir/Recipe"
-fi
-
-if { grep "configure.in$" "$file_contents" &> /dev/null ;} \
-|| { grep "configure.ac$" "$file_contents" &> /dev/null ;}
+if grep -q "configure.in$" "$file_contents" \
+|| grep -q "configure.ac$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
    echo "is_compileprogram=yes" >> "$recipedir/Recipe"
-elif grep "/configure$" "$file_contents" &> /dev/null
+   if ! grep -q "configure$" "$file_contents"
+   then echo "autogen_before_configure=yes" >> "$recipedir/Recipe"
+   fi
+elif grep -q "/configure$" "$file_contents"
 then
    Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
    echo "is_compileprogram=yes" >> "$recipedir/Recipe"
-elif grep "Makefile.PL$" "$file_contents" &> /dev/null
+elif grep -q "Makefile.PL$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
    echo "is_perl=yes" >> "$recipedir/Recipe"
    perlprefixed="$recipedir/Perl-$packagename"
    notprefixed=$(readlink -f "$recipedir/..")
    if [ -e "$perlprefixed" ]
-   then
+   then 
       mv "$recipedir" "$perlprefixed"
       Quiet rmdir "$notprefixed"
    else
       mv "$notprefixed" "$perlprefixed"
    fi
    Log_Normal "Renamed $packagename to Perl-$packagename"
-elif grep "Imakefile$" "$file_contents" &> /dev/null
+elif grep -q "Imakefile$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on imake."
    echo "is_xmkmf=yes" >> "$recipedir/Recipe"
-elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -i makefile &> /dev/null && \
-       grep "\.py$" "$file_contents" &> /dev/null
+elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -iq makefile && \
+       grep -q "\.py$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Python."
    echo "is_python=yes" >> "$recipedir/Recipe"
@@ -238,9 +290,9 @@ else
       Log_Terse "Could not detect recipe type. Recipe needs to be completed manually."
    fi
 fi
+rm -f "$file_contents"
 
 Log_Verbose "Done creating recipe template for $packagename $versionnumber."
-rm -f "$file_contents"
 
 if [ "$makeRecipeLog" ]
 then
