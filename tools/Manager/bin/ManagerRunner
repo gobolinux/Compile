@@ -107,11 +107,7 @@ class Runner(Thread) :
 			i.write('\n')
 			i.flush()
 		else :
-			ask = not self.widget.configWindow.doNotAskForConfirmation.isChecked()
-			if ask:
-				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message+'\nProceed?', 'Ok', 'Cancel')
-			else :
-				resp = 0
+			resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message+'\nProceed?', 'Ok', 'Cancel')
 			current_question = ''
 			if resp == 0 : 
 				i.write('\n')
