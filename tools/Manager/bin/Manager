@@ -49,7 +49,7 @@ iconsDir = goboShared+"/Manager/icons/"
 
 qApp = QApplication(sys.argv)
 
-openProgramPixmap       = QPixmap(iconsDir+"/folder_open.png")
+openProgramPixmap       = QPixmap(iconsDir+"/folder_open.png_XX")
 unistalledProgramPixmap = QPixmap(iconsDir+"/folder.png")
 currentVersionPixmap    = QPixmap(iconsDir+"/folder_green.png")
 unlinkedVersionPixmap   = QPixmap(iconsDir+"/folder_grey.png")
@@ -80,8 +80,8 @@ class ManagerUIImpl(ManagerUI) :
 			self.selectAll(otherVersionPixmap)
 	def selectAllInstalledUnlinked(self) :
 			self.selectAll(unlinkedVersionPixmap)
-	def selectAllPrograms(self) :
-			self.selectAll(openProgramPixmap)
+	#def selectAllPrograms(self) :
+	#		self.selectAll(openProgramPixmap)
 
 	def selectAll(self, icon) :
 		pList = self.getCurrentList()
@@ -90,7 +90,7 @@ class ManagerUIImpl(ManagerUI) :
 			c = i.current()
 			if not c :
 				break
-			if c.pixmap(0).serialNumber() == icon.serialNumber() :
+			if c.pixmap(0) and c.pixmap(0).serialNumber() == icon.serialNumber() :
 				c.setSelected(True)
 				c.repaint()
 			i += 1
@@ -141,10 +141,12 @@ class ManagerUIImpl(ManagerUI) :
 			pass
 		self.commandsQueue.removeItem(self.commandsQueue.currentItem())
 		self.enableOrDisableQueueActions()
+		self.autoSaveQueue()
 	
 	def clearCommands(self) : #
 		self.commandsQueue.clear()
 		self.enableOrDisableQueueActions()
+		self.autoSaveQueue()
 		
 	def saveCommands(self) : #
 		filename = QFileDialog.getSaveFileName()
@@ -152,19 +154,25 @@ class ManagerUIImpl(ManagerUI) :
 		if not filename :
 			return
 		filename = str(filename)
-		cmds = []
-		for i in range(self.commandsQueue.count()) :
-			cmds.append(str(self.commandsQueue.text(i)))
 		
 		if os.access(filename, os.F_OK) :
 			resp = QMessageBox.warning(self, 'Save commands', 'File '+filename+' exists.\nOverwrite?', 'Yes', 'No')
 			if resp != 0:
 				return
 		
+		s = self.getQueue()
 		f = open(filename, 'w')
-		for cmd in cmds :
-			f.write(cmd+' #'+ self.programsAtQueue[cmd] +'\n')
+		f.write(s)
 		f.close()
+		
+	def getQueue(self) :
+		ret = ''
+		cmds = []
+		for i in range(self.commandsQueue.count()) :
+			cmds.append(str(self.commandsQueue.text(i)))
+		for cmd in cmds :
+			ret += cmd+' #'+ self.programsAtQueue[cmd] +'\n'
+		return ret
 		
 	def openCommands(self) : #
 		filename =  QFileDialog.getOpenFileName()
@@ -172,13 +180,20 @@ class ManagerUIImpl(ManagerUI) :
 			return
 		filename = str(filename)
 		
-		cmds = []
-		f = open(filename)
-		for cmd in f.readlines() :
-			cmds.append(cmd.strip())
-		
 		if not os.access(filename, os.R_OK) :
 			resp = QMessageBox.warning(self, 'Open commands', 'File '+filename+' not found.', 'Ok')
+		
+		f = open(filename)
+		s = f.read().strip()
+		f.close()
+		self.setQueue(s)
+		
+	def setQueue(self, commands) :
+		cmds=[]
+		for cmd in commands.split('\n') :
+			c = cmd.strip()
+			if c :
+				cmds.append(c)
 		
 		self.commandsQueue.clear()
 		for cmd in cmds :
@@ -189,6 +204,7 @@ class ManagerUIImpl(ManagerUI) :
 				self.programsAtQueue[cmd] = "<BLOCK>"
 				self.commandsQueue.insertItem(cmd)
 		self.enableOrDisableQueueActions()
+		self.autoSaveQueue()
 	
 	def editCommandAtQueue(self, item = None) :
 		if not item :
@@ -202,11 +218,18 @@ class ManagerUIImpl(ManagerUI) :
 			i = self.commandsQueue.index(item)
 			self.commandsQueue.removeItem(i)
 			self.commandsQueue.insertItem(str(new), i)
+		self.autoSaveQueue()
 
 	def showConfigurationWindow(self) : #
 		self.connect(self.configWindow.okButton,SIGNAL("clicked()"),self.saveSettings)
 		self.connect(self.configWindow.cancelButton,SIGNAL("clicked()"),self.readSettings)
 		self.configWindow.show()
+	
+	def loadPreviousQueue(self) :
+		self.setQueue(str(self.settings.readEntry('/options/Manager/CommandsQueue', '')[0]))
+	
+	def autoSaveQueue(self) :
+		self.settings.writeEntry('/options/Manager/CommandsQueue', self.getQueue())
 	
 	def writeSetting(self, widget) :
 		t = str(widget).split()[0][1:]
@@ -265,14 +288,16 @@ class ManagerUIImpl(ManagerUI) :
 		(self.configWindow.threadsBandwidth,                 1),
 		(self.configWindow.threadsCPU,                       1),
 		(self.configWindow.threadsOther,                     1),
+		
 		(self.autorunAction,                                 False),
 		(self.detectUnlinkedAction,                          False),
-		
 		(self.show_local_package,                            False),
-		(self.show_official_package,                         True),
+		(self.show_official_package,                         True ),
 		(self.show_contrib_package,                          False),
-		(self.show_recipe,                                   True),
-		(self.show_tracked,                                  False)
+		(self.show_recipe,                                   True ),
+		(self.show_tracked,                                  False),
+		(self.showOutdatedAvailableAction,                   False),
+		(self.hideInstalledAction,                           False)
 		]
 		
 	def saveSettings(self, refresh=True) : #
@@ -308,8 +333,7 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.needToUpdateInstalled  = 1
 		self.needToUpdateAvailables = 0
-		#self.running  = False
-		#self.mustStop = False
+		self.mustStop = False
 		
 		self.installedProgramActions = [self.symlinkProgramAction, self.symlinkProgramOverwriteAction, self.removeProgramAction, self.disableProgramAction, self.createPackageAction]
 		
@@ -346,6 +370,7 @@ class ManagerUIImpl(ManagerUI) :
 
 		self.settings = QSettings()
 		self.readSettings()
+		
 		self.pList.setSorting(0)
 		self.pList_2.setSorting(0)
 		self.pList_3.setSorting(0)
@@ -353,9 +378,11 @@ class ManagerUIImpl(ManagerUI) :
 		self.programsAtQueue = {}
 		self.programsOnRun = {}
 		
-		self.loggers = LoggersWrapper(self.queueToggleShowRunWindowAction.setOn)
-		
 		self.runningModules = {}
+		
+		self.loggers = LoggersWrapper(self.queueToggleShowRunWindowAction.setOn)
+
+		self.loadPreviousQueue()
 
 		self.prepareLoggersWindow()
 		self.enableOrDisableQueueActions()
@@ -1058,6 +1085,7 @@ class ManagerUIImpl(ManagerUI) :
 					self.initiateCommandThread(cmd, logger, runningModule)
 					runningModule["running"] = True
 					self.enableOrDisableQueueActions()
+					self.autoSaveQueue()
 					return True
 				else :
 					blockedPrograms.append(self.programsAtQueue[cmd])
@@ -1077,6 +1105,7 @@ class ManagerUIImpl(ManagerUI) :
 			self.programsAtQueue[cmd] = app
 		
 		self.enableOrDisableQueueActions()
+		self.autoSaveQueue()
 		
 		if self.queueToggleRunningAction.isOn() or self.autorunAction.isOn() :
 			self.mustStop = False
@@ -1102,6 +1131,8 @@ class ManagerUIImpl(ManagerUI) :
 		if not self.mustStop and self.queueToggleRunningAction.isOn():
 			found = self.runNextCommand(logger, runningModule)
 			self.activateNotRunningModules()
+		
+		self.autoSaveQueue()
 	
 	def enableOrDisableQueueActions(self) :
 		# Adjusting 4 variables that may interfer in enabling or disabling the actions:
