@@ -2,7 +2,8 @@
 
 ### Changelog #################################################################
 
-# 21/0921/09 - [calica] Fix --batch
+# 10/08/2004 - [detsch] Not asking confirmation anymore
+# 21/09/2004 - [calica] Fix --batch
 # 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
 # 13/04/2004 - [detsch] Smart RemoveBroken on ${goboLinks}
 # 10/04/2004 - [detsch] --batch option
@@ -43,7 +44,7 @@ then
    Die "${program} ${version} not found at ${goboPrograms}"
 fi
 
-Boolean "batch" || Ask_Continue "Removing $program, version $version."
+Log_Terse "Removing $program, version $version."
 
 Log_Verbose "Getting program file list..."
 filesdir=`mktemp`
