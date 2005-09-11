@@ -122,6 +122,7 @@ then
    sameversionrecipe=`FindPackage --types=recipe $packagename $versionnumber 2> /dev/null`
    if [ "$sameversionrecipe" ]
    then
+      packagename=$(basename $(dirname $sameversionrecipe))
       Log_Question "There is already a recipe for $packagename $versionnumber, at"
       Log_Question "$sameversionrecipe"
       if ! Ask "Create another?"
@@ -135,6 +136,7 @@ then
       then
          Log_Question "There is already a recipe for $packagename, at"
          Log_Question "$sameprogramrecipe"
+         packagename=$(basename $(dirname $sameprogramrecipe))
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
 	 then
 	    NewVersion "$packagename" "$versionnumber" "$1"
