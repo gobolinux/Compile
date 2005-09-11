@@ -32,17 +32,16 @@ function String_To_Array() {
    local arrayname rest sep
    Parameters "$@" arrayname rest sep
    [ "$sep" ] || sep=$'\n'
-   local lensep=${#sep} i=0
+   local i=0
    eval "$arrayname"'=()'
    while [ "$rest" ]
    do
       start="${rest%%$sep*}"
       eval "$arrayname[$i]=\"$start\""
       rest="${rest:${#start}}"
-      rest="${rest#$sep}"
       if [ "$rest" ]
       then
-         rest=${rest:$lensep}
+         rest=${rest#$sep}
          let i++
          [ "$rest" ] || eval "$arrayname[$i]="
       fi
