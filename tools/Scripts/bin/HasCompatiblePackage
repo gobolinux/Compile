@@ -2,13 +2,14 @@
 
 ### Changelog #################################################################
 
+# 17/09/2005 - [lucasvr] Using CompatibilityList from the host machine on cross-compiling
 # 23/08/2005 - [lucasvr] removed 'source GoboPath' to better deal with CrossCompile
 # 11/08/2005 - [lucasvr] First version
 
 if [ "$#" != "1" ]
 then
-        echo "Syntax: $0 <package name>"
-        exit 1
+   echo "Syntax: $0 <package name>"
+   exit 1
 fi
 
 function search_packages() {
@@ -22,6 +23,12 @@ function search_packages() {
    done
    return
 }
+
+if [ "$crossPrefixDir" != "" ]
+then
+   # Use CompatibilityList from the host machine
+   goboSettings=`echo $goboSettings | sed "s%$crossPrefixDir%%g"`
+fi
 
 file="$goboSettings/Scripts/CompatibilityList"
 if [ -r "$file" ]

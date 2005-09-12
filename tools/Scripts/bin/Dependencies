@@ -10,6 +10,7 @@ Import String
 
 ### Changelog #################################################################
 
+# 12/09/2005 - [lucasvr] getting dependencies for cross-compiled apps through readelf
 # 31/08/2005 - [lucasvr] passing cross-compile flags to child Compile processes
 # 15/12/2004 - [lucasvr] integrated with Compile's cross-compiling feature
 # 04/12/2004 - [hisham] circumvent CVS snapshot dependencies
@@ -78,6 +79,19 @@ fi
 ### Utility functions #################################################################
 
 function extract_dependencies_from_file() {
+if Is_Entry "cross-compile"
+then
+   readelf_result=`${crossCompiler}readelf -a "$1" 2> /dev/null | grep "Shared library" | cut -d"[" -f2 | cut -d"]" -f1`
+   for i in $readelf_result
+   do
+      if [ ! -h $goboLibraries/$i ]
+      then
+         echo "# *Warning*: Unresolved library $i"
+      else
+        readlink -f "$goboLibraries/$i" | sed "s%$crossPrefixDir%%g"
+      fi
+   done
+else
    lddresult=`ldd "$1" 2> /dev/null | grep "=>"`
    echo -n "$lddresult"  | grep "not found" | awk '{ print $1 }' | while read i
    do
@@ -92,6 +106,7 @@ function extract_dependencies_from_file() {
       fi
       readlink -f "$i"
    done
+fi
 }
 
 function runit_dependencies() {
