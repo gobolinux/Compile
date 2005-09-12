@@ -762,7 +762,7 @@ class ManagerUIImpl(ManagerUI) :
 			T = string.capwords(string.replace(t, '_',' '))
 			infoTitle = infoTitle + ' (' + T + ')'
 		
-		self.infoBox.setTitle(infoTitle)
+		self.infoBox.setText(infoTitle)
 		self.description.setText('Getting information...')
 		qApp.processEvents()
 		
