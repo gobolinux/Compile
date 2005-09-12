@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
 # 27/08/2005 - [lucasvr] Cross compiling cleanups, supporting arch-specific patches
 # 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when checking version
 # 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
@@ -302,6 +303,7 @@ then
       Die "Could not find $crossConfFile."
    fi
    
+   . ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
    . ${crossConfFile}
    target="$crossPrefixDir/$goboPrograms/$appname/$versionnumber"
 
@@ -314,10 +316,6 @@ then
    	"CPP=$CPP"
    	"CXX=$CXX"
 	"CROSS=$crossCompiler"
-   	"LD=$LD"
-   	"NM=$NM"
-   	"AS=$AS"
-	"STRIPTOOL=$STRIP"
    )
    
    cross_install_variables=(
@@ -327,9 +325,9 @@ then
    # Extra parameters to be passed to 'configure' 
    # TODO: this brokens build on non-autoconf configure scripts 
    cross_configure_options=(
-      	"--prefix=$target"
+   	"--prefix=$target"
    	"--host=$HOST"
-   	"--target=$MACHINE"
+   	"--target=$TARGET"
    	"--x-includes=$crossPrefixDir/$goboHeaders"
    	"--x-libraries=$crossPrefixDir/$goboLibraries"
    )
