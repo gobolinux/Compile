@@ -1,4 +1,4 @@
-- Edicao de GetAvailable.conf, Compile.conf
+NO - Edicao de GetAvailable.conf, Compile.conf
 - Vazamento no progresso
 - Tratar close event
 - Tratamento de sinais para os processos filho -> atualmente, se aplica a todos os filhos, e nao apenas o do runner atual :(

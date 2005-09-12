@@ -403,6 +403,8 @@ class ManagerUIImpl(ManagerUI) :
 		
 		t = self.cmdDict.keys()
 		t.sort()
+		print os.getgroups(), os.getegid(), os.getgid()
+		
 		for cmdType in t :
 			for i in range(self.threasNumberDict[cmdType]) :
 				name = cmdType + '-' + str(i+1)

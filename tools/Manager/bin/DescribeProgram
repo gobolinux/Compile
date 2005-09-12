@@ -223,8 +223,8 @@ if __name__ == '__main__' :
 			print """
 DescribeProgram
  Returns the description of the program, if available.
- <under construction, features listed may not be implemented>
-Options:
+
+-Options:
  
  -a, --update-all     downloads all descriptions available at the servers and 
                       cache them locally

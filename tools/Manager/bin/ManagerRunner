@@ -35,6 +35,8 @@ class Runner(Thread) :
 		self.cmd = cmd
 		self.runningModule = runningModule
 		
+		print 'Hola'
+		
 	
 	def getMessageLettersWords(self, line) :
 		letters = []
@@ -129,6 +131,7 @@ class Runner(Thread) :
 		subProcess = popen2.Popen4(cmd)
 		(i, oe) = (subProcess.tochild, subProcess.fromchild)
 		self.call((self.logger.setSubprocessPid,subProcess.pid))
+		print 'PID is',subProcess.pid
 		
 		errline=''
 		do_break = 0
