@@ -2,17 +2,13 @@
 
 # Usage: Path_Contains <variable> <path>
 # Returns 0 (success) if <path> is a substring of $<variable>
-#   TODO: handle colon-separated items cleanly, so that this
-#   won't return success:
-#     foo=/bla/bar:/baz
-#     Path_Contains foo /bl
 function Path_Contains() {
-   local name="$1"
+   local path=":`eval echo '$'$1`:"
    shift
-   [ "`eval echo -n \$${name}`" ] || return 1  # empty path
+   [ "$path" = "::" ] && return 1  # empty path
    while [ $# -gt 0 ]
    do
-      [ -z "`eval echo -n '${'"${name}##*$1*"'}'`" ] || return 2  # not found     # highlight helper: "
+      [ "${path##*:$1:*}" ] && return 2  # not found
       shift
    done
 }
