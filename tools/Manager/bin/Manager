@@ -820,6 +820,21 @@ class ManagerUIImpl(ManagerUI) :
 					return ''
 				
 			methods.append(availability)
+
+		if self.getSelectedType() in [''] :
+			def reverse_dependencies(p,v,t) :
+				try :
+					x = os.popen('Dependencies --reverse '+p+' | cut -d\' \' -f 1 | sort -u').readlines()
+					xx = string.join(x,'<br>')
+					if xx.strip() :
+						return '<p><font color="#000077"><b>[Installed Programs Depending On '+p+']</b></font><br>'+xx+'</p>'
+					else :
+						return ''
+				except :
+					return ''
+				
+			methods.append(reverse_dependencies)
+		
 		
 		def updateStuff(methods, p,v,t) :
 			s = ''
