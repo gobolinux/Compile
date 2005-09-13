@@ -55,6 +55,7 @@ scriptNotes="If no version is specified, Current is assumed. "
 Add_Option_Boolean "f" "file" "show dependencies of one file only."
 Add_Option_Boolean "c" "check" "check the package's dependency file,\
  instead of generating one."
+Add_Option_Boolean "r" "reverse" "reverse dependency match: indicate who uses a given program."
 Add_Option_Entry   "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
 Add_Option_Boolean "a" "all" "inspect all files, not only those in 'bin', 'sbin' and 'lib'."
 Add_Option_Boolean "m" "missing-only" "Display missing dependencies only. (check mode only)"
@@ -175,6 +176,23 @@ then
    exit 0
 fi
 
+### --reverse: Reverse dependency match #################################################
+
+if Boolean "reverse"
+then
+   for f in "${goboPrograms}"/*/*/Resources/Dependencies
+   do
+      echo "$f" | grep -q "/Current/" && continue
+      if [ "$2" ]
+      then grep -qi "^$package $version" "$f"
+      else grep -qi "^$package " "$f"
+      fi
+      if Succeeded
+      then echo `Which_Package "$f"` `Which_Version "$f"`
+      fi
+   done
+   exit 0
+fi
 
 ### Parse options #######################################################################
 # 
