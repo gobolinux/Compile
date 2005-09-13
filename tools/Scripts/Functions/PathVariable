@@ -1,0 +1,54 @@
+#!/bin/sh (magic line added for syntax highlighting only)
+
+# Usage: Path_Contains <variable> <path>
+# Returns 0 (success) if <path> is a substring of $<variable>
+#   TODO: handle colon-separated items cleanly, so that this
+#   won't return success:
+#     foo=/bla/bar:/baz
+#     Path_Contains foo /bl
+function Path_Contains() {
+   local name="$1"
+   shift
+   [ "`eval echo -n \$${name}`" ] || return 1  # empty path
+   while [ $# -gt 0 ]
+   do
+      [ -z "`eval echo -n '${'"${name}##*$1*"'}'`" ] || return 2  # not found     # highlight helper: "
+      shift
+   done
+}
+
+# Usage: Append_To_Path <variable> <path>
+# Add <path> to $<variable> if not already present in its colon-separated
+# list of entries. Adds to the end of the list.
+function Append_To_Path() {
+   local name="$1" term
+   shift
+   while [ $# -gt 0 ]
+   do
+      eval term=$1  # tilde expansion
+      Path_Contains "$name" "$term" || {
+         eval "${name}="'${'"${name}%:"'}'  # remove trailing colon
+         eval "${name}=\$${name}:${term}"   # assign
+      }
+      shift
+   done
+   eval "${name}="'${'"${name}#:"'}'        # remove starting colon
+}
+
+# Usage: Append_To_Path <variable> <path>
+# Add <path> to $<variable> if not already present in its colon-separated
+# list of entries. Adds to the beginning of the list.
+function Prepend_To_Path() {
+   local name="$1" term
+   shift
+   while [ $# -gt 0 ]
+   do
+      eval term=$1  # tilde expansion
+      Path_Contains "$name" "$term" || {
+         eval "${name}="'${'"${name}#:"'}'  # remove starting colon
+         eval "${name}=${term}:\$${name}"   # assign
+      }
+      shift
+   done
+   eval "${name}="'${'"${name}%:"'}'        # remove trailing colon
+}
