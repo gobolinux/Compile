@@ -1012,6 +1012,7 @@ class ManagerUIImpl(ManagerUI) :
 				
 	def editRecipeOK(self) :
 		t = str(self.genericEditor.textEdit.text())
+		#print getCompileOptions()
 		f = open(str(self.genericEditor.caption()), 'w')
 		f.write(t)
 		f.close()
@@ -1170,8 +1171,7 @@ class ManagerUIImpl(ManagerUI) :
 				break
 		accept = True
 		if isSomethingRunning :
-			accept = not QMessageBox.warning(self, "Maanger", "There are commands running. \nReally exit?", "Yes", "No")
-			
+			accept = not QMessageBox.warning(self, "Manager", "There are commands running. \nReally exit?", "Yes", "No")
 			
 		if accept :
 			e.accept()
