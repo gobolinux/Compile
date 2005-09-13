@@ -176,6 +176,25 @@ then
    exit 0
 fi
 
+
+### Parse options #######################################################################
+# 
+package=`GuessProgramCase $1 $2`
+if [ "$2" ]
+then
+   version=`Get_Version "$package" "$2"`
+else
+   version=`Get_Version "$package" "Current"`
+fi
+
+execute=`Entry "execute"`
+prefix=`readlink -f $goboPrograms/$package/$version`
+
+if [ "$execute" ] && [ "`basename $execute`" = "Compile" ]
+then execute="$execute $crossCompile"
+fi
+
+
 ### --reverse: Reverse dependency match #################################################
 
 if Boolean "reverse"
@@ -194,22 +213,7 @@ then
    exit 0
 fi
 
-### Parse options #######################################################################
-# 
-package=`GuessProgramCase $1 $2`
-if [ "$2" ]
-then
-   version=`Get_Version "$package" "$2"`
-else
-   version=`Get_Version "$package" "Current"`
-fi
 
-execute=`Entry "execute"`
-prefix=`readlink -f $goboPrograms/$package/$version`
-
-if [ "$execute" ] && [ "`basename $execute`" = "Compile" ]
-then execute="$execute $crossCompile"
-fi
 
 if Boolean "dependencies-file"
 then
