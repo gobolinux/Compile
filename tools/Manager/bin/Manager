@@ -1163,7 +1163,18 @@ class ManagerUIImpl(ManagerUI) :
 	
 	def closeEvent(self, e) :
 		self.saveSettings(False)
-		e.accept()
+		isSomethingRunning = False
+		for name in self.runningModules.keys() :
+			if self.runningModules[name]['running'] :
+				isSomethingRunning = True
+				break
+		accept = True
+		if isSomethingRunning :
+			accept = not QMessageBox.warning(self, "Maanger", "There are commands running. \nReally exit?", "Yes", "No")
+			
+			
+		if accept :
+			e.accept()
 	
 
 progress = None

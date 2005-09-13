@@ -534,9 +534,6 @@
         <property name="text">
             <string>Disable Program</string>
         </property>
-        <property name="menuText">
-            <string>Disable program</string>
-        </property>
         <property name="accel">
             <string>Ctrl+D</string>
         </property>
@@ -1010,7 +1007,7 @@
             <iconset>image21</iconset>
         </property>
         <property name="text">
-            <string>Exit manager</string>
+            <string>Exit Manager</string>
         </property>
     </action>
 </actions>
@@ -1490,6 +1487,18 @@
         <signal>activated()</signal>
         <receiver>ManagerUI</receiver>
         <slot>close()</slot>
+    </connection>
+    <connection>
+        <sender>commandsQueue</sender>
+        <signal>doubleClicked(QListBoxItem*)</signal>
+        <receiver>ManagerUI</receiver>
+        <slot>editCommandAtQueue()</slot>
+    </connection>
+    <connection>
+        <sender>commandsQueue</sender>
+        <signal>rightButtonClicked(QListBoxItem*,const QPoint&amp;)</signal>
+        <receiver>ManagerUI</receiver>
+        <slot>showCommandsQueueMenu()</slot>
     </connection>
 </connections>
 <slots>
