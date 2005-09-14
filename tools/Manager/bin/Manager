@@ -96,10 +96,12 @@ class ManagerUIImpl(ManagerUI) :
 			i += 1
 		
 	def rescan(self) :
-		self.forceAvailablesRescan(False)
-		self.forceInstalledRescan(False)
-		
-		self.refresh()
+		if not self.rescaning :
+			self.rescaning = 1
+			self.forceAvailablesRescan(False)
+			self.forceInstalledRescan(False)
+			self.rescaning = 0
+			self.refresh()
 		
 	def forceAvailablesRescan(self, refresh=True) :
 		self.needToUpdateAvailables = 1
@@ -331,6 +333,7 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.installed = {}
 		
+		self.rescaning = 0
 		self.needToUpdateInstalled  = 1
 		self.needToUpdateAvailables = 0
 		self.mustStop = False
