@@ -34,6 +34,7 @@ class Runner(Thread) :
 		self.logger = logger
 		self.cmd = cmd
 		self.runningModule = runningModule
+		QToolTip.add(logger.textWidget, cmd)
 		
 		print 'Hola'
 		
