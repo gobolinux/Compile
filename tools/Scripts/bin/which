@@ -9,6 +9,7 @@
 
 ### Imports ###################################################################
 
+savepath="$PATH"
 source ScriptFunctions
 Import Log
 Import OptionParser
@@ -25,12 +26,13 @@ shift $parsedArguments
 
 ### Operation #################################################################
 
+export PATH="$savepath"
 fakepath=`type -p "$1"`
 if [ ! "$fakepath" ]
 then
    Die "$1 not found, or it's not a program."
 fi
 
-readlink -f $fakepath
+readlink -f "$fakepath"
 
 exit 0
