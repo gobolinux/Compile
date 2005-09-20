@@ -52,12 +52,12 @@ scriptNotes="The ${goboPrograms} hierarchy for the program is only created with 
 # This option should be removed; there's no more interaction in this script.
 Add_Option_Boolean "b" "batch" "batch mode: no user interaction" 
 
-Add_Option_Boolean "t" "tree" "prepare directories only, do not attempt to run configure."
-Add_Option_Boolean "T" "tree-cleanup" "like --tree, but instead of creating directories, remove empty ones"
-Add_Option_Boolean "k" "keep" "keep the directory if it already exists in the ${goboPrograms} hierarchy."
-Add_Option_Boolean "r" "remove" "remove the directory if it already exists in the ${goboPrograms} hierarchy."
-Add_Option_Entry "c" "configure" "specify program to be used as 'configure' script." "./configure"
-Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Boolean "t" "tree" "Prepare directories only, do not attempt to run configure."
+Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating directories, remove empty ones"
+Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the ${goboPrograms} hierarchy."
+Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the ${goboPrograms} hierarchy."
+Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
+Add_Option_Entry   "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
@@ -106,7 +106,7 @@ remove_symlink() {
 
 ### Operation #############################################################
 
-if Boolean "cross-compile"
+if Is_Entry "cross-compile"
 then
 	. GoboPath Reload
 fi
@@ -125,7 +125,7 @@ then
    versionnumber="$1"
    shift
 else
-echo Get_Version "${goboPrograms}/${programname}/Current"
+ echo Get_Version "${goboPrograms}/${programname}/Current"
    versionnumber=`Which_Version "${goboPrograms}/${programname}/Current"`
    [ "$versionnumber" ] || Die "Please specify version."
 fi

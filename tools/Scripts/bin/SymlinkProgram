@@ -92,7 +92,7 @@ Add_Option_Boolean "E" "no-environment" "Do not link entries from ${goboEnvironm
 Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVariable}."
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
 Add_Option_Boolean "S" "no-strip" "Do not strip executables."
-Add_Option_Boolean "X" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Entry "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
 Add_Option_Entry "c" "conflict" "What to do on conflicts, 'keep' or 'overwrite'." "keep"
 Add_Option_Boolean "n" "no-make" "Dummy option. Preserved for backwards compatibility."
@@ -105,11 +105,18 @@ Add_Option_Boolean "t" "rootfs" "Copy program to rootfs if a symlink."
 Parse_Options "$@"
 shift $parsedArguments
 
-if Boolean "cross-compile"
+if Is_Entry "cross-compile"
 then
-	# This will export some variables such as STRIP
+    arch=`Entry "cross-compile"`
+    
+    # get the STRIP command as configured in the cross_file
+    cross_line=`cat $goboSettings/Compile/Cross-$arch.conf| grep crossCompiler=`
+    eval $cross_line
+    strip_line=`cat $goboSettings/Compile/Cross-$arch.conf| grep STRIP=`
+    eval $strip_line
+    
 	. GoboPath Reload
-	prepareCross="--cross-compile"
+	prepareCross="--cross-compile $arch"
 else
 	STRIP=strip
 	prepareCross=""

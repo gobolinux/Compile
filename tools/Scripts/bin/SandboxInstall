@@ -25,7 +25,7 @@ If no program version is specified, Current is assumed.
 Add_Option_Entry "t" "target" "Makefile target to be used." "install"
 Add_Option_Entry "f" "makefile" "Specify which makefile to use." "Makefile"
 Add_Option_Entry "c" "command" "Use the given command instead of make. Options --target and --makefile are then ignored."
-Add_Option_Boolean "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
+Add_Option_Entry "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Entry "a" "add-allowed" "Specify additional allowed directories or files. Colon separated list."
 Add_Option_Boolean "F" "no-sandbox" "Do not protect the installation with a sandbox."
 Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative to the current "\
@@ -35,7 +35,7 @@ Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative
 Parse_Options "$@"
 shift $parsedArguments
 
-if Boolean "cross-compile"
+if Is_Entry "cross-compile"
 then
 	. GoboPath Reload
 fi

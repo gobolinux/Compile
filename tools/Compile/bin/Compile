@@ -74,8 +74,8 @@ scriptCredits="(C)2003-2004 by Hisham Muhammad et al. Released under the GNU GPL
 scriptUsage="<program> [<version>]"
 Add_Option_Entry "n" "app-name" "Override application name." ""
 Add_Option_Entry "e" "version-number" "Override version number." ""
-Add_Option_Entry "c" "cross-compile" "Cross-compile to another architecture." ""
-Add_Option_Boolean "k" "keep" "Keep files is program directory already exists."
+Add_Option_Entry "x" "cross-compile" "Cross-compile to another architecture." ""
+Add_Option_Boolean "k" "keep" "Keep files if program directory already exists."
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
@@ -308,7 +308,7 @@ then
    target="$crossPrefixDir/$goboPrograms/$appname/$versionnumber"
 
    # Configure flag passed to PrepareProgram and SandboxInstall
-   prepareCross="--cross-compile"
+   prepareCross="--cross-compile $arch" 
 
    # Extra arguments to be passed to 'make'
    cross_make_variables=(
@@ -375,7 +375,7 @@ fi
 if [ -n "$compile_version" ]
 then
    develrelease=`echo $compile_version | sed 's/\([0-9]*\).*/\1/g'`
-   if [ "$compile_version" != "CVS" ] && [ "$develrelease" -gt "20000000" ]
+   if [ "$compile_version" != "CVS" ] && [ "$develrelease" ] && [ "$develrelease" -gt "20000000" ]
    then
       compiledate=$(ls -l --time-style=+%Y%m%d $(which Compile) | awk '{print $6}')
       if [ "$compiledate" -lt "$develrelease" -a "$compilemm" != "CVS" ]
