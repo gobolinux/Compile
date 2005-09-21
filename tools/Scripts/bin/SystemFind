@@ -24,31 +24,37 @@ Add_Option_Boolean "l" "libraries" "Search for libraries in ${goboLibraries}."
 Add_Option_Boolean "i" "headers" "Search for include headers in ${goboHeaders}."
 Add_Option_Boolean "s" "settings" "Search for settings in ${goboSettings}."
 Add_Option_Boolean "m" "manuals" "Search for settings in ${goboManuals}."
+Add_Option_Boolean "q" "quick" "Scan symlinks in /System only (may not find all files)."
 Parse_Options "$@"
 shift $parsedArguments
 
 ### Operation #################################################################
 
+if Boolean "quick"
+then searchlinks=
+else searchlinks=-L
+fi
+
 {
     function FindInPath() {
         Boolean "$3" && {
-            f "$1" "$2"
+            find $searchlinks "$2" -name "*$1*"
             usedOptions=yes
         }
     }
     usedOptions=no
     FindInPath "$1" "${goboExecutables}" "executables"
-    FindInPath  "$1" "${goboLibraries}" "libraries"
-    FindInPath  "$1" "${goboHeaders}" "headers"
-    FindInPath  "$1" "${goboSettings}" "settings"
-    FindInPath  "$1" "${goboManuals}" "manuals"
+    FindInPath "$1" "${goboLibraries}" "libraries"
+    FindInPath "$1" "${goboHeaders}" "headers"
+    FindInPath "$1" "${goboSettings}" "settings"
+    FindInPath "$1" "${goboManuals}" "manuals"
     if [ "$usedOptions" = "no" ]
     then
-        FindQuick "$1" "${goboExecutables}"
-        FindQuick "$1" "${goboLibraries}"
-        FindQuick "$1" "${goboHeaders}"
-        FindQuick "$1" "${goboSettings}"
-        FindQuick "$1" "${goboManuals}"
+        find $searchlinks "${goboExecutables}" -name "*$1*"
+        find $searchlinks "${goboLibraries}" -name "*$1*"
+        find $searchlinks "${goboHeaders}" -name "*$1*"
+        find $searchlinks "${goboSettings}" -name "*$1*"
+        find $searchlinks "${goboManuals}" -name "*$1*"
     fi
 } | while read i
 do
