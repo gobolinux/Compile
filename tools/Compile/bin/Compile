@@ -167,9 +167,12 @@ function wrapup() {
    # Generated recipes (located at $genRecipeRecipeDir) 
    if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
-      Log_Normal "Generating dependencies list for recipe..."
-      Dependencies $crossCompile $appname > "$recipedeps"
-      cat "$recipedeps"
+      if [ ! -f "$recipedeps" ]
+      then
+         Log_Normal "Generating dependencies list for recipe..."
+         Dependencies $crossCompile $appname > "$recipedeps"
+         cat "$recipedeps"
+      fi
        
       Log_Normal "Packing recipe directory..."
       tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
@@ -498,9 +501,9 @@ then
       [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
       echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
 
-      if [ -d "$cvs_module" ]
-      then skippatching=yes
-      fi
+      # if [ -d "$cvs_module" ]
+      # then skippatching=yes
+      # fi
 
       login_method=`echo ${cvs} | cut -b-5`
       [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
@@ -690,7 +693,8 @@ then
             eval export $var=\'$val\'
          done
          [ "$autogen" ] || autogen="autogen.sh"
-         [ "$autogen_before_configure" = "yes" ] && ./"$autogen"
+         [ -e "./$autogen" ] && autogen="./$autogen"
+         [ "$autogen_before_configure" = "yes" ] && $autogen
          prepareoptions=(
             --verbose
             --configure $configure
