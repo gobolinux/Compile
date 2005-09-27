@@ -2,12 +2,14 @@
 
 ### Changelog #################################################################
 
+# 27/09/2005 - [lucasvr] Fixed 'find' usage, sourcing GoboPath
 # 08/12/2003 - [hisham] Removed RealPath
 # 23/11/2003 - [hisham] Reformatted changelog
 # 16/02/2003 - [hisham] First version
 
 ### Imports ###################################################################
 
+source GoboPath
 source ScriptFunctions
 Import File
 Import GoboLinux
@@ -57,7 +59,7 @@ function rebuild() {
 
 function rebuild_environment() {
    cd "${goboPrograms}"
-   find -path "*/Resources/Environment" -maxdepth 4 | while read i
+   find -maxdepth 4 -path "*/Resources/Environment" | while read i
    do
       f=`echo "$i" | cut -d/ -f2-3 | sed 's%/%--%'`
       ln -s `readlink -f "$i"` "${goboEnvironment}/$f"
