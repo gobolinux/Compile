@@ -2,6 +2,7 @@
 
 ### Changelog #################################################################
 
+# 27/09/2005 - [lucasvr] Calling RebuildLinks
 # 10/08/2004 - [detsch] Not asking confirmation anymore
 # 21/09/2004 - [calica] Fix --batch
 # 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
@@ -69,5 +70,9 @@ Log_Normal "Removing broken links..."
 cd ${goboLinks}
 cat $filesdir | RemoveBroken
 rm -- $filesdir
+
+Log_Normal "Rebuilding Environment Cache file..."
+yes | RebuildLinks -n
+
 Log_Normal "${program} ${version} removed."
 
