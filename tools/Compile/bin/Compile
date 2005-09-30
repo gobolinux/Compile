@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 30/09/2005 - [calica] Ignore Scripts release "GIT" when checking version
 # 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
 # 27/08/2005 - [lucasvr] Cross compiling cleanups, supporting arch-specific patches
 # 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when checking version
@@ -221,7 +222,7 @@ scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
 if (( svnr > 5 )) || \
-   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a "$scriptsversion" != "CVS" ]
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a "$scriptsversion" != "CVS" -a "$scriptsversion" != "GIT" ]
 then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
 fi
