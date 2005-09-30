@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 30/09/2005 - [lucasvr] Initial Subversion support
 # 30/09/2005 - [calica] Ignore Scripts release "GIT" when checking version
 # 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
 # 27/08/2005 - [lucasvr] Cross compiling cleanups, supporting arch-specific patches
@@ -437,8 +438,8 @@ fi
 # Construct some variable arrays
 ##################################################
 
-if ! [ -n "${cvs}${url}${urls[*]}" ]
-then Die "Missing URL or CVS in recipe '$recipe'."
+if ! [ -n "${cvs}${svn}${url}${urls[*]}" ]
+then Die "Missing URL, CVS or SVN in recipe '$recipe'."
 fi
 
 for var in url file file_size file_md5
@@ -461,6 +462,12 @@ then
    then
       dir="$cvs_module"
    fi
+elif [ "$svn_module" ]
+then
+    if ! [ "$dir" ]
+    then
+        dir="$svn_module"
+    fi
 fi
 
 if [ "$dir" ]
@@ -510,6 +517,15 @@ then
       [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
       cvs -d${cvs} ${cvs_opts} co ${cvs_module}
+   fi
+elif [ "$svn" ]
+then
+   if ! Boolean "no-web"
+   then
+      cd "$compileSourcesDir"
+      echo "Fetching Subversion module $svn_module from $svn"
+      svn co "$svn" "$svn_module"
+      echo "Well done!"
    fi
 else
    Boolean "no-web" || FetchArchive "$recipe" || Die "Error fetching archive(s)."

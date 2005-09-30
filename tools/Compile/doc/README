@@ -305,6 +305,13 @@ cvs_rsh=<string>
    Valid modes: all
    Specify a value for the CVS_RSH variable (see cvs documentation
    for details). If unset, "ssh" is used by default.
+
+svn=<Subversion server>
+   Valid modes: all
+   svn=http://svn.o-hand.com/repos/matchbox/trunk
+   
+svn_module=<module name to co>
+   Valid modes: all
    
 is_interactive=yes
 build_command=<program name>
