@@ -136,7 +136,7 @@ then
       then
          Log_Question "There is already a recipe for $packagename, at"
          Log_Question "$sameprogramrecipe"
-         packagename=$(basename $(dirname $sameprogramrecipe))
+         [ ${sameprogramrecipe:0:1} = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
 	 then
 	    NewVersion "$packagename" "$versionnumber" "$1"
@@ -176,10 +176,9 @@ then
 
    Quiet pushd "$compileSourcesDir"
    cvs -d "$cvs_server" checkout "$cvs_module"
-   cd "$cvs_module"
-   Quiet popd
    file_contents=`mktemp`
    find "$cvs_module" >> "$file_contents"
+   Quiet popd
 else
    echo "url=\"$url\"" >> "$recipedir/Recipe"
 
@@ -209,7 +208,8 @@ else
    file_contents=`mktemp`
    als -q "$file" >> "$file_contents"
 
-   bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
+   # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
+   bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/.*,,'`
    if [ -n "$bdir" -a "$bdir" != "$bname" ]
    then
       echo "dir='$bdir'" >> "$recipedir/Recipe"
