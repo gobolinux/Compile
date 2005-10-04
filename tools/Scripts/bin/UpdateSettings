@@ -23,7 +23,7 @@ Import Process
 helpOnNoArguments=yes
 scriptDescription="Interactively update settings from defaults in Resources/Defaults/Setting"
 scriptCredits="(C)2005 by David Smith. Released under the GNU GPL."
-scriptUsage="[-qrl] [<program or directory>]"
+scriptUsage="[<options>] [<program or directory>]"
 Add_Option_Boolean "c" "check" "Only check whether current settings differ from the defaults."
 Add_Option_Boolean "r" "report" "Only report whether current settings and defaults differ."
 Add_Option_Boolean "l" "list" "Only list files that differ between current settings and defaults. Don't change anything."
@@ -36,7 +36,7 @@ shift $parsedArguments
 case "$1" in
        /*)  pdir="$1"           ; abs_path=yes ;;
        */*) pdir="$(pwd)/$1"    ; abs_path=no ;;
-       *)   pdir="/Programs/$1" ; abs_path=yes ;;
+       *)   pdir="/Programs/`GuessProgramCase $1`" ; abs_path=yes ;;
 esac
 
 Is_Directory "$pdir" || Die "$pdir not found or is not a directory"
@@ -377,3 +377,4 @@ if Boolean "update"; then
 
        update_files
 fi
+
