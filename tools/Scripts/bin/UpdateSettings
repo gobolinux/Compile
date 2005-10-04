@@ -20,7 +20,7 @@ Import Process
 # Options and configuration
 ##################################################
 
-helpOnNoArguments=
+helpOnNoArguments=yes
 scriptDescription="Interactively update settings from defaults in Resources/Defaults/Setting"
 scriptCredits="(C)2005 by David Smith. Released under the GNU GPL."
 scriptUsage="[-qrl] [<program or directory>]"
@@ -32,9 +32,8 @@ Add_Option_Boolean "u" "update" "Interactively update the settings (deafult)."
 Parse_Options "$@"
 shift $parsedArguments
 
-# The argument can be "" for current directory, a path, or a program name
+# The argument can be a path or a program name
 case "$1" in
-       "")  pdir=$(pwd)         ; abs_path=no ;;
        /*)  pdir="$1"           ; abs_path=yes ;;
        */*) pdir="$(pwd)/$1"    ; abs_path=no ;;
        *)   pdir="/Programs/$1" ; abs_path=yes ;;
@@ -88,7 +87,7 @@ function expand_dirs()
 
        while read difftype file; do
                if Is_Directory "$file"; then
-                       find "$file" | sed "s/^/$difftype/"
+                       find "$file" -type f | sed "s/^/$difftype /"
                else
                        echo "$difftype $file"
                fi
@@ -358,7 +357,13 @@ fi
 ##############################################
 if Boolean "update"; then
 
-       Ask "Update settings in $pdir?" || exit 0
+       while true; do
+               Ask_Option "Update settings in $pdir [y/n]? "
+               case "$REPLY" in
+                       y|Y) break ;;
+                       n|N) exit 0 ;;
+               esac
+       done
 
        if Is_Directory "$pdir/Settings"; then
                mkdir -p "$pdir/Current/Resources"
@@ -372,4 +377,3 @@ if Boolean "update"; then
 
        update_files
 fi
-
