@@ -88,7 +88,7 @@ function expand_dirs()
 
        while read difftype file; do
                if Is_Directory "$file"; then
-                       find "$file" | sed "s/^/$difftype "
+                       find "$file" | sed "s/^/$difftype/"
                else
                        echo "$difftype $file"
                fi
@@ -372,3 +372,4 @@ if Boolean "update"; then
 
        update_files
 fi
+
