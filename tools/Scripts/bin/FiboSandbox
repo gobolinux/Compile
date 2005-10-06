@@ -140,6 +140,7 @@ do
    chmod ${mod[$c]} "$i"
    chown ${own[$c]} "$i" 
    chgrp ${grp[$c]} "$i" 
+   c=$[c+1]
 done
 
 Log_Verbose "Undoing the sandbox..."
