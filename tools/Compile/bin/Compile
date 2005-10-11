@@ -222,8 +222,9 @@ assert_dir "$genRecipeStoreDir"
 scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-if (( svnr > 5 )) || \
-   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a "$scriptsversion" != "CVS" -a "$scriptsversion" != "GIT" ]
+is_cvs=`echo $scriptsversion | grep CVS && true || false`
+if [ $svnr -gt 5 -a ! "$is_cvs" ] || \
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_cvs" -a "$scriptsversion" != "GIT" ]
 then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
 fi
