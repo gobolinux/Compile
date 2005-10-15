@@ -326,6 +326,10 @@ then
    arch=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch"
    
+   # UnionFS check
+   grep unionfs ${goboStatus}/filesystems || modprobe unionfs || \
+      Die "Could not find unionfs module, please run 'Compile UnionFS'."
+   
    crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch.conf
    if [ ! -f "$crossConfFile" ]
    then
