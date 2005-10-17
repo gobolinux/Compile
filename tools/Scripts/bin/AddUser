@@ -2,6 +2,7 @@
 
 ### Changelog #################################################################
 
+# 17/10/2005 - [detsch] Show_Help if no $name is passed
 # 02/09/2004 - [detsch] usermod -G floppy,audio,users,cdrecord,video <user>
 # 23/11/2003 - [hisham] Renamed long options
 #            - Added skel option
@@ -47,6 +48,13 @@ shift $parsedArguments
 Verify_Superuser
 
 name="$1"
+
+if [ ! "$name" ]
+then
+   Show_Help
+   exit 1
+fi
+ 
 
 skeldir=${goboPrograms}/Scripts/Settings/Scripts/
 homedir="${goboUsers}/$name"
