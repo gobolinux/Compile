@@ -630,7 +630,7 @@ then
    pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do
-      patch -Np1 -i $i || Die "Failed patching"
+      patch -Np1 -i $i || Die "Failed on patch $i"
    done
    popd &> /dev/null
 fi
