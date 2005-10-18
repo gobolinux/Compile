@@ -5,7 +5,6 @@
 ##################################################
 # Changelog
 ##################################################
-# 11/10/2005 - [lucasvr] Added UnionFS dependency on cross-compile mode
 # 30/09/2005 - [lucasvr] Initial Subversion support
 # 30/09/2005 - [calica] Ignore Scripts release "GIT" when checking version
 # 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
@@ -14,7 +13,7 @@
 # 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
 # 21/06/2005 - [detsch] Die on FetchArchive failure
 # 13/05/2005 - [detsch] Die on patch failure
-# 27/04/2005 - [lucasvr] added support to ext cvs servers
+# 27/04/2005 - [lucasv] added support to ext cvs servers
 # 17/02/2005 - [hisham] environment array
 # 11/01/2005 - [lucasvr] installprefix for cross-compiling
 # 26/11/2004 - [hisham] pre-patch
@@ -199,28 +198,7 @@ function cleanup() {
       fi
       [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
    fi
-   
-   cleanup_cross
    exit 0
-}
-
-function cleanup_cross() {
-   if Is_Entry "cross-compile"
-   then
-       find $crossPrefixDir/$goboPrograms/$appname -name .wh.__dir_opaque | xargs rm -f
-       find $crossPrefixDir/$goboPrograms/$appname | xargs rmdir 2> /dev/null
-       umount $goboPrograms/$appname 2> /dev/null
-       rmdir $goboPrograms/$appname  2> /dev/null
-   fi
-
-   # return happy
-   true
-}
-
-function Die() {
-   [[ "$@" != "" ]] && Log_Error "$@"
-   cleanup_cross
-   exit 1
 }
 
 ##################################################
@@ -315,7 +293,6 @@ then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
 target="${goboPrograms}/$appname/$versionnumber"
-installprefix="$target"
 
 ##################################################
 # Check if we are cross-compiling
@@ -338,10 +315,10 @@ then
    
    . ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
    . ${crossConfFile}
+   target="$crossPrefixDir/$goboPrograms/$appname/$versionnumber"
 
    # Configure flag passed to PrepareProgram and SandboxInstall
    prepareCross="--cross-compile $arch" 
-   create_dirs_first="no"
 
    # Extra arguments to be passed to 'make'
    cross_make_variables=(
@@ -368,22 +345,14 @@ then
    # Keep cross-compile flags so that Meta-Recipes follow cross compilation rules
    crossCompile="--cross-compile $arch"
    
+   installprefix="$target"
    archsubdir=$bakedrecipedir/$ARCH
    archrecipe=$bakedrecipedir/$ARCH/Recipe
-
-   # Create the tree under $crossPrefixDir/$goboPrograms and 
-   PrepareProgram --tree --cross-compile $arch $appname $versionnumber
-
-   # Union mount it under $goboPrograms
-   dir_cross=$crossPrefixDir/$goboPrograms/$appname
-   dir_local=$goboPrograms/$appname
-   
-   [ ! -d $dir_local ] && mkdir -p $dir_local
-   mount -t unionfs -o dirs=$dir_cross=rw:$dir_local=ro unionfs $goboPrograms/$appname
 else
    prepareCross=""
    cross_make_variables=""
    cross_configure_options=""
+   installprefix="$target"
    crossCompile=""
 
    archsubdir=$bakedrecipedir/`uname -m`
@@ -573,7 +542,7 @@ else
    `
    String_To_Array files "$pfiles"
    
-   Boolean "no-build" && cleanup_cross && exit 0
+   Boolean "no-build" && exit 0
    
    unpack=yes
    if [ -d "${dirs[0]}" ]
@@ -732,7 +701,7 @@ then
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    is_function_set pre_build && pre_build
    if ! Boolean "no-configure"
@@ -751,15 +720,16 @@ then
          prepareoptions=(
             --verbose
             --configure $configure
+            $prepareCross
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
          PrepareProgram ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
    ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
-   Boolean "no-install" && cleanup_cross && exit
+   Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -800,7 +770,7 @@ if [ "$is_python" = "yes" ]
 then
    Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
-   PrepareProgram -t $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
    mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
@@ -816,7 +786,7 @@ then
       is_function_set pre_build && pre_build
       python $build_script $build_target ${opts[*]}
    fi
-   Boolean "no-install" && cleanup_cross && exit
+   Boolean "no-install" && exit
    is_function_set pre_install && pre_install
    if ! [ "$do_install" = "no" ]
    then
@@ -862,16 +832,16 @@ fi
 if [ "$is_makefile" = "yes" ]
 then 
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    if ! [ "$do_build" = "no" ]
    then
       is_function_set pre_build && pre_build
       ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build failed."
    fi
-   Boolean "no-install" && cleanup_cross && exit
+   Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -897,8 +867,8 @@ then
       "INCDIR=$target/include"
    )
    make -f "$makefile" $imakevars $build_target || Die "Build failed."
-   Boolean "no-install" && cleanup_cross && exit
-   PrepareProgram -t "$appname" "$versionnumber"
+   Boolean "no-install" && exit
+   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
    install_extras
    if ! [ "$install_target" ]
    then install_target="install"
@@ -928,7 +898,7 @@ fi
 if [ "$is_manifest" = "yes" ]
 then
    is_function_set pre_install && pre_install
-   PrepareProgram -t "$appname" "$versionnumber"
+   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
    install_extras
    for i in "${manifest[@]}"
    do
@@ -963,7 +933,7 @@ then
          done
       } | ./$build_command
    fi
-   Boolean "no-install" && cleanup_cross && exit
+   Boolean "no-install" && exit
    install_extras
    is_function_set pre_install && pre_install
    {
