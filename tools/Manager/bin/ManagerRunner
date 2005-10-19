@@ -103,6 +103,16 @@ class Logger :
 		self.runWindow.tabWidget.changeTab(self.tab,self.name)
 		self.initialize(availableGid)
 		self.languageChange()
+		
+		self.disableActionButtons = True
+		
+		self.disableAllButtonsIfRequired()
+		
+	def disableAllButtonsIfRequired(self) :
+		if self.disableActionButtons :
+			self.abortButton.setEnabled(False)
+			self.pauseButton.setEnabled(False)
+			self.resumeButton.setEnabled(False)
 	
 	def remove(self) :
 		self.runWindow.tabWidget.removePage(self.tab)
@@ -123,14 +133,16 @@ class Logger :
 		self.subprocessPid = 0
 		import random
 		self.availableGid = int(random.random() * 1000)
-		print self.availableGid 
+		
 
 	def enableOk(self) :
 		self.subprocessPid = 0
-		#self.okButton.setEnabled(True)
 		self.abortButton.setEnabled(False)
 		self.pauseButton.setEnabled(False)
 		self.resumeButton.setEnabled(False)
+		
+		self.disableAllButtonsIfRequired()
+		
 
 	def append(self, s) :
 		self.runWindow.tabWidget.changeTab(self.tab,self.name+" *")
@@ -170,7 +182,7 @@ class Logger :
 			import signal, os
 			signal.signal(signal.SIGTERM, signal.SIG_IGN)
 			
-			print 'GID is',os.getpgid(self.subprocessPid)
+			#print 'GID is',os.getpgid(self.subprocessPid)
 			
 			os.setpgid(self.subprocessPid, self.availableGid)
 			
@@ -186,13 +198,15 @@ class Logger :
 			self.pauseButton.setEnabled(False)
 			self.abortButton.setEnabled(False)
 			
+			self.disableAllButtonsIfRequired()
+			
 	
 	def pauseSubprocess(self) :
 		if self.subprocessPid :
 			import signal, os
 			signal.signal(signal.SIGTSTP, signal.SIG_IGN)
-			print 'GID is',os.getpgid(self.subprocessPid)
-			print 'S PID is',self.subprocessPid
+			#print 'GID is',os.getpgid(self.subprocessPid)
+			#print 'S PID is',self.subprocessPid
 			#os.setpgid(self.subprocessPid, 2)
 			os.setpgid(self.subprocessPid, os.getpgid(self.subprocessPid))
 			
@@ -205,6 +219,8 @@ class Logger :
 			self.resumeButton.setEnabled(True)
 			self.pauseButton.setEnabled(True)
 			self.abortButton.setEnabled(False)
+			
+			self.disableAllButtonsIfRequired()
 	
 	def resumeSubprocess(self) :
 		if self.subprocessPid :
@@ -216,6 +232,8 @@ class Logger :
 			self.pauseButton.setEnabled(True)
 			self.resumeButton.setEnabled(False)
 			self.abortButton.setEnabled(True)
+			
+			self.disableAllButtonsIfRequired()
 	
 	def setFocus(self) :
 		self.runWindow.tabWidget.setCurrentPage(self.runWindow.tabWidget.indexOf(self.tab))
@@ -230,11 +248,15 @@ class Logger :
 		self.pauseButton.setEnabled(False)
 		self.resumeButton.setEnabled(False)
 		
+		self.disableAllButtonsIfRequired()
+		
 	def setSubprocessPid(self, pid) :
 		self.subprocessPid = pid
 		self.abortButton.setEnabled(True)
 		self.pauseButton.setEnabled(True)
 		self.resumeButton.setEnabled(False)
+		
+		self.disableAllButtonsIfRequired()
 		
 	def runWindow(self) :
 		return self.runWindow
@@ -352,7 +374,7 @@ class Runner(Thread) :
 		compatMode = self.widget.configWindow.useCompatibilityModeInteraction.isChecked()
 		if compatMode :
 			os.system(cmd)
-			print 'Done'
+			#print 'Done'
 			return True
 		
 		self.call((self.logger.append,cmd))
@@ -360,7 +382,7 @@ class Runner(Thread) :
 		subProcess = popen2.Popen4(cmd)
 		(i, oe) = (subProcess.tochild, subProcess.fromchild)
 		self.call((self.logger.setSubprocessPid,subProcess.pid))
-		print 'PID is',subProcess.pid
+		#print 'PID is',subProcess.pid
 		
 		errline=''
 		do_break = 0

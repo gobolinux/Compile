@@ -873,7 +873,7 @@ class ManagerUIImpl(ManagerUI) :
 				data[0]()
 	
 	def helpAbout(self) :
-		QMessageBox.about(self, 'About', 'Manager 1.1.0alpha\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
+		QMessageBox.about(self, 'About', 'Manager 1.1.0\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
 			
 	################################################################################################
 	# Management commands
