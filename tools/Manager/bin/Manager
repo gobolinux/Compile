@@ -36,8 +36,6 @@ from GuessProgramCase  import GuessProgramCase
 from GenericEditor import *
 
 from PythonUtils    import *
-from LoggersWrapper import *
-
 
 goboPrograms = getGoboVariable('goboPrograms')
 goboShared   = getGoboVariable('goboShared')
@@ -383,7 +381,7 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.runningModules = {}
 		
-		self.loggers = LoggersWrapper(self.queueToggleShowRunWindowAction.setOn)
+		self.loggers = RunningWindow(self.queueToggleShowRunWindowAction.setOn)
 
 		self.loadPreviousQueue()
 

@@ -10,10 +10,7 @@ BIN_DIR=bin
 
 all: guis libs
 
-guis : $(LIB_DIR)/ManagerUI.py $(LIB_DIR)/ManagerConfigForm.py $(LIB_DIR)/LoggersWrapperForm.py $(LIB_DIR)/GenericEditor.py
-
-$(LIB_DIR)/LoggersWrapperForm.py: $(GUI_DIR)/LoggersWrapperForm.ui
-	pyuic $? > $@
+guis : $(LIB_DIR)/ManagerUI.py $(LIB_DIR)/ManagerConfigForm.py $(LIB_DIR)/GenericEditor.py
 
 $(LIB_DIR)/GenericEditor.py: $(GUI_DIR)/GenericEditor.ui
 	pyuic $? >$@

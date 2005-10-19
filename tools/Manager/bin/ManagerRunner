@@ -22,20 +22,14 @@ from select    import *
 from tempfile  import *
 from qt import *
 
-from LoggersWrapper import *
-
 import os, time, string, urllib, popen2, sys
 
-
 from qt import *
-#from GraphicalTailForm import *
-
-from LoggersWrapperForm import *
 
 class Logger :
 	colors = [
 		('\033[1;30m' , '<font color="#625D5D">'), # 'Gray'
-		
+	
 		('\033[1;31m' , '<font color="#F62217">'), # 'BoldRed'
 		('\033[0;31m' , '<font color="#770000">'), # 'Red0'
 		('\033[31m'   , '<font color="#770000">'), # 'Red'
@@ -67,62 +61,54 @@ class Logger :
 		('\033[0m'    , '</font>'               ) # 'Normal'
 	]
 		
-	def __init__(self, name, loggersWrapper, availableGid = 0) :
-		self.loggersWrapper = loggersWrapper
+	def __init__(self, name, runWindow, availableGid = 0) :
+		self.runWindow = runWindow
 		self.name = name
 		
-		self.tab = QWidget(loggersWrapper.tabWidget2, name)
+		self.tab = QWidget(runWindow.tabWidget, name)
 		tabLayout = QGridLayout(self.tab,1,1,11,6,"tabLayout")
 	
 		self.textWidget = QTextEdit(self.tab,"textWidget")
 		self.textWidget.setReadOnly(1)
-	
 		tabLayout.addMultiCellWidget(self.textWidget,0,0,0,4)
 	
 		self.pauseButton = QPushButton(self.tab,"pauseButton")
 		self.pauseButton.setEnabled(0)
 		self.pauseButton.setDefault(1)
-	
 		tabLayout.addWidget(self.pauseButton,1,2)
 	
 		self.resumeButton = QPushButton(self.tab,"resumeButton")
 		self.resumeButton.setEnabled(0)
 		self.resumeButton.setDefault(1)
-	
 		tabLayout.addWidget(self.resumeButton,1,3)
 	
 		self.abortButton = QPushButton(self.tab,"abortButton")
 		self.abortButton.setEnabled(0)
 		self.abortButton.setDefault(1)
-	
 		tabLayout.addWidget(self.abortButton,1,4)
 	
 		self.autoScroll = QCheckBox(self.tab,"autoScroll")
 		self.autoScroll.setChecked(1)
 	
 		tabLayout.addWidget(self.autoScroll,1,0)
-		spacer2 = QSpacerItem(31,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
-		tabLayout.addItem(spacer2,1,1)
+		spacer = QSpacerItem(31,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
+		tabLayout.addItem(spacer,1,1)
 		
-		loggersWrapper.tabWidget2.insertTab(self.tab,QString(""))
+		runWindow.tabWidget.insertTab(self.tab,QString(""))
 
-		loggersWrapper.connect(self.abortButton,SIGNAL("released()"),self.abortSubprocess)
-		loggersWrapper.connect(self.pauseButton,SIGNAL("released()"),self.pauseSubprocess)
-		loggersWrapper.connect(self.resumeButton,SIGNAL("released()"),self.resumeSubprocess)
+		runWindow.connect(self.abortButton,SIGNAL("released()"),self.abortSubprocess)
+		runWindow.connect(self.pauseButton,SIGNAL("released()"),self.pauseSubprocess)
+		runWindow.connect(self.resumeButton,SIGNAL("released()"),self.resumeSubprocess)
 		
-		self.loggersWrapper.tabWidget2.changeTab(self.tab,self.name)
+		self.runWindow.tabWidget.changeTab(self.tab,self.name)
 		self.initialize(availableGid)
 		self.languageChange()
 	
 	def remove(self) :
-		self.loggersWrapper.tabWidget2.removePage(self.tab)
+		self.runWindow.tabWidget.removePage(self.tab)
 	
 	def languageChange(self):
-		#self.setCaption(self.__tr("GoboLinux Manager"))
-		#self.textWidget.setText(QString.null)
 		self.autoScroll.setText("Force Auto scroll")
-		#self.okButton.setText(self.__tr("&Ok"))
-		#self.okButton.setAccel(self.__tr("Alt+O"))
 		self.abortButton.setText("&Abort")
 		#self.abortButton.setAccel("Alt+A")
 		self.pauseButton.setText("&Pause")
@@ -133,15 +119,11 @@ class Logger :
 	output = None
 	def initialize(self, availableGid = 0) :
 		#self.output = open('/tmp/GoboLinuxInstall.log', 'w')
-		
 		self.abortOrdered = False
 		self.subprocessPid = 0
 		import random
 		self.availableGid = int(random.random() * 1000)
 		print self.availableGid 
-		#availableGid
-		
-		
 
 	def enableOk(self) :
 		self.subprocessPid = 0
@@ -151,7 +133,7 @@ class Logger :
 		self.resumeButton.setEnabled(False)
 
 	def append(self, s) :
-		self.loggersWrapper.tabWidget2.changeTab(self.tab,self.name+" *")
+		self.runWindow.tabWidget.changeTab(self.tab,self.name+" *")
 		#f = self.tab.font()
 		#print f
 		#f.setBold(True)
@@ -171,14 +153,13 @@ class Logger :
 		if self.autoScroll.isChecked() :
 			self.textWidget.ensureVisible (0, 999999) # scroll down
 
-		
 	def insert(self, s) :
 		qApp.lock()
 		self.textWidget.insertAt(s, self.textWidget.paragraphs()-1, self.textWidget.paragraphLength(self.textWidget.paragraphs()-1))
 		qApp.unlock()
 		
 	def abortSubprocess(self) :
-		self.loggersWrapper.tabWidget2.changeTab(self.tab,self.name)
+		self.runWindow.tabWidget.changeTab(self.tab,self.name)
 		self.abortOrdered = True
 		
 		if self.subprocessPid :
@@ -237,46 +218,43 @@ class Logger :
 			self.abortButton.setEnabled(True)
 	
 	def setFocus(self) :
-		self.loggersWrapper.tabWidget2.setCurrentPage(self.loggersWrapper.tabWidget2.indexOf(self.tab))
-	
+		self.runWindow.tabWidget.setCurrentPage(self.runWindow.tabWidget.indexOf(self.tab))
 	
 	def getFocusedTabName(self) :
-		return str(self.loggersWrapper.tabWidget2.label(self.loggersWrapper.tabWidget2.currentPageIndex()))
+		return str(self.runWindow.tabWidget.label(self.runWindow.tabWidget.currentPageIndex()))
 	
 	def finished(self) :
-		self.loggersWrapper.tabWidget2.changeTab(self.tab,self.name)
+		self.runWindow.tabWidget.changeTab(self.tab,self.name)
 		self.subprocessPid = 0
 		self.abortButton.setEnabled(False)
 		self.pauseButton.setEnabled(False)
 		self.resumeButton.setEnabled(False)
 		
-	
 	def setSubprocessPid(self, pid) :
 		self.subprocessPid = pid
 		self.abortButton.setEnabled(True)
 		self.pauseButton.setEnabled(True)
 		self.resumeButton.setEnabled(False)
 		
-	def loggersWrapper(self) :
-		return self.loggersWrapper
-	
-class LoggersWrapper(LoggersWrapperForm):
-	def __init__(self, callOnClose = None) :
-		LoggersWrapperForm.__init__(self)
-		self.tabWidget2.removePage(self.tabWidget2.page(0))
+	def runWindow(self) :
+		return self.runWindow
+
+
+class RunningWindow(QDialog) :
+	def __init__(self, callOnClose = None):
+		QDialog.__init__(self)
+		self.setName("RunningWindow")
+		RunningWindowLayout = QGridLayout(self,1,1,11,6,"RunningWindow")
+		self.tabWidget = QTabWidget(self,"tabWidget")
+		RunningWindowLayout.addMultiCellWidget(self.tabWidget,0,0,0,1)
+		self.setCaption("GoboLinux Manager")
+		self.resize(QSize(561,484).expandedTo(self.minimumSizeHint()))
+		self.clearWState(Qt.WState_Polished)
 		self.callOnClose = callOnClose
-		
+	
 	def closeEvent(self, e) :
 		self.callOnClose(False)
 		e.accept()
-	
-	#def closeEvent(self, e) :
-	#	if self.subprocessPid :
-	#		#self.abortSubprocess()
-	#		pass
-	#	else :
-	#		e.accept()
-
 
 class Runner(Thread) :
 	def __init__(self, widget, qApp, logger, cmd, runningModule = None) :
@@ -286,10 +264,6 @@ class Runner(Thread) :
 		self.logger = logger
 		self.cmd = cmd
 		self.runningModule = runningModule
-		QToolTip.add(logger.textWidget, cmd)
-		
-		print 'Hola'
-		
 	
 	def getMessageLettersWords(self, line) :
 		letters = []
@@ -340,20 +314,22 @@ class Runner(Thread) :
 		self.qApp.postEvent(self.widget, QCustomEvent(QEvent.User, fp))
 		
 	def run(self) :
+		self.call((QToolTip.add, (self.logger.textWidget, self.cmd)))
 		aborted = not self.runCommand(self.cmd)
 		self.call((self.logger.finished,None))
 		self.call((self.widget.commandFinished,(aborted,self.logger, self.cmd, self.runningModule)))
+		self.call((QToolTip.add, (self.logger.textWidget, '')))
 
 	def askQuestion(self, scriptName, message, words, letters, t, i) :
 		if t == 1 :
 			if len(words) == 1:
-				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0])
+				resp = QMessageBox.warning(self.logger.runWindow, scriptName, message, words[0])
 			elif len(words) == 2:
-				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0], words[1])
+				resp = QMessageBox.warning(self.logger.runWindow, scriptName, message, words[0], words[1])
 			
 			#TODO: deal with more than 3 options 
 			elif len(words) >= 3:
-				resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message, words[0], words[1], words[2])
+				resp = QMessageBox.warning(self.logger.runWindow, scriptName, message, words[0], words[1], words[2])
 			else :
 				print 'Too many options...'
 			current_question = ''
@@ -362,7 +338,7 @@ class Runner(Thread) :
 			i.write('\n')
 			i.flush()
 		else :
-			resp = QMessageBox.warning(self.logger.loggersWrapper, scriptName, message+'\nProceed?', 'Ok', 'Cancel')
+			resp = QMessageBox.warning(self.logger.runWindow, scriptName, message+'\nProceed?', 'Ok', 'Cancel')
 			current_question = ''
 			if resp == 0 : 
 				i.write('\n')
@@ -391,7 +367,8 @@ class Runner(Thread) :
 		current_question = ''
 		
 		def filterEscapes(s) :
-			colors = ['\033[1;30m' , '\033[1;34m' , '\033[33m'   ,'\033[1;33m' , '\033[1;32m','\033[1;31m','\033[36m'  ,'\033[1;36m','\033[41;37m','\033[0m']
+			colors = ['\033[1;30m','\033[1;34m','\033[33m'  ,'\033[1;33m' ,'\033[1;32m',
+			          '\033[1;31m','\033[36m'  ,'\033[1;36m','\033[41;37m','\033[0m'     ]
 			for c in colors :
 				s = s.replace(c, '')
 			return s
@@ -404,6 +381,9 @@ class Runner(Thread) :
 			except :
 				scriptName = ''
 				message = line.strip()
+				
+			#Testing...
+			scriptName = cmd
 			
 			if not line :
 				pass
