@@ -5,9 +5,13 @@ TimeOut=1200 # 1200*BusyWait = 2 minutes
 
 execCtr=0
 forkCtr=0
+
 logpath=${goboVariable}/log
 dateformat=+%F' '%R
-export templog="\n`date "$dateformat"` \n----------------"
+datestamp="\ndate \"$dateformat\""
+templog="$datestamp\n----------------\n$modescript"
+[ -z "$BootLogging" ] && BootLogging="yes" # yes|no can be passed as option at $
+AppendLog="no" # yes|no
 
 ### User-available commands ###
 
@@ -19,7 +23,7 @@ export templog="\n`date "$dateformat"` \n----------------"
 
 Exec() {
    local message="$1"
-   LogBoot "\n$message"
+   [ "$BootLogging" = "yes" ] && LogBoot "\n$message"
    shift
    ThemeBefore "$execCtr" "$message" || return 1
    case "$1" in
@@ -163,11 +167,11 @@ ExecBackend() {
 	then
 	echo $message > $ThemeStdoutStream
 	test -z "$message" && message="ok"
-	LogBoot $command " -- " $message
+	[ "$BootLogging" = "yes" ] && LogBoot $command " -- " $message
     else
 	echo $message > $ThemeStderrStream
 	test -z "$message" && message="error"
-	LogBoot $command " -- " $message
+	[ "$BootLogging" = "yes" ] && LogBoot $command " -- " $message
     fi
 }
 
@@ -190,6 +194,7 @@ LogBoot() {
 	then
 	if test -n "$templog"
 	    then
+            [ "$AppendLog" = "no" ] && mv ${logpath}/boot.log ${logpath}/boot.log.old
 	    echo -e $templog >> ${logpath}/boot.log
 	    unset templog
 	fi
