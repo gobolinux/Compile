@@ -14,7 +14,9 @@
 export goboPrefix=
 if [ "$ROOTLESS_GOBOLINUX" ]
 then
-   export goboPrefix="${HOME}"
+   # <detsch> I think setting goboPrefix here should not be needed 
+   #           here, since we set it at Rootless/C/bin/StartGobo...
+   [ ! "${goboPrefix}" ] && export goboPrefix="${HOME}"
 else
    if [ ! -z "$crossPrefixDir" -a "$1" = "Reload" ]
    then export goboPrefix="$crossPrefixDir"
