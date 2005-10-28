@@ -1,0 +1,256 @@
+#!/bin/sh
+
+#####################################################################
+#
+# CreateRootlessEnvironment 1.0, almost stable
+# Andre Detsch, Renato Costa
+# 
+#####################################################################
+
+### Changelog ########################################################
+
+# 
+# 27/10/2005 - [detsch] Fisrt version released
+#
+
+###############################################################################
+# help message on $1 == --help
+###############################################################################
+
+if [ "$1" = "--help" -o  "$1" = "-help" ] 
+then
+	echo "GoboLinux Rootless environment creation script"
+	echo "Copyright (C) Andre Detsch, 2004-2005 - Released under the GNU GPL."
+	echo "Usage: $0 [<prefix>]"
+	echo "Default prefix is ${HOME}"
+	exit 1
+fi
+
+
+###############################################################################
+# Checking for required tools (only wget, I guess)
+###############################################################################
+
+# Note: wget is not required when running on a GoboLinux box
+if [ ! -e "/Programs/Scripts/Current" -a ! "`which wget`" ]
+then 
+    echo "Please install wget in order to run this script."
+    exit 1
+fi
+
+
+###############################################################################
+# Preparing env variables
+###############################################################################
+
+[ ! "$ROOTLESS_GOBOLINUX" ] && export ROOTLESS_GOBOLINUX=1
+
+# default goboPrefix is ${HOME}
+if [ "$1" ] 
+then
+	export goboPrefix="$1"
+else
+	export goboPrefix=${HOME}
+fi
+
+# Saves the current directory for latter restoration
+pwd=$PWD
+
+
+###############################################################################
+# Startup message and 'press a key to continue'
+###############################################################################
+
+echo "You have choose to create Rootless enviroment at" 
+echo "${goboPrefix}"
+echo "Press any key to continue or Ctrl+C to abort."
+read
+echo
+
+
+###############################################################################
+# Preparing stub tree
+###############################################################################
+
+for dir in \
+.Settings \
+Programs \
+System \
+System/Links \
+System/Links/Environment \
+System/Links/Executables \
+System/Links/Headers \
+System/Links/Libraries \
+System/Links/Manuals \
+System/Links/Manuals/man{0,1,2,3,4,5,6,7,8} \
+System/Links/Shared \
+System/Links/Tasks \
+System/Settings \
+System/Variable
+do
+	[ -e "${goboPrefix}/$dir" ] || { echo "Creating ${goboPrefix}/$dir"; mkdir -p "${goboPrefix}/$dir"; }
+done
+
+# Rootless uses /tmp as tmp directory
+[ -e "${goboPrefix}/System/Variable/tmp" ] || ln -sfn "/tmp" "${goboPrefix}/System/Variable/tmp"
+
+
+###############################################################################
+# Creating Rootless package
+###############################################################################
+
+mkdir -p "${goboPrefix}/Programs/Rootless/1.0/bin"
+cd "${goboPrefix}/Programs/Rootless/"
+ln -sfn "1.0" "Current"
+
+echo -n '
+#!/bin/sh (source)
+export ROOTLESS_GOBOLINUX=1
+alias SymlinkProgram="SymlinkProgram --relative"
+
+[ ! "$goboPrefix" ] && export goboPrefix=' > ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
+
+if [ "${goboPrefix}" = "${HOME}" ]
+then
+	echo '${HOME}' >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
+else
+	echo "${goboPrefix}" >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
+fi
+
+echo '
+if [ ${SHELL} = "/bin/zsh" ]
+then
+   [ -e "${goboPrefix}/System/Settings/zshrc" ] && . "${goboPrefix}/System/Settings/zshrc"
+   prompt lode cyan
+elif [ ${SHELL} = "/bin/bash" ]
+then
+   [ -e "${goboPrefix}/System/Settings/bashrc" ] && . "${goboPrefix}/System/Settings/bashrc"
+fi
+
+export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages:$PYTHONPATH
+
+# Without calling cd, prompt does not display ~, but ${HOME}
+{[ `readlink -f ${PWD}` = `readlink -f ${HOME}` ] && cd} 2> /dev/null
+' >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
+
+# preparing a real_install (which is wrapped by Scripts install)...
+if [ ! "`which real_install`" ] 
+then
+	if [ -e "/bin/install" ]
+	then
+		ln -sfn /bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
+	elif [ -e "/usr/bin/install" ]
+	then
+		ln -sfn /bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
+	else 
+		i=`which install`
+		g=`file "$i" | grep ELF`
+		if [ "$g" ]
+		then
+			ln -sfn "$i" ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
+		else
+			echo Warning: no CoreUtils install binary was found. Please provide it and link it 
+			echo at ${goboPrefix}/Programs/Rootless/1.0/bin/real_install  
+		fi
+	fi
+fi
+
+
+
+###############################################################################
+# Getting Scripts package and pre-linking it
+###############################################################################
+
+if [ ! -e "${goboPrefix}/Programs/Scripts/Current" ]
+then 
+	if [ -e "/Programs/Scripts/Current" ]
+	then
+		echo "You are under a GoboLinux system. Copying the Scripts package to your Rootless "
+		echo "tree is not required, but its recommended if you want to change some settings."
+		echo "Anytime latter you can run 'InstallPackage Scripts' in order to install the "
+		echo "latests Scripts version inside Rootless."
+		echo "Would you like to copy /Program/Scripts to ${goboPrefix}/Programs/Scripts? [y]es/[N]o"
+		read
+		if [ "$REPLY" = "y" ]
+		then
+			scripts=`readlink -f /Programs/Scripts/Current`
+			mkdir ${goboPrefix}/Programs/Scripts
+			cp -r $scripts ${goboPrefix}/Programs/Scripts
+			cd ${goboPrefix}/Programs/Scripts
+			ln -s `basename ${scripts}` Current
+		fi
+	else
+		version=2.2.0
+		scripts=Scripts--${version}--i686.tar.bz2
+		wget http://kundor.org/gobo/packages/official/${scripts} -O /tmp/${scripts}
+		cd ${goboPrefix}/Programs/
+		tar xvfj /tmp/${scripts}
+		cd Scripts
+		ln -sfn $version Current
+		cp -a ${goboPrefix}/Programs/Scripts/$version/Resources/Defaults/Settings ${goboPrefix}/Programs/Scripts/
+	fi
+fi
+
+function link_directory() {
+	from="$1"
+	to="$2"
+	cd "${to}"
+	for entry in ${from}/*; do ln -sfn ${entry} . 2> /dev/null; done
+	cd -
+}
+
+if [ -e "${goboPrefix}/Programs/Scripts/Current" ]
+then
+	echo Pre-linking Scripts...
+	link_directory ../../Programs/Scripts/Settings       ${goboPrefix}/System/Settings
+	link_directory ../../../Programs/Scripts/Current/bin ${goboPrefix}/System/Links/Executables
+fi
+
+
+###############################################################################
+# Packages Linking (Scripts, Rootless)
+###############################################################################
+
+if [ -e "${goboPrefix}/Programs/Scripts/Current" ] 
+then
+	echo
+	echo Linking Scripts...
+	SymlinkProgram Scripts
+fi
+
+echo
+echo Linking Rootless...
+SymlinkProgram Rootless
+
+
+###############################################################################
+# Preparing Rootless startup on next sessions
+###############################################################################
+
+for f in ${HOME}/.bashrc ${HOME}/.zshrc
+do
+	line=". ${goboPrefix}/Programs/Rootless/Current/bin/StartRootless"
+	
+	#if [ -e ${f} ] && ! grep "^${line}" ${f} &> /dev/null
+	if ! grep "^${line}" ${f} &> /dev/null
+	then
+		echo "Appending \"$line\" to your ${f}" 
+		echo >> ${f}
+		echo "$line" >> ${f}
+	fi
+done
+
+
+# Restores the last directory
+cd $pwd
+
+echo
+echo Done!
+echo
+echo You can now restart your session in order to enjoy GoboLinux Rootless
+echo
+echo Commands recommended to be executed afterwards:
+echo   InstallPackage Atool
+echo   InstallPackage Compile
+echo   InstallPackage Mtail
+
