@@ -7,7 +7,8 @@
 export PATH=$goboExecutables:$PATH
 export scriptName=`basename $0`
 export scriptPath=$(dirname $(readlink -f $0))
-export scriptVersion=$(basename $(dirname $(readlink -f $(readlink -f $0)/..)))
+#export scriptVersion=$(basename $(dirname $(readlink -f $(readlink -f $0)/..)))
+export scriptVersion=$(basename $(readlink -f $(dirname $(readlink -f $0))/..))
 
 bootOptions="${goboSettings}/BootScripts/Options"
 [ -e "$bootOptions" ] && source "$bootOptions"
