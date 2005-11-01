@@ -11,7 +11,7 @@
 
 # It's probably a bad idea to change some of those.
 
-export goboPrefix=
+#export goboPrefix=
 if [ "$ROOTLESS_GOBOLINUX" ]
 then
    # <detsch> I think setting goboPrefix here should not be needed 
@@ -57,7 +57,7 @@ export goboStatus=${goboKernel}/Status
 export goboObjects=${goboKernel}/Objects
 export goboModules=${goboKernel}/Modules
 
-if [ "$ROOTLESS_GOBOLINUX" ]
+if [ "$ROOTLESS_GOBOLINUX" && ! -e "/Programs" ]
 then
    export goboUsers=/home
    export goboMount=/mnt
