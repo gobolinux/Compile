@@ -465,7 +465,7 @@ then
       ln -sfv "$envfile" "$goboEnvironment/$package--$version" >&$verboseFD
       Log_Verbose "Rebuilding environment cache..."
       cache="$goboEnvironment"/Cache
-      rm -- "$cache"
+      Quiet rm -- "$cache"
       for linkedfile in "$goboEnvironment"/*
       do 
          [ -f "$linkedfile" ] && cat "$linkedfile" >> "$cache"
