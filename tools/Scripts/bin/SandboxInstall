@@ -2,6 +2,7 @@
 
 ### Changelog ########################################################
 
+# 04/11/2005 - [calica] Add UnionSandbox support
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
 # 13/12/2003 - First version, forked from SymlinkProgram
 
@@ -109,7 +110,14 @@ allowed=".$expandsandbox:$installPackageDir/$version:$packageDir/Settings:$packa
 Is_Entry "add-allowed" && allowed="$allowed:`Entry "add-allowed"`"
 Log_Verbose "Sandbox: $allowed"
 
-fibosandbox="FiboSandbox -s $allowed"
+if [ "$UNIONSANDBOX" ] 
+then
+    sandbox_rw=`Temporary_Dir`
+    fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed"
+    Log_Normal "Using UnionSandbox!!!!!!"
+else
+    fibosandbox="FiboSandbox -s $allowed"
+fi
 
 Boolean "no-sandbox" && fibosandbox=
 [ "$ROOTLESS_GOBOLINUX" ] && fibosandbox=
@@ -118,4 +126,14 @@ then
    $fibosandbox `Entry "command"` "$@" || Die "Installation failed."
 else
    $fibosandbox make -f "`Entry "makefile"`" "$@" `Entry "target"` || Die "Installation failed."
+fi
+
+
+if [ "$UNIONSANDBOX" ] && [ "$fibosandbox" ]
+then
+   # Postprocess contents of $sandbox_rw here
+   Log_Normal "Postprocessing Sandbox"
+   leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
+   [ "$leftovers" ] && Log_Normal "Left over files:\n$leftovers"
+   rm -rf $sandbox_rw
 fi

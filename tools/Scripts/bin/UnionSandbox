@@ -1,0 +1,120 @@
+#!/bin/sh
+
+### Changelog #################################################################
+
+# 02/11/2005 - [calica] First version, fork from FiboSandbox
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import Array
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Process
+
+### Options ###################################################################
+
+scriptDescription="Run the program in a protected sandbox, as superuser, using unionfs"
+scriptCredits="Copyright (C) 2003. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="[<options>] <program> [<command-parameters...>]"
+scriptExample="-r 0.0 -s '.:${goboPrograms}/NaughtyApp/Current' make install"
+scriptNotes="
+To allow mobility within the sandbox, the '.' directory is mounted at
+a sandbox root (like $sandboxroot). For this reason, use of relative paths like '..' to reach
+directories higher in the hierarchy than '.' may produce unexpected results.
+It may also confuse symbolic links that flow through the sandbox.
+"
+
+# Are these used anymore?  They're not used by SandboxInstall
+#Add_Option_Boolean "o" "original" "Restore original owners."
+#Add_Option_Entry "r" "restore" "Restore ownership to <entry>."
+
+Add_Option_Entry "w" "writedir" "The dir where writes outside sandbox are written."
+Add_Option_Entry "d" "directory" "The program should be run at <entry>. "\
+"This path should be either absolute, or relative to the sandbox root."
+Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted user has write access to." "."
+Parse_Options "$@"
+shift $parsedArguments
+
+### Operation #################################################################
+Verify_Superuser
+
+[ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
+
+sandbox_mp=`Temporary_Dir`
+if Is_Entry_Set "writedir"
+then
+    sandbox_rw=`Entry "writedir"`
+else
+    sandbox_rw=`Temporary_Dir`
+fi
+
+function RealPath {
+    readlink -f $@
+}
+
+List_To_Array "sandbox" allowed
+allowed=(`Map RealPath "${allowed[@]}"`)
+
+# Preset cmd status
+result=0
+# Called at end of script and by signal handler
+function cleanup() {
+    Log_Normal "Cleaning up."
+#    Log_Verbose "Undoing the sandbox..."
+
+    # Unmount bind mounts
+    For_Each allowed 'umount ${sandbox_mp}/${each}'
+    # Unmount unionfs
+    umount ${sandbox_mp}
+    # Remove tmp dirs
+    if ! Is_Entry_Set "writedir"
+    then
+	rm -rf $sandbox_rw
+    fi
+    rmdir $sandbox_mp
+
+    exit $result
+}
+function trap_clean() {
+    Log_Normal "Interrupted..."
+    result=1
+    cleanup
+}
+trap "trap_clean()" SIGHUP SIGINT SIGTERM
+
+Log_Verbose "Preparing the sandbox..."
+
+# Mount unionfs
+mount -t unionfs -o dirs=${sandbox_rw}=rw:/=ro none ${sandbox_mp}
+
+# Bind mount writable areas
+For_Each allowed 'mount -o bind $each ${sandbox_mp}/${each}'
+
+# Create wrapper
+newpwd="$PWD"
+Is_Entry_Set "directory" && newpwd=`Entry "directory"`
+echo "#!/bin/sh" >"${sandbox_mp}/.wrapper"
+echo "cd $newpwd" >>"${sandbox_mp}/.wrapper"
+echo "exec $@" >>"${sandbox_mp}/.wrapper"
+
+chmod a+x "${sandbox_mp}/.wrapper"
+
+
+# Run program in chrooted sandbox
+
+chroot $sandbox_mp /.wrapper
+result=$?
+
+# Remove wrapper
+rm "$sandbox_mp/.wrapper"
+
+# Postprocess $sandbox_rw
+
+
+# Cleanup
+cleanup
+
