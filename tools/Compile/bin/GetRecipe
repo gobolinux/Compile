@@ -55,7 +55,7 @@ fi
 
 assert_dir "$getRecipeRecipeDir"
 
-if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;}
+if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;} && ! [ -f "$1" ]
 then
    GetRecipe `FindPackage --type=recipe $@`
    exit 0
@@ -110,7 +110,6 @@ do
    #####################################################
    # Case #3: recipe is a local compressed file
    #####################################################
-   
    if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
    then
       $sudo tar xjvf "$rawrecipe" -C "$getRecipeRecipeDir"  2> /dev/null >&$verboseFD
