@@ -33,10 +33,11 @@ helpOnNoArguments=yes
 scriptDescription="Given a recipe, download the files required to compile it."
 scriptUsage="<recipe>"
 scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
+Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
 shift $parsedArguments
 
-if Is_Writable "$compileArchivesDir"
+if Is_Writable "$compileArchivesDir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
@@ -110,7 +111,7 @@ do
             continue
          else
             Log_Error "According to MD5 checksum in recipe, ${files[i]} is corrupted."
-            if Ask "Remove and download again?"
+            if Boolean "batch" || Ask "Remove and download again?"
             then rm "${files[i]}"
             else continue
             fi

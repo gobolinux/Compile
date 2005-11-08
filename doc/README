@@ -298,7 +298,13 @@ cvs=<CVS server>
 cvs_module=<module name to co>
    Valid modes: all
    
-cvs_opts=<string added to cvs co operation>
+cvs_opts=<string added to cvs operation>
+cvs_options=<string added to cvs operation>
+   Valid modes: all
+
+   cvs_options is a synonym for cvs_opts
+
+cvs_checkout_options=<string added to cvs co operation>
    Valid modes: all
 
 cvs_rsh=<string>

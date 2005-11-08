@@ -65,6 +65,7 @@ Import File
 Import Terminal
 Import GoboLinux
 Import Array
+Import Directories
 
 ##################################################
 # Options and configuration
@@ -83,16 +84,30 @@ Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
 Add_Option_Boolean "C" "no-configure" "Do not run ./configure." # useful when resuming or retrying
-
-Parse_Options "$@"
-shift $parsedArguments
+Add_Option_Boolean "S" "no-symlink" "Do not symlink."
 
 Parse_Conf Compile.conf
 
-if Is_Writable "$goboExecutables"
+Parse_Options "$@"
+shift $parsedArguments
+[ "$compileFlags" ] && Parse_Options $compileFlags
+
+if Is_Writable "$goboExecutables" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
+
+if [ "$compileMakeCommand" ]
+then make="$compileMakeCommand"
+else make=ColorMake
+fi
+
+if [ "$compileChownCommand" ]
+then chown="$compileChownCommand"
+else chown=chown
+fi
+
+Boolean "batch" && batch="--batch"
 
 ### Temporary test for those tracking CVS ###
 PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
@@ -133,16 +148,23 @@ function do_symlink() {
 
    is_function_set pre_link && pre_link
  
-   SymlinkProgram $safeopts $prepareCross $symlinkopts "$1" "$2" || Die "Linking step failed."
+   if Boolean "no-symlink"
+   then PrepareProgram --tree-cleanup $batch "$1" "$2"
+   else SymlinkProgram $safeopts $prepareCross $symlinkopts "$1" "$2" || Die "Linking step failed."
+   fi
 }
 
 function install_extras() {
    [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
    [ -d "$recipedaemons" ]   && $sudo cp -R "$recipedaemons" "$installprefix"
-   if [ "$compileMetaRecipe" = 1 ]
-   then docdir="$installprefix/doc/$app"
-   else docdir="$installprefix/doc"
+
+   if [ "$app" ]
+   then name=$app
+   else name=$appname
    fi
+   unixname=`echo $name | tr "[:upper:]" "[:lower:]"`-$version
+   docdir="$installprefix/doc/$unixname"
+
    for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT "${docs[@]}"
    do
       c=0
@@ -165,7 +187,7 @@ function install_extras() {
 function wrapup() {
    recipedeps="$reciperesources/Dependencies"
    Quiet mkdir -p "$reciperesources"
-   
+
    # Generated recipes (located at $genRecipeRecipeDir) 
    if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
@@ -222,9 +244,9 @@ assert_dir "$genRecipeStoreDir"
 scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-is_cvs=`echo $scriptsversion | grep CVS && true || false`
-if [ $svnr -gt 5 -a ! "$is_cvs" ] || \
-   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_cvs" -a "$scriptsversion" != "GIT" ]
+is_cvs=`echo $scriptsversion | grep CVS`
+if [ "$scriptsversion" -a \( \( $svnr -gt 5 -a ! "$is_cvs" \) -o \
+   \( `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_cvs" -a "$scriptsversion" != "GIT" \) \) ]
 then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
 fi
@@ -233,9 +255,11 @@ fi
 # Find, Get and source Recipe
 ##################################################
 
+unset directrecipe
 # suport for direct recipe passing
 if [ -d "$1" -a "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
 then
+   directrecipe=yes
    rawrecipes="$1"
    shift 1
    Log_Normal "Using passed recipe $rawrecipes"
@@ -267,6 +291,29 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 recipe=$bakedrecipedir/Recipe
 
+dependencies_file=$bakedrecipedir/Resources/Dependencies
+for dep in `cat "$dependencies_file" | tr ' ' ':' `
+do
+   dep_name="${dep%:*}";
+   guess_dep_name=`GuessProgramCase "${dep_name}" 2> /dev/null`
+   [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
+   lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
+   dep_vers=${dep#*:}
+   dep_path=`Get_Dir runtime $dep_name Current`
+   real_dep_path=`readlink -f "$dep_path"`
+   if [ "$real_dep_path" ]
+   then
+      dep_path="$real_dep_path"
+      [ -d "$dep_path" ] || dep_path=`Get_Dir runtime $dep_name $dep_vers`
+      dep_vers=${dep_path##*/}
+   fi
+   dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
+   dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
+   eval 'export '$lowercase_name'_path='$dep_path
+   eval 'export '$lowercase_name'_settings_path='$dep_settings_path
+   eval 'export '$lowercase_name'_variable_path='$dep_settings_path
+done
+
 app=`Get_Token "$bakedrecipedir" "/" "-2"`
 version=`Get_Token "$bakedrecipedir" "/" "-1"`
 
@@ -292,7 +339,9 @@ if [ "$versionnumber" = "CVS" ]
 then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
-target="${goboPrograms}/$appname/$versionnumber"
+export target=`Get_Dir runtime $appname $versionnumber`
+export settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 
 ##################################################
 # Check if we are cross-compiling
@@ -426,7 +475,14 @@ foreach_if_array_set "include" '
    Boolean no-build && nobuild=--no-build
    noweb=`Forward_Boolean_Entry "no-web"`
    export compileMetaRecipe=1
-   $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+   if [ "$directrecipe" = "yes" ]
+   then
+      ipath=${rawrecipes/$appname/$iname}
+      ipath=${ipath/$versionnumber/$iversion}
+      $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
+   else
+      $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+   fi
    if [ "$?" -gt 0 ]
    then
       Die "Compilation of $iname $iversion failed."
@@ -521,7 +577,7 @@ then
       login_method=`echo ${cvs} | cut -b-5`
       [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
-      cvs -d${cvs} ${cvs_opts} co ${cvs_module}
+      cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
    fi
 elif [ "$svn" ]
 then
@@ -533,7 +589,7 @@ then
       echo "Well done!"
    fi
 else
-   Boolean "no-web" || FetchArchive "$recipe" || Die "Error fetching archive(s)."
+   Boolean "no-web" || FetchArchive $batch "$recipe" || Die "Error fetching archive(s)."
    
    pfiles=`
       for i in "${files[@]}"
@@ -571,7 +627,10 @@ else
    do
       drop=.
       skipdir=
-      if [ "$unpack_files" = "inside_first" ]
+      if [ "$unpack_files" = "files_in_root" ]
+      then
+         drop="${dirs[0]}"
+      elif [ "$unpack_files" = "inside_first" ]
       then
          if [ $i -gt 0 ]
          then
@@ -604,7 +663,7 @@ else
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
          mkdir -p "$drop"
-         chown -R --reference="${tempdir}" "${tempdir}"
+         $chown -R --reference="${tempdir}" "${tempdir}"
          Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
          rm -rf "${tempdir}"
          Quiet popd
@@ -632,6 +691,17 @@ then
    do
       patch -Np1 -i $i || Die "Failed on patch $i"
    done
+
+   find "$recipedir" -name "*.patch.in" | sort | while read i
+   do
+      Log_Verbose "Converting patch $i..."
+      temppatch=`Temporary_File`
+      ApplyVariables -i Compile "$i" > $temppatch
+      Log_Verbose "Applying patch $temppatch..."
+      patch -Np1 -i $temppatch
+      # rm $temppatch
+  done
+
    popd &> /dev/null
 fi
 
@@ -701,7 +771,7 @@ then
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    is_function_set pre_build && pre_build
    if ! Boolean "no-configure"
@@ -716,20 +786,20 @@ then
          done
          [ "$autogen" ] || autogen="autogen.sh"
          [ -e "./$autogen" ] && autogen="./$autogen"
-         [ "$autogen_before_configure" = "yes" ] && $autogen
+         [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
          prepareoptions=(
             --verbose
             --configure $configure
             $prepareCross
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
-   ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
+   $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
    Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -770,7 +840,7 @@ if [ "$is_python" = "yes" ]
 then
    Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
-   PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   PrepareProgram -t $batch $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
    mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
@@ -815,8 +885,8 @@ then
    # that would be like adding GCC to all C-based packages.
    if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
    then
-      [ -e "$goboPrograms/Perl-XML-Parser" ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-      [ -e "$goboPrograms/Perl-XML-Writer" ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e `Get_Dir runtime Perl-XML-Writer ''` || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
    fi
 
    if [ "${without[*]}" ]
@@ -832,16 +902,16 @@ fi
 if [ "$is_makefile" = "yes" ]
 then 
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $prepareCross $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    if ! [ "$do_build" = "no" ]
    then
       is_function_set pre_build && pre_build
-      ColorMake $build_target "${buildmerged[@]}" -f $makefile || Die "Build failed."
+      $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build failed."
    fi
    Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -859,16 +929,16 @@ if [ "$is_xmkmf" = "yes" ]
 then
    is_function_set pre_build && pre_build
    xmkmf
-   make Makefiles
+   $make Makefiles
    imakevars=(
       "BINDIR=$target/bin"
       "LIBDIR=$target/lib"
       "LIBEXECDIR=$target/libexec"
       "INCDIR=$target/include"
    )
-   make -f "$makefile" $imakevars $build_target || Die "Build failed."
+   $make -f "$makefile" $imakevars $build_target || Die "Build failed."
    Boolean "no-install" && exit
-   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
+   PrepareProgram $prepareCross -t $batch "$appname" "$versionnumber"
    install_extras
    if ! [ "$install_target" ]
    then install_target="install"
@@ -898,7 +968,7 @@ fi
 if [ "$is_manifest" = "yes" ]
 then
    is_function_set pre_install && pre_install
-   PrepareProgram $prepareCross -t "$appname" "$versionnumber"
+   PrepareProgram $prepareCross -t $batch "$appname" "$versionnumber"
    install_extras
    for i in "${manifest[@]}"
    do
@@ -907,41 +977,11 @@ then
       fulldst="$installprefix/$dst"
       mkdir -p $(dirname "$fulldst")
       if [ -d "$src" -a -d "$fulldst" ]
-      then mv "$src"/* "$fulldst"
-      else mv "$src" "$fulldst"
+      then cp "$src"/* "$fulldst"
+      else cp "$src" "$fulldst"
       fi
    done
    is_function_set pre_link && pre_link
-   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
-   is_function_set post_install && post_install
-   wrapup
-fi
-
-##################################################
-
-# Interactive mode is still experimental.
-if [ "$is_interactive" = "yes" ]
-then
-   is_function_set pre_build && pre_build
-   if ! [ "$do_build" = "no" ]
-   then
-      is_function_set pre_install && pre_install
-      {
-         for i in "${build_answers[@]}"
-         do
-            echo $i
-         done
-      } | ./$build_command
-   fi
-   Boolean "no-install" && exit
-   install_extras
-   is_function_set pre_install && pre_install
-   {
-      for i in "${install_answers[@]}"
-      do
-         echo $i
-      done
-   } | ./$install_command
    do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
    is_function_set post_install && post_install
    wrapup
