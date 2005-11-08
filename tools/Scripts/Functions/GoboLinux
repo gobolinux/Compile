@@ -447,13 +447,12 @@ function Parse_Conf() {
       Exists "$1" && source "$1"
    }
    dirzero=$(dirname $(readlink -f $0))
-#   progname=$(echo $dirzero | sed "s@^${goboPrograms}@@;s@$(readlink -f ${goboPrograms})@@;s@^/*@@" | tr "/" " " | awk '{print $1}') #"
    progname=`Which_Package "$dirzero"`
-   process_conf "${goboSettings}/$progname/$1"
-   process_conf "${goboSettings}/$progname/$1"
-   process_conf "$dirzero/$1"
    process_conf "$HOME/${goboUserSettings}/$progname/$1"
    process_conf "$HOME/${goboUserSettings}/$1"
+   process_conf "${goboSettings}/$progname/$1"
+   process_conf "${goboSettings}/$1"
+   process_conf "${scriptPath}/$1"
 }
 
 # Some simple define for sudo

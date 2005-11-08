@@ -22,12 +22,17 @@ function Import() {
    if ! [ `eval $cmd` ]
    then
       eval "Imported$1=$1"
-      if [ -e "${scriptPath}/../Functions/$1" ]
-      then    . "${scriptPath}/../Functions/$1"
-      elif [ -e "${goboScripts}/../Functions/$1" ]
-      then      . "${goboScripts}/../Functions/$1"
-      else Die "Missing import: $1"
-      fi
+      for try in "${scriptPath}/$1.import" \
+                 "${scriptPath}/../Functions/$1" \
+                 "${goboScripts}/../Functions/$1"
+      do
+         if [ -e "$try" ]
+         then
+            . "$try"
+            return
+         fi
+      done
+      Die "Missing import: $1"
    fi
 }
 

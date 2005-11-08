@@ -21,7 +21,7 @@ Import Process
 ##################################################
 
 helpOnNoArguments=yes
-scriptDescription="Interactively update settings from defaults in Resources/Defaults/Setting"
+scriptDescription="Interactively update settings from defaults in Resources/Defaults/Settings"
 scriptCredits="(C)2005 by David Smith. Released under the GNU GPL."
 scriptUsage="[<options>] [<program or directory>]"
 Add_Option_Boolean "c" "check" "Only check whether current settings differ from the defaults."

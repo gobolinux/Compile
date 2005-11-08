@@ -3,6 +3,7 @@
 ### Changelog ########################################################
 
 # 04/11/2005 - [calica] Add UnionSandbox support
+# 22/03/2005 - [hisham] Directories infrastructure for flexible paths from IBM
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
 # 13/12/2003 - First version, forked from SymlinkProgram
 
@@ -12,6 +13,7 @@ Import GoboLinux
 Import OptionParser
 Import Process
 Import String
+Import Directories
 
 helpOnNoArguments=yes
 scriptDescription="Runs 'make install', using a sandbox environment."
@@ -38,18 +40,17 @@ shift $parsedArguments
 
 if Is_Entry "cross-compile"
 then
-	. GoboPath Reload
+   . GoboPath Reload
 fi
 
-Is_Writable "$goboExecutables" || Verify_Superuser
+Dir_Set Sandbox || Set_Boolean "no-sandbox"
+
+if ! Boolean "no-sandbox"
+then
+   Is_Writable "$goboExecutables" || Verify_Superuser
+fi
 
 ### Version ####################################################################
-
-if [ "$goboInstall" = "" ]
-then
-    export goboInstall="$goboPrograms"
-fi
-
 
 # TODO: this code is copy-and-pasted from SymlinkProgram.
 # It should move into functions.
@@ -58,8 +59,8 @@ fi
 
 package="`basename "$1" /`"
 package="`GuessProgramCase "$1"`"
-packageDir="$goboPrograms/$package"
-installPackageDir="$goboInstall/$package"
+packageDir=`Get_Dir runtime "$package" ''`
+installPackageDir=`Get_Dir install "$package" ''`
 current="$packageDir/Current"
 version=$(basename $(readlink -f $current))
 
@@ -73,11 +74,11 @@ then
    shift
 elif [ "$1" ]
 then
-   vdir="$goboPrograms/$package/$1"
+   vdir=`Get_Dir runtime "$package" "$1"`
    if { ! Is_Directory "$vdir" ;} && { ! Boolean "no-sandbox" ;}
    then Die "There is no version $1 for package $package."
    fi
-   [ "$version" != "$1" ] && ln -sfn `basename "$vdir"` "$current"
+   Dir_Set Current && [ "$version" != "$1" ] && ln -sfn `basename "$vdir"` "$current"
    version="$1"
    shift
 fi
@@ -87,7 +88,7 @@ then
    shift
 fi
 
-if ! Exists "$current"
+if Dir_Set Current && ! Exists "$current"
 then
    youngestdir=`ls --sort=time "$packageDir" | head -n 1`
    ln -s "$youngestdir" "$current"

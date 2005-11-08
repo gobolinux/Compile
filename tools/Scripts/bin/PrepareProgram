@@ -4,6 +4,7 @@
 
 # 25/08/2005 - [hisham] general cleanup, -D,--no-default-options switch
 # 25/08/2005 - [hisham] remove remains of 'modify files' features
+# 22/03/2005 - [hisham] Directories support from IBM
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
 # 05/12/2004 - [hisham] -A,--no-autoconf switch
 # 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
@@ -38,7 +39,7 @@ Import File
 Import GoboLinux
 Import Log
 Import OptionParser
-
+Import Directories
 
 ### Options ##############################################################
 
@@ -47,21 +48,21 @@ scriptDescription="prepares applications for instalation, running the 'configure
 scriptCredits="Copyright (C) 2001-2005 Hisham Muhammad - Released under the GNU GPL."
 scriptUsage="<target_name> [<version_nr>] [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
-scriptNotes="The ${goboPrograms} hierarchy for the program is only created with --tree."
+scriptNotes="The directory hierarchy for the program is only created with --tree."
 
 # This option should be removed; there's no more interaction in this script.
 Add_Option_Boolean "b" "batch" "batch mode: no user interaction" 
 
 Add_Option_Boolean "t" "tree" "Prepare directories only, do not attempt to run configure."
 Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating directories, remove empty ones"
-Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the ${goboPrograms} hierarchy."
-Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the ${goboPrograms} hierarchy."
+Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the directory hierarchy."
+Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the directory hierarchy."
 Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
 Add_Option_Entry   "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
-	
+
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -97,11 +98,11 @@ function color_command() {
 
 make_symlink() {
     local bname=`basename $1`
-    Exists "${goboPrograms}/$programname/${bname}" && ln -nsf "${goboPrograms}/$programname/${bname}" "$1"
+    Exists "${baseprogramdir}/${bname}" && ln -nsf "${baseprogramdir}/${bname}" "$1"
 }
 
 remove_symlink() {
-    Exists `RealPath $1` || rm -f -- "$1"
+    Exists `readlink -f $1` || rm -f -- "$1"
 }
 
 ### Operation #############################################################
@@ -111,44 +112,39 @@ then
 	. GoboPath Reload
 fi
 
-if [ "$goboInstall" = "" ]
-then
-    export goboInstall="$goboPrograms"
-fi
-
 programname="$1"
 [ "$1" ] || Die "Missing argument."
-programname=`GuessProgramCase "$1"`
+Dir_Set Case && programname=`GuessProgramCase "$1"`
 shift
 if [ "$1" -a "$1" != "--" ]
 then
    versionnumber="$1"
    shift
 else
- echo Get_Version "${goboPrograms}/${programname}/Current"
    versionnumber=`Which_Version "${goboPrograms}/${programname}/Current"`
    [ "$versionnumber" ] || Die "Please specify version."
 fi
+
 [ "$1" == "--" ] && shift
 programname=`NamingConventions "$programname"`
 
-programdir="${goboPrograms}/$programname/$versionnumber"
-slashprogramdir=`echo "$programdir" | sed "s/\//\\\\\\\\\//g"`
-settingsdir="${goboPrograms}/$programname/Settings"
-slashsettingsdir=`echo "$settingsdir" | sed "s/\//\\\\\\\\\//g"`
-variabledir="${goboPrograms}/$programname/Variable"
-slashvariabledir=`echo "$variabledir" | sed "s/\//\\\\\\\\\//g"`
+baseprogramdir=`Get_Dir runtime "$programname" ''`
+programdir=`Get_Dir runtime "$programname" "$versionnumber"`
+settingsdir=`Get_Dir runtimeSettings "$programname" "$versionnumber"`
+variabledir=`Get_Dir runtimeVariable "$programname" "$versionnumber"`
 
-installdir="${goboInstall}/$programname/$versionnumber"
+Dir_Set Install && installdir=`Get_Dir install "$programname" "$versionnumber"`
+
 if Boolean "tree"
 then
-   Is_Writable ${goboPrograms} || Verify_Superuser
-   Is_Writable ${goboInstall} || Verify_Superuser
+   Is_Writable `Get_Dir runtime '' ''` || Verify_Superuser
+   Dir_Set Install && `Get_Dir install '' ''` || Verify_Superuser
 
    ask=yes
    unset keepdir
    Boolean "remove" && unset ask
    Boolean "keep" && { unset ask; keepdir=yes; }
+   Boolean "batch" && { unset ask; keepdir=yes; }
 
    if [ "$ask" -a -e "$programdir" ]
    then
@@ -173,30 +169,38 @@ then
 
    if [ ! "$keepdir" ]
    then
-      rm -f -- "${goboPrograms}/$programname/Current"
-      Make_Directory "${goboInstall}/$programname"
-      Make_Directory "$installdir"
-      if [ "$goboInstall" != "$goboPrograms" ]
+      if Dir_Set Install
       then
-         Make_Directory "${goboPrograms}/$programname"
-         #Make_Directory "$programdir"
-         ( cd "${goboPrograms}/$programname" ; ln -s "$installdir" "$versionnumber")
+         Make_Directory `Get_Dir install "$programname"`
+         Make_Directory "$installdir"
+         Make_Directory "$baseprogramdir"
+         ( cd "$baseprogramdir" ; ln -s "$installdir" "$versionnumber")
       fi
-      ( cd "$programdir"/.. ; ln -s "$versionnumber" "Current" )
+      if Dir_Set Current
+      then
+         rm -f -- "$baseprogramdir/Current"
+         ( cd "$baseprogramdir" ; ln -s "$versionnumber" "Current" )
+      fi
    fi
 
-   [ -L "$programdir/share" ] && rm -- "$programdir/share"
-   ln -nsf "$programdir/Shared" "$programdir/share"
-   
+   if Dir_Set Shared
+   then
+      [ -L "$programdir/share" ] && rm -- "$programdir/share"
+      ln -nsf "$programdir/Shared" "$programdir/share"
+   fi
+
    dirop="Make_Directory"
    linkop="make_symlink"
-
 elif Boolean "tree-cleanup"
 then
-   Is_Writable ${goboPrograms} || Verify_Superuser
-   Is_Writable ${goboInstall} || Verify_Superuser
+   Is_Writable `Get_Dir runtime '' ''` || Verify_Superuser
+   Dir_Set Install && `Get_Dir install '' ''` || Verify_Superuser
 
-   Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
+   if Dir_Set Shared
+   then
+      Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
+   fi
+
    dirop="Quiet rmdir -p"
    linkop="remove_symlink"
 fi
@@ -204,12 +208,15 @@ fi
 if Boolean "tree" || Boolean "tree-cleanup"
 then
    
-   $dirop "${goboPrograms}/$programname/Settings"
-   $dirop "${goboPrograms}/$programname/Variable"
+   $dirop "$settingsdir"
+   $dirop "$variabledir"
    $dirop "$programdir/Resources"
    $dirop "$programdir/Resources/Daemons"
    $dirop "$programdir/Resources/Tasks"
-   $dirop "$programdir/Shared"
+   if Dir_Set Shared
+   then $dirop "$programdir/Shared"
+   else $dirop "$programdir/share"
+   fi
    $dirop "$programdir/sbin"
    $dirop "$programdir/bin"
    $dirop "$programdir/lib"
@@ -228,14 +235,13 @@ then
    $dirop "$programdir/man/man8"
    $dirop "$programdir/man/man9"
 
-   if [ "$goboInstall" != "$goboPrograms" ]
+   if Dir_Set Install
    then
-      $linkop "${goboInstall}/$programname/Settings"
-      $linkop "${goboInstall}/$programname/Variable"
+      $linkop `Get_Dir installSettings "$programname" "$versionnumber"`
+      $linkop `Get_Dir installVariable "$programname" "$versionnumber"`
    fi
 
    exit 0
-
 fi
 
 configureprogram=`Entry "configure"`
