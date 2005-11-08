@@ -44,7 +44,7 @@ scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 Parse_Options "$@"
 shift $parsedArguments
 
-if Is_Writable "$getRecipeRecipeDir"
+if Is_Writable "$getRecipeRecipeDir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
