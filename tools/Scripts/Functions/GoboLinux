@@ -433,26 +433,51 @@ function Dependencies_File() {
    return 1
 }
 
+# Whenever you need to strip ${goboPrograms} off from a path,
+# use this function. It's the bullet-proof way to do so.
+function Strip_Gobo_Programs() {
+   sed "s@^${goboPrograms}@@;s@^$(readlink -f ${goboPrograms})@@;s@^/*@@"
+}
+
+# Inspect to which package a linked file points to
+function Which_Package() {
+   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f1
+}
+
+# Inspect the version of the package a linked file points to
+function Which_Version() {
+   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f2
+}
+
+progname=`Which_Package "$0"`
+conflocations=(
+   "$HOME/${goboUserSettings}/$progname"
+   "$HOME/${goboUserSettings}/Scripts"
+   "$HOME/${goboUserSettings}"
+   "${goboSettings}/$progname"
+   "${goboSettings}/Scripts"
+   "${goboSettings}"
+   "${scriptPath}"
+)
+
 function Find_Conf() {
-   function check_conf() {
-      Exists "$1" && echo "$1" || return 1
-   }
-   check_conf "$HOME/${goboUserSettings}/Scripts/$1" ||\
-   check_conf "${goboSettings}/Scripts/$1"
+   for conf in "${conflocations[@]}"
+   do 
+      if Exists "$conf/$1"
+      then
+         echo "$conf/$1"
+         return 0
+      fi
+   done
+   return 1
 }
 
 # Parse the script's configuration
 function Parse_Conf() {
-   process_conf() {
-      Exists "$1" && source "$1"
-   }
-   dirzero=$(dirname $(readlink -f $0))
-   progname=`Which_Package "$dirzero"`
-   process_conf "$HOME/${goboUserSettings}/$progname/$1"
-   process_conf "$HOME/${goboUserSettings}/$1"
-   process_conf "${goboSettings}/$progname/$1"
-   process_conf "${goboSettings}/$1"
-   process_conf "${scriptPath}/$1"
+   for conf in "${conflocations[@]}"
+   do
+      Exists "$conf/$1" && source "$conf/$1"
+   done
 }
 
 # Some simple define for sudo
@@ -496,20 +521,4 @@ function Try_Superuser() {
       echo "You may run this with superuser privileges (press Enter to skip)..."
       sudo -u "#0" $0 "$@" && exit
    fi
-}
-
-# Whenever you need to strip ${goboPrograms} off from a path,
-# use this function. It's the bullet-proof way to do so.
-function Strip_Gobo_Programs() {
-   sed "s@^${goboPrograms}@@;s@^$(readlink -f ${goboPrograms})@@;s@^/*@@"
-}
-
-# Inspect to which package a linked file points to
-function Which_Package() {
-   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f1
-}
-
-# Inspect the version of the package a linked file points to
-function Which_Version() {
-   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f2
 }
