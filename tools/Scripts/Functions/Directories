@@ -1,0 +1,32 @@
+#!/bin/sh Do not execute this (magic line added for syntax highlighting only)
+
+Parse_Conf Directories.conf
+
+Get_Dir() {
+   Parameters "$@" type name version
+   if [ "$name" ]
+   then
+      if [ "$version" ]
+      then
+         eval 'pict=$'$type'NVPicture'
+         [ "$pict" ] || Die "Undefined picture for NV type '$type'"
+         pict="${pict//&NAME/$name}"
+         pict="${pict//&VERSION/$version}"
+         echo "$pict"
+      else
+         eval 'pict=$'$type'NPicture'
+         [ "$pict" ] || Die "Undefined picture for N type '$type'"
+         pict="${pict//&NAME/$name}"
+         echo "$pict"
+      fi
+   else
+      eval 'pict=$'$type'Picture'
+      echo "$pict"
+   fi
+}
+
+# Query directory configuration flags
+Dir_Set() {
+   eval '[ "$directories'$1'" = "yes" ]'
+}
+
