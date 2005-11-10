@@ -2,6 +2,9 @@
 
 ### Changelog ########################################################
 
+# 09/11/2005 - [calica] Set sandbox_rw to $prefix/.SandboxInstall_Root.
+#                       delete $sandbox_rw only if empty
+#                       return install result to parent
 # 04/11/2005 - [calica] Add UnionSandbox support
 # 22/03/2005 - [hisham] Directories infrastructure for flexible paths from IBM
 # 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
@@ -113,7 +116,7 @@ Log_Verbose "Sandbox: $allowed"
 
 if [ "$UNIONSANDBOX" ] 
 then
-    sandbox_rw=`Temporary_Dir`
+    sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
     fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed"
     Log_Normal "Using UnionSandbox!!!!!!"
 else
@@ -128,7 +131,7 @@ then
 else
    $fibosandbox make -f "`Entry "makefile"`" "$@" `Entry "target"` || Die "Installation failed."
 fi
-
+result="$?"
 
 if [ "$UNIONSANDBOX" ] && [ "$fibosandbox" ]
 then
@@ -136,5 +139,6 @@ then
    Log_Normal "Postprocessing Sandbox"
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
    [ "$leftovers" ] && Log_Normal "Left over files:\n$leftovers"
-   rm -rf $sandbox_rw
+   Quiet rmdir $sandbox_rw
 fi
+exit $result

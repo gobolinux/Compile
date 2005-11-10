@@ -2,6 +2,7 @@
 
 ### Changelog #################################################################
 
+# 09/11/2005 - [calica] Make sure passed --writedir exists, more error checking
 # 02/11/2005 - [calica] First version, fork from FiboSandbox
 
 ### Imports ###################################################################
@@ -48,6 +49,7 @@ sandbox_mp=`Temporary_Dir`
 if Is_Entry_Set "writedir"
 then
     sandbox_rw=`Entry "writedir"`
+    Assert_Dir $sandbox_rw
 else
     sandbox_rw=`Temporary_Dir`
 fi
@@ -79,20 +81,24 @@ function cleanup() {
 
     exit $result
 }
-function trap_clean() {
-    Log_Normal "Interrupted..."
+function sandbox_die() {
+    message=$1
+    Log_Error $message
     result=1
     cleanup
 }
-trap "trap_clean()" SIGHUP SIGINT SIGTERM
+trap "sandbox_dir 'Interrupted...'" SIGHUP SIGINT SIGTERM
 
 Log_Verbose "Preparing the sandbox..."
 
 # Mount unionfs
 mount -t unionfs -o dirs=${sandbox_rw}=rw:/=ro none ${sandbox_mp}
+[ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 
 # Bind mount writable areas
-For_Each allowed 'mount -o bind $each ${sandbox_mp}/${each}'
+error=false
+For_Each allowed 'mount -o bind $each ${sandbox_mp}/${each}; [ "$?" = "0" ] || error=true'
+[ "$error" = "false" ] || sandbox_die "Unable to mount writable areas in chroot"
 
 # Create wrapper
 newpwd="$PWD"
