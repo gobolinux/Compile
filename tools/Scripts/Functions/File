@@ -45,7 +45,7 @@ function Assert_Dir() {
    if ! Is_Directory "$dir"
    then
       mkdir -p "$dir" || \
-      $sudo mkdir -p "$dir"
+      $sudo_exec mkdir -p "$dir"
       if [ "$?" != "0" ]
       then
          Die "Unable to create $dir"
@@ -111,19 +111,19 @@ function Gen_FileHash() {
    Parameters "$@" prefix hash_file
    local bname=`basename $hash_file`
    # Validate password
-   $sudo -v
-   [ "$bname" ] && Is_Directory || $sudo mkdir -p "$bname"
+   $sudo_validate
+   [ "$bname" ] && Is_Directory || $sudo_exec mkdir -p "$bname"
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gog must run as normal user.
    Quiet pushd $prefix
-   $sudo find * -type f | grep -v "$hash_file" | $sudo xargs md5sum | $sudo tee "$hash_file" >/dev/null
+   $sudo_exec find * -type f | grep -v "$hash_file" | $sudo_exec xargs md5sum | $sudo_exec tee "$hash_file" >/dev/null
    Quiet popd
 }
 
 function Sign_File() {
    Parameters "$@" file sig
    
-   gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo tee "$sig"
+   gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo_exec tee "$sig"
 }
 
 function Check_FileHash() {
