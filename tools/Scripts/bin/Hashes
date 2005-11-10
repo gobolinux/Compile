@@ -10,6 +10,7 @@ Import String
 
 ### Changelog #################################################################
 
+# 09/11/2005 - [calica] This file is obsolete.
 # 10/10/2004 - [calica] much improved md5sum check routines
 #               use a /P/Scripts/Current/
 # 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity

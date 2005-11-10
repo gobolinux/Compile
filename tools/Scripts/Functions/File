@@ -106,13 +106,16 @@ function Line_Match() {
    [ "$?" = "0" ]
 }
 
+
+#calica 09/11/2005 Move GPG_gobo_keyring to Functions/File
+GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
    Parameters "$@" prefix hash_file
-   local bname=`basename $hash_file`
+   local dname=`dirname $hash_file`
    # Validate password
    $sudo_validate
-   [ "$bname" ] && Is_Directory || $sudo_exec mkdir -p "$bname"
+   Assert_Dir $dname
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gog must run as normal user.
    Quiet pushd $prefix
