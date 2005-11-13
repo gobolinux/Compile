@@ -9,6 +9,8 @@ Import Process
 
 ### Changelog #################################################################
 
+# 12/11/2005 - [calica] Removed --verify option
+#                       assume verify if Resources/FileHash exists
 # 16/08/2005 - [detsch] Removed --dont-ask-confirmation option
 #                       now asking only when the package version is guessed
 # 04/08/2005 - [detsch] --dont-ask-confirmation option
@@ -56,7 +58,6 @@ Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
 Add_Option_Boolean "I" "no-install" "Do not install, only locate and fetch the package.
         Automatically enables '--keep'"
 Add_Option_Boolean "k" "keep" "Do not remove downloaded packages."
-Add_Option_Boolean "c" "verify" "Verify package checksum and sig."
 Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
         'keep', 'remove', 'ask' or 'cancel'." "ask"
 Add_Option_Entry "o" "old" "What to do with a previously existing
@@ -275,7 +276,7 @@ else
    tar "$taroption" "$archive" --backup=numbered -C ${goboPrograms} >&$verboseFD
 fi
 
-if Boolean "verify"
+if Is_File "${goboPrograms}/${packagename}/${packageversion}/Resources/FileHash"
 then
    VerifyProgram "$packagename" "$packageversion"
 #   Succeeded || Die "Unable to verify $1"

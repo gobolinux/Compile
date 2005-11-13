@@ -8,6 +8,7 @@ Import String
 
 ######## Changelog ########
 
+# 09/12/2005 - [calica] Check for gpg keyring and gpg
 # 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
 # 2004/06/30 - [calica] use --keyring rather than --homedir
 # 2004/05/27 - [ecd] splitted 'Hashes' file in more files (SignPackage, VerifyPackage)
@@ -69,6 +70,9 @@ Log_Normal "Creating FileHash"
 Gen_FileHash "$prefix" "$FileHash_loc"
 
 Boolean "no-signature" && exit 0
+
+# Check for gpg and keyring
+Can_Sign || exit
 
 Log_Normal "Signing FileHash"
 Sign_File "$FileHash_loc" "$FileHash_sig"

@@ -123,10 +123,22 @@ function Gen_FileHash() {
    Quiet popd
 }
 
+# Verifies gpg is installed and user has private key
+function Can_Sign() {
+   Quiet /bin/gpg -n --list-secret-keys
+   [ "$?" = "0" ]
+}
+
 function Sign_File() {
    Parameters "$@" file sig
    
-   gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo_exec tee "$sig"
+   /bin/gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo_exec tee "$sig"
+}
+
+function Check_FileSig() {
+   Parameters "$@" file sig
+
+   /bin/gpgv ${GPG_opts} "$sig" "$file"
 }
 
 function Check_FileHash() {

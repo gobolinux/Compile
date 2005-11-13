@@ -8,6 +8,8 @@ Import String
 
 ######## Changelog ########
 #
+# 09/12/2005 - [calica] Move gpg verify code to Functions/File
+#                       Check keyrings
 # 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
 # 2005/03/04 - [calica] Look in $HOME/.gnupg/pubring.gpg for keys
 # 2004/10/10 - [calica] much improved md5sum check routines
@@ -17,7 +19,7 @@ Import String
 #
 ###########################
 
-GPG_opts="--keyring ${GPG_gobo_keyring} --keyring $HOME/.gnupg/pubring.gpg"
+GPG_opts="--keyring ${GPG_gobo_keyring}"
 
 scriptDescription="Verify the hashes file gpg signature and check the hashes of a Gobolinux package."
 scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
@@ -99,6 +101,12 @@ cd "$prefix"
 
 FileHash_loc="Resources/FileHash"
 FileHash_sig="${FileHash_loc}.sig"
+
+if Exists "$HOME/.gnupg/pubring.gpg"
+then
+   GPG_opts="${GPG_opts} --keyring $HOME/.gnupg/pubring.gpg"
+fi
+
 if Is_Entry_Set "keyring"
 then
    keyring=`Entry "keyring"`
@@ -109,20 +117,25 @@ fi
 ## meant to be run with superuser privileges
 
 result=0
-if Exists "${FileHash_sig}" && ! Boolean "no-signature"
+if Is_Executable "/bin/gpgv"
 then
-   Boolean "quiet" || Log_Normal "Verifying signature..."
-   $quiet gpgv ${GPG_opts} "${FileHash_sig}" "${FileHash_loc}"
-   rtn=$?
-   if [ $rtn -ne "0" ]
+   if Exists "${FileHash_sig}" && ! Boolean "no-signature"
    then
-      Boolean "quiet" || Log_Error "Signature check failed: $rtn"
-      exit $rtn
+      Boolean "quiet" || Log_Normal "Verifying signature..."
+      $quiet Check_FileSig "${FileHash_loc}" "${FileHash_sig}" 
+      rtn=$?
+      if [ $rtn -ne "0" ]
+      then
+         Boolean "quiet" || Log_Error "Signature check failed: $rtn"
+         exit $rtn
+      fi
+      Boolean "quiet" || Log_Normal "Signature OK"
+   elif ! Boolean "no-signature"
+   then  
+      Boolean "quiet" || Log_Error "No signature to verify."
    fi
-   Boolean "quiet" || Log_Normal "Signature OK"
-elif ! Boolean "no-signature"
-then  
-  Boolean "quiet" || Log_Error "No signature to verify."
+else
+   Log_Error "GnuPG not installed."
 fi
 if Exists "${FileHash_loc}"
 then
