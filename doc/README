@@ -6,6 +6,13 @@ Configuration is performed at Compile.conf. You can store per-user
 customized settings at ~/.Compile.conf. In particular, the
 compileRecipeDirs array can be used to specify a list of recipe trees.
 
+compileBuildOptions=(<array of options>)
+   Array of options to pass to make on the build step.
+   Typical use "--jobs=n" for SMP or distcc (n=# of CPUs + 1)
+
+compileMakeOptions=(<array of options>)
+   Array of options to pass to make on build and install steps.
+
 Shell functions
 ```````````````
 

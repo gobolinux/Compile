@@ -5,6 +5,7 @@
 ##################################################
 # Changelog
 ##################################################
+# 14/11/2004 - [calica] add compileBuildOptions and compileMakeOptions
 # 30/09/2005 - [lucasvr] Initial Subversion support
 # 30/09/2005 - [calica] Ignore Scripts release "GIT" when checking version
 # 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
@@ -726,10 +727,10 @@ function combine_arrays() {
 
 
 unset buildmerged
-eval `combine_arrays buildmerged make_variables build_variables cross_make_variables`
+eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables cross_make_variables`
 ! [ "$install_target" ] && install_target="install"
 unset installmerged
-eval `combine_arrays installmerged make_variables install_variables cross_install_variables`
+eval `combine_arrays installmerged compileMakeOptions make_variables install_variables cross_install_variables`
 
 if [ "$makefile" = "" ]
 then makefile=Makefile
