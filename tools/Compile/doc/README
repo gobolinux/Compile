@@ -325,9 +325,3 @@ svn=<Subversion server>
    
 svn_module=<module name to co>
    Valid modes: all
-   
-is_interactive=yes
-build_command=<program name>
-build_answers=(<array of answers>)
-install_command=<program name>
-install_answers=(<array of answers>)
