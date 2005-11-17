@@ -251,8 +251,9 @@ fi
 
 if ! Exists "$current"
 then
-   youngestdir=`ls --sort=time "$packageDir" | head -n 1`
+   youngestdir=`ls --sort=time "$packageDir" | grep -v -e "Settings" -e "Variable" | head -n 1`
    ln -s "$youngestdir" "$current"
+   version="$youngestdir"
 fi
 
 Log_Normal "Symlinking ${package} ${version}."
