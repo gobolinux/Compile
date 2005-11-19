@@ -72,7 +72,7 @@ Gen_FileHash "$prefix" "$FileHash_loc"
 Boolean "no-signature" && exit 0
 
 # Check for gpg and keyring
-Can_Sign || exit
+Can_Sign || exit 2
 
 Log_Normal "Signing FileHash"
 Sign_File "$FileHash_loc" "$FileHash_sig"

@@ -188,6 +188,9 @@ fi
 if Boolean "sign"
 then
    SignProgram $sign_opts "$package" "$versionnumber"
+   if [ $? = 2 ]
+   then writegpgwarning=yes
+   fi
 fi
 
 # XXX Backwards compatibility
@@ -230,3 +233,7 @@ size=`ls -l "$targetdir/$packagefile".* | awk '{ print $5 }'`
 Log_Verbose "Packaged $package, version $versionnumber - $size bytes."
 
 echo "$targetdir/$packagefile.$extension"
+
+if [ "$writegpgwarning" = "yes" ]
+then Log_Terse "Warning: GPG is not installed or not set up properly. Package was not signed."
+fi
