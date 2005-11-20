@@ -42,7 +42,7 @@ Add_Option_Boolean "p" "personal-backup" "Use personal backup mode.  Do NOT use 
 Add_Option_Boolean "d" "devel-version" "Manage development version numbers (for use mainly by GoboLinux developers)"
 Add_Option_Entry   "n" "new-version" "Sets a new version number for the package (for use mainly by GoboLinux developers)" ""
 Add_Option_Boolean "k" "keep" "Copy new version instead of moving (for use with devel-version and new-version)"
-Add_Option_Boolean "s" "sign" "Sign package"
+Add_Option_Boolean "S" "no-sign" "Sign package"
 Add_Option_Entry   "t" "target-dir" "Create the package archive inside the passed directory (instead of '.')" ""
 
 Parse_Options "$@"
@@ -186,7 +186,7 @@ then
 fi
 
 writegpgwarning=""
-if Boolean "sign"
+if ! Boolean "no-sign"
 then
    SignProgram $sign_opts "$package" "$versionnumber"
    result="$?"
