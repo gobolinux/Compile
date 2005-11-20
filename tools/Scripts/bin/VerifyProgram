@@ -11,6 +11,8 @@ Import String
 # 1     FileHash check failed
 # 2     No GnuPG or setup error
 # 3     Signature check failed
+# 4     No signature
+# 5     No FileHash (implies no signature)
 
 ######## Changelog ########
 #
@@ -42,6 +44,9 @@ Add_Option_Boolean "S" "no-signature" "Just verify FileHash.  Do not check GPG s
 Add_Option_Boolean "q" "quiet" "No output.  Check exit status for result."
 Parse_Options "$@"
 shift $parsedArguments
+
+##### Run as original user
+Release_Superuser
 
 ### Utility functions ################################################################
 
@@ -80,7 +85,6 @@ then
 fi
 
 ########## Operations ##########
-## meant to be run with superuser privileges
 
 result=0
 if Is_Executable "/bin/gpgv"
@@ -98,6 +102,7 @@ then
    elif ! Boolean "no-signature"
    then  
       Boolean "quiet" || Log_Error "No signature to verify."
+      result=4
    fi
 else
    Log_Error "GnuPG not installed."
@@ -117,5 +122,6 @@ then
    Boolean "quiet" || Log_Normal "FileHash OK"
 else
    Boolean "quiet" || Log_Error "No FileHash to verify."
+   result=5
 fi
 exit $result

@@ -42,7 +42,7 @@ Add_Option_Boolean "p" "personal-backup" "Use personal backup mode.  Do NOT use 
 Add_Option_Boolean "d" "devel-version" "Manage development version numbers (for use mainly by GoboLinux developers)"
 Add_Option_Entry   "n" "new-version" "Sets a new version number for the package (for use mainly by GoboLinux developers)" ""
 Add_Option_Boolean "k" "keep" "Copy new version instead of moving (for use with devel-version and new-version)"
-Add_Option_Boolean "S" "no-sign" "Sign package"
+Add_Option_Boolean "S" "no-sign" "Do not sign package"
 Add_Option_Entry   "t" "target-dir" "Create the package archive inside the passed directory (instead of '.')" ""
 
 Parse_Options "$@"
@@ -54,7 +54,7 @@ shift $parsedArguments
 
 newversion=`Entry "new-version"`
 
-if { ! Boolean "no-dependencies" ;} || { Boolean "devel-version" ;} || { Boolean "signature" ;} || [ "$newversion"  ]
+if { ! Boolean "no-dependencies" ;} || { Boolean "devel-version" ;} || {  ! Boolean "no-sign" ;} || [ "$newversion"  ]
 then
    Verify_Superuser
 fi 
@@ -183,6 +183,23 @@ then
    resources="$package/$versionnumber/Resources"
    Make_Directory "$resources"
    Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
+fi
+
+verify_opts=""
+Boolean "verbose" && verify_opts="--verbose $verify_opts"
+VerifyProgram $verify_opts "$package" "$versionnumber"
+result="$?"
+if [ $result -eq 0 ]
+then
+   Set_Boolean "no-sign"	# Use existing signature
+elif [ $result -eq 2 ]
+then
+   sign_opts="--no-signature"   # No GnuPG.  Can't resign, maybe create filehash
+elif [ $result -eq 4 ] || [ $result -eq 5 ]
+then
+   Log_Normal "No existing sig.  Will re-sign"
+else
+   Die "Unable to verify package.  Do not redistribute"
 fi
 
 writegpgwarning=""

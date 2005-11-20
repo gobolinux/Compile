@@ -73,6 +73,10 @@ Release_Superuser
 FileHash_loc="Resources/FileHash"
 FileHash_sig="${FileHash_loc}.sig"
 
+# Clear existing sigs and hashes
+$sudo_exec rm -f "$FileHash_log"
+$sudo_exec rm -f "$FileHash_sig"
+
 Log_Normal "Creating FileHash"
 Gen_FileHash "$prefix" "$FileHash_loc"
 Succeeded || exit 1
