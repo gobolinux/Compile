@@ -185,11 +185,17 @@ then
    Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
 fi
 
+writegpgwarning=""
 if Boolean "sign"
 then
    SignProgram $sign_opts "$package" "$versionnumber"
-   if [ $? = 2 ]
-   then writegpgwarning=yes
+   result="$?"
+   if [ $result = 1 ]
+   then writegpgwarning="Warning: Unable to create FileHash listing. Package was not signed."
+   elif [ $result = 2 ]
+   then writegpgwarning="Warning: GPG is not installed or not set up properly. Package was not signed."
+   elif [ $result = 3 ]
+   then writegpgwarning="Warning: GPG signing failed.  Package was not signed."
    fi
 fi
 
@@ -234,6 +240,6 @@ Log_Verbose "Packaged $package, version $versionnumber - $size bytes."
 
 echo "$targetdir/$packagefile.$extension"
 
-if [ "$writegpgwarning" = "yes" ]
-then Log_Terse "Warning: GPG is not installed or not set up properly. Package was not signed."
+if [ "$writegpgwarning" != "" ]
+then Log_Terse "$writegpgwarning"
 fi

@@ -117,7 +117,7 @@ function Gen_FileHash() {
    $sudo_validate
    Assert_Dir $dname
    # Below may seem odd.  We can't just Verify_Superuser script because
-   # gog must run as normal user.
+   # gpg must run as normal user.
    Quiet pushd $prefix
    $sudo_exec find * -type f | grep -v "$hash_file" | $sudo_exec xargs md5sum | $sudo_exec tee "$hash_file" >/dev/null
    Quiet popd
@@ -131,8 +131,14 @@ function Can_Sign() {
 
 function Sign_File() {
    Parameters "$@" file sig
-   
-   /bin/gpg ${GPG_opts} --output - --detach-sig "$file" 2>/dev/null |Quiet $sudo_exec tee "$sig"
+
+   output=`/bin/gpg ${GPG_opts} --armor --output - --detach-sig "$file"`
+   result="$?"
+
+   $sudo_exec rm "$sig"
+   [ $result -eq 0 ] && printf '%s' "$output" | Quiet $sudo_exec tee "$sig"
+
+   return $result
 }
 
 function Check_FileSig() {
@@ -184,5 +190,5 @@ sys.exit(errors)
 """
    rtn=$?
    Quiet popd
-   exit $rtn
+   return $rtn
 }

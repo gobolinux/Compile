@@ -6,8 +6,15 @@ Import GoboLinux
 Import File
 Import String
 
+######## Exit Codes #######
+# 0    Normal/no error
+# 1    Unable to generate FileHash
+# 2    No GnuPG or private key
+# 3    Unable to sign FileHash
+
 ######## Changelog ########
 
+# 09/19/2005 - [calica] Better error code handling
 # 09/12/2005 - [calica] Check for gpg keyring and gpg
 # 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
 # 2004/06/30 - [calica] use --keyring rather than --homedir
@@ -68,7 +75,7 @@ FileHash_sig="${FileHash_loc}.sig"
 
 Log_Normal "Creating FileHash"
 Gen_FileHash "$prefix" "$FileHash_loc"
-
+Succeeded || exit 1
 Boolean "no-signature" && exit 0
 
 # Check for gpg and keyring
@@ -76,6 +83,11 @@ Can_Sign || exit 2
 
 Log_Normal "Signing FileHash"
 Sign_File "$FileHash_loc" "$FileHash_sig"
+if Failed 
+then
+   Log_Error "Unable to sign"
+   exit 3
+fi
 
 exit 0
 
