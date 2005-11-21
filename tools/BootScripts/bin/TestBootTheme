@@ -72,10 +72,10 @@ ThemeFile "$bootscript2"
 Exec "I am really out of immagination..." sleep 2
 Exec "This one will output some stuff..." echo -en "Outputting stuff\nMore stuff\nA little more\n"
 Exec "This command will fail..." false
-Exec "Another command succeeds..." usleep 500000
+Exec "Another command succeeds..." sleep 1
 Exec "This one will take a while..." sleep 2
 Exec "This command will output some stuff..." cat /etc/inittab
-Exec "This command will succeed..." usleep 500000
+Exec "This command will succeed..." sleep 1
 
 Quit $issuefile
 
