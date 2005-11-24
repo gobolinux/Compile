@@ -41,7 +41,7 @@ then
    theme="$BootScriptsDir/Themes/Slack"
 fi
 
-source "$BootScriptsDir/Themes/$BootTheme"
+source "$theme"
 
 ThemeInit
 ThemeFile "$modescript"
