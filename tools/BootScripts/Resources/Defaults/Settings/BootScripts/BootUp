@@ -1,5 +1,6 @@
 #!/bin/sh
 Exec "Remounting root file system..."          mount -n -o remount,rw /
+Exec "Cleaning mtab and boot settings..."      rm -f "$goboSettings/mtab"*
 Exec "Starting Udev..."                        Udev
 Exec "Mounting system filesystems..."          mount -a -t tmpfs,sysfs,procfs
 Exec "Starting Hotplug..."                     Hotplug start
