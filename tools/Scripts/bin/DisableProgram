@@ -37,13 +37,13 @@ else
    versionnumber=`Get_Version "$programname" "Current"`
 fi
 
-prefix="${goboPrograms}/$programname/$versionnumber/"
+prefix="${goboPrograms}/$programname/$versionnumber"
 
 Is_Directory "$prefix" || Die "$programname version $versionnumber was not found."
 
 Log_Normal "Disabling ${programname}, version ${versionnumber}."
 
-disabled="${goboPrograms}/$programname/$versionnumber-Disabled/"
+disabled="${goboPrograms}/$programname/$versionnumber-Disabled"
 
 mv "$prefix" "$disabled" || Die "Couldn't disable $programname $versionnumber."
 
