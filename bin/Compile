@@ -804,7 +804,10 @@ then
    }
    install_extras
    is_function_set pre_install && pre_install
-   do_symlink "$appname" "$versionnumber"
+   if ! [ "$do_install" = "no" ]
+   then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
+   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   fi
    is_function_set post_install && post_install
    wrapup
 fi
@@ -968,8 +971,8 @@ fi
 
 if [ "$is_manifest" = "yes" ]
 then
-   is_function_set pre_install && pre_install
    PrepareProgram $prepareCross -t $batch "$appname" "$versionnumber"
+   is_function_set pre_install && pre_install
    install_extras
    for i in "${manifest[@]}"
    do
