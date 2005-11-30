@@ -279,7 +279,7 @@ DF_USE="$DIR_NAME"
 [ "$DF_USE" ] || DF_USE="."
 df_line=`df "$DF_USE" 2> /dev/null | tail -n 1`
 mount_point=`echo "$df_line" | cut -b 56-`" "
-fsystem=`cat /proc/mounts | grep "^[^ ]*$mount_point" | tail -n 1 | awk '{print $3}'`
+fsystem=`grep "^[^ ]*$mount_point" /proc/mounts | tail -n 1 | awk '{print $3}'`
 #awk
 echo -n "$fsystem: "
 echo $df_line | 

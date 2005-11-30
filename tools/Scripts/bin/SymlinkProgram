@@ -110,9 +110,9 @@ then
     arch=`Entry "cross-compile"`
     
     # get the STRIP command as configured in the cross_file
-    cross_line=`cat $goboSettings/Compile/Cross-$arch.conf| grep crossCompiler=`
+    cross_line=`grep "crossCompiler=" $goboSettings/Compile/Cross-$arch.conf`
     eval $cross_line
-    strip_line=`cat $goboSettings/Compile/Cross-$arch.conf| grep STRIP=`
+    strip_line=`grep "STRIP=" $goboSettings/Compile/Cross-$arch.conf`
     eval $strip_line
     
 	. GoboPath Reload

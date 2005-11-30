@@ -19,15 +19,15 @@ shift $parsedArguments
 ### Operation #################################################################
 
 function count_cpus() {
-   cat /proc/cpuinfo | grep -i "model name" | wc -l
+   grep -i "model name" /proc/cpuinfo | wc -l
 }
 
 function parse_cpu() {
-   cat /proc/cpuinfo | grep -i "$1" | head -n $2 | tail -n 1 | cut -d: -f2 | tr "\n" "\0"
+   grep -i "$1" /proc/cpuinfo | head -n $2 | tail -n 1 | cut -d: -f2 | tr "\n" "\0"
 }
 
 function parse_mem() {
-   cat /proc/meminfo | grep -i "$1" | cut -d: -f2 | tr " kB\n" "\0"
+   grep -i "$1" /proc/meminfo | cut -d: -f2 | tr " kB\n" "\0"
 }
 
 IN="\033[36;22m"

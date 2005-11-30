@@ -119,6 +119,10 @@ function path2programs() {
            -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";'
 }
 
+function execute_program {
+   $execute $batch "$1" "$2" || $execute $batch "$1"
+}
+
 ### --file: Check one file only #########################################################
 
 if Boolean "file"
@@ -196,17 +200,14 @@ then
    installall=
    [ `Boolean "batch"` ] && installall=1 && batch="--batch"
    skipall=
-   
+
    check_programs=`Entry "programs"`
    ! [ "$check_programs" = "" ] && export goboPrograms="$check_programs"
-   
+
    [ -f "$dependenciesfile" ] || Die "Dependencies file for $package version $version not found."
    result=0
 
-   # XXX backwards compatibility: grep -v "^\\*"
-   fulllist=`cat "$dependenciesfile" | grep -v "^#" | grep -v "^\\*" | grep -v "^$" | tr -- " \n" "@ "`
-   
-   for i in ${fulllist[@]}
+   for i in `grep -v "^#" "$dependenciesfile" | grep -v "^\\*" | grep -v "^$" | tr -- " \n" "@ "`
    do
       program=`echo "$i" | cut -d"@" -f1`
       version=`echo "$i" | cut -d"@" -f2`
@@ -215,28 +216,34 @@ then
          version="CVS"
       fi
       iprogram=`GuessProgramCase $program $version`
-      #$(basename $(find "${goboPrograms}" -maxdepth 1 -iname "$program") 2> /dev/null)
       if [ ! -d "$goboPrograms/$iprogram" ] # program not found
       then
-         result=1
-         if [ "$execute" -a ! "$skipall" -a ! "$installall" ] 
+         # Look for the existance of a compatible package
+         compatible_package=`HasCompatiblePackage $program`
+         if [ "$compatible_package" != "" ]
          then
-            # Look for the existance of a compatible package
-            compatible_package=`HasCompatiblePackage $program`
-            if [ "$compatible_package" != "" ]
-            then
-                Log_Normal "Dependency $program is not installed, but compatible package $compatible_package is"
-                continue
-            fi
-            
+            Log_Normal "Dependency $program is not installed, but compatible package $compatible_package is"
+            continue
+         fi
+         result=1
+         if [ "$installall" ]
+         then
+            Log_Terse "Dependency $program $version is not installed."
+            execute_program "$program" "$version"
+         elif [ "$execute" -a ! "$skipall" ] 
+         then
             Log_Question "Dependency $program $version is not installed."
             Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
-            [ "$REPLY" = "I" -o "$REPLY" = "i" ] && { $execute "$program" "$version" || $execute "$program" ;}
-            [ "$REPLY" = "SA" -o "$REPLY" = "sa" ] && skipall=1
-            [ "$REPLY" = "IA" -o "$REPLY" = "ia" ] && installall=1 && { $execute "$program" "$version" || $execute "$program" ;}
+            case "$REPLY" in
+            I|i)
+               execute_program "$program" "$version" ;;
+            SA|sa)
+               skipall=1 ;;
+            ia|ia)
+               installall=1
+               execute_program "$program" "$version" ;;
+            esac # esac is ridiculous.
          else 
-            Log_Terse "Dependency $program $version is not installed."
-            [ "$installall" ] && { $execute ${batch} "$program" "$version" || $execute ${batch} "$program" ;}
          fi
       else #program found
          if ! Boolean "missing-only"

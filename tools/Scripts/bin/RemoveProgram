@@ -70,7 +70,7 @@ Quiet rmdir ${goboPrograms}/${program}
 
 Log_Normal "Removing broken links..."
 cd ${goboLinks}
-cat $filesdir | RemoveBroken
+RemoveBroken < $filesdir
 rm -- $filesdir
 
 

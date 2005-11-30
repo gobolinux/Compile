@@ -51,7 +51,7 @@ Boolean "source" && {
 function source_grep() {
    function fcat() {
       if which FilterComments 2> /dev/null
-      then cat "$1" | FilterComments
+      then FilterComments < "$1"
       else cat "$1"
       fi
    }
