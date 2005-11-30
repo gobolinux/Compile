@@ -110,55 +110,6 @@ else
 fi
 }
 
-function runit_dependencies() {
-   if Exists "$1/Daemons"
-   then
-      readlink -f "${goboPrograms}/Runit/Current/" | sed 's%$%/%'
-   fi
-}
-
-function python_dependencies() {
-   {
-      cd "$1"
-      {
-         {
-            find . -name "*.py" | while read file
-            do
-               Progress_Move
-               grep -w "import" "$file" | sed 's/;/\n/g;s/#.*//g'
-            done
-         } | grep -w "import" | sed 's/^[[:blank:]]*//;s%\.%/%g' | while read line
-         do
-            case "$line" in
-            "from"*)
-               module=`echo "$line" | cut -d' ' -f2`
-               echo "$module"
-               ;;
-            "import"*)
-               modules=(`echo "$line" | sed 's/^import//' | tr ',' ' '`)
-               for module in ${modules[@]}
-               do echo "$module"
-            done
-               ;;
-            esac # esac is ridiculous.
-         done
-      } | sort | uniq | while read module
-      do
-         Progress_Move
-         cd "${goboLibraries}/python2.2"
-         file=$(find . -path "*/$module.py" -or -path "*/$module.so" -follow 2> /dev/null)
-         if [ "$file" ]
-         then
-            prog=`readlink -f "$file"`
-            if Starts_With "${goboPrograms}" "$prog" && ! Starts_With "$1" "$prog"
-            then
-               echo $prog
-            fi
-         fi
-      done
-   }
-}
-
 function path2programs() {
 #   sed 's@/Programs/\([^/]*\)/\([^/]*\)/.*$@\1 \2@g'
 # The follow perl could/should be converted to sed.  Unfortunately I don't know sed.
@@ -365,8 +316,6 @@ then
       fi
       Progress_Move
    done
-   runit_dependencies "$prefix"
-   #python_dependencies "$prefix"
    Progress_End
 } | path2programs | sort | uniq | grep -v "^$package " | FilterLines -n "${blacklist[@]}" | $writer
 fi
