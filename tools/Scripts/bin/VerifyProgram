@@ -116,7 +116,7 @@ then
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $rtn"
-      echo $output
+      printf "%s" "$output"
       exit 3
    fi
    Boolean "quiet" || Log_Normal "FileHash OK"
