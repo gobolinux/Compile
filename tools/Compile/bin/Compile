@@ -186,6 +186,8 @@ function install_extras() {
 }
 
 function wrapup() {
+   SignProgram "$appname" "$versionnumber"
+
    recipedeps="$reciperesources/Dependencies"
    Quiet mkdir -p "$reciperesources"
 
