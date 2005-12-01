@@ -2,6 +2,8 @@
 
 ### Changelog #################################################################
 
+# 01/12/2005 - [detsch] Obsoleted devel-version, new-version and keep options, 
+#                       due to CVS usage and make dist availability
 # 09/04/2005 - [detsch] "--target-dir" option
 # 16/02/2005 - [detsch] Fix: no more packaging Variable directory 
 #                       (but still packing Defaults/Variable)
@@ -39,9 +41,9 @@ Add_Option_Boolean "b" "bzip2" "Compress using bzip2"
 Add_Option_Boolean "D" "no-dependencies" "Do not create Dependencies file"
 Add_Option_Boolean "g" "gzip" "Compress using gzip"
 Add_Option_Boolean "p" "personal-backup" "Use personal backup mode.  Do NOT use for public distribution"
-Add_Option_Boolean "d" "devel-version" "Manage development version numbers (for use mainly by GoboLinux developers)"
-Add_Option_Entry   "n" "new-version" "Sets a new version number for the package (for use mainly by GoboLinux developers)" ""
-Add_Option_Boolean "k" "keep" "Copy new version instead of moving (for use with devel-version and new-version)"
+Add_Option_Boolean "d" "devel-version" "Obsoleted"
+Add_Option_Entry   "n" "new-version" "Obsoleted" ""
+Add_Option_Boolean "k" "keep" "Obsoleted"
 Add_Option_Boolean "S" "no-sign" "Do not sign package"
 Add_Option_Entry   "t" "target-dir" "Create the package archive inside the passed directory (instead of '.')" ""
 
@@ -52,9 +54,7 @@ shift $parsedArguments
 
 #Verify_Superuser
 
-newversion=`Entry "new-version"`
-
-if { ! Boolean "no-dependencies" ;} || { Boolean "devel-version" ;} || {  ! Boolean "no-sign" ;} || [ "$newversion"  ]
+if { ! Boolean "no-dependencies" ;} || {  ! Boolean "no-sign" ;}
 then
    Verify_Superuser
 fi 
@@ -83,85 +83,6 @@ fi
 Is_Directory "${goboPrograms}/$package/$versionnumber" || Die "Package $package version $versionnumber does not exist."
 Is_Link "${goboPrograms}/$package/$versionnumber" && tree_symlinked=yes
 
-
-if { Boolean "devel-version" ;} || [ "$newversion"  ]
-then
-   
-   if [ -d "$package/$versionnumber/lib/python2.3/site-packages" ] 
-   then
-      cd $package/$versionnumber/lib/python2.3/site-packages
-      tmpfile=`Temporary_File`
-      export PYTHONPATH=.
-      for i in *.py; do rm -- $goboLibraries/python2.3/site-packages/${i}o; echo import `basename $i .py`; done > $tmpfile
-      python $tmpfile
-      rm -f -- $tmpfile
-      Quiet cd -
-   fi
-
-   if [ ! "$newversion" ]
-   then
-      name=$USER
-      if [ $UID = 0 ] && [ $USER = gobo -o $USER = root ]
-      then
-         echo "You are currently logged in as $USER."
-         echo "Please enter your regular user name so this devel version"
-         read -p "can be properly tagged: " name
-      fi
-   
-      if echo "$versionnumber" | grep ".*\..*\..*\..*" &> /dev/null
-      then # current version in format X.Y.Z.snapshot 
-         newversion=`echo $versionnumber | sed 's/\(.*\..*\..*\)\..*/\1/'`.`date +%Y%m%d`-$name
-	 
-	 # add hour.minutes if devel version is from today
-	 if { echo "$versionnumber" | grep ".*\..*\..*\..*\-.*\-.*" &> /dev/null ;} || [ "$versionnumber" == "$newversion" ] 
-	 then
-            if [ "$versionnumber" == "$newversion" ] || [ "`echo "$versionnumber" | sed 's/.*\..*\..*\.\(.*\)\-.*\-.*/\1/'`" == "`date +%Y%m%d `" ] 
-	    then
-	       newversion=$newversion-`date +%H%M`
-	    fi
-	 fi 
-	 
-      elif echo "$versionnumber" | grep ".*\..*\..*" &> /dev/null
-      then # current version in format X.Y.Z
-         newversion=$versionnumber.`date +%Y%m%d`-$name
-      else
-         newversion="0.0.0".`date +%Y%m%d`-$name
-      fi
-   fi  
-   
-   if [ "$tree_symlinked" = "yes" ]
-   then
-      Quiet pushd `readlink -f ${goboPrograms}/$package/$versionnumber`/../..
-      real_package=`readlink -f $package`
-   fi
-   
-   if [ "$versionnumber" != "$newversion" ] 
-   then
-      if Boolean "keep"
-      then
-         Log_Normal "Copying $package $versionnumber to $newversion"
-         cp -R $package/$versionnumber $package/$newversion
-      else
-         Log_Normal "Moving $package $versionnumber to $newversion"
-         mv $package/$versionnumber $package/$newversion
-      fi
-   else
-      Log_Normal "Current version is already $newversion"  
-   fi
-   
-   if [ "$tree_symlinked" = "yes" ]
-   then
-      Quiet popd
-      rm -- $package/$versionnumber
-      ln -s $real_package/$newversion $package/$newversion
-   fi
-   ln -nsf $newversion $package/Current
-   if [ $package = "Scripts" ]
-   then PATH=$PATH:${goboPrograms}/$package/$newversion/bin
-   fi
-   SymlinkProgram $package
-   versionnumber=$newversion
-fi
 
 Log_Normal "Creating package for ${package} ${versionnumber}."
 
