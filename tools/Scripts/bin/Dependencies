@@ -243,7 +243,6 @@ then
                installall=1
                execute_program "$program" "$version" ;;
             esac # esac is ridiculous.
-         else 
          fi
       else #program found
          if ! Boolean "missing-only"
