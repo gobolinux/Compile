@@ -40,8 +40,9 @@ GPG_opts="--keyring ${GPG_gobo_keyring} --no-default-keyring"
 if Boolean "import"
 then
 #   Verify_Superuser
-   mkdir -p `basename $GPG_gobo_keyring`
+   mkdir -p `dirname $GPG_gobo_keyring`
    gpg ${GPG_opts} --import "$@"
+   chmod 644 $GPG_gobo_keyring
    exit 0
 fi
 
