@@ -154,7 +154,7 @@ function Check_FileHash() {
    local rtn
    
    Quiet pushd $prefix
-   find * -type f | grep -v "$file" | python -c """
+   find * -type f | grep -v "$file" | $sudo_exec python -c """
 import re, os, string, os.path, sys
 
 hashfile='$file'
