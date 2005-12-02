@@ -88,10 +88,31 @@ GoboLinux version/rev:
 
 Each released recipe has a version/revision pair.  They are separated
 by a "-".  If a version has a "-" in it, it is converted to "_".  In 
-addition, all alpha are forced to lower case.
+addition, all alpha are forced to lower case.  This is done with the
+following code:
 
-Translating between the two.
+   echo $version | sed 's@-@_@g' | tr '[:upper:]' '[:lower:]'
 
-The first step is to substitue the revision delimiter "-" (while will be used for "." in a later
-step) to "__REV__".  W  
-Since CVS does not allow "." in CVS tags, we need to translate them t
+The revision is a simple integer beginning with 0 and incremented for
+each published recipe of that version.
+
+Translating from version/rev pair to release tags
+
+The first step is to separate the version/revision components.
+The version component has '.' subsituted with '-'.  The revision
+component has all non-numeric characters removed.  The tag then takes
+the form of "REL_<version>__REV__<revision>.  Example code:
+
+   version=`echo $version | sed "s@\.@-@g;"`
+   revision=`echo $revision | sed "s@\D@@g;"`
+   echo "REL_${version}__REV__${revision}"
+
+Translating from release tags to version/rev pairs
+
+It is the reverse of the above process.  Example code:
+
+   tag=`echo $tag |sed "s@^REL_@@;"`
+   version=`Get_Token "$tag" "__REV__" 0`
+   version=`echo $version |sed "s@-@\.@g;"`
+   revision=`Get_Token "$tag" "__REV__" 1`
+
