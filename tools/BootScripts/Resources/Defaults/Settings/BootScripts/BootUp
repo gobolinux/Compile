@@ -6,7 +6,7 @@ Exec "Mounting system filesystems..."          mount -a -t tmpfs,sysfs,procfs
 Exec "Starting Hotplug..."                     Hotplug start
 Exec "Activating all swap files/partitions..." swapon -a
 
-#Daemon                                       sshd -D 
+#Daemon                                        /System/Links/Executables/sshd -D
 Daemon                                        klogd -n
 Daemon                                        syslogd -n -m 0
 #Exec "Starting service management daemon..."  Background runsvdir "$goboVariable/Daemons"
