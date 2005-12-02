@@ -34,7 +34,7 @@ translate between the two forms.
 
 For type A recipes, there is generally a 1 to 1 ratio between submitted
 tarballs, commits, and release tags.  Branches are not used (with the
-execption of a CVS/SVN recipe type for that package) for type A recipes.
+exception of a CVS/SVN recipe type for that package) for type A recipes.
 In rare instances, a tarball may be submitted for importing into CVS
 for wider testing.  In that case, a release tag won't be created and
 development will be similar to type B recipes.
@@ -47,9 +47,9 @@ individual recipe maintainer but we do have the following recommendations.
 ( Should tag/branch naming conventions be optional or mandatory? - Carlo Calica )
 
 Release Branches:  The use of this is dependant on the upstream package's
-release schedule.  In many cases, there are seperate stable/unstable versions
+release schedule.  In many cases, there are separate stable/unstable versions
 of a package.  These are maintained and updated concurrently.  Release
-branches allow us to track each version seperately but with the ability to
+branches allow us to track each version separately but with the ability to
 merge common changes across branches.  The name format is "RB_<version>"
 where <version> matches the partial stable/unstable version.  A few examples
 based on the Linux kernel.  Again <version> need to be CVS friendly.  See
@@ -60,7 +60,7 @@ Upstream Version                 Release Branch
 2.5.x                            RB_2_5
 2.6.12.y                         RB_2_6_12
 
-( The kernel isn't the best example.  Suggestiongs appreciated. - Carlo )
+( The kernel isn't the best example.  Suggestions appreciated. - Carlo )
 
 Pre/Post Bugfix tags:  These are useful when dealing with multiple Release
 Branches.  They mark the state before and after a bugfix in a branch.  You
@@ -78,7 +78,7 @@ The name format is "TRY_<initials>_<date|feature>"
 
 APPENDIX A
 
-In CVS, tags and branchs are of the following format: start with a letter,
+In CVS, tags and branches are of the following format: start with a letter,
 and can contain letters, digits, hyphens, and underscores.  Since we are
 storing version/revision pairs in CVS tags we need to encode them in a 
 CVS friendly format.  It does not make sense to warp our version/revision
