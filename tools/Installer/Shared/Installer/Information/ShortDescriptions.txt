@@ -204,3 +204,5 @@ Rsync :: A file transfer program to keep remote files in sync.
 Thunderbird :: A total redesign of the Mozilla mail component.
 Udev :: A userspace implementation of devfs
 YAFC :: Yet another FTP client
+ConfigTools :: Tools that help the configuration process of a GoboLinux installation
+CDRDAO :: Write CD-Rs in Disk-At-Once mode
