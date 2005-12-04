@@ -92,7 +92,10 @@ def Link_Or_Expand(new, conflict, relative = False) :
     goboPrograms = os.environ['goboPrograms']
     if relative :
 	relativegoboprograms = goboPrograms
-	candidate = goboPrograms[len(os.environ['goboPrefix']):]
+	prefix = ''
+	if os.environ.has_key('goboPrefix') :
+	    prefix = os.environ['goboPrefix']
+	candidate = goboPrograms[len(prefix):]
 	if candidate[0] == '/' :
 	    candidate = candidate[1:]
 	for i in range(10) :
