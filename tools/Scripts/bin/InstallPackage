@@ -287,22 +287,13 @@ elif [ $result -eq 2 ]
 then
    Log_Normal "GnuPG not installed.  Unable to verify signature"
    Ask_Continue "Continue install?"
-elif [ $result -eq 4 ] 
+elif [ $result -eq 4 ] || [ $result -eq 5 ] 
 then
    Log_Normal "No signature.  Unable to verify package"
    Ask_Continue "Continue install?"
-elif [ $result -eq 5 ] 
+elif [ $result -eq 1 ] || [ $result -eq 3 ] 
 then
-   Log_Normal "No FileHash.  Unable to verify package"
-   Ask_Continue "Continue install?"
-elif [ $result -eq 1 ] 
-then
-   Log_Error "Invalid FileHash.  Package has been modified"
-   Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
-   exit 1
-elif [ $result -eq 3 ] 
-then
-   Log_Error "Invalid Signature.  Package has been modified"
+   Log_Error "Invalid signature.  Package has been modified"
    Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
    exit 1
 fi

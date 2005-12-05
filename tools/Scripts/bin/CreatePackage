@@ -115,10 +115,10 @@ then
    Set_Boolean "no-sign"	# Use existing signature
 elif [ $result -eq 2 ]
 then
-   sign_opts="--no-signature"   # No GnuPG.  Can't resign, maybe create filehash
+   Set_Boolean "no-sign"	# No GnuPG.  Can't resign
 elif [ $result -eq 4 ] || [ $result -eq 5 ]
 then
-   Log_Normal "No existing sig.  Will re-sign"
+   Boolean "no-sign" || Ask_Continue "No existing sig.  Re-sign?"
 else
    Die "Unable to verify package.  Do not redistribute"
 fi

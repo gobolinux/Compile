@@ -44,7 +44,7 @@ function Assert_Dir() {
    local dir=$1
    if ! Is_Directory "$dir"
    then
-      mkdir -p "$dir" || \
+      Quiet mkdir -p "$dir" || \
       $sudo_exec mkdir -p "$dir"
       if [ "$?" != "0" ]
       then
