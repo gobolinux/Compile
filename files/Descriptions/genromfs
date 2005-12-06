@@ -1,0 +1,4 @@
+[Description] genromfs is a tool for creating romfs images.
+romfs is a Linux specific light-weight,
+space-efficient, read-only filesystem.
+[Homepage] http://romfs.sourceforge.net/
