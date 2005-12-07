@@ -796,7 +796,7 @@ try :
 	##############################################################################
 	#[OK]: Call ProfileInstall
 	log(tr('Performing file installation (may take a few minutes)...'))
-	cmd = 'cd /Depot/Install; ./ProfileInstall --super-user %s /tmp/PROFILE %s'%(installer.getValue('SuperUserLogin'), destMountPoint)
+	cmd = 'ProfileInstall --super-user %s /tmp/PROFILE %s'%(installer.getValue('SuperUserLogin'), destMountPoint)
 	safeRun(cmd, 'ProfileGen', 1, logger)
 
 	
