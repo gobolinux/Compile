@@ -1,0 +1,1 @@
+[ hostname = "LiveCD" ] && export Installer="GoboLinuxInstaller install"
