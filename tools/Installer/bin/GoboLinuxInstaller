@@ -282,16 +282,6 @@ lines = safeFileReadLines('/System/Settings/modprobe.conf')
 cmd = 'EthInterfaces'
 interfaces = safeRun(cmd)
 
-# interfaces = []
-# for line in lines :
-# 	line = line.strip()
-# 	if line :
-# 		l = line.split()
-# 		if len(l) > 1 and l[0] == 'alias' and l[1][:3] == 'eth' :
-# 			if l[1] == 'eth' :
-# 				l[1] = 'eth0'
-# 			interfaces.append(l[1])
-
 
 ###############################################################################
 ###############################################################################
@@ -371,21 +361,6 @@ if not partitionsList :
 #               DEFINING WIZARD SCREENS AND CALLBACKS
 ###############################################################################
 ###############################################################################
-
-##############################################################################
-# languageSelection = Screen('Select your language')
-# languageSelection.addList('Language','Language', (['Português', 'English'],'Português'), 'Language to be used in the installer interface and in the installed system.' )
-# installer.addScreen(languageSelection)
-# ret = installer.start()
-#if not ret :
-#	print "GoboLinux installation aborted"
-#	sys.exit(1)
-#language = installer.getValue('Language')[1]
-#if language == 'Português' :
-#	t.setLanguage('pt_BR')
-
-##############################################################################
-#installer.clear('GoboLinux')
 
 
 ##############################################################################
@@ -599,7 +574,6 @@ def checkSuperUserPasswords() :
 		installer.setValue('SuperUserPassword', '')
 		
 superUserScreen.addLineEdit('SuperUserLogin',tr('Login:'),'root', tr('Select the account name for the superuser.') )
-#superUserScreen.setEnabled('SuperUserLogin',0) # na proxima versao... -> vamos testar entao...
 superUserScreen.addPassword('SuperUserPassword', tr('Password:'), '', tr('Enter the password for the superuser.') )
 superUserScreen.addPassword('SuperUserPasswordRetyped', tr('Retype password:'), '', tr('Enter the same password as above, to verify for typing mistakes.'), checkSuperUserPasswords )
 superUserScreen.addButton('',tr('Check Password'), '', tr('Check if the above fields have the same password typed in.'), matchSuperUserPasswords)
@@ -657,7 +631,6 @@ usersScreen.addBoolean ('NewUserSuperSkel',      tr('Use advanced default settin
 usersScreen.addBoolean ('NewUserEnableSudo',     tr('Enable super-user privileges'), 0, tr("Adds the user to the 'sys' group, enabling it to run all commands as super-user via 'sudo'"))
 usersScreen.addButton  ('',                      tr('Add user'), '', tr('Create an user account using the information entered above.'), addUser)
 usersScreen.addButton  ('',                      tr('Remove user'), '', tr('Remove the user that is currently selected in the list below.'), removeUser)
-#usersScreen.addBoxList('Users')
 usersScreen.addList('Users', tr('Added users'), ([], ''), tr('This is the list of users added so far.'))
 installer.addScreen(usersScreen)
 
@@ -750,8 +723,6 @@ try :
 
 		safeRun(cmd, '', 0, logger)
 
-		#print partition, fileSystem
-
 	if installer.getValue('DoFormat') :
 		log(tr('Formating root partition %s...')%installer.getValue('RootPartition')[1])
 		formatPartition(installer.getValue('RootPartition')[1].split()[0], installer.getValue('PartitionType')[1])
@@ -786,8 +757,6 @@ try :
 
 		safeWriteToFile('/tmp/PROFILE', o, logger)
 
-	#print installer.getValue('Packages')[1]
-	#print map(lambda x: x.split()[0], installer.getValue('Packages')[1])
 	createProfileFile(map(lambda x: x.split()[0], installer.getValue('Packages')[1]))
 
 	
@@ -992,36 +961,6 @@ lo_Netmask=255.0.0.0
 	safeWriteToFile(destMountPoint+'/System/Settings/resolv.conf', o, logger)
 
 	
-	
-# 	##############################################################################
-# 	##############################################################################
-# 	# [OK]: Gerar arquivos de config. das interfaces
-# 	log(tr('Generating network interfaces configuration files...'))
-# 	for interface in interfaces :
-# 		o = ''
-# 
-# 		o += 'Interface='+interface + '\n\n'
-# 		if installer.getValue('Automatic'+interface) :
-# 			o += 'Automatic=yes' + '    #yes or no'+ '\n\n'
-# 		else :
-# 			o += 'Automatic=no' + '    #yes or no'+ '\n\n'
-# 
-# 		if installer.getValue('BootProto'+interface) :
-# 			o += 'BootProto=DHCP'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n\n'
-# 		else :
-# 			o += '#BootProto=Static'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n\n'
-# 
-# 		fieldsT = [ 'IP', 'NetMask', 'Broadcast' ] 
-# 
-# 		for field in fieldsT :
-# 			if installer.isEnabled(field+interface) :
-# 				if (installer.getValue(field+interface)) :
-# 					o += field+ '=' + installer.getValue(field+interface)+ '\n' + '\n'
-# 				else :
-# 					o += "#"+field+'='
-# 		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/BootScripts/Network/'+interface, o, logger)
-
-
 	##############################################################################
 	##############################################################################
 	# [OK]: gerar fstab -> script externo?
@@ -1107,18 +1046,6 @@ lo_Netmask=255.0.0.0
 		elif addedUsers[login]['SuperSkel'] :
 			cmd = 'chroot %s rm -f /Users/%s/Desktop/Manager.desktop'%(destMountPoint,login)
 			safeRun(cmd, '', 0, logger)
-		    
-			
-		
-		#if addedUsers[login]['SuperSkel'] :
-		#	log(tr('Copying advanced applications settings for user %s...')%login)
-		#	cmd2 = 'cp -rf /Programs/Scripts/Settings/Scripts/EnhancedSkel/.[a-zA-Z0-9]* %s/Users/%s/'%(destMountPoint, login)
-		#	safeRun(cmd2)
-		#	cmd3 = 'cp -rf /Programs/Scripts/Settings/Scripts/EnhancedSkel/* %s/Users/%s/'%(destMountPoint, login)
-		#	safeRun(cmd3)
-		#	cmd4 = 'chroot %s chown %s.users /Users/%s/ -R'%(destMountPoint, login, login)
-		#	safeRun(cmd4)
-
 
 
 	##############################################################################
