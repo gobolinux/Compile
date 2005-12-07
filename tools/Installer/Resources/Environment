@@ -1,1 +1,1 @@
-[ hostname = "LiveCD" ] && export Installer="GoboLinuxInstaller install"
+[ "$HOST" = "LiveCD" ] && export Installer="GoboLinuxInstaller install"
