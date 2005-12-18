@@ -477,10 +477,19 @@ function Find_Conf() {
 
 # Parse the script's configuration
 function Parse_Conf() {
+   if [ "$1" = "--mandatory" ]
+   then
+      mandatory=yes
+      shift
+   fi
    for conf in "${conflocations[@]}"
    do
-      Exists "$conf/$1" && source "$conf/$1"
+      Exists "$conf/$1" && source "$conf/$1" && return 0
    done
+   if [ "$mandatory" = "yes" ]
+   then
+      Die "Could not find required configuration file $1."
+   fi
 }
 
 # Some simple define for sudo

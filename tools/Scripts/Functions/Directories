@@ -1,6 +1,8 @@
 #!/bin/sh Do not execute this (magic line added for syntax highlighting only)
 
-Parse_Conf Directories.conf
+Import GoboLinux
+
+Parse_Conf --mandatory Directories.conf
 
 Get_Dir() {
    Parameters "$@" type name version
