@@ -166,27 +166,23 @@ function install_extras() {
    unixname=`echo $name | tr "[:upper:]" "[:lower:]"`-$version
    docdir="$installprefix/doc/$unixname"
 
-   for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT "${docs[@]}"
+   for d in "${dirs[@]}"
    do
-      c=0
-      for d in "${dirs[@]}"
+      cd "$d"
+      for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `eval ls "${docs[@]}"`
       do
-         docd="$docdir"
-         if [ "$c" -gt 1 ]
-         then
-            c=
-         fi
          if [ -e "$d/$i" ]
          then
             $sudo mkdir -p "$docdir"
             $sudo cp "$d/$i" "$docdir"
          fi
       done
+      cd -
    done
 }
 
 function wrapup() {
-   SignProgram "$appname" "$versionnumber"
+   [ "$compileMetaRecipe" ] || SignProgram "$appname" "$versionnumber"
 
    recipedeps="$reciperesources/Dependencies"
    Quiet mkdir -p "$reciperesources"
@@ -414,7 +410,7 @@ fi
 . "$recipe"
 [ -e "$archrecipe" ] && . "$archrecipe"
 
-Log_Normal "Compiling $app version $versionnumber."
+Log_Normal "Compiling $app version $version."
 
 ##################################################
 # Set up enviroment
@@ -692,6 +688,7 @@ then
    pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do
+      Log_Normal "Applying patch $i..."
       patch -Np1 -i $i || Die "Failed on patch $i"
    done
 
