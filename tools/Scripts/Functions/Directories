@@ -29,6 +29,6 @@ Get_Dir() {
 
 # Query directory configuration flags
 Dir_Set() {
-   eval '[ "$directories'$1'" = "yes" ]'
+   eval '[ "$directories'$1'" = "yes" -o "$directoriesHandle'$1'" = "yes" ]'
 }
 
