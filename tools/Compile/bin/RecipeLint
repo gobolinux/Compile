@@ -1,0 +1,591 @@
+#!/bin/sh
+
+. ScriptFunctions
+Import GoboLinux
+Import OptionParser
+Parse_Conf Compile/Compile.conf
+
+helpOnNoArguments=yes
+scriptDescription="Perform all sorts of sanity checks in a recipe."
+scriptUsage="<recipe-file>"
+scriptExample="Foo--1.0--recipe.tar.bz2"
+Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use cache)."
+Add_Option_Boolean "D" "quick-and-dirty" "never download files."
+Parse_Options "$@"
+shift $parsedArguments
+
+[ "$httpSourceforge" ] || {
+   echo -e "\033[41;33;1mFATAL ERROR: could not load initial configuration.\033[0m"
+   exit 1
+}
+
+lintdir=`mktemp -d`
+
+function finish() {
+   rm -rf $lintdir
+   if [ $errors -gt 0 -o $warnings -gt 0 ]
+   then
+      echo "$errors error(s), $warnings warning(s)." >> $report
+      echo "$errors error(s), $warnings warning(s)."
+      echo "Report in '$report'."
+      [ $errors -gt 0 ] && exit 2
+      exit 1
+   else
+      echo "Recipe looks sane."
+      rm $report
+   fi
+}
+
+trap finish EXIT
+
+# need to get the output of utilities in English.
+export LANG=C
+export LC_ALL=C
+
+function msg() {
+   echo "$@"
+   echo "$@" >> $report
+}
+
+function WARN() {
+   echo -e "\033[33;1mWarning: $@\033[0m"
+   echo "Warning: $@" >> $report
+   warnings=$[warnings+1]
+}
+
+function ERROR() {
+   echo -e "\033[31;1mERROR: $@\033[0m"
+   echo "ERROR: $@" >> $report
+   errors=$[errors+1]
+}
+
+function FATAL() {
+   echo -e "\033[41;33;1mFATAL ERROR: $@\033[0m"
+   echo "FATAL ERROR: $@" >> $report
+   exit 1
+}
+
+errors=0
+warnings=0
+recipetar=$(readlink -f "$1")
+[ "$recipetar" ] || recipetar="$1"
+recipename=$(basename "$recipetar")
+
+report=$(dirname $(readlink -f $0))/$(basename $recipetar .tar.bz2).report.txt
+touch "$report" &> /dev/null
+[ -w "$report" ] || {
+   echo "No write permission for report file '$report'."
+   exit 1
+}
+
+:> $report
+
+echo
+msg "RecipeLint"
+msg "by Hisham Muhammad"
+msg "Checking $recipename on `date`"
+###############################################################################
+msg "Checking recipe file..."
+[ -f "$recipetar" ] || {
+   FATAL "$recipetar: Not a readable file."
+}
+file "$recipetar" | grep -q "bzip2 compressed data" || {
+   FATAL "$recipetar: Not a bzip2 file."
+}
+###############################################################################
+msg "Checking recipe package name..."
+name="${recipename%%--*}"
+version="${recipename#*--}"
+rest="${version#*--}"
+version="${version%%--*}"
+
+msg "Checking name for conventions..."
+[ "$rest" == "recipe.tar.bz2" ] || {
+   FATAL "Invalid file name (does not end in --recipe.tar.bz2)."
+}
+[ "$name" == `NamingConventions $name` ] || {
+   ERROR "Name $name does not follow naming conventions."
+}
+echo "$recipetar" | grep -q " " && {
+   ERROR "Name or version contains spaces."
+}
+
+msg "Checking version number..."
+pureversion=`echo $version | sed 's/^\(.*\)-[0-9]*$/\1/'`
+revision=`echo $version | sed -n 's/^.*-\([0-9]*\)$/\1/p'`
+echo "$pureversion" | egrep -q "^[0-9a-z_.]+$" || {
+   ERROR "Version $pureversion contains invalid characters (only [0-9a-z._] allowed)."
+}
+[ "$revision" ] && {
+   [ "$revision" -gt 0 ] || {
+      ERROR "Invalid revision number $revision."
+   }
+} || {
+   # WARN "No revision id."
+   :
+}
+
+###############################################################################
+cd $lintdir
+tar jxpf $recipetar || {
+   FATAL "Could not unpack. Corrupted file?"
+}
+msg "Checking recipe package structure..."
+[ -d "$name" ] || {
+   FATAL "Can't find program directory inside tarball."
+}
+[ -d "$name/$version" ] || {
+   FATAL "Can't find version directory inside tarball."
+}
+[ "`ls`" == $name ] || {
+   WARN "Spurious files in root of recipe tarball: `ls | grep -v ^$name$`."
+}
+[ "`ls $name`" == $version ] || {
+   WARN "Spurious files in package dir of recipe tarball: `ls $name | grep -v ^$version$`."
+}
+arches=()
+function check_dir() {
+   local file
+   for file in `ls "$2"`
+   do
+      case "$file" in
+      Recipe)
+         ;;
+      Resources)
+         ;;
+      *.patch)
+         echo "$file" | egrep -q "^[0-9]+" || {
+            [ `ls $2/*.patch | wc -l` -gt 1 ] && {
+               ERROR "Patch file $file is not numbered; unreliable patching order."
+            }
+         }
+         ;;
+      i686|ppc|arm)
+         [ "$1" = "root" ] && {
+            arches=("${arches[@]}" $file)
+         } || {
+            WARN "Nested arch subdir $2/$file"
+         }
+         ;;
+      *)
+         WARN "Unknown file $file."
+         ;;
+      esac
+   done
+}
+check_dir root "$name/$version"
+for arch in "${arches[@]}"
+do
+   check_dir non-root "$name/$version/$arch"
+done
+###############################################################################
+cd $name/$version
+msg "Checking recipe contents..."
+[ -f Recipe ] || {
+   FATAL "No Recipe file."
+}
+msg "Performing basic syntax validation..."
+bash -n Recipe || {
+   FATAL "Recipe does not parse as valid shell script."
+}
+test_recipe=yes
+cat Recipe | perl -e '
+   %decls = (
+      compile_version => "string",
+      environment => "array",
+      url => "string",
+      urls => "array",
+      mirror_url => "string",
+      mirror_urls => "array",
+      file => "string",
+      files => "array",
+      unpack_files => "string",
+      docs => "array",
+      dir => "string",
+      dirs => "array",
+      include => "array",
+      keep_existing_target => "bool",
+      configure_options => "array",
+      autogen_before_configure => "bool",
+      build_variables => "array",
+      install_variables => "array",
+      make_variables => "array",
+      configure => "string",
+      makefile => "string",
+      build_target => "string",
+      install_target => "string",
+      do_build => "bool",
+      do_install => "bool",
+      needs_build_directory => "bool",
+      needs_safe_linking => "bool",
+      sandbox_options => "array",
+      symlink_options => "array",
+      manifest => "array",
+      without => "array",
+      create_dirs_first => "bool",
+      python_options => "array",
+      override_default_options => "bool",
+      build_script => "string",
+      cvs => "string",
+      cvs_module => "string",
+      cvs_opts => "string",
+      cvs_options => "string",
+      cvs_checkout_options => "string",
+      cvs_rsh => "string",
+   );
+   sub check_array_name {
+      my ($name, $num) = @_;
+      if ($decls{$name} != "array") {
+         print "Error at line ".$num.": ".$name." is not a valid array.\n";
+         exit 1;
+      }
+   }
+   sub check_var {
+      my ($name, $value, $num) = @_;
+      if ($decls{$name} == "string") {
+      } elsif ($decls{$name} == "bool") {
+         if ($value != "yes" && $value != "no") {
+            print "Error at line ".$num.": ".$value." in not valid for ".$name." (expected yes or no).\n";
+            exit 1;
+         }
+      } else {
+         print "Error at line ".$num.": ".$name." is not a valid variable.\n";
+         exit 1;
+      }
+   }
+   %functions = ();
+   $in_shell = 0;
+   $in_array = 0;
+   $n = 0;
+   while (<>) {
+      $n++;
+      if ($in_shell) {
+         if (/^\}[[:blank:]]*$/) {
+            $in_shell = 0;
+         } else {
+            # ignore shell contents
+         }
+      } elsif ($in_array) {
+         if (/^[[:blank:]]*\)[[:blank:]]*$/) {
+            $in_array = 0;
+         } elsif (/^[[:blank:]]*(.*)$/) {
+            $array_contents = $1;
+            # TODO: check array contents
+         } else {
+            # TODO: check array contents
+         }
+      } else {
+         if (/^#.*$/) {
+         } elsif (/^[[:blank:]]*$/) {
+         } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*$/) {
+               print "Error at line ".$n.": please use { in the same line:\n";
+               print;
+               exit 1;
+         } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*\{/) {
+            $fn_name = $1;
+            if ($functions{$fn_name} == 1) {
+               print "Error at line ".$n.": function redefinition:\n";
+               print;
+               exit 1;
+            }
+            $functions{%fn_name} = 1;
+            $in_shell = 1;
+         } elsif (/^([a-z][a-z0-9_]*)=\((.*)\)/) {
+            check_array_name($1, $n);
+            $array_contents = $2;
+            # TODO: check contents
+         } elsif (/^([a-z][a-z0-9_]*)=\(/) {
+            check_array_name($1, $n);
+            $in_array = 1;
+         } elsif (/^([a-z][a-z0-9_]*)=([^[:blank:]]*)[[:blank:]]*$/
+               || /^([a-z][a-z0-9_]*)="([^"]*)"[[:blank:]]*$/
+               || /^([a-z][a-z0-9_]*)='\''([^'\'']*)'\''[[:blank:]]*$/) {
+            check_var($1, $2, $n);
+            $var_contents = $2;
+            # TODO: check contents
+         } else {
+            print "Error at line ".$n.": unexpected construct:\n";
+            print;
+            exit 1;
+         }
+      }
+   }
+   if ($in_array) {
+      print "Error at EOF: ) not found for array construct.\n";
+      print "Parser expects ) by itself in a line.\n";
+      exit 1;
+   }
+   if ($in_shell) {
+      print "Error at EOF: } not found for shell construct.\n";
+      print "Parser expects } by itself in the beginning of a line.\n";
+      exit 1;
+   }
+' || {
+   ERROR "Recipe does not pass basic validation. Will not perform recipe tests."
+   test_recipe=no
+}
+
+test_urls() {
+   function get_file() {
+      if ! Boolean "thorough"
+      then
+         if [ -e "$compileArchivesDir/$file" ]
+         then
+            msg "Using cached file $file from $compileArchivesDir..."
+            spider=--spider
+            cp "$compileArchivesDir/$file" .
+         fi
+      fi
+      if [ "$spider" ]
+      then msg "Checking URL..."
+      else msg "Downloading file ($file_size bytes)..."
+      fi
+      wget --quiet $spider --timeout=10 --tries=3 "$url"
+   }      
+
+   for i in `seq 0 $[${#urls[@]}-1]`
+   do
+      url="${urls[$i]}"
+      file="${files[$i]}"
+      file_md5="${file_md5s[$i]}"
+      file_size="${file_sizes[$i]}"
+      if [ "$file_md5" -o "$file_size" ]
+      then
+         full_check=yes
+         spider=
+      else
+         full_check=no
+         spider=--spider
+      fi
+      [ "$file" ] || file=`basename "$url"`
+
+      Boolean "quick-and-dirty" && continue
+
+      if [ "$file_size" ] && [ "$file_size" -gt 5000000 ] && ! Boolean "thorough" 
+      then
+         WARN "File is big, will not download (to force, run with --thorough)."
+         full_check=no
+         spider=--spider
+      fi
+
+      if get_file "$url"
+      then
+         if [ "$full_check" = "yes" ] 
+         then
+            if [ -e "$file" ]
+            then
+               if [ ${file%.gz} != $file -o ${file%.tgz} != $file ]
+               then
+                  msg "Testing integrity of archive $file..."
+                  gunzip --test $file || {
+                     ERROR "Downloaded file $file is corrupted."
+                  }
+               elif [ ${file%.bz2} != $file ]
+               then
+                  msg "Testing integrity of archive $file..."
+                  bunzip2 --test $file || {
+                     ERROR "Downloaded file $file is corrupted."
+                  }
+               elif [ ${file%.zip} != $file ]
+               then
+                  msg "Testing integrity of archive $file..."
+                  unzip -t $file || {
+                     ERROR "Downloaded file $file is corrupted."
+                  }
+               else
+                  WARN "Type of archive $file not detected. No integrity check performed."
+               fi
+               if [ "$file_md5" ]
+               then
+                  msg "Checking MD5 for $file..."
+                  [ `md5sum "$file" | cut -d" " -f1` = "$file_md5" ] || {
+                     ERROR "MD5 sum in recipe for $file does not match."
+                  }
+               else
+                  WARN "No MD5 sum in recipe."
+               fi
+               if [ "$file_size" ]
+               then
+                  msg "Checking size for $file..."
+                  [ `wc -c "$file" | cut -d" " -f1` = "$file_size" ] || {
+                     ERROR "File size in recipe for $file does not match."
+                  }
+               else
+                  WARN "No file size recipe."
+               fi
+               mv "$file" "$compileArchivesDir"
+            else
+               ERROR "Could not find downloaded file $file"
+            fi
+         else
+            WARN "No MD5 or size -- full check on archive not performed."
+         fi
+      else
+         ERROR "Unreachable URL: $url"
+      fi
+   done
+}
+
+test_recipe() {
+   target="${goboPrograms}/$name/$version"
+   settings_target="${goboPrograms}/$name/Settings"
+   variable_target="${goboPrograms}/$name/Variable"
+   source Recipe
+   [ "$is_meta" = "yes" ] && {
+      for inc in "${include[@]}"
+      do
+         msg "Checking include $inc..."
+         echo "$inc" | grep -q -- "--" || {
+            ERROR "Include $include does not have -- separator."
+            continue
+         }
+         iname="${inc%--*}"
+         iversion="${inc#*--}"
+         [ "$iname" == `NamingConventions $iname` ] || {
+            WARN "Name $iname does not follow naming conventions."
+         }
+         echo "$iversion" | egrep -q "^[0-9a-z_.]+$" || {
+            ERROR "Invalid characters in include version $iversion. Only [0-9a-z_.] allowed."
+         }
+         Boolean "quick-and-dirty" && continue
+         msg "Checking availability of sub-recipe $iname $version..."
+         FindPackage --type recipe "$iname" "$iversion" &> /dev/null || {
+            ERROR "Required recipe $iname $iversion not found in repository."
+         }
+      done
+      return
+   }
+   [ "$url" -o "${urls[0]}" -o "$cvs" -o "$svn" ] || {
+      ERROR "No download location specified in recipe."
+   }
+   msg "Checking recipe declarations..."
+   [ "$is_compileprogram" -o "$is_makefile" -o "$is_python" \
+     -o "$is_perl" -o "$is_xmkmf" -o "$is_manifest" ] || {
+      ERROR "Recipe type is not declared."
+   }
+   if [ "$compile_version" ]
+   then
+      echo "$compile_version" | grep -q "CVS" && {
+         ERROR "Recipe references CVS version."
+      }
+   else
+      WARN "Recipe has no compile_version declaration."
+   fi
+   if [ "$unpack_files" ]
+   then
+      case "$unpack_files" in
+      inside_first|contents_inside_first)
+         [ "${#urls[@]}" -gt 1 ] || {
+            WARN "unpack_files=$unpack_files makes no sense with only one archive."
+         }
+         ;;
+      dirs|files_in_root)
+         ;;
+      *)
+         ERROR "Invalid value '$unpack_files' for unpack_files."
+         ;;
+      esac
+   fi
+   declarations=(
+      configure_options=compileprogram
+      autogen_before_configure=compileprogram
+      build_variables=compileprogram,makefile
+      install_variables=compileprogram,makefile
+      make_variables=compileprogram,makefile
+      configure=compileprogram
+      makefile=compileprogram,makefile,xmkmf
+      build_target=compileprogram,makefile,xmkmf,python
+      install_target=compileprogram,makefile,xmkmf,python
+      do_build=makefile,python
+      do_install=makefile,xmkmf,python
+      needs_build_directory=compileprogram
+      manifest=manifest
+      without=perl
+      create_dirs_first=compileprogram,makefile,perl
+      python_options=python
+      override_default_options=python
+      build_script=python
+   )
+   for decl in "${declarations[@]}"
+   do
+      dname="${decl%=*}"
+      dtypes="${decl#*=}"
+      dtypes="${dtypes//,/ }"
+      if eval "[ \"\$$dname\" ]"
+      then
+         msg "Checking $dname..."
+         eval "ok=no
+         for mode in $dtypes
+         do
+            eval '[ \"\$$dname\" -a \"\$is_'\$mode'\" == \"yes\" ] && { ok=yes; break; }'
+         done
+         [ \$ok = yes ] || {
+            ERROR \"Declaration $dname not valid in this recipes' mode.\"
+         }"
+      fi
+   done
+
+   function check_vars() {
+      aname="$1"
+      shift
+      while [ "$1" ]
+      do
+         echo "$1" | grep -q "=" || {
+            ERROR "Entry '$1' in $aname does not look like a variable assignment."
+         }
+         vname="${1%=*}"
+         echo "$vname" | egrep -q "^[A-Za-z_][A-Za-z0-9_]*$" || {
+            ERROR "Entry '$vname' in $aname does not look like a variable name."
+         }
+         shift
+      done
+   }
+   for vars in build_variables install_variables make_variables
+   do
+      eval "[ \"\${$vars[*]}\" ] && check_vars $vars \"\${$vars[@]}\""
+   done
+
+   [ "${manifest[*]}" ] && {
+      for mentry in "${manifest[@]}"
+      do
+         echo "$mentry" | grep -q ":" || {
+            ERROR "Manifest entry '$mentry' is not of the format 'file:dir'."
+         }
+      done
+   }
+
+   urls=($url "${urls[@]}")
+   files=($file "${files[@]}")
+   file_md5s=($file_md5 "${file_md5s[@]}")
+   file_sizes=($file_size "${file_sizes[@]}")
+   [ "${urls[*]}" ] && test_urls
+
+   msg "Looking for common error patterns..."
+   grep -q "/Programs" Recipe && {
+      ERROR "Recipe references /Programs tree explicitly. Use \$target and \$<dep>_path."
+   }
+   grep -q "\$target/../Settings" Recipe && {
+      WARN "Recipe uses old \$target/../Settings idiom. Use \$settings_target."
+   }
+   grep -q "\$target/../Variable" Recipe && {
+      WARN "Recipe uses old \$target/../Variable idiom. Use \$variable_target."
+   }
+}
+
+[ "$test_recipe" = "yes" ] && test_recipe
+
+test_resources() {
+   msg "Checking resources..."
+   [ -d Resources ] || {
+      ERROR "No Resources directory."
+   }
+   [ -f Resources/Dependencies ] || {
+      ERROR "No Resources/Dependencies file."
+   }
+   [ -f Resources/Description ] || {
+      WARN "No Resources/Description file."
+   }
+}
+
+cat Recipe | grep -q "is_meta=yes" || test_resources
+
