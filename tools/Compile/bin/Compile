@@ -169,7 +169,7 @@ function install_extras() {
    for d in "${dirs[@]}"
    do
       cd "$d"
-      for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `eval ls "${docs[@]}"`
+      for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval ls "${docs[@]}"`
       do
          if [ -e "$d/$i" ]
          then
