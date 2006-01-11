@@ -55,7 +55,7 @@ setfont ${goboSettings}/kbd/consolefonts/lode-lat1u-16.psf.gz
 ######################################
 # launch the loopback interface
 ######################################
-msg "Launching loopback interface"
+msg "Launching the loopback interface"
 ifconfig lo 127.0.0.1
 
 ######################################
