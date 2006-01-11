@@ -951,19 +951,19 @@ lo_Netmask=255.0.0.0
 	if installer.getValue('PrimaryDNS') :
 		o += 'nameserver %s\n'%installer.getValue('PrimaryDNS')
 	else :
-		o += '# nameserver 200.199.241.17\n'
+		o += 'nameserver 200.199.241.17\n'
 
 	if installer.getValue('SecondaryDNS') :
 		o += 'nameserver %s\n'%installer.getValue('SecondaryDNS')
 	else :
-		o += '# nameserver 200.199.252.68\n'
+		o += 'nameserver 200.199.252.68\n'
 
 	safeWriteToFile(destMountPoint+'/System/Settings/resolv.conf', o, logger)
 
 	
 	##############################################################################
 	##############################################################################
-	# [OK]: gerar fstab -> script externo?
+	# [OK]: gerar fstab
 	log(tr('Generating /System/Settings/fstab...'))
 	cmd = 'GenFstab > %s/System/Settings/fstab'%destMountPoint
 	safeRun(cmd, 'fstab generation', 0, logger)
@@ -984,7 +984,7 @@ lo_Netmask=255.0.0.0
 	##############################################################################
 	##############################################################################
 	# [OK]: setar senha de gobo
-	#será conferido acima, mas vale conferir denovo:
+	#será conferido acima, mas vale conferir de novo:
 	log(tr('Setting superuser login and password...'))
 	if installer.getValue('SuperUserPassword') == installer.getValue('SuperUserPasswordRetyped') :
 		shadowLines = safeFileReadLines(destMountPoint+'/System/Settings/shadow', logger)
