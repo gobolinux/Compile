@@ -750,12 +750,15 @@ try :
 	##############################################################################
 	#[OK]: Create profile file containing packages to install
 	log(tr('Creating temporary profile file...'))
+	
+	profiles, profileNameAndSize = installer.getValue('Profile')
+	profileName = profileNameAndSize.split()[0]
+	
 	def createProfileFile(packageList) :
 		o = ''
 		for package in packageList :
 			o += package + '\n'
-
-		safeWriteToFile('/tmp/PROFILE', o, logger)
+		safeWriteToFile('/tmp/'+profileName, o, logger)
 
 	createProfileFile(map(lambda x: x.split()[0], installer.getValue('Packages')[1]))
 
@@ -765,7 +768,7 @@ try :
 	##############################################################################
 	#[OK]: Call ProfileInstall
 	log(tr('Performing file installation (may take a few minutes)...'))
-	cmd = 'ProfileInstall --super-user %s /tmp/PROFILE %s'%(installer.getValue('SuperUserLogin'), destMountPoint)
+	cmd = 'ProfileInstall --super-user %s /tmp/%s %s'%(installer.getValue('SuperUserLogin'), profileName, destMountPoint)
 	safeRun(cmd, 'ProfileGen', 1, logger)
 
 	
