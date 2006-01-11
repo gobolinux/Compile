@@ -133,6 +133,22 @@ def devToGrub(p) :
 		except :
 			return '(hd%d)'%(disc)
 
+def getSwapPartition() :
+	fdisk_data = os.popen("/sbin/fdisk -l")
+		while 1 :
+			line = fdisk_data.readline()
+			if not line :
+				break
+			elif line[0] != '/' :
+				continue
+
+			partitions = line.strip('\n').split(' ')
+			if (partitions[-2] == 'Linux' and partitions[-1] == 'swap') or (partitions[-4] == 'Linux' and partitions[-3] == 'swap') : 
+				fdisk_data.close()
+				return partitions[0]
+
+		fdisk_data.close()
+
 def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True) :
 	import os
 	cmd = 'fdisk -l'
@@ -146,8 +162,8 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 		if len(l) > 1 and l[1] == '*' :
 			bootableWindowsPartitions.append(devToGrub(l[0]))
 
-
 	grubFormatTarget = devToGrub(targetPartition)
+	swapPartition = getSwapPartition()
 
 	o = ''
 	if keymap == 'dvorak' :
