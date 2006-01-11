@@ -93,23 +93,23 @@ function installKernel() {
     lsmod | grep sd_mod && {
     	# SCSI disk found, replace the current kernel image by the SCSI one
 
-	if [ $SMP = 1 ]; then
-	    ln -fs ${KERNEL}-SMP-SCSI kernel
-	    ln -fs ${SYSMAP}-SMP-SCSI System.map
-	else
-	    ln -fs ${KERNEL}-SCSI kernel
-	    ln -fs ${SYSMAP}-SCSI System.map
-	fi
+		if [ $SMP = 1 ]; then
+		    ln -fs ${KERNEL}-SMP-SCSI kernel
+	    	ln -fs ${SYSMAP}-SMP-SCSI System.map
+		else
+		    ln -fs ${KERNEL}-SCSI kernel
+	    	ln -fs ${SYSMAP}-SCSI System.map
+		fi
     } || {
     	# SCSI disk not found, keep using the non-SCSI images
 
-	if [ $SMP = 1 ]; then
-	    ln -fs ${KERNEL}-SMP kernel
-	    ln -fs ${SYSMAP}-SMP System.map
-	else
-	    ln -fs ${KERNEL} kernel
-	    ln -fs ${SYSMAP} System.map
-	fi
+		if [ $SMP = 1 ]; then
+		    ln -fs ${KERNEL}-SMP kernel
+		    ln -fs ${SYSMAP}-SMP System.map
+		else
+		    ln -fs ${KERNEL} kernel
+		    ln -fs ${SYSMAP} System.map
+		fi
     }
     popd &> /dev/null
 }
@@ -158,12 +158,7 @@ function installBase() {
     sync
     
     Log_Normal "Installing directory "/Files
-	mkdir -p ${dest_dir}/Files/Compile/{Archives,LocalRecipes,Recipes,Sources,Store}
-	cp -ra /Files/Compile/Archives/* ${dest_dir}/Files/Compile/Archives/
-	for i in Codecs Descriptions Documentation Fonts Fortunes Plugins
-	do
-		cp -ra /Files/$i ${dest_dir}/Files/
-	done
+    cp -ra /Files ${dest_dir}/Files
 	sync
     
     Log_Normal "Installing directory "/Depot
