@@ -16,16 +16,22 @@ source StartFunctions
 ######################################
 # Hotplug
 ######################################
-msg_no_nl "Starting Hotplug (<esc> to skip)" 
-skip_on_esc 3 && echo && ${goboPrograms}/BootScripts/Current/bin/StartTask Hotplug 2>/dev/null || echo '<SKIPPED>'
+if [ -d ${goboPrograms}/Hotplug ]
+then
+	msg_no_nl "Starting Hotplug (<esc> to skip)" 
+	skip_on_esc 3 && echo && ${goboPrograms}/BootScripts/Current/bin/StartTask Hotplug 2>/dev/null || echo '<SKIPPED>'
+fi
 
 ######################################
 # X11
 ######################################
-msg_no_nl "Starting X11 detection (<esc> to skip)" 
-skip_on_esc 3 && echo && { 
-   GenXorgConf > /tmp/xorg.conf && mv /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf || echo FAILED
-} || echo '<SKIPPED>'
+if [ -d ${goboPrograms}/Xorg ]
+then
+	msg_no_nl "Starting X11 detection (<esc> to skip)" 
+	skip_on_esc 3 && echo && { 
+	   GenXorgConf > /tmp/xorg.conf && mv /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf || echo FAILED
+	} || echo '<SKIPPED>'
+fi
 
 ######################################
 # Choose language
@@ -55,7 +61,7 @@ echo "export LC_ALL=${LANG}" >> ${goboUsers}/gobo/.bashrc
 ######################################
 # Adjusting .kde to the chosen lang
 ######################################
-if [ "$LANG" == "pt_BR" ]
+if [ "$LANG" == "pt_BR" -a -d ${goboPrograms}/KDE ]
 then
     echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
     echo "Country=br" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
@@ -69,7 +75,7 @@ then
     echo "Language=pt_BR" >> ${eskeldir}/.kde/share/config/kdeglobals
 fi
 
-if [ "$LANG" == "de_DE" ]
+if [ "$LANG" == "de_DE" -a -d ${goboPrograms}/KDE ]
 then
     echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
     echo "Country=de" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
@@ -98,8 +104,10 @@ loadkeys $MAPNAME
 ######################################
 # Adjusting xorg.conf
 ######################################
-msg "Adjusting xorg.conf"
-cat /Programs/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
-cp -f /tmp/xorg.conf.$$ /Programs/Xorg/Settings/X11/xorg.conf
-
+if [ -d ${goboPrograms}/Xorg ]
+then
+	msg "Adjusting xorg.conf"
+	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
+	cp -f /tmp/xorg.conf.$$ ${goboPrograms}/Xorg/Settings/X11/xorg.conf
+fi
 
