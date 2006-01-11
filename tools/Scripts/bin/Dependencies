@@ -116,7 +116,8 @@ function path2programs() {
    perl -n -e '$_ =~ m@/([^/]+)/([^/]+)/lib@ && print "$1 $2\n";' \
            -e '$_ =~ m@/([^/]+)/([^/]+)/libexec@ && print "$1 $2\n";' \
            -e '$_ =~ m@/([^/]+)/([^/]+)/bin@ && print "$1 $2\n";' \
-           -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";'
+           -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";' \
+           -e '$_ =~ m@([# ]+.*)@ && print "$1 $2 $3 $4\n";'
 }
 
 function execute_program {
