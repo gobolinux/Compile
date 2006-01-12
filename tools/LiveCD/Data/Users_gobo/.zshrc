@@ -6,7 +6,7 @@ alias cp="cp -i"
 # '/bin' should not be needed
 export PATH=$PATH:/bin
 
-alias Installer=/Depot/Install/Wizard/runInstaller.sh
+alias Installer=GoboLinuxInstaller
 
 prompt lode red
 
