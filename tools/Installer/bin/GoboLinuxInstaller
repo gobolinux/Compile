@@ -1018,7 +1018,7 @@ lo_Netmask=255.0.0.0
 		cmd = 'chroot %s GrepReplace "gobo" "%s" /etc/passwd /etc/group /Programs/Sudo/Settings/sudoers'%(destMountPoint,goboLogin)
 		safeRun(cmd, '', 0, logger)
 		
-		cmd = 'chroot %s rm -f /etc/passwd~ /etc/group~ /Programs/Sudo/Settings/sudoers~'
+		cmd = 'chroot %s rm -f /etc/passwd~ /etc/group~ /Programs/Sudo/Settings/sudoers~'%destMountPoint
 		safeRun(cmd, '', 0, logger)
 		
 	else :
