@@ -185,8 +185,8 @@ then
 
    if Dir_Set Shared
    then
-      [ -L "$programdir/share" ] && rm -- "$programdir/share"
-      ln -nsf "$programdir/Shared" "$programdir/share"
+      [ -L "$programdir/share" ]  && rm -- "$programdir/share"
+	  [ -d "$programdir/Shared" ] && ln -nsf "$programdir/Shared" "$programdir/share"
    fi
 
    dirop="Make_Directory"
