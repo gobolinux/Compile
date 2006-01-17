@@ -330,7 +330,7 @@ SymlinkProgram "$packagename" "$packageversion"
 
 if ! Boolean "no-dependencies"
 then
-   Dependencies -c -H ${batch} -e $0 "$packagename" "$packageversion"
+   Dependencies -c -H ${batch} -e "$0 $keep" "$packagename" "$packageversion"
 fi
 
 Log_Verbose "Done."
