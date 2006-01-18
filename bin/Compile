@@ -572,14 +572,15 @@ then
       [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
       echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
 
-      # if [ -d "$cvs_module" ]
-      # then skippatching=yes
-      # fi
-
       login_method=`echo ${cvs} | cut -b-5`
       [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
       cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
+   else
+      # Sources are already fetched, do not patch again
+      if [ -d "$cvs_module" ]
+      then skippatching=yes
+      fi
    fi
 elif [ "$svn" ]
 then
