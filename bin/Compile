@@ -291,27 +291,30 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 recipe=$bakedrecipedir/Recipe
 
 dependencies_file=$bakedrecipedir/Resources/Dependencies
-for dep in `cat "$dependencies_file" | tr ' ' ':' `
-do
-   dep_name="${dep%:*}";
-   guess_dep_name=`GuessProgramCase "${dep_name}" 2> /dev/null`
-   [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
-   lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
-   dep_vers=${dep#*:}
-   dep_path=`Get_Dir runtime $dep_name Current`
-   real_dep_path=`readlink -f "$dep_path"`
-   if [ "$real_dep_path" ]
-   then
-      dep_path="$real_dep_path"
-      [ -d "$dep_path" ] || dep_path=`Get_Dir runtime $dep_name $dep_vers`
-      dep_vers=${dep_path##*/}
-   fi
-   dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
-   dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
-   eval 'export '$lowercase_name'_path='$dep_path
-   eval 'export '$lowercase_name'_settings_path='$dep_settings_path
-   eval 'export '$lowercase_name'_variable_path='$dep_settings_path
-done
+if [ -f "$dependencies_file" ]
+then
+   for dep in `cat "$dependencies_file" | tr ' ' ':' `
+   do
+      dep_name="${dep%:*}";
+      guess_dep_name=`GuessProgramCase "${dep_name}" 2> /dev/null`
+      [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
+      lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
+      dep_vers=${dep#*:}
+      dep_path=`Get_Dir runtime $dep_name Current`
+      real_dep_path=`readlink -f "$dep_path"`
+      if [ "$real_dep_path" ]
+      then
+         dep_path="$real_dep_path"
+         [ -d "$dep_path" ] || dep_path=`Get_Dir runtime $dep_name $dep_vers`
+         dep_vers=${dep_path##*/}
+      fi
+      dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
+      dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
+      eval 'export '$lowercase_name'_path='$dep_path
+      eval 'export '$lowercase_name'_settings_path='$dep_settings_path
+      eval 'export '$lowercase_name'_variable_path='$dep_settings_path
+   done
+fi
 
 app=`Get_Token "$bakedrecipedir" "/" "-2"`
 version=`Get_Token "$bakedrecipedir" "/" "-1"`
