@@ -86,6 +86,7 @@ Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
 Add_Option_Boolean "C" "no-configure" "Do not run ./configure." # useful when resuming or retrying
 Add_Option_Boolean "S" "no-symlink" "Do not symlink."
+Add_Option_Boolean "U" "use-directory" "Use the directory already uncompressed"
 
 Parse_Conf Compile.conf
 
@@ -475,15 +476,17 @@ foreach_if_array_set "include" '
    iname=`echo $item | sed '\''s/--.*//'\''`
    iversion=`echo $item | sed '\''s/.*--//'\''`
    Boolean no-build && nobuild=--no-build
+   Boolean batch && batch=--batch
+   Boolean use-directory && usedirectory=--use-directory
    noweb=`Forward_Boolean_Entry "no-web"`
    export compileMetaRecipe=1
    if [ "$directrecipe" = "yes" ]
    then
       ipath=${rawrecipes/$appname/$iname}
       ipath=${ipath/$versionnumber/$iversion}
-      $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
+      $0 $nobuild $batch $usedirectory $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
    else
-      $0 $nobuild $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+      $0 $nobuild $batch $usedirectory $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
    fi
    if [ "$?" -gt 0 ]
    then
@@ -606,7 +609,9 @@ else
    unpack=yes
    if [ -d "${dirs[0]}" ]
    then
-      if Boolean "batch"
+      if Boolean "use-directory"
+      then REPLY=u
+      elif Boolean "batch"
       then REPLY=r
       else
          Log_Question "Directory '${basedirs[0]}' already exists."
