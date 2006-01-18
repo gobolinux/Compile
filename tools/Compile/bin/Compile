@@ -779,7 +779,7 @@ then
    is_function_set pre_build && pre_build
    if ! Boolean "no-configure"
    then
-      chmod +x "$configure"
+	  [ -f "$configure" ] && chmod +x "$configure"
       (
          for i in "${configure_variables[@]}"
          do
