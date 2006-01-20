@@ -196,11 +196,6 @@ then
    Is_Writable `Get_Dir runtime '' ''` || Verify_Superuser
    Dir_Set Install && `Get_Dir install '' ''` || Verify_Superuser
 
-   if Dir_Set Shared
-   then
-      Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
-   fi
-
    dirop="Quiet rmdir -p"
    linkop="remove_symlink"
 fi
@@ -239,6 +234,17 @@ then
    then
       $linkop `Get_Dir installSettings "$programname" "$versionnumber"`
       $linkop `Get_Dir installVariable "$programname" "$versionnumber"`
+   fi
+
+   if Dir_Set Shared
+   then
+      if Boolean "tree"
+      then
+         [ -L "$programdir/share" ] && rm -- "$programdir/share"
+         ln -nfs "$programdir/Shared" "$programdir/share"
+      else
+         Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
+      fi
    fi
 
    exit 0
