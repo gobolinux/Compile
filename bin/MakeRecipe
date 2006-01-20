@@ -64,6 +64,7 @@ then
 fi
 
 [ "$1" ] || Die "Missing parameter."
+echo "$1" | grep -q ":" || Die "Expected URL as a last parameter."
 
 # catch parameter errors using cvs
 if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = "-" ]
