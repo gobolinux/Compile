@@ -1119,7 +1119,7 @@ lo_Netmask=255.0.0.0
         safeRun(cmd, 'Unbinding /System/Kernel/Status', 0, logger)
         
         cmd = 'umount /Mount/GoboLinux/System/Kernel/Devices'
-	safeRun(cmd, 'Uninding /System/Kernel/Devices', 0, logger)
+	safeRun(cmd, 'Unbinding /System/Kernel/Devices', 0, logger)
 
 
 	log(tr('Unmounting selected root partition %s...')%installer.getValue('RootPartition')[1])
