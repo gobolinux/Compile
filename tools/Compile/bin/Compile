@@ -975,6 +975,34 @@ fi
 
 ##################################################
 
+if [ "$is_scons" = "yes" ]
+then
+   [ "$scons" ] || scons="scons.py"
+   [ "$install_target" ] || install_target="install"
+   if [ ! "$override_default_options" = "yes" ]
+   then
+      scons_variables=(
+         "${scons_variables[@]}"
+         "PREFIX=$target"
+      )
+   fi
+   PrepareProgram $prepareCross -t $batch "$appname" "$versionnumber"
+   is_function_set pre_build && pre_build
+   $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || Die "Build failed."
+   Boolean "no-install" && exit
+   install_extras
+   is_function_set pre_install && pre_install
+   if [ ! "$do_install" = "no" ]
+   then
+      $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || Die "Installation failed."
+   fi
+   do_symlink --no-make "$appname" "$versionnumber"
+   is_function_set post_install && post_install
+   wrapup
+fi
+
+##################################################
+
 # Manifest mode is experimental.
 
 if [ "$is_manifest" = "yes" ]
