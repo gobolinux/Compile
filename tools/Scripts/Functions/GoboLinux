@@ -534,3 +534,14 @@ function Try_Superuser() {
       sudo -u "#0" $0 "$@" && exit
    fi
 }
+
+
+function Find_Superusername() {
+   /usr/bin/python -c '
+import pwd
+
+entry=pwd.getpwuid(0)
+print entry[0]
+'
+}
+
