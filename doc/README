@@ -68,6 +68,15 @@ manifest:
    symlink
    post_install()
 
+scons:
+   pre_build()
+   scons.py
+   pre_install()
+   scons.py install
+   pre_link()
+   symlink
+   post_install()
+
 Supported options:
 ``````````````````
 
@@ -217,11 +226,11 @@ build_variables=(<array of assignments>)
       "DESTDIR=$target"
       "MANDIR=$target/man/man1"
    )
-   Valid modes: compileprogram, makefile
+   Valid modes: compileprogram, makefile, scons
 
 install_variables=(<array of assignments>)
    Variables to be passed to "make install".
-   Valid modes: compileprogram, makefile
+   Valid modes: compileprogram, makefile, scons
 
 make_variables=(<array of assignments>)
    Variables to be passed to both "make" and "make install".
@@ -239,19 +248,19 @@ build_target=<make target>
    The target to be used when calling make or equivalent build
    script/program to build the program.
    Example: build_target=all
-   Valid modes: compileprogram, makefile, xmkmf, python
+   Valid modes: compileprogram, makefile, xmkmf, python, scons
 
 install_target=<make target>
    The target to be used when calling make or equivalent build
    script/program to build the program.
    Example: install_target=all
-   Valid modes: compileprogram, makefile, xmkmf, python
+   Valid modes: compileprogram, makefile, xmkmf, python, scons
 
 do_build=no
    Valid modes: makefile, python
 
 do_install=no
-   Valid modes: makefile, xmkmf, python
+   Valid modes: makefile, xmkmf, python, scons
 
 needs_build_directory=yes
    Valid modes: compileprogram
@@ -279,11 +288,13 @@ python_options=(<array of options>)
    Array of options to be passed to the Python build script.
 
 override_default_options=yes
-   Valid modes: compileprogram, python
+   Valid modes: compileprogram, python, scons
    Compile chooses some options by default according to
    the specified target type. In compileprogram recipes, it
    passes some standard autoconf options to the configure script;
-   in python recipes, distutils options for the Python build script.
+   in python recipes, distutils options for the Python build script;
+   in scons recipes, some standard options passed in invocations
+   of scons.py.
    Use this option to disable those options and have your own
    options (given in configure_options or python_options) overwrite
    instead of append the option list.
@@ -294,10 +305,18 @@ build_script=<name>
    is given, Compile tries a few default ones, such as setup.py.
 
 build_target=<name>
-   Valid modes: python
+   Valid modes: python, scons
+   
+scons=<name>
+   Valid modes: scons
+   Specify a name for the scons binary other than
+   the default, "scons.py".
 
-Experimental options:
-`````````````````````
+scons_variables=(<array_of_assignments>)
+   Valid modes: scons
+   Specify a list of assignments to be passed on both the build
+   and install invocations of scons.py.
+
 cvs=<CVS server>
    Valid modes: all
    cvs=:pserver:anonymous@anoncvs.gimp.org:/cvs/gnome
