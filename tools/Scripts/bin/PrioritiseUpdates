@@ -2,7 +2,7 @@
 
 # print banner
 cat >&2 <<EOF
-PrioritiseUpdates 1.0 - ordigu SuggestUpdates-eliron
+PrioritiseUpdates 1.0 - order SuggestUpdates output
  (Copyright 2005 MJ Ray. Released under GNU GPL v2.)
 
 EOF
@@ -28,14 +28,14 @@ cut -f2 '-d ' $1 | while read prog ; do
 done | tr A-Z a-z | while read prog type ; do
   if [ -z "${vidita[$prog]}" ] ; then
     if [ "$type" = "d" ] ; then
-      vidita[$prog]="BEZONANTA"
+      vidita[$prog]="NEEDED"
     else
-      vidita[$prog]="farita"
+      vidita[$prog]="done"
     fi
-    grep -iw $prog $1 || vidita[$prog]="ignorita"
+    grep -iw $prog $1 || vidita[$prog]="ignored"
   fi
   case "$type" in
-    "r") echo faru $prog >&2 ;;
+    "r") echo do $prog >&2 ;;
     "d") if [ -n "${vidita[$prog]}" ] ; then
            echo -n "${vidita[$prog]} " >&2
          fi
@@ -49,15 +49,16 @@ i=0
 while ! cmp -s $1.orig $1 ; do
   mv $1 $1.orig
   i=$(($i + 1))
-  echo "Provo $i:"
+  echo "Pass $i:"
   ordigu $1.orig >$1
 done
 
 # output trailing banner
-echo "--- Fino: $i provo(j)" >&2
+echo "--- Finish: $i pass(es)" >&2
 
 exit 0
 
 # Changelog:
 # 1.0 - new script
+# 1.1 - translate to English
 
