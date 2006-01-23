@@ -1,4 +1,4 @@
 #!/bin/sh
 source Shutdown
 
-Exec "Rebooting system..." reboot -d -f -i -h
+Exec "Rebooting system..." reboot -d -f -i -h 2> /dev/null || reboot
