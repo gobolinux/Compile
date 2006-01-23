@@ -531,7 +531,7 @@ def useDHCPChanged() :
 	for interface in interfaces :
 		enable = not installer.getValue('BootProto'+interface)
 		installer.setEnabled('IP'+interface, enable)
-		installer.setEnabled('NetMask'+interface, enable)
+		installer.setEnabled('Netmask'+interface, enable)
 		installer.setEnabled('Broadcast'+interface, enable)
 
 for interface in interfaces :
@@ -539,7 +539,7 @@ for interface in interfaces :
 	interfaceScreen.addBoolean('Automatic' + interface, tr('Enable interface on boot'), 1, tr('Should this network interface be brought up when the system is powered up?') )
 	interfaceScreen.addBoolean('BootProto'+ interface,  tr('Automatic configuration via DHCP'), 0, tr('Select this if your network server is configured to use the DHCP protocol.'), useDHCPChanged )
 	interfaceScreen.addLineEdit('IP'+ interface,        tr('IP:'),'192.168.1.2', tr('The IP address of this computer in your network.') )
-	interfaceScreen.addLineEdit('NetMask'+ interface,   tr('Netmask:'),'255.255.255.0',  tr("Your network's netmask.") )
+	interfaceScreen.addLineEdit('Netmask'+ interface,   tr('Netmask:'),'255.255.255.0',  tr("Your network's netmask.") )
 	interfaceScreen.addLineEdit('Broadcast'+ interface, tr('Broadcast:'), '', tr("The broadcast address of this network (optional).") )
 	installer.addScreen(interfaceScreen)
 
@@ -923,7 +923,7 @@ lo_Netmask=255.0.0.0
 			else :
 				o += '#'+interface+'_'+'BootProto=Static'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n'
 	
-			fieldsT = [ 'IP', 'NetMask', 'Broadcast' ] 
+			fieldsT = [ 'IP', 'Netmask', 'Broadcast' ] 
 	
 			for field in fieldsT :
 				if installer.isEnabled(field+interface) :
