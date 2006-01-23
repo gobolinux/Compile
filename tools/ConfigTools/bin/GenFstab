@@ -40,6 +40,10 @@ echo "# Pts filesystem (kernel 2.6)."
 echo "none /System/Kernel/Devices/pts devpts defaults 0 0"
 echo
 
+echo "# USB filesystem (kernel 2.6)."
+echo "none /System/Kernel/Status/bus/usb usbfs defaults 0 0"
+echo
+
 echo "# shm (kernel 2.6)."
 echo "none /System/Kernel/Devices/shm tmpfs  defaults 0 0"
 echo
