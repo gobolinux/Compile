@@ -21,14 +21,14 @@ sekvudepoj() {
 
 ordigu() {
 typeset -A vidita
-# Iterate over requested programs, reading Current symlink
+# Iterate over requested programs, following dependencies
 cut -f2 '-d ' $1 | while read prog ; do
   sekvudepoj $prog
   echo $prog R
 done | tr A-Z a-z | while read prog type ; do
   if [ -z "${vidita[$prog]}" ] ; then
     if [ "$type" = "d" ] ; then
-      vidita[$prog]="NEEDED"
+      vidita[$prog]="NEEDS"
     else
       vidita[$prog]="done"
     fi
