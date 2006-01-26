@@ -482,7 +482,15 @@ test_recipe() {
             WARN "unpack_files=$unpack_files makes no sense with only one archive."
          }
          ;;
-      dirs|files_in_root)
+      dirs)
+         [ "${#urls[@]}" -gt 1 ] || {
+            WARN "unpack_files=dirs makes no sense with only one archive."
+         }
+         [ "${#urls[@]}" -ne ${#dirs[@]} ] || {
+            ERROR "with unpack_files=dirs, number of entries in urls and dirs must be the same."
+         }
+         ;;
+      files_in_root)
          ;;
       *)
          ERROR "Invalid value '$unpack_files' for unpack_files."
