@@ -1,0 +1,3 @@
+#compdef StartTask
+
+_files -W ${goboPrefix}/System/Links/Tasks/

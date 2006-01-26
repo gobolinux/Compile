@@ -1,3 +1,3 @@
 #compdef TestBootTheme
 
-_files -W /Programs/BootScripts/Current/share/BootThemes
+_files -W ${goboPrefix}/Programs/BootScripts/Current/share/BootThemes

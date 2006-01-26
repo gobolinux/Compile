@@ -1,0 +1,3 @@
+#compdef DisableProgram
+
+_files -W ${goboPrefix}/Programs

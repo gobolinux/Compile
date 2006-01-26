@@ -1,0 +1,3 @@
+#compdef Dependencies
+
+_files -W ${goboPrefix}/Programs
