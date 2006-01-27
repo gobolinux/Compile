@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import os
+import sys
+
 #TODO: 
 # - tranformar em bash?
 # - pegar as particoes windows decentemente
@@ -97,41 +100,8 @@ def tr(s) :
 	return s
 
 def devToGrub(p) :
-	if p[:5] == '/dev/' :
-		p = p[5:]
-		
-	#devfs mode devices:
-	if p.find('bus') > -1 :
-		print "opcao 1"
-		l = p.split('/')
-		d = {}
-		for i in l :
-			k = 1
-			while k < len(i) :
-				try :
-					int(i[-k:])
-					k = k + 1
-				except :
-					break
-			k = k -1
-			if k :
-				d[i[:-k]] = i[-k:]
-
-		disc = int(d['bus']) * 2 + int(d['target'])
-		if d.has_key('part') :
-			part = int(d['part']) - 1
-			return '(hd%d,%d)'%(disc,part)
-		else :
-			return '(hd%d)'%(disc)
-
-	# conventional mode devices
-	else :
-		disc = ord(p[2]) - 97
-		try :
-			part = int(p[3:])-1
-			return '(hd%d,%d)'%(disc,part)
-		except :
-			return '(hd%d)'%(disc)
+	grub_dev = os.popen("dev2grub.sh "+p)
+	return grub_dev.readline().strip()
 
 def getSwapPartition() :
 	fdisk_data = os.popen("/sbin/fdisk -l")
@@ -146,11 +116,9 @@ def getSwapPartition() :
 			if (partitions[-2] == 'Linux' and partitions[-1] == 'swap') or (partitions[-4] == 'Linux' and partitions[-3] == 'swap') : 
 				fdisk_data.close()
 				return partitions[0]
-
 		fdisk_data.close()
 
 def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True) :
-	import os
 	cmd = 'fdisk -l'
 	lines = os.popen(cmd).readlines()
 
@@ -207,7 +175,6 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 
 
 if __name__ == '__main__' :
-	import sys
 	if len(sys.argv) < 3 :
 	    print 'Usage: %s targetPartition keymap genGraphicDesktop'%sys.argv[0]
 	    print 'Example: %s hda1 us 1'%sys.argv[0]
