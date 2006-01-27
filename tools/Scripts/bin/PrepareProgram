@@ -281,9 +281,11 @@ fi
 
 if Is_Entry "cross-compile"
 then
-	configureprogram="CC=$CC HOSTCC=$HOSTCC LD=$LD $configureprogram"
+	CC=$CC HOSTCC=$HOSTCC LD=$LD color_command ${goboSettings}/Scripts/configure.mtailrc \
+	  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
+else
+	color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" \
+	  "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 fi
-
-color_command ${goboSettings}/Scripts/configure.mtailrc $configureprogram "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0
