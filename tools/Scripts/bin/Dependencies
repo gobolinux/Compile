@@ -253,7 +253,7 @@ then
                Log_Verbose "OK ---------------> $program $version"
             
             else # program found, but version not installed
-               yourversion=`Get_Version "$iprogram" "Current"`
+               yourversion= #`Get_Version "$iprogram" "Current"`
                [ "$yourversion" ] || yourversion=`GuessLatest \`ls /Programs/$iprogram |grep -v Settings |grep -v Variable |grep -v Current\`` 
                
                if [ "`GuessLatest $version $yourversion`" == "$yourversion" ]
