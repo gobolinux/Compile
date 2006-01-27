@@ -1079,9 +1079,10 @@ lo_Netmask=255.0.0.0
 	##############################################################################
 	# [OK]: makewhatis
 	try :
-		log(tr('Creating "whatis" database...'))
-		cmd = 'chroot %s makewhatis -w'%destMountPoint
-		safeRun(cmd)
+	    	if os.access(destMountPoint+'/Programs/Man', os.F_OK) :
+			log(tr('Creating "whatis" database...'))
+			cmd = 'chroot %s makewhatis -w'%destMountPoint
+			safeRun(cmd)
 	except :
 		log(tr('Error creating "whatis" database.'))
 	
