@@ -288,10 +288,14 @@ def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
 			if len(l) > 2 :
 				if not d.has_key(l[0]) :
 					d[l[0]] = {}
-				
-				if not d[l[0]].has_key(l[1]) :
-					d[l[0]][l[1]] = []
-				d[l[0]][l[1]].append(path_prefix+line.strip())
+				dl0=d[l[0]]
+				l1=l[1]
+				if not dl0.has_key(l1) :
+					dl0[l1] = []
+				dl0[l1].append(path_prefix+line.strip())
+				#if not d[l[0]].has_key(l[1]) :
+					#d[l[0]][l[1]] = []
+				#d[l[0]][l[1]].append(path_prefix+line.strip())		
 		return d
 	except :
 		return d
