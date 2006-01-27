@@ -151,7 +151,7 @@ function do_symlink() {
    is_function_set pre_link && pre_link
  
    if Boolean "no-symlink"
-   then PrepareProgram --tree-cleanup $batch "$1" "$2"
+   then PrepareProgram --tree-cleanup $batch $prepareCross "$1" "$2"
    else SymlinkProgram $safeopts $prepareCross $symlinkopts "$1" "$2" || Die "Linking step failed."
    fi
 }
@@ -354,10 +354,6 @@ if Is_Entry "cross-compile"
 then 
    arch=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch"
-   
-   # UnionFS check
-   grep unionfs ${goboStatus}/filesystems || modprobe unionfs || \
-      Die "Could not find unionfs module, please run 'Compile UnionFS'."
    
    crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch.conf
    if [ ! -f "$crossConfFile" ]
@@ -802,7 +798,7 @@ then
             $prepareCross
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         PrepareProgram $batch $prepareCross ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
    $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."

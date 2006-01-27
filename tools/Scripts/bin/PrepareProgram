@@ -138,7 +138,7 @@ Dir_Set Install && installdir=`Get_Dir install "$programname" "$versionnumber"`
 if Boolean "tree"
 then
    Is_Writable `Get_Dir runtime '' ''` || Verify_Superuser
-   Dir_Set Install && `Get_Dir install '' ''` || Verify_Superuser
+   Dir_Set Install && installdir=`Get_Dir install '' ''` || Verify_Superuser
 
    ask=yes
    unset keepdir
@@ -279,6 +279,11 @@ else
    configure_options=()
 fi
 
-color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
+if Is_Entry "cross-compile"
+then
+	configureprogram="CC=$CC HOSTCC=$HOSTCC LD=$LD $configureprogram"
+fi
+
+color_command ${goboSettings}/Scripts/configure.mtailrc $configureprogram "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0
