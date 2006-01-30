@@ -372,7 +372,7 @@ function Reverse_Link_Or_Expand() {
    bsource=`basename "$rsource"`
    dsource=`dirname "$rsource"`
 
-   if [ $rsource == "$destination/$bsource" ]
+   if [ "$rsource" == "$destination/$bsource" ]
    then			# Already symlinked.  Don't do anything
      return
    fi
