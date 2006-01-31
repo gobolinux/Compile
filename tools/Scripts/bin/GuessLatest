@@ -55,12 +55,10 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			l = parameter[0].split("--")
 		else :
 			l = parameter.split("--")
-	
+		
 		if len(l) > 1 :
-			#program = l[0]
 			version = l[1]
 		else :
-			#program = None
 			version = l[0]
 		
 		minors = []
