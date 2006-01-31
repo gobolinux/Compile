@@ -11,11 +11,79 @@
 
 ### Changelog ###############################################################
 
+# 30/01/2005 - [detsch] reading default 'types' from config file
+# 25/01/2005 - [detsch] added 'FindPackage' function, accessable by other python scripts
 # 19/07/2004 - [detsch] moved most of code to 'GetAvailable'
 # 08/07/2004 - [detsch] First version, mostly based on Manager source code
 #
 
 from GetAvailable import *
+
+def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdirs=None, forceupdate=False, accessWeb=True, hook=None, availables=None) :
+	
+	if not types :
+		types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
+		if not types :
+			types=['local_package', 'official_package']
+		
+	#######################################################################
+	# Phase 1: Get available packages from the selected type(s)
+	#######################################################################	
+	if not availables or forceupdate : # can be used as a cache
+		availables = GetAvailable(types, localdirs, forceupdate=forceupdate, accessWeb = accessWeb, hook = hook)
+	
+	#######################################################################
+	# Phase 2: From returned structure, decide which items fit (based on p and v)
+	#######################################################################
+	relevant_items = []
+	for t in types :
+		if not t in availables.keys() :
+			continue
+			
+		matched_programs = [] # programs that match
+		for pname in availables[t]['programs'].keys() :
+			if substring :
+				if pname.lower().find(p.lower()) > -1 :
+					matched_programs.append(pname)
+			else :
+				if pname.lower() == p.lower() :
+					matched_programs.append(pname)
+					break
+		
+		for matched_program in matched_programs  :
+			if v :
+				if availables[t]['programs'][matched_program].has_key(v) :
+					for i in availables[t]['programs'][matched_program][v] :
+						relevant_items.append((matched_program,v,t,i))
+			else :
+				for fv in availables[t]['programs'][matched_program].keys() :
+					for i in availables[t]['programs'][matched_program][fv] :
+						relevant_items.append((matched_program,fv,t,i))
+						
+	#################################################################################
+	# Phase 3: Prepare the output, sorting if required
+	#################################################################################
+	del availables # Documentation: only the 'relevant_items' are used from now on
+	
+	if v :
+		if fulllist :
+			return relevant_items
+		else :
+			return relevant_items[0:1]
+	else :
+		from GuessLatest import GuessLatest
+		found_versions = map(lambda item:item[1], relevant_items)
+		toReturn = []
+		while relevant_items :
+			latest = GuessLatest(found_versions)
+			selected = [ item for item in relevant_items if item[1] == latest ][0]
+			toReturn.append(selected)
+			if not fulllist :
+				break
+			relevant_items.remove(selected)
+			found_versions.remove(latest)
+		return toReturn
+	
 
 if __name__ == '__main__' :
 	import sys
@@ -28,9 +96,8 @@ if __name__ == '__main__' :
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
-	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
-	types =  [ 'local_package', 'official_package' ]
-	typesChanged = False
+	validTypes = ['installed', 'local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	types = None
 	localdirs = None
 	fulllist = False
 	forceupdate = False
@@ -39,7 +106,7 @@ if __name__ == '__main__' :
 	
 	for o, a in opts :
 		if o in ['--types','--type', '-t'] :
-			typesChanged = True
+			#typesChanged = True
 			types = a.split(',')
 			for i in range(len(types)) :
 				if len (types[i]) == 1 :
@@ -60,7 +127,7 @@ if __name__ == '__main__' :
 			fulllist = True
 		elif o in ['--no-web', '-W'] :
 			noWeb = True
-			if not typesChanged :
+			if not types :
 				types =  [ 'local_package' ]
 		elif o in ['--help', '-h'] :
 			print """
@@ -133,74 +200,13 @@ Examples of usage:
 			pass
 	except :
 		pass
-		
-	availables = GetAvailable(types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)
-
-	l = []
-	#print availables
-	for t in types :
-		if not t in availables.keys() :
-			continue
-			
-		if substring :
-			matched = [] # programs that match
-			for pname in availables[t]['programs'].keys() :
-				if pname.lower().find(p.lower()) > -1 :
-					matched.append(pname)
-		else :
-			if availables[t]['programs'].has_key(p) :
-				matched = [p]
-			else :
-				matched = []
-		
-		for match in matched  :
-			if v :
-				if availables[t]['programs'][match].has_key(v) :
-					for i in availables[t]['programs'][match][v] :
-						l.append((v,i))
-			else :
-				for fv in availables[t]['programs'][match].keys() :
-					for i in availables[t]['programs'][match][fv] :
-						l.append((fv,i))
 	
-	
-	if fulllist :
-		if v :
-			for version, site in l :
-				print site
-		else :
-			from GuessLatest import GuessLatest
-
-			while l :
-				versions = []
-				for version, site in l :
-					versions.append(version)
-				
-				lastest = GuessLatest(versions)
-				for version, site in l :
-					if version == lastest :
-						print site
-						l.remove((version, site))
-			
-		sys.exit(0)
+	returned = FindPackage(p, v, fulllist, substring, types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)	
+	if returned :
+		for program, version, t, site in returned :
+			print site
+		sys.exit(0)	
 	else :
-		if v :
-			if len(l) >= 1 :
-				print l[0][1]
-				sys.exit(0)
-			else :
-				sys.exit(1)
-		else :
-			from GuessLatest import GuessLatest
+		sys.exit(1)		
 
-			versions = []
-			for version, site in l :
-				versions.append(version)
-			
-			lastest = GuessLatest(versions)
-			for version, site in l :
-				if version == lastest :
-					print site
-					sys.exit(0)
-			sys.exit(1)
 
