@@ -4,6 +4,7 @@
 
 ### Changelog ###############################################################
 
+# 30/01/2005 - [detsch] Simplified due to addition of installed at GetAvailable
 # 08/07/2004 - [detsch] First version
 #
 
@@ -14,23 +15,10 @@ from GetAvailable import *
 from GetInstalled import *
 from GuessLatest import *
 
-def applyFilter(installed, availables, filter_rule, report_missing = False) :
-	availables['installed'] = {}
-	availables['installed']['programs'] = KeyInsensitiveDict()
-	for p in installed.keys() :
-		availables['installed']['programs'][p] = {}
-		for v in installed[p]['versions'] :
-			availables['installed']['programs'][p][v] = []
-	
-	p1 = []
-	for i in filter_rule[0] :
-		p1.append(i)
-
+def applyFilter(availables, filter_rule, report_missing = False) :
+	p1 = filter_rule[0][:]
 	op = filter_rule[1]
-	
-	p2 = []
-	for i in filter_rule[2] :
-		p2.append(i)
+	p2 = filter_rule[2][:]
 	
 	toReturn = []
 	
@@ -46,7 +34,6 @@ def applyFilter(installed, availables, filter_rule, report_missing = False) :
 			if p.lower() not in rightPrograms :
 				rightPrograms.append(p.lower())
 	
-				
 	for p in leftPrograms :
 		if p in rightPrograms :
 			leftLatestVersion = '0'
@@ -65,7 +52,7 @@ def applyFilter(installed, availables, filter_rule, report_missing = False) :
 			
 			latestVersion = GuessLatest([leftLatestVersion,rigthLatestVersion]) 
 			
-			if  rigthLatestVersion  == leftLatestVersion :
+			if rigthLatestVersion == leftLatestVersion :
 				if '=' in op:
 					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' = '+string.ljust(rigthLatestVersion,8))
 			
@@ -161,9 +148,8 @@ Examples of usage:
 				if l[i] == t[0] :
 					l[i] = t
 	
-	
 	for t in filter_rule[0] + filter_rule[2] :
-		if not t in validTypes + ['installed'] :
+		if not t in validTypes :
 			print 'Invalid type:',t
 			
 			print 'Valid types are:',validTypes+['installed']
@@ -176,11 +162,9 @@ Examples of usage:
 		goboPrograms = os.environ['goboPrograms']
 	except :
 		goboPrograms = os.popen('. GoboPath; echo -n $goboPrograms').read()
-	installed = GetInstalled(goboPrograms)
-	
 
 	#filter_rule = ['recipe', '<', 'installed']
-	l = applyFilter(installed, availables, filter_rule, reportmissing)
+	l = applyFilter(availables, filter_rule, reportmissing)
 	l.sort()
 	for i in l:
 		print i
