@@ -18,10 +18,6 @@ import os.path, sys, string, time, os, threading
 
 from PythonUtils import *
 
-#removing files from old cachedir
-os.system('rm -rf ~/.Scripts/available_cache &> /dev/null')
-os.system('rmdir ~/.Scripts/ &> /dev/null')
-
 cacheDir = os.path.expanduser('~/.Settings/cache/')
 
 def loadConfig() :
@@ -168,7 +164,7 @@ def UpdateCache(types, force = True, hook = None) :
 
 def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 	import os, os.path
-
+	
 	if not d :
 		d = KeyInsensitiveDict();
 	
@@ -179,7 +175,6 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 
 	for i in range(len(programs)) :
 		p = programs[i]
-		
 		if p == 'Linux' and requireCurrent :
 			continue
 		
@@ -308,6 +303,14 @@ def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, avai
 	if not availables :
 		availables = {}
 	
+	if 'installed' in types :
+		path = getGoboVariable('goboPrograms')
+		if not availables.has_key('installed') or not availables['installed'] :
+			availables['installed'] = {}
+		if not availables['installed'].has_key('programs') or not availables['installed']['programs']:
+			availables['installed']['programs'] = KeyInsensitiveDict()			
+		getUnpackedLocalPackages(path, True, availables['installed']['programs'])
+	
 	if 'local_package' in types :
 		if not availables.has_key('local_package') or not availables['local_package'] :
 			availables['local_package'] = {}
@@ -394,12 +397,12 @@ if __name__ == '__main__' :
 	import getopt, os
 
 	try :
-		opts, args = getopt.getopt(sys.argv[1:], 't:Wh', ['types=', 'local-dirs=', 'full-list', 'force-update', 'no-web', 'help'])
+		opts, args = getopt.getopt(sys.argv[1:], 't:Wh', ['type=', 'types=', 'local-dirs=', 'full-list', 'force-update', 'no-web', 'help'])
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
 
-	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'installed', 'all']
 	types      = [ 'local_package', 'official_package' ]
 	typesChanged = False
 	localdirs = None
