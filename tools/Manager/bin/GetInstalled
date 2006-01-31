@@ -16,13 +16,23 @@ from PythonUtils import *
 
 # just for progress indication (updated in runtime)
 linksAtSystemLinks = 25000
-def GetInstalled(path, detectUnlinked = False, callback = consoleProgressHook, dict = None) :
+def GetInstalled(programName = None, path = None, detectUnlinked = False, callback = None, dict = None) :
+	if not path :
+		try :
+			path = os.environ['goboPrograms']
+		except :
+			path = os.popen('. GoboPath; echo -n $goboPrograms').read()
+	
 	if dict :
 		toReturn = dict
 	else :
 		toReturn = KeyInsensitiveDict()
 
 	programs = os.listdir(path)
+	if programName :
+		programName_lower = programName.lower()
+		programs = [p for p in programs if p.lower() == programName_lower ]
+	
 	programs = caseinsensitive_sort(programs)
 	otherCaptionVersions = []
 
@@ -46,17 +56,18 @@ def GetInstalled(path, detectUnlinked = False, callback = consoleProgressHook, d
 			if i >= linksAtSystemLinks :
 				linksAtSystemLinks = i + 10
 				
-			abort = callback('Building links list', i, linksAtSystemLinks)
-			if abort :
-				linksList = ''
-				break
+			if callback :
+				abort = callback('Building links list', i, linksAtSystemLinks)
+				if abort :
+					linksList = ''
+					break
 		
 	for i in range(len(programs)) :
-		abort = callback('Scanning installed programs', i, len(programs))
-	
-		if abort :
-			toReturn = {}
-			break
+		if callback :
+			abort = callback('Scanning installed programs', i, len(programs))
+			if abort :
+				toReturn = {}
+				break
 
 		p = programs[i]
 
@@ -105,7 +116,8 @@ def GetInstalled(path, detectUnlinked = False, callback = consoleProgressHook, d
 		toReturn[p]['currents'] = currents
 		toReturn[p]['unlinkeds'] = unlinkeds
 	
-	callback('', len(programs), len(programs))
+	if callback :
+		callback('', len(programs), len(programs))
 	
 	return toReturn
 
@@ -131,7 +143,7 @@ if __name__ == '__main__' :
 			detectUnlinked = True
 		elif o in [ '--help', '-h' ] :
 			print """
-GetInstalled
+GetInstalled [program-name]
  List installed packages
  
 
@@ -141,17 +153,18 @@ Options:
 
 Examples of usage:
  GetInstalled
+ GetInstalled tetex
  GetInstalled --detect-unlinked
  
  """
 			sys.exit(0)
 			
-	try :
-		goboPrograms = os.environ['goboPrograms']
-	except :
-		goboPrograms = os.popen('. GoboPath; echo -n $goboPrograms').read()
+	if len(args) >= 1 :
+		p = args[0]
+	else :
+		p = None
 	
-	d = GetInstalled(goboPrograms, detectUnlinked)
+	d = GetInstalled(p, detectUnlinked,callback=consoleProgressHook)
 	ps = d.keys()
 	ps.sort()
 	for p in ps :

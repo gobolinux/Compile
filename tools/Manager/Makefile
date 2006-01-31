@@ -22,13 +22,20 @@ $(LIB_DIR)/ManagerConfigForm.py: $(GUI_DIR)/ManagerConfigForm.ui
 	pyuic $? > $@
 
 
-libs : $(LIB_DIR)/GetInstalled.py $(LIB_DIR)/ManagerRunner.py compilation
+libs : $(LIB_DIR)/GetInstalled.py $(LIB_DIR)/DescribeProgram.py $(LIB_DIR)/ManagerRunner.py $(LIB_DIR)/CheckDependencies.py compilation
+
 
 $(LIB_DIR)/GetInstalled.py : $(BIN_DIR)/GetInstalled
 	cd $(LIB_DIR) && ln -sfn ../../../bin/GetInstalled ./GetInstalled.py
 
+$(LIB_DIR)/DescribeProgram.py : $(BIN_DIR)/DescribeProgram
+	cd $(LIB_DIR) && ln -sfn ../../../bin/DescribeProgram ./DescribeProgram.py
+
 $(LIB_DIR)/ManagerRunner.py : $(BIN_DIR)/ManagerRunner
 	cd $(LIB_DIR) && ln -sfn ../../../bin/ManagerRunner ./ManagerRunner.py
+
+$(LIB_DIR)/CheckDependencies.py: $(BIN_DIR)/CheckDependencies
+	cd $(LIB_DIR) && ln -sfn ../../../bin/CheckDependencies ./CheckDependencies.py
 	
 compilation :
 	DirPythonCompile $(LIB_DIR)

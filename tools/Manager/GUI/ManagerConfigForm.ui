@@ -8,8 +8,8 @@
         <rect>
             <x>0</x>
             <y>0</y>
-            <width>460</width>
-            <height>373</height>
+            <width>482</width>
+            <height>391</height>
         </rect>
     </property>
     <property name="caption">
@@ -48,7 +48,7 @@
                             <property name="name">
                                 <cstring>unnamed</cstring>
                             </property>
-                            <widget class="QCheckBox" row="1" column="0" rowspan="1" colspan="2">
+                            <widget class="QCheckBox" row="0" column="0" rowspan="1" colspan="2">
                                 <property name="name">
                                     <cstring>dontSplitDownload</cstring>
                                 </property>
@@ -56,12 +56,12 @@
                                     <string>Do not split download and processing of recipes/packages</string>
                                 </property>
                             </widget>
-                            <widget class="QLineEdit" row="2" column="1">
+                            <widget class="QLineEdit" row="1" column="1">
                                 <property name="name">
                                     <cstring>defaultCreatePackageDirectory</cstring>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="2" column="0">
+                            <widget class="QCheckBox" row="1" column="0">
                                 <property name="name">
                                     <cstring>useDefaultCreatePackageDirectory</cstring>
                                 </property>
@@ -69,7 +69,7 @@
                                     <string>CreatePackage default path</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="2">
+                            <widget class="QCheckBox" row="2" column="0" rowspan="1" colspan="2">
                                 <property name="name">
                                     <cstring>keepDownloadedPackages</cstring>
                                 </property>
@@ -80,12 +80,28 @@
                                     <string>Allways keep downloaded packages</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
+                            <widget class="QCheckBox" row="3" column="0" rowspan="1" colspan="2">
                                 <property name="name">
                                     <cstring>noWeb</cstring>
                                 </property>
                                 <property name="text">
                                     <string>Do not access the Web</string>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>autoDependencies</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Allways insert dependencies in the queue</string>
+                                </property>
+                            </widget>
+                            <widget class="QCheckBox" row="5" column="0" rowspan="1" colspan="2">
+                                <property name="name">
+                                    <cstring>allwaysUpdate</cstring>
+                                </property>
+                                <property name="text">
+                                    <string>Allways try to update (not only satisfy) dependencies</string>
                                 </property>
                             </widget>
                         </grid>

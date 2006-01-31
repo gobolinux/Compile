@@ -33,6 +33,7 @@ from GetInstalled      import GetInstalled
 from GetAvailable      import GetAvailable, getGoboVariable
 from GenericEditor     import *
 from PythonUtils       import *
+from CheckDependencies import *
 
 goboPrograms = getGoboVariable('goboPrograms')
 goboShared   = getGoboVariable('goboShared')
@@ -168,7 +169,7 @@ class ManagerUIImpl(ManagerUI) :
 		for i in range(self.commandsQueue.count()) :
 			cmds.append(str(self.commandsQueue.text(i)))
 		for cmd in cmds :
-			ret += cmd+' #'+ self.programsAtQueue[cmd] +'\n'
+			ret += cmd+' #'+ str(self.programsAtQueue[cmd]) +'\n'
 		return ret
 		
 	def openCommands(self) : #
@@ -282,6 +283,8 @@ class ManagerUIImpl(ManagerUI) :
 		(self.configWindow.keepDownloadedPackages,           False),
 		(self.configWindow.useCompatibilityModeInteraction,  False),
 		(self.configWindow.noWeb,                            False),
+		(self.configWindow.autoDependencies,                 True),
+		(self.configWindow.allwaysUpdate,                    False),
 		(self.configWindow.threadsBandwidth,                 1),
 		(self.configWindow.threadsCPU,                       1),
 		(self.configWindow.threadsOther,                     1),
@@ -531,7 +534,7 @@ class ManagerUIImpl(ManagerUI) :
 			return
 		
 		if self.needToUpdateInstalled :
-			temp = GetInstalled(goboPrograms, self.detectUnlinkedAction.isOn(), graphicalProgressHook)
+			temp = GetInstalled(detectUnlinked=self.detectUnlinkedAction.isOn(), callback=graphicalProgressHook)
 			if temp or not self.installed :
 				self.installed = temp
 			self.needToUpdateInstalled = 0
@@ -741,16 +744,18 @@ class ManagerUIImpl(ManagerUI) :
 		self.descriptionDone = 0
 
 		p, v = self.getLeftProgramAndVersion()
+		t = self.getSelectedType()
+	
 		p = GuessProgramCase(p,v)
 		if not p :
 			p = str(item.text(0))
 		
-		self.getSelectedProgramsAndVersions()
+		#self.getSelectedProgramsAndVersions() why was this here??
 		
 		infoTitle = p
 		if v :
 			infoTitle = infoTitle + ' ' + v
-		t = self.getSelectedType()
+		
 		if t :
 			T = string.capwords(string.replace(t, '_',' '))
 			infoTitle = infoTitle + ' (' + T + ')'
@@ -770,27 +775,41 @@ class ManagerUIImpl(ManagerUI) :
 				
 			methods.append(updateDescription)
 			
-		if self.installed.has_key(p) :
+		if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
 			def updateDependencies(p,v,t) :
 				if v :
 					d = v
 				else :
 					d = 'Current'
-				if os.access(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies', os.R_OK) :
-					add = '<p><font color="#000077"><b>['+'Dependencies'+'] </b></font><br>'
-					
-					f = open(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies')
-					lines = f.readlines()
-					f.close()
-					for line in lines :
-						add = add + '<font color="#000000">'+line.strip()+'</font><br>'
-					if not lines :
-						add = add + '<font color="#000000">'+'-'+'</font><br>'
-					add = add + '</p>'
-					return add
-				return ''
+				
+				ret = ListDependencies(p,v,t,None,mode='html', report_missing=True, report_updating=True,recursive=True)
+				if not ret.strip() :
+					return ''
+				return ret
 				
 			methods.append(updateDependencies)
+			
+		#if self.installed.has_key(p) :
+			#def updateDependencies(p,v,t) :
+				#if v :
+					#d = v
+				#else :
+					#d = 'Current'
+				#if os.access(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies', os.R_OK) :
+					#add = '<p><font color="#000077"><b>['+'Dependencies'+'] </b></font><br>'
+					
+					#f = open(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies')
+					#lines = f.readlines()
+					#f.close()
+					#for line in lines :
+						#add = add + '<font color="#000000">'+line.strip()+'</font><br>'
+					#if not lines :
+						#add = add + '<font color="#000000">'+'-'+'</font><br>'
+					#add = add + '</p>'
+					#return add
+				#return ''
+				
+			#methods.append(updateDependencies)
 					
 		if self.getSelectedType() == 'installed' :
 			def updateSize(p,v,t) :
@@ -865,7 +884,7 @@ class ManagerUIImpl(ManagerUI) :
 				data[0]()
 	
 	def helpAbout(self) :
-		QMessageBox.about(self, 'About', 'Manager 1.1.0\n(C) 2004-2005 Andre Detsch.\nReleased under the GNU GPL.')
+		QMessageBox.about(self, 'About', 'Manager 1.1.0\n(C) 2004-2006 Andre Detsch.\nReleased under the GNU GPL.')
 			
 	################################################################################################
 	# Management commands
@@ -903,7 +922,63 @@ class ManagerUIImpl(ManagerUI) :
 			cmds.append('NewVersion '+p+' '+v+' && '+' nice Compile '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
-		
+	
+	def addCommandsForDependencies(self, p,v,t,u, cmds,apps, justDownload) :
+		if (self.configWindow.autoDependencies.isChecked()) :
+			
+			if self.configWindow.allwaysUpdate.isChecked() :
+				mode='updating'
+			else :
+				mode='missing'
+				
+			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode)
+				
+			tr = []
+			for c in sols :
+				pp, vv, tt, uu = c
+				if tt == 'recipe' :
+					self.addCommandsForCompile(pp,vv,tt,uu,cmds,apps,justDownload)
+				elif tt in [ 'local_package', 'official_package', 'contrib_package' ] :
+					self.addCommandsForInstallPackage(pp,vv,tt,uu,cmds,apps,justDownload)
+				else :
+					assert(False)
+		#TODO: add questions on else here
+	
+	def addCommandsForInstallPackage(self, p,v,kind,path,cmds,apps,justDownload=False) :
+		if justDownload :
+			cmds.append('InstallPackage -I '+path)
+			apps.append(p)
+		else :
+			if not self.configWindow.dontSplitDownload.isChecked() and kind in ['official_package', 'contrib_package'] :
+				packageName = path[path.rfind('/')+1:]
+				location = getGoboVariable('defaultLocalPackagesPaths', 'Scripts/GetAvailable.conf', True)[0]
+				localpath = location+'/'+packageName
+				cmds.append('InstallPackage -I '+path)
+				apps.append(p)
+				cmds.append('InstallPackage --no-dependencies '+localpath)
+				apps.append(p)
+			else :
+				if kind in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked() :
+					add = ' --keep '
+				else :
+					add = ''
+				cmds.append('InstallPackage --no-dependencies '+add+path)
+				apps.append(p)
+							
+	def addCommandsForCompile(self, p,v,kind,path, cmds,apps, justDownload=False) :
+		if justDownload :
+			cmds.append('Compile -B '+p+' '+v)
+			apps.append(p)
+		else :
+			if self.configWindow.dontSplitDownload.isChecked() :
+				cmds.append('nice Compile '+p+' '+v)
+				apps.append(p)
+			else :
+				cmds.append('Compile -B '+p+' '+v)
+				apps.append(p)
+				cmds.append('nice Compile -W '+p+' '+v)
+				apps.append(p)
+	
 	def doInstallPackage(self, justDownload = False) :
 		pvs = self.getSelectedProgramsAndVersions()
 		types = self.getSelectedTypes()
@@ -912,29 +987,9 @@ class ManagerUIImpl(ManagerUI) :
 		
 		for ((p,v),kind) in zip(pvs,types) :
 			assert kind in ['local_package', 'official_package', 'contrib_package']
-			
 			path = self.availables[kind]['programs'][p][v][0]
-			
-			if justDownload :
-				cmds.append('InstallPackage -I '+path)
-				apps.append(p)
-			else :
-				if not self.configWindow.dontSplitDownload.isChecked() and kind in ['official_package', 'contrib_package'] :
-					packageName = path[path.rfind('/')+1:]
-					location = getGoboVariable('defaultLocalPackagesPaths', 'Scripts/GetAvailable.conf', True)[0]
-					localpath = location+'/'+packageName
-					
-					cmds.append('InstallPackage -I '+path)
-					apps.append(p)
-					cmds.append('InstallPackage '+localpath)
-					apps.append(p)
-				else :
-					if kind in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked() :
-						add = ' --keep '
-					else :
-						add = ''
-					cmds.append('InstallPackage '+add+path)
-					apps.append(p)
+			self.addCommandsForDependencies(p,v,kind,path, cmds,apps, justDownload)
+			self.addCommandsForInstallPackage(p,v,kind,path, cmds,apps, justDownload)
 			
 		self.do(cmds, apps)
 		
@@ -946,14 +1001,8 @@ class ManagerUIImpl(ManagerUI) :
 		apps = []
 		for p, v in self.getSelectedProgramsAndVersions() :
 			assert p
-			if self.configWindow.dontSplitDownload.isChecked() :
-				cmds.append('nice Compile '+p+' '+v)
-				apps.append(p)
-			else :
-				cmds.append('Compile -B '+p+' '+v)
-				apps.append(p)
-				cmds.append('nice Compile -W '+p+' '+v)
-				apps.append(p)
+			self.addCommandsForDependencies(p,v,'recipe',None, cmds,apps,False)
+			self.addCommandsForCompile(p,v,'recipe',None,cmds,apps,False)
 		self.do(cmds, apps)
 	
 	def doFetchRecipe(self) :
@@ -961,8 +1010,8 @@ class ManagerUIImpl(ManagerUI) :
 		apps = []
 		for p, v in self.getSelectedProgramsAndVersions() :
 			assert p
-			cmds.append('Compile -B '+p+' '+v)
-			apps.append(p)
+			self.addCommandsForDependencies(p,v,'recipe',None, cmds,apps, True)
+			self.addCommandsForCompile(p,v,'recipe',None,cmds,apps,True)
 		self.do(cmds, apps)
 
 	def doDisableProgram(self) :
@@ -1064,6 +1113,34 @@ class ManagerUIImpl(ManagerUI) :
 			if not self.runningModules[module]["running"] :
 				started = self.runNextCommand(self.runningModules[module]["logger"], self.runningModules[module])
 	
+	
+	def canThisModuleRunThisCommand(self, runningModule, cmd, blockedPrograms) :
+		match = re.search(runningModule["commands"], cmd)
+		
+		p = self.programsAtQueue[cmd]
+		# if the program is not blocked
+		if p not in blockedPrograms and "<BLOCK>" not in blockedPrograms:
+			# if the command fits the running module tasks group (e.g. Compilation)
+			if match and not runningModule["inverse_regex"] or not match and runningModule["inverse_regex"] :
+				if runningModule['name'][:len('Compilation')] != 'Compilation' : 
+					print 'is not compile!'+runningModule['name']
+					return True
+				else :
+					print 'is Ccompile!'+runningModule['name']
+					# When dealing with compilation, all dependencies must have its order respected, 
+					#  so we cannot compile x before y is x depends on y. Not true for binary packages.
+					for pp in blockedPrograms :
+						l = cmd.split() 
+						v = l[-1] # .* Compile .* <program> <version>
+						if does_x_depend_on_y((p, v, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'] ) :
+							print p,v,'recipe','DOES! depend on',pp
+							return False
+						else :
+							print p,v,'recipe','does not depend on',pp
+					return True
+		return False
+		
+	
 	def runNextCommand(self, logger, runningModule) :
 		import re
 		if self.commandsQueue.count() == 0 :
@@ -1071,28 +1148,29 @@ class ManagerUIImpl(ManagerUI) :
 			return False
 		
 		blockedPrograms= self.programsOnRun.values()[:]
+		
+		#for each command at the queue
 		for i in range(self.commandsQueue.count()) :
 			cmd = str(self.commandsQueue.text(i))
-			match = re.search(runningModule["commands"], cmd)
-			if self.programsAtQueue[cmd] not in blockedPrograms and "<BLOCK>" not in blockedPrograms:
-				if match and not runningModule["inverse_regex"] or not match and runningModule["inverse_regex"] :
-					current = runningModule['logger'].getFocusedTabName()
-					if current[-2:] == " *":
-						current = current[:-2]
-					
-					if not self.runningModules[current]['running'] :
-						runningModule['logger'].setFocus()
-					
-					self.programsOnRun[cmd] = self.programsAtQueue[str(self.commandsQueue.text(i))]
-					del(self.programsAtQueue[str(self.commandsQueue.text(i))])
-					self.commandsQueue.removeItem(i)
-					self.initiateCommandThread(cmd, logger, runningModule)
-					runningModule["running"] = True
-					self.enableOrDisableQueueActions()
-					self.autoSaveQueue()
-					return True
-				else :
-					blockedPrograms.append(self.programsAtQueue[cmd])
+			
+			if self.canThisModuleRunThisCommand(runningModule, cmd, blockedPrograms) :
+				current = runningModule['logger'].getFocusedTabName()
+				if current[-2:] == " *": # ' *' marks a running module tab
+					current = current[:-2]
+				
+				if not self.runningModules[current]['running'] :
+					runningModule['logger'].setFocus()
+				
+				self.programsOnRun[cmd] = self.programsAtQueue[str(self.commandsQueue.text(i))]
+				del(self.programsAtQueue[str(self.commandsQueue.text(i))])
+				self.commandsQueue.removeItem(i)
+				self.initiateCommandThread(cmd, logger, runningModule)
+				runningModule["running"] = True
+				self.enableOrDisableQueueActions()
+				self.autoSaveQueue()
+				return True
+			else :
+				blockedPrograms.append(self.programsAtQueue[cmd])
 		
 		runningModule["running"] = False
 		return runningModule["running"]
@@ -1198,6 +1276,12 @@ def graphicalProgressHook(label, i, n, showWhenChanged = True) :
 	ret = progress.wasCancelled()
 	qApp.unlock()
 	return ret
+
+def updateOnlyHook(label=None, i=0, n=0, showWhenChanged = True) :
+	qApp.lock()
+	print 'hook'
+	qApp.processEvents()
+	qApp.unlock()
 
 widget = ManagerUIImpl()
 qApp.setMainWidget(widget)
