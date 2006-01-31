@@ -285,11 +285,11 @@ then
    Log_Normal "Package Signature Verified"
 elif [ $result -eq 2 ]
 then
-   Log_Normal "GnuPG not installed.  Unable to verify signature"
+   Log_Question "GnuPG not installed.  Unable to verify signature"
    Ask_Continue "Continue install?"
 elif [ $result -eq 4 ] || [ $result -eq 5 ] 
 then
-   Log_Normal "No signature.  Unable to verify package"
+   Log_Question "No signature.  Unable to verify package"
    Ask_Continue "Continue install?"
 elif [ $result -eq 1 ] || [ $result -eq 3 ] 
 then
