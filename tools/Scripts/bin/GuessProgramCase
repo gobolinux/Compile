@@ -1,58 +1,69 @@
-#!/usr/bin/python
+#!/bin/bash
 
-# (C) 2004 Andre Detsch. Released under the GNU GPL.
+# (C) 2004-2006 Andre Detsch. Released under the GNU GPL.
 
 # GuessProgramCase
 # Try to guess the case of a program based on the installed packages
 
 ### Changelog ########################################################
 
-# 27/04/2004 - [detsch] Bugfix on when calling from command line
+# 25/01/2005 - [detsch] Ported to bash
+# 27/04/2004 - [detsch] Bugfix when calling from command line
 # 13/04/2004 - [detsch] Using ${goboPrograms}
 # 10/04/2004 - [detsch] First version
 
 
+if [ $# -lt 1 -o "$1" = "--help" -o  "$1" = "-h" ]
+then
+	echo "Usage: `basename $0` program_name [version]"
+	exit 1
+fi
 
-def GuessProgramCase(program, version = None) :
-	import os
-	try :
-		goboPrograms = os.environ['goboPrograms']
-	except :
-		goboPrograms = os.popen('. GoboPath; echo -n $goboPrograms').read()
+program="$1"
+version="$2"
+
+. GoboPath
+
+if [ -e "$goboPrograms/$program/$version" ]
+then
+	# Case 1: we have a perfect match (version can be "")
+	echo $program
+else 
+	pushd $goboPrograms &> /dev/null
+	ds=`find . -maxdepth 1 -iname "$program" | cut -b3-`
+	popd &> /dev/null
 	
-	if version :
-		if os.access(goboPrograms+'/'+program+'/'+version, os.R_OK) :
-			return program
-	else :
-		if os.access(goboPrograms+'/'+program, os.R_OK) :
-			return program
-
-	p = program.lower()
-	ds = [ d for d in os.listdir(goboPrograms) if d.lower() == p ]
-	
-	if len(ds) == 0 :
-		return program
-	elif len(ds) == 1 :
-		return ds[0]
-	
-		
-	for d in ds :
-		if version :
-			if os.access(goboPrograms+'/'+d+'/'+version, os.R_OK) :
-				return d
-		else :
-			if os.access(goboPrograms+'/'+d, os.R_OK) :
-				return d
-	
-	return program
-
-
-if __name__ == '__main__' :
-	import sys
-	if len(sys.argv) < 2 :
-		print "Usage: %s program_name [version]"%sys.argv[0]
-	elif len(sys.argv) == 2 :
-		print GuessProgramCase(sys.argv[1])
-	else :
-		print GuessProgramCase(sys.argv[1], sys.argv[2])
-
+	if [ `echo $ds | wc -w` = "1" ]
+	then
+		# Case 2: there is only one matching program installed
+		echo $ds
+	elif [ `echo $ds | wc -w` = "0" ]
+	then
+		# Case 3: there is no matching program installed (should GetAvailable be called?)
+		echo $program
+	elif [ ! "$version" ]
+	then
+		tokens=($ds) # WTF?
+		# Case 4: there is more than one matching program, and we DON'T care about version
+		echo ${tokens[0]}
+	else 	
+		found=
+		for d in $ds
+		do
+			if [ -e "$goboPrograms/$d/$version" ] 
+			then
+				# Case 5: We found a matching program + desired version
+				echo $d
+				found=1
+				break
+			fi
+		done
+		if [ ! "$found" ]
+		then
+			tokens=($ds) 
+			# Case 5: We did not found a matching version, so we return any matching 
+			#         program (should GuessLatest be called?)
+			echo ${tokens[0]}
+		fi
+	fi
+fi
