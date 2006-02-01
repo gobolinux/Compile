@@ -54,8 +54,6 @@ export PS1="\[\033[0;36m\]\u\[\033[1m\]@\[\033[0;36m\]\h \[\033[1m\]\w]\[\033[0m
 export PAGER=less
 export LESS=-MQi
 export LESSCHARSET=latin1
-export EDITOR=mcedit
-export VISUAL=$EDITOR
 export HISTCONTROL=ignoredups
 
 
