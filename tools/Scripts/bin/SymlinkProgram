@@ -155,11 +155,9 @@ function link_directory() {
          LinkOrExpandAll "$rfrom" "$overwrite" "$relative"
       else
          Log_Error "LinkOrExpandAll not found.  Fallback to python code."
+         Boolean "relative" && relative="True" || relative="False"         
          Link_Or_Expand_All "$rfrom" "$overwrite" "$relative"
-
       fi
-      #Boolean "relative" && relative="True" || relative="False"
-
       cd "$here"
    else
       Quiet rmdir "$rfrom"
