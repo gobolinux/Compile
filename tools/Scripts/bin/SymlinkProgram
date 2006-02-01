@@ -140,7 +140,6 @@ function link_directory() {
    Parameters "$@" from to
    local rfrom here j
 
-   
    rfrom=`readlink -f "$from"`
 
    if ! Is_Empty_Directory "$rfrom"
@@ -148,15 +147,14 @@ function link_directory() {
       here=`readlink -f "$to"`
       [ -d "$here" ] || mkdir "$here"
       cd "$here"
-      if Boolean "relative" 
-      then
-         relative="True"
-         #detsch, 20/12/2004 -> the following line lead to bad behaviour..
-         #rfrom=$from
-      else
-         relative="False"
-      fi
-      Link_Or_Expand_All "$rfrom" `Entry "conflict"` "$relative"
+
+      Boolean "relative" && relative="--relative" || relative=""
+      [ `Entry "conflict"` = "overwrite" ] && overwrite="--overwrite" || overwrite=""
+      LinkOrExpandAll "$rfrom" $overwrite $relative
+
+      #Boolean "relative" && relative="True" || relative="False"
+      #Link_Or_Expand_All "$rfrom" `Entry "conflict"` 
+
       cd "$here"
    else
       Quiet rmdir "$rfrom"
@@ -488,5 +486,10 @@ fi
 
 ################################################################################
 
+Log_Normal "Waiting for background tasks..."
+
 wait
+
+Log_Normal "Done."
+
 exit 0

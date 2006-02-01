@@ -45,6 +45,7 @@ Add_Option_Boolean "d" "devel-version" "Obsoleted"
 Add_Option_Entry   "n" "new-version" "Obsoleted" ""
 Add_Option_Boolean "k" "keep" "Obsoleted"
 Add_Option_Boolean "S" "no-sign" "Do not sign package"
+Add_Option_Boolean "V" "no-verify" "Do not verify package"
 Add_Option_Entry   "t" "target-dir" "Create the package archive inside the passed directory (instead of '.')" ""
 
 Parse_Options "$@"
@@ -108,19 +109,22 @@ fi
 
 verify_opts=""
 Boolean "verbose" && verify_opts="--verbose $verify_opts"
-VerifyProgram $verify_opts "$package" "$versionnumber"
-result="$?"
-if [ $result -eq 0 ]
+if ! Boolean "no-verify"
 then
-   Set_Boolean "no-sign"	# Use existing signature
-elif [ $result -eq 2 ]
-then
-   Set_Boolean "no-sign"	# No GnuPG.  Can't resign
-elif [ $result -eq 4 ] || [ $result -eq 5 ]
-then
-   Boolean "no-sign" || Ask_Continue "No existing sig.  Re-sign?"
-else
-   Die "Unable to verify package.  Do not redistribute"
+   VerifyProgram $verify_opts "$package" "$versionnumber"
+   result="$?"
+   if [ $result -eq 0 ]
+   then
+      Set_Boolean "no-sign"	# Use existing signature
+   elif [ $result -eq 2 ]
+   then
+      Set_Boolean "no-sign"	# No GnuPG.  Can't resign
+   elif [ $result -eq 4 ] || [ $result -eq 5 ]
+   then
+      Boolean "no-sign" || Ask_Continue "No existing sig.  Re-sign?"
+   else
+      Die "Unable to verify package.  Do not redistribute"
+   fi
 fi
 
 writegpgwarning=""
