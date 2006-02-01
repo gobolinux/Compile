@@ -150,10 +150,15 @@ function link_directory() {
 
       Boolean "relative" && relative="--relative" || relative=""
       [ `Entry "conflict"` = "overwrite" ] && overwrite="--overwrite" || overwrite=""
-      LinkOrExpandAll "$rfrom" $overwrite $relative
+      if [ `type -p LinkOrExpandAll` ]
+      then
+         LinkOrExpandAll "$rfrom" "$overwrite" "$relative"
+      else
+         Log_Error "LinkOrExpandAll not found.  Fallback to python code."
+         Link_Or_Expand_All "$rfrom" "$overwrite" "$relative"
 
+      fi
       #Boolean "relative" && relative="True" || relative="False"
-      #Link_Or_Expand_All "$rfrom" `Entry "conflict"` 
 
       cd "$here"
    else
