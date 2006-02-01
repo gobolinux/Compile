@@ -246,7 +246,7 @@ static void Link_Or_Expand(char* new) {
    // if name of new is not being used, or is used by a broken link...
    if (access(bn, R_OK) != OK) {
       // if is a broken link, remove it
-      if (!os_path_islink(bn)) {
+      if (os_path_islink(bn)) {
          unlink(bn);
       }
       realold[0] = '\0';
