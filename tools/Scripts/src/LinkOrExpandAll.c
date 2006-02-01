@@ -1,3 +1,11 @@
+/*
+ * LinkOrExpandAll
+ * port to C by Hisham Muhammad, 2006
+ * based on port to Python by Andre Detsch, 2004
+ * based on bash original by Hisham Muhammad, 2002?
+ *
+ * Released under the GNU GPL v.2 or later.
+ */
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -231,14 +239,16 @@ static void Link_Or_Expand(char* new) {
       char buffer[1024];
       char* walk = buffer;
       for (int i = 0; i < 10; i++) {
-         strncpy(walk, "../", 1023 - (buffer-walk));
+         strncpy(walk, "../", 1024 - (walk-buffer));
          walk += 3;
-         strncpy(walk, candidate, 1023 - (buffer-walk));
+         strncpy(walk, candidate, 1024 - (walk-buffer));
          if (access(buffer, W_OK) == OK) {
-            relativeGoboPrograms = strdup(candidate);
+            relativeGoboPrograms = strdup(buffer);
+            break;
          }
       }
    }
+   fprintf(stderr, "relativeGoboPrograms = %s\n", relativeGoboPrograms);
    char* realnew = points_to(new);
    char* bn = strdup(basename(new));
    char realold[PATH_MAX];
