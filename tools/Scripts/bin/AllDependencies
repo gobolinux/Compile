@@ -1,10 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-#                       Initial Changelog entry
-
 . ScriptFunctions
 Import OptionParser
 

@@ -1,14 +1,5 @@
 #!/bin/sh
 
-### Changelog ############################################################
-
-# 06/08/2004 - [detsch] Moved 'export goboInstall=$goboPrograms'
-#                       to InstallPackage and PrepareProgram,
-#                       due to Rootless-on-GoboLinux issues
-# 03/08/2004 - [detsch] removed (readlink -f) when rootless 
-# 13/06/2004 - [calica] Add goboInstall variable
-#                       Initial Changelog entry
-
 # It's probably a bad idea to change some of those.
 
 #export goboPrefix=

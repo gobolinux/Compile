@@ -1,37 +1,5 @@
 #!/bin/sh
 
-### Changelog ############################################################
-
-# 25/08/2005 - [hisham] general cleanup, -D,--no-default-options switch
-# 25/08/2005 - [hisham] remove remains of 'modify files' features
-# 22/03/2005 - [hisham] Directories support from IBM
-# 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
-# 05/12/2004 - [hisham] -A,--no-autoconf switch
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-#                       (currently commented out to decide if we want this or not)
-# 08/06/2004 - [hisham] -a,--autoconf switch
-# 26/05/2004 - [detsch] Ask_Option instead of "read -p"
-# 09/05/2004 - [hisham] /System/Links/Tasks
-# 30/11/2003 - [hisham] -n,--no-modify switch
-#            - -c,--configure switch
-# 23/11/2003 - [hisham] Reformatted changelog
-# 15/08/2003 - [detsch] Arch no more hardcoded
-# 20/06/2003 - [hisham] -t switch
-#            - "Modify Makefiles" was accidentally disabled
-# 19/06/2003 - [hisham] Fix Shared for -k
-# 09/06/2003 - [hisham] 'Variable' directory
-# 31/05/2003 - [hisham] Cleanups
-# 13/01/2003 - [hisham] Minor documentation fix
-# 07/06/2002 - [hisham] Added argument count check
-# 30/05/2002 - [hisham] Autodetection for running as superuser
-# 26/03/2002 - [hisham] GoboLinux compliant, -n switch
-# 08/09/2001 - [hisham] Changed to catch more Makefiles
-# 03/09/2001 - [hisham] Converted option parser
-# 31/08/2001 - [hisham] switch to /Programs/App/Version scheme
-# 26/04/2001 - [hisham] -k -r switches
-# XX/XX/XXXX - [hisham] Gradual improvements
-# XX/XX/XXXX - [hisham] First version
-
 ### Imports ##############################################################
 
 source ScriptFunctions

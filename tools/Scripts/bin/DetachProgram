@@ -6,10 +6,6 @@ Import GoboLinux
 Import Log
 Import OptionParser
 
-### Changelog #################################################################
-
-# 29/06/2004 - [calica] First Version
-
 ### Options ###################################################################
 
 scriptDescription="Move a program from ${goboPrograms} to \$goboInstall or <destdir>."

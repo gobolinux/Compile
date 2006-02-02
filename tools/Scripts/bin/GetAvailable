@@ -7,13 +7,6 @@
 # (C) 2004 Andre Detsch. Released under the GNU GPL.
 #
 
-### Changelog ###############################################################
-
-# 12/11/2004 - [detsch] Two small fixes regarding Recipes matching
-# 07/09/2004 - [detsch] Parsing GetAvailable.conf
-# 08/07/2004 - [detsch] First version, mostly based on Manager source code
-# 
-
 import os.path, sys, string, time, os, threading
 
 from PythonUtils import *

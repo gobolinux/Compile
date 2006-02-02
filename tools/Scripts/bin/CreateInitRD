@@ -1,11 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 2005/03/04 - [calica] change kernel_name option to module_dir
-#                       add $scriptNotes
-# 2005/03/02 - [calica] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

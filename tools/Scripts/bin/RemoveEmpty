@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# 03/07/2003 - defaults option [Carlo Calica]
-# 13/01/2003 - Minor doc fix
-# 02/08/2002 - new option parser
-# 23/12/2001 - --depth, path
-# XX/XX/XXXX - first version
-
 . ScriptFunctions
 Import OptionParser
 Import Process

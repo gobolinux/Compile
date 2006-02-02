@@ -5,13 +5,6 @@
 # GuessProgramCase
 # Try to guess the case of a program based on the installed packages
 
-### Changelog ########################################################
-
-# 25/01/2005 - [detsch] Ported to bash
-# 27/04/2004 - [detsch] Bugfix when calling from command line
-# 13/04/2004 - [detsch] Using ${goboPrograms}
-# 10/04/2004 - [detsch] First version
-
 
 if [ $# -lt 1 -o "$1" = "--help" -o  "$1" = "-h" ]
 then

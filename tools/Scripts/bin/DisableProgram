@@ -6,12 +6,6 @@ Import GoboLinux
 Import Log
 Import OptionParser
 
-### Changelog #################################################################
-
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-# 26/04/2004 - [detsch] Smart RemoveBroken on ${goboLinks}
-# 01/06/2003 - First version
-
 ### Options ###################################################################
 
 scriptDescription="Unlink a program from the ${goboLinks} hierarchy."

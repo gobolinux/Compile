@@ -1,9 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# INSERT_DATE_HERE - [yourname] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

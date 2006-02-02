@@ -1,15 +1,5 @@
 #!/bin/sh
 
-# Changelog:
-
-### Changelog #################################################################
-
-# 31/05/2003 - integration of g, sg and rg
-# 17/05/2002 - update to new option parser
-# 26/04/2002 - detect uppercase and set case sensitivity accordingly
-# 20/11/2001 - bugfix for searches starting with -
-# XX/XX/XXXX - first version
-
 ### Options ###################################################################
 
 source ScriptFunctions

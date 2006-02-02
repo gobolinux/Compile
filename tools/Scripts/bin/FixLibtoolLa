@@ -5,12 +5,6 @@ Import Log
 Import OptionParser
 Import File
 
-### Changelog #################################################################
-
-# 04/03/2005 - Changed $pwd to $PWD. Seems that this script was not working 
-#              at all since a long time...
-# 07/05/2003 - First version
-
 ### Options ###################################################################
 
 scriptDescription="Convert a .la file created by libtool to make it GoboLinux-compliant."

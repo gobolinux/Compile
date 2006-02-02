@@ -7,10 +7,6 @@ Import Log
 Import OptionParser
 Import Process
 
-### Changelog #################################################################
-
-# 10/02/2003 - First version
-
 ### Options ###################################################################
 
 scriptDebug=on

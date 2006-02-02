@@ -1,10 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 09/11/2005 - [calica] Make sure passed --writedir exists, more error checking
-# 02/11/2005 - [calica] First version, fork from FiboSandbox
-
 ### Imports ###################################################################
 
 source ScriptFunctions

@@ -1,16 +1,5 @@
 #!/bin/bash
 
-### Changelog #################################################################
-
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-# 31/05/2003 - Cleanup
-# 03/06/2002 - Removed sudos, added VerifyGobo in proper places.
-# 07/05/2002 - Added sudos. Need to fix this later.
-# 22/04/2002 - New ScriptFunctions
-# 03/10/2001 - Bug fix in --
-# 03/09/2001 - Fixed option parser
-# 23/08/2001 - First version
-
 source ScriptFunctions
 Import File
 Import Log

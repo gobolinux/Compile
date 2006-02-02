@@ -3,12 +3,6 @@
 source ScriptFunctions
 Import OptionParser
 
-### Changelog #################################################################
-
-# 26/06/2002 - [hisham] "The", first fix for pre-capitalized titles, mawk to awk
-# 24/04/2002 - [hisham] Fixed bug with two occurences of the same pattern
-# 06/04/2002 - [hisham] First version
-
 ### Help ######################################################################
 
 helpOnNoArguments=yes

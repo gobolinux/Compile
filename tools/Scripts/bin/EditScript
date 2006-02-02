@@ -7,19 +7,6 @@ Import OptionParser
 Import File
 Import Log
 
-### Changelog #################################################################
-
-# 31/05/2003 - Cleanup
-# 13/01/2003 - Minor doc fix
-# 18/05/2002 - Using new option parser / autohelp
-# 25/03/2002 - GoboLinux compliant
-# 06/09/2001 - detect and expand aliases
-#              use any $EDITOR
-# 23/04/2001 - auto insert date in changelog (no more XX/XX/XXXX!)
-#              TemplateScript now uses a function library, ScriptFunctions.
-# 21/04/2001 - use TemplateScript, a much better template.
-# XX/XX/XXXX - first version
-
 ### Options ###################################################################
 
 scriptDescription="Create or edit a GoboLinux script."

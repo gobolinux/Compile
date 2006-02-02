@@ -2,13 +2,6 @@
 
 #
 # FixAttributes - Fix attributes from files based on its contents
-# Changelog:
-#    31/08/2004 - fixed -t and -f flags
-#    23/05/2003 - minor updates and cleanups
-#    13/01/2003 - minor fixes in documentation
-#    12/04/2002 - using new option parser
-#    14/02/2001 - major rewrite - 2 to 3x faster
-#    09/12/2000 - fix for names with spaces
 #
 
 source ScriptFunctions

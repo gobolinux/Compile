@@ -1,15 +1,5 @@
 #!/bin/sh
 
-### Changelog ########################################################
-
-# 09/11/2005 - [calica] Set sandbox_rw to $prefix/.SandboxInstall_Root.
-#                       delete $sandbox_rw only if empty
-#                       return install result to parent
-# 04/11/2005 - [calica] Add UnionSandbox support
-# 22/03/2005 - [hisham] Directories infrastructure for flexible paths from IBM
-# 11/12/2004 - [lucasvr] Integrated with Compile's cross-compiling feature
-# 13/12/2003 - First version, forked from SymlinkProgram
-
 source ScriptFunctions
 Import File
 Import GoboLinux

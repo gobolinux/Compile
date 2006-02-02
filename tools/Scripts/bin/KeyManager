@@ -8,14 +8,6 @@ Import OptionParser
 Import Process
 Import String
 
-### Changelog #################################################################
-#
-# 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
-#                       Run as normal user
-#                       Change description
-# 10/10/2004 - [calica] Use Data/gpg/goboring.pub instead.
-# 2003/12/15 - [calica] First version
-
 ### Options ###################################################################
 
 scriptDescription="Manage official GoboLinux keyring. For use by GoboLinux devs ONLY!!!"

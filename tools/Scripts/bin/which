@@ -1,12 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 06/01/2004 - [hisham] changed "not found" message (which time)
-# 08/12/2002 - [rafasgj] removed RealPath
-# 23/11/2002 - [hisham] reformatted changelog
-# 12/04/2002 - [hisham] First version
-
 ### Imports ###################################################################
 
 savepath="$PATH"

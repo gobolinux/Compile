@@ -1,18 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 17/10/2005 - [detsch] Show_Help if no $name is passed
-# 02/09/2004 - [detsch] usermod -G floppy,audio,users,cdrecord,video <user>
-# 23/11/2003 - [hisham] Renamed long options
-#            - Added skel option
-# 11/11/2003 - [detsch] Password option
-# 20/10/2003 - [detsch] Fixed parameters of 'chfn'
-#            - Shell option (with default=/bin/zsh)
-#            - Home creation with '700' permission                 
-# 31/05/2003 - [hisham] Updated logging system
-# 27/01/2003 - [hisham] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

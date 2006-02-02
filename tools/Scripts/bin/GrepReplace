@@ -1,12 +1,5 @@
 #!/bin/sh
 
-# 23/05/2003 - Major improvement: workaround removed
-# 13/01/2003 - Minor doc fix
-# 24/08/2002 - New option parser, translated docs
-# 29/04/2001 - Fix for /s in the pattern
-# XX/XX/XXXX - Temporary change from rgrep to grep
-# XX/XX/XXXX - First version
-
 . ScriptFunctions
 Import OptionParser
 

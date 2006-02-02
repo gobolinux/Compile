@@ -7,42 +7,6 @@ Import Log
 Import OptionParser
 Import Process
 
-### Changelog #################################################################
-
-# 12/11/2005 - [calica] Removed --verify option
-#                       assume verify if Resources/FileHash exists
-# 16/08/2005 - [detsch] Removed --dont-ask-confirmation option
-#                       now asking only when the package version is guessed
-# 04/08/2005 - [detsch] --dont-ask-confirmation option
-# 04/03/2004 - [calica] "--verify" option, continue if hash failure.
-# 10/12/2004 - [calica] verify superuser before download.
-#                       Add support for VerifyProgram
-# 15/12/2004 - [detsch] '--no-install' option
-# 26/08/2004 - [detsch] '--keep' option, to not remove downloaded packages
-#                       Less questions when finding a package 
-# 23/08/2004 - [detsch] Using new Is_URL function
-#              - Changed dependencies installing: passing '-e' to Dependencies
-# 23/07/2004 - [detsch] '-C' parameter to tar, some $goboPrograms, and two 
-#                       'cd -' to keep the script running on original $PWD,
-#                       enabling local packages on $PWD to be allways found
-# 27/07/2004 - [detsch] Changed dependencies installing mechanism
-# 24/07/2004 - [detsch] Added support for url (http://.../package.tar.bz2)
-#                       Added support for program name / version passing
-#                       (calling FindPackage)
-# 10/06/2004 - [calica] Use "GuessProgramCase" in dependency check
-#              Handle versions with -PersonalBackup modifier
-# 26/05/2004 - [detsch] Ask and Ask_Option instead of "read -p"
-#                       When directory, changed to packagedir=`readlink -f "$1"`
-# 02/04/2004 - [detsch] Removed Source package code (obsoleted by Compile)
-# 08/12/2003 - [rafasgj] Removed RealPath
-# 12/11/2003 - [detsch] Included '.' in search path
-# 14/10/2003 - [detsch] Support for directories
-# 10/04/2003 - [hisham] Recursive search of packages
-# 07/07/2002 - [hisham] Step-by-step execution on source packages
-# 29/06/2002 - [hisham] Source packages!
-# 30/05/2002 - [hisham] 's' option, better checks
-# 27/04/2002 - [hisham] First version
-
 ### Options ###################################################################
 
 scriptDescription="Install GoboLinux packages."

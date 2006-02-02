@@ -1,11 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 08/12/2003 - [rafasgj] Removed RealPath
-# 23/11/2003 - [hisham] Reformatted changelogs
-# 02/02/2003 - [hisham] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

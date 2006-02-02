@@ -5,12 +5,6 @@ Import File
 Import Log
 Import OptionParser
 
-### Changelog #################################################################
-
-# 31/05/2003 - [hisham] Minor updates/cleanups
-# 03/01/2003 - [hisham] Uses the option parser
-# 24/12/2002 - [lmb] First version
-
 ### Options ###################################################################
 
 scriptDescription="Remakes the entries in the info 'dir' file."

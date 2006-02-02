@@ -58,9 +58,3 @@ find /Programs/ -maxdepth 2 -mindepth 2 -name Current -printf '%h %l\n' | \
 echo "--- End of list: $#updates suggested update(s)" >&2
 
 exit 0
-
-# Changelog:
-# 1.3 - use GuessLatest and remove $stable (FindPackage has no support)
-# 1.4 - use GetAvailable instead of FindPackage and versionsort instead
-# of GuessLatest
-

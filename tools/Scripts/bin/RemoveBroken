@@ -1,15 +1,5 @@
 #!/usr/bin/env python
 
-### Changelog ######################################################################
-
-# 26/04/2004 - [detsch] Do not show filename if file does not exists 
-# 02/04/2004 - [detsch] Catch exception if file being unlinked does not exists
-# 23/11/2003 - [hisham] Reformatted changelog
-# 31/05/2003 - [hisham] No more tabs :)
-# 19/05/2002 - [hisham] simplified it to take files from stdin instead
-# 07/05/2002 - [hisham] added -R (recurse) option
-# XX/XX/XXXX - [detsch] First version
-
 ### Imports ########################################################################
 
 import os, sys

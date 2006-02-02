@@ -1,15 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 23/11/2003 - [hisham] Reformatted changelog
-# 13/01/2003 - [hisham] minor fixes in documentation
-# 17/05/2002 - [hisham] use new option parser
-# 13/05/2002 - [gbedin] Added missing quotes
-# 10/04/2002 - [hisham] GoboLinux compliance
-# 21/09/2001 - [hisham] Fixed silly bug on upc_cap
-# XX/XX/XXXX - [hisham] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

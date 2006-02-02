@@ -8,16 +8,6 @@ Import OptionParser
 Import Process
 Import String
 
-### Changelog #################################################################
-
-# 09/11/2005 - [calica] This file is obsolete.
-# 10/10/2004 - [calica] much improved md5sum check routines
-#               use a /P/Scripts/Current/
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-#              change Changelog format
-#              use /S/S/Scripts/gpg/pubring.gpg as an additonal keyring
-# 2003/12/15 - [calica] First version
-
 ### Options ###################################################################
 
 scriptDescription="Manages FileHash and FileHash.sig in a GoboLinux package."

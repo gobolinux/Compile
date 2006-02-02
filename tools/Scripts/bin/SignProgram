@@ -12,20 +12,6 @@ Import String
 # 2    No GnuPG or private key
 # 3    Unable to sign FileHash
 
-######## Changelog ########
-
-# 09/19/2005 - [calica] Better error code handling
-# 09/12/2005 - [calica] Check for gpg keyring and gpg
-# 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
-# 2004/06/30 - [calica] use --keyring rather than --homedir
-# 2004/05/27 - [ecd] splitted 'Hashes' file in more files (SignPackage, VerifyPackage)
-#            - added "local-user" option
-#            - signing only with keys from $HOME
-#            - description adapted to splitted version
-# 2003/12/15 - [calica] First version
-
-###########################
-
 scriptDescription="Generate and sign a hash file of a Gobolinux package with gpg."
 scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
 helpOnNoArguments=yes

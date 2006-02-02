@@ -1,15 +1,5 @@
 #!/bin/sh
 
-# Changelog
-#
-# 08/12/2002 - [rafasgj] Removed RealPath
-# 25/08/2002 - [hisham] Pager (-p) option
-# 23/08/2002 - [hisham] Colored permissions
-# 22/06/2002 - [hisham] fixed bug on paths starting with dot, such as ../a/b/c/hello
-# 18/05/2002 - [hisham] can list multiple directories, fix hidden display
-# 25/03/2002 - [hisham] mawk & devfs compatible
-# XX/XX/XXXX - [hisham] first version, improvements
-
 unset LANG
 unset LC_ALL
 

@@ -14,19 +14,6 @@ Import String
 # 4     No signature
 # 5     No FileHash (implies no signature)
 
-######## Changelog ########
-#
-# 09/12/2005 - [calica] Move gpg verify code to Functions/File
-#                       Check keyrings
-# 09/11/2005 - [calica] Move GPG_gobo_keyring to Functions/File
-# 2005/03/04 - [calica] Look in $HOME/.gnupg/pubring.gpg for keys
-# 2004/10/10 - [calica] much improved md5sum check routines
-# 2004/05/27 - [ecd] splitted 'Hashes' file in more files (SignPackage, VerifyPackage)
-#            - description adapted to splitted version
-# 2003/12/15 - [calica] First version
-#
-###########################
-
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
 scriptDescription="Verify the hashes file gpg signature and check the hashes of a Gobolinux package."

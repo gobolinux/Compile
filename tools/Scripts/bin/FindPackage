@@ -9,14 +9,6 @@
 # (C) 2004 Andre Detsch. Released under the GNU GPL.
 
 
-### Changelog ###############################################################
-
-# 30/01/2005 - [detsch] reading default 'types' from config file
-# 25/01/2005 - [detsch] added 'FindPackage' function, accessable by other python scripts
-# 19/07/2004 - [detsch] moved most of code to 'GetAvailable'
-# 08/07/2004 - [detsch] First version, mostly based on Manager source code
-#
-
 from GetAvailable import *
 
 def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdirs=None, forceupdate=False, accessWeb=True, hook=None, availables=None) :

@@ -1,16 +1,5 @@
 #!/bin/sh
 
-### Changelog #########################################################
-
-# 07/11/2002 - [hisham] Updated logging
-#            - bugfix: pass options in recursion
-# 23/11/2002 - [hisham] Reformatted changelog
-# 31/05/2002 - [hisham] removed hardcoded script name
-#            - minor cleanup
-# 20/04/2002 - [hisham] Fixed silly typo
-#            - Only descend on directories that are not links (share!)
-# XX/XX/XXXX - [hisham] First version
-
 ### Imports ###########################################################
 
 . ScriptFunctions

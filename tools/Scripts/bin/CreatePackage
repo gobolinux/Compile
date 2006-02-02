@@ -1,29 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 01/12/2005 - [detsch] Obsoleted devel-version, new-version and keep options, 
-#                       due to CVS usage and make dist availability
-# 09/04/2005 - [detsch] "--target-dir" option
-# 16/02/2005 - [detsch] Fix: no more packaging Variable directory 
-#                       (but still packing Defaults/Variable)
-# 02/09/2004 - [detsch] -n,-k options. Changed devel-versions format (X.Y.Z.<date>-<name>) 
-# 25/08/2004 - [detsch] Compilation of python modules (.pyc) when devel-version
-# 23/06/2004 - [calica] Create packages from programs outside of $goboPrograms
-# 15/06/2004 - [detsch] tar & compression in a single step if no $anyvariable and
-#              no personal-backup
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-#              Added --personal-backup option
-# 09/06/2004 - [detsch] no-dependencies option
-# 08/12/2003 - [rafasgj] Removed RealPath
-# 30/06/2003 - [hisham] Change in the way files are packed in order to
-#              accomodate the Defaults dir
-#            - minor fix linking Current
-# 31/05/2003 - [hisham] Cleanup
-#            - Replace dependencies (instead of append)
-#            - Use Resources/Architecture and Resources/Dependencies
-# XX/XX/2002 - First version
-
 source ScriptFunctions
 Import File
 Import GoboLinux

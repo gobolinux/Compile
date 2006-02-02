@@ -5,13 +5,6 @@
 # GuessLatest
 # Try to guess the most recent package version based on the version number
 
-### Changelog ########################################################
-
-# 30/03/2004 - [detsch] First version
-# 30/03/2004 - [detsch] '-s' option
-# 07/04/2004 - [detsch] Breaking in switches (0.1c1 x 0.12d2)
-# 08/04/2004 - [detsch] Command line and importable by python scripts
-
 import types
 
 def GuessLatest(versions, stableOnly = 0, returnList = 0) :

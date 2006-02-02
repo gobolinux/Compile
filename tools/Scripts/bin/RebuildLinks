@@ -1,12 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 27/09/2005 - [lucasvr] Fixed 'find' usage, sourcing GoboPath
-# 08/12/2003 - [hisham] Removed RealPath
-# 23/11/2003 - [hisham] Reformatted changelog
-# 16/02/2003 - [hisham] First version
-
 ### Imports ###################################################################
 
 source GoboPath

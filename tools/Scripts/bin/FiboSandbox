@@ -1,12 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 05/12/2004 - [hisham] fixed the chgrp/chown support
-# 30/09/2004 - [detsch] Adding $$ to sandbox root, allowing multiple instances. 
-# 07/12/2003 - [hisham] Allow fibo to use chgrp and chown.
-# 08/02/2003 - [hisham] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

@@ -6,10 +6,6 @@ Import GoboLinux
 Import Log
 Import OptionParser
 
-### Changelog #################################################################
-
-# 20/09/2004 - [calica] First Version
-
 ### Options ###################################################################
 
 scriptDescription="Create a link in ${goboPrograms} to \$goboInstall or <src_tree>."

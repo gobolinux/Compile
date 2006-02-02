@@ -1,18 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 20/10/2005 - [detsch] Rebuilding Cache file explicitly, not calling 
-#                       RebuildLinks
-# 27/09/2005 - [lucasvr] Calling RebuildLinks
-# 10/08/2004 - [detsch] Not asking confirmation anymore
-# 21/09/2004 - [calica] Fix --batch
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-# 13/04/2004 - [detsch] Smart RemoveBroken on ${goboLinks}
-# 10/04/2004 - [detsch] --batch option
-# 10/04/2004 - [detsch] Try to remove app dir if empty
-# 31/03/2004 - [detsch] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

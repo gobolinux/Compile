@@ -7,11 +7,6 @@
 # Example:
 #    mkinitrd.pl /Mount/loop /System/Kernel/Modules/2.6.8.1-Gobo foo /path/to/bar.ko
 
-### Changelog #################################################################
-
-# 2005/03/04 - [calica] add usage output on 0 args
-# 2005/03/02 - [calica] Initial version
-
 # Globally scope vars
 my $root_dev;
 my $initrd_dir;

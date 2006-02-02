@@ -1,11 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 17/09/2005 - [lucasvr] Using CompatibilityList from the host machine on cross-compiling
-# 23/08/2005 - [lucasvr] removed 'source GoboPath' to better deal with CrossCompile
-# 11/08/2005 - [lucasvr] First version
-
 if [ "$#" != "1" ]
 then
    echo "Syntax: $0 <package name>"

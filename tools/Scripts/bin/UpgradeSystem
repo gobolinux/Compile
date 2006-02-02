@@ -1,10 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 23/11/2003 - [hisham] Reformatted changelog
-# 15/11/2003 - [hisham] First version
-
 ### Imports ###################################################################
 
 source ScriptFunctions

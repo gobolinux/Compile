@@ -8,39 +8,6 @@ Import OptionParser
 Import Process
 Import String
 
-### Changelog #################################################################
-
-# 12/09/2005 - [lucasvr] getting dependencies for cross-compiled apps through readelf
-# 31/08/2005 - [lucasvr] passing cross-compile flags to child Compile processes
-# 15/12/2004 - [lucasvr] integrated with Compile's cross-compiling feature
-# 04/12/2004 - [hisham] circumvent CVS snapshot dependencies
-# 24/11/2004 - [hisham] support for a Dependencies.blacklist conf file
-# 12/11/2004 - [hisham] bugfix: disambiguate -h option
-# 12/11/2004 - [calica] - --write option
-# 03/09/2004 - [detsch] - using GuessProgramCase instead of 'find -i' to detect 
-#                         installed program
-# 23/08/2004 - [detsch] - major changes on 'check' mode. Instead of just printing, 
-#                         a command can be executed (like Compile or InstallPackage)
-#            - 'execute' option
-#            - 'higher-or-missing-only' option -> using GuessLatest
-#            - 'dependencies-file' option
-#            
-# 23/06/2004 - [calica] clean up $prefix to handle symlinks
-#              Changed how the paths are converted to program/version.  Keying off of
-#              \1/\2/[bin|sbin|lib|libexec rather than Programs/\1/\2
-# 10/06/2004 - [calica] Use "GuessProgramCase" to remove case sensitivity
-# 27/04/2004 - [hisham] -c now returns exit code 1 when there's a program missing
-# 08/12/2003 - [rafasgj] Removed RealPath
-#            - [hisham] Commented out Python dependencies
-# 14/10/2003 - [detsch,gbedin] fixed extract_dependencies for
-#              libraries within subdirectories of ${goboLibraries}
-# 05/07/2003 - [hisham] Added "list" switch
-# 26/06/2003 - [calica] Added Checking for Daemons
-# 31/05/2002 - [hisham] Fixed listing of files searched
-# 26/05/2002 - [hisham] Added "all" switch
-# 12/05/2002 - [hisham] First version
-
-
 ### Defines ###################################################################
 
 deps_file="Resources/Dependencies"

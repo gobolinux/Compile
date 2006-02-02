@@ -1,11 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-# 10/11/2004 - move menuconfig workaround in here
-# 03/06/2002 - Return proper exit
-# 28/03/2002 - GoboLinux compliant
-# 14/09/2001 - First version
-
 . ScriptFunctions
 Import File
 
