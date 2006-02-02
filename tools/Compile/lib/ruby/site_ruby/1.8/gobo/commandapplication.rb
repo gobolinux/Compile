@@ -1,7 +1,3 @@
-### Changelog #################################################################
-
-# 30/08/2003 - Initial Version
-
 =begin
 
 gobo/commandapplication.rb - GoboLinux CommandApplication Ruby Module

@@ -1,15 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 26/08/2004 - [detsch] - Checking url only if 'http:'
-# 23/08/2004 - [detsch] - Code for finding and getting Recipe rewritten
-#            - No more 'deduce_current_version'
-#            - No more 'Current' link 
-#            - Don't copying version-specific lines to new version Recipe  
-# 11/12/2003 - [hisham] Support multiple recipe trees
-# 24/10/2003 - [hisham] First version
-
 source ScriptFunctions
 Import File
 Import Log

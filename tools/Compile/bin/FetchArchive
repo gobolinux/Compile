@@ -1,17 +1,6 @@
 #!/bin/sh
 
 ##################################################
-# Changelog
-##################################################
-
-# 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when asking for update
-# 21/06/2005 - [detsch] Dying on error fetching. 
-#              (do not checking for -e file, since even a 404 produces a file)
-# 23/08/2004 - [detsch] TODO: gen_md5 and gen_size on Recipe file
-#              right after downloading 
-# 06/02/2003 - [hisham] forked from Compile
-
-##################################################
 # Imports
 ##################################################
 

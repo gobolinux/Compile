@@ -1,11 +1,5 @@
 #!/usr/bin/ruby (require)
 
-##################################################
-# Changelog
-##################################################
-
-# 09/02/2004 - [calica] Initial version from Michael Homer's Freshen
-
 # This class reads and parses shell script config file
 # copied from Michael Homer's Freshen
 

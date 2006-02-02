@@ -5,11 +5,6 @@ $: << "/System/Links/Libraries/ruby/site_ruby/1.8"
 
 require 'gobo'
 
-### Changelog #################################################################
-
-# 30/08/2003 - First Ruby Implementation
-# 16/09/2003 - Clean up and make a proper example
-
 
 ### App Info ##################################################################
 #

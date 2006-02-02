@@ -1,23 +1,6 @@
 #!/bin/sh
 
 ##################################################
-# Changelog
-##################################################
-
-# 05/09/2005 - [detsch] Support for <program-name> [version] as input
-# 27/09/2004 - [detsch] can receive now more than 1 path
-# 23/08/2004 - [detsch] full rewrite. Now it receives a full path or url
-#                       and downloads and/or uncompress and/or copies the
-#                       recipe. ("GetRecipe $app $version"-like functionality
-#                       is at FindPackage)
-#  
-# 03/03/2004 - [hisham] local search, help screen
-# 04/02/2004 - [calica] Add http (wget) support
-#            - assert_dir to ensure environment
-# 10/12/2003 - [hisham] minor cleanups, no functionality change
-# 09/12/2003 - [calica] first version
-
-##################################################
 # Imports
 ##################################################
 

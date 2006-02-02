@@ -1,22 +1,6 @@
 #!/bin/sh
 
 ##################################################
-# Changelog
-##################################################
-
-# 24/08/2004 - [detsch] - major overal changes, but external interface kept
-#            - script is not more used at Compile
-#            - using new GetRecipe interface (full url/path,
-#              not more <app> <version>)
-# 30/03/2004 - [hisham] can now update a single program ($1)
-#              help screen
-# 08/02/2004 - [calica] add -f(ull) option
-# 04/02/2004 - [calica] Add http (wget) support
-#            - assert_dir to ensure environment
-# 10/12/2003 - [hisham] minor cleanups
-# 09/12/2003 - [calica] first version
-
-##################################################
 # Imports
 ##################################################
 
