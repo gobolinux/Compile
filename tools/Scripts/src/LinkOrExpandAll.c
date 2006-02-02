@@ -248,7 +248,6 @@ static void Link_Or_Expand(char* new) {
          }
       }
    }
-   fprintf(stderr, "relativeGoboPrograms = %s\n", relativeGoboPrograms);
    char* realnew = points_to(new);
    char* bn = strdup(basename(new));
    char realold[PATH_MAX];
