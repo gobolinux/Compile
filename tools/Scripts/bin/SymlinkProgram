@@ -346,7 +346,7 @@ then
    strip_and_link sbin
 fi
 
-if [ "$linkexecutables" != "no" ]
+if [ "$linkwrappers" != "no" ]
 then
    Log_Normal "Symlinking wrappers..."
    wrapdir="$current/Resources/Wrappers"
