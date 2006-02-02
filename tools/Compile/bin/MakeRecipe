@@ -24,7 +24,7 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>}}"
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> CVS -d <server> co <module>}}"
 scriptNotes="A URL or a cvs command line should be passed as a parameter."
 scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."

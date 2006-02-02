@@ -95,7 +95,7 @@ fi
 ######################################
 [ -d ${goboTemp}/setup ] || mkdir ${goboTemp}/setup
 KeymapDialog ${LANG} 2> ${goboTemp}/setup/keymap
-MAPNAME="`cat ${goboTemp}/setup/keymap`"
+MAPNAME="`tail -n 1 ${goboTemp}/setup/keymap`"
 MAPNAME="`basename $MAPNAME`"
 basename $MAPNAME .map  > ${goboTemp}/setup/keymap
 msg "Loading selected Keymap"
@@ -104,7 +104,7 @@ loadkeys $MAPNAME
 ######################################
 # Adjusting xorg.conf
 ######################################
-if [ -d ${goboPrograms}/Xorg ]
+if [ -d ${goboPrograms}/Xorg -a -f ${goboPrograms}/Xorg/Settings/X11/xorg.conf ]
 then
 	msg "Adjusting xorg.conf"
 	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
