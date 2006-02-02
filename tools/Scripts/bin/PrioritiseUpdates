@@ -57,8 +57,3 @@ done
 echo "--- Finish: $i pass(es)" >&2
 
 exit 0
-
-# Changelog:
-# 1.0 - new script
-# 1.1 - translate to English
-
