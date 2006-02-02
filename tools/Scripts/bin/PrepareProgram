@@ -176,11 +176,6 @@ then
          Make_Directory "$baseprogramdir"
          ( cd "$baseprogramdir" ; ln -s "$installdir" "$versionnumber")
       fi
-      if Dir_Set Current
-      then
-         rm -f -- "$baseprogramdir/Current"
-         ( cd "$baseprogramdir" ; ln -s "$versionnumber" "Current" )
-      fi
    fi
 
    if Dir_Set Shared
@@ -245,6 +240,12 @@ then
       else
          Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
       fi
+   fi
+
+   if Boolean "tree" && Dir_Set Current
+   then
+      rm -f -- "$baseprogramdir/Current"
+      ( cd "$baseprogramdir" ; ln -s "$versionnumber" "Current" )
    fi
 
    exit 0
