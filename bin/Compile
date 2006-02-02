@@ -3,60 +3,6 @@
 # Welcome back to Hacklandia.
 
 ##################################################
-# Changelog
-##################################################
-# 14/11/2004 - [calica] add compileBuildOptions and compileMakeOptions
-# 30/09/2005 - [lucasvr] Initial Subversion support
-# 30/09/2005 - [calica] Ignore Scripts release "GIT" when checking version
-# 12/09/2005 - [lucasvr] Removed unnecessary variables on cross_make_variables array
-# 27/08/2005 - [lucasvr] Cross compiling cleanups, supporting arch-specific patches
-# 26/08/2005 - [lucasvr] Ignoring Scripts release "CVS" when checking version
-# 14/07/2005 - [mierlo] Generate .tar.bz2 for meta-recipes
-# 21/06/2005 - [detsch] Die on FetchArchive failure
-# 13/05/2005 - [detsch] Die on patch failure
-# 27/04/2005 - [lucasv] added support to ext cvs servers
-# 17/02/2005 - [hisham] environment array
-# 11/01/2005 - [lucasvr] installprefix for cross-compiling
-# 26/11/2004 - [hisham] pre-patch
-#            - fixed CVS version dir
-# 02/09/2004 - [detsch] AddHoc --no-configure option
-# 30/08/2004 - [calica] Initial CVS support
-# 23/08/2004 - [detsch] Major changes. 
-#            - Rewrote code for finding, getting 
-#              and sourcing the Recipe, improving modularity
-#            - Rewrote code for dependencies checking
-#              (dependencies are now dealt within Dependencies script ->
-#               no more code replication between InstallPackage and Compile)
-#            - No more 'echo's for questions -> replaced to 'Ask_Option'
-#            - Added funcionality on wrapup() when recipe was locally created
-#            - "--no-web" option  
-#            - suport for dir/file/url passing (e.g. Compile LocalRecipes/Atool/0.29.0,
-#              Compile /Depot/KDE--3.3.0--recipe.tar.bz2 or 
-#              Compile http://www.anysite.org/recipes/KDE--3.3.0--recipe.tar.bz2)
-#
-# 11/07/2004 - [lucasvr] Added cross-compile support
-# 23/04/2004 - [hisham] Whoa, the changelog has not kept
-#              up with the updates. The 'what's new' lists
-#              from the preview releases (in the list archives)
-#              can give you a good idea of what happened
-#              in the last crazy months.
-# 05/02/2004 - [calica] Added http support
-#            - Make Compile a package
-#            - Setup Environment in /Files using assert_dir()
-# 05/02/2004 - [hisham] "file_sizes" "file_md5s"
-# 09/01/2004 - [hisham] improved documentation
-# 29/12/2003 - [hisham] --no-build
-# 26/12/2003 - [hisham] is_perl
-# 24/12/2003 - [hisham] "urls" and "files"
-# 13/12/2003 - [hisham] use SandboxInstall
-# 11/12/2003 - [hisham] abort if an -old version is found
-#            - generate dependencies
-# 10/12/2003 - [hisham] support multiple recipe trees
-# 30/11/2003 - [hisham] new source and archive paths
-# 20/11/2003 - [hisham] always chmod +x configure
-# XX/XX/2003 - [hisham] first version
-
-##################################################
 # Imports
 ##################################################
 

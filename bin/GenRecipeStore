@@ -1,17 +1,6 @@
 #!/bin/sh
 
 ##################################################
-# Changelog
-##################################################
-
-# 23/08/2004 - [detsch] retouch generated recipes based on 
-#              "$name/$version/Recipe" change date
-# 04/02/2004 - [calica]S assert_dir to ensure environment
-#            - rename config variables prefix: get -> gen
-# 10/12/2003 - [hisham] Avoid the Current link
-# 09/12/2003 - [calica] first version
-
-##################################################
 # Imports
 ##################################################
 

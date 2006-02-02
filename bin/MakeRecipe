@@ -1,18 +1,5 @@
 #!/bin/sh
 
-### Changelog #################################################################
-
-# 09/08/2005 - [lucasvr] added python build detection, improved file contents visualization
-# 06/03/2005 - [lucasvr] fixed a typo on perl modules recipe dir
-# 21/07/2005 - [detsch] fixes on non-id#0 running (sudo and friends)
-# 02/12/2004 - [detsch] checking for existing recipes (exact version or same program)
-# 23/08/2004 - [detsch] message when author variable is not set, $genRecipeRecipeDir
-# 12/05/2004 - [hisham] convenience: set PAGER variable if unset
-# 07/01/2004 - [hisham] fixed so that url uses double quotes
-# 26/12/2003 - [hisham] perl support, smarter makefile detections
-# 11/12/2003 - [hisham] simple multiple recipe dirs support
-# 24/10/2003 - [hisham] First version
-
 source ScriptFunctions
 Import File
 Import Log
