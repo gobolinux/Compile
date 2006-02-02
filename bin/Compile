@@ -351,7 +351,9 @@ export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 ##################################################
 
 if Is_Entry "cross-compile"
-then 
+then
+   export cross_compiling=1
+   
    arch=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch"
    
