@@ -314,26 +314,15 @@ then
    # Configure flag passed to PrepareProgram and SandboxInstall
    prepareCross="--cross-compile $arch" 
 
-   # Extra arguments to be passed to 'make'
+   # Extra arguments to be passed to 'make' and 'make install'
    cross_make_variables=(
    	"CC=$CC"
    	"CPP=$CPP"
    	"CXX=$CXX"
 	"CROSS=$crossCompiler"
-   )
-   
+   )   
    cross_install_variables=(
    	"$cross_make_variables"
-   )
-   
-   # Extra parameters to be passed to 'configure' 
-   # TODO: this brokens build on non-autoconf configure scripts 
-   cross_configure_options=(
-   	"--prefix=$target"
-   	"--host=$HOST"
-   	"--target=$TARGET"
-   	"--x-includes=$crossPrefixDir/$goboHeaders"
-   	"--x-libraries=$crossPrefixDir/$goboLibraries"
    )
 
    # Keep cross-compile flags so that Meta-Recipes follow cross compilation rules
@@ -349,7 +338,6 @@ then
 else
    prepareCross=""
    cross_make_variables=""
-   cross_configure_options=""
    installprefix="$target"
    crossCompile=""
 
@@ -715,7 +703,7 @@ fi
 
 if [ "$is_compileprogram" = "yes" ]
 then
-   eval `combine_arrays config configure_options cross_configure_options`
+   eval `combine_arrays config configure_options`
    [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
