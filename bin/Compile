@@ -298,8 +298,6 @@ export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 
 if Is_Entry "cross-compile"
 then
-   export cross_compiling=1
-   
    arch=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch"
    
@@ -344,6 +342,10 @@ then
    installprefix="$target"
    archsubdir=$bakedrecipedir/$ARCH
    archrecipe=$bakedrecipedir/$ARCH/Recipe
+   compileSourcesDir="$compileDir/Sources-$arch"
+
+   mkdir -p $compileSourcesDir
+   export cross_compiling=1
 else
    prepareCross=""
    cross_make_variables=""
