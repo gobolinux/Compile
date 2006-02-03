@@ -525,7 +525,7 @@ then
       cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
    else
       # Sources are already fetched, do not patch again
-      if [ -d "$cvs_module" ]
+      if [ -d "$compileSourcesDir/$cvs_module" ]
       then skippatching=yes
       fi
    fi
