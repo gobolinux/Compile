@@ -230,13 +230,25 @@ Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./
 if Boolean "no-default-options"
 then
    configure_options=()
+elif config_is_autoconf && Is_Entry "cross-compile"
+then
+   Log_Normal "Autoconf configure script detected."
+   configure_options=(
+      --prefix="$programdir"
+      --sysconfdir="$settingsdir"
+      --localstatedir="$variabledir"
+   	  --host=$HOST
+   	  --target=$TARGET
+   	  --x-includes=$goboHeaders
+   	  --x-libraries=$goboLibraries
+   )
 elif config_is_autoconf
 then
    Log_Normal "Autoconf configure script detected."
    configure_options=(
       --prefix="$programdir"
       --sysconfdir="$settingsdir"
-      --localstatedir="$variabledir" 
+      --localstatedir="$variabledir"
    )
 elif config_accepts_prefix
 then
