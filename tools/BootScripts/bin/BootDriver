@@ -32,6 +32,9 @@ do
    cmdline="${cmdline#* }"
 done
 
+# Shortcircuit for LiveCD
+[ "$modescript" = "LiveCD" ] && exec /bin/StartLiveCD
+]
 ### Launch the actual scripts ###
 
 local theme="$BootScriptsDir/Themes/$BootTheme"
