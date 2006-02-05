@@ -24,7 +24,9 @@
 #define OK 0
 #endif
 
+static char* goboPrefix = NULL;
 static char* goboPrograms = NULL;
+static char* goboProgramsSansPrefix = NULL;
 static char realpathGoboPrograms[PATH_MAX];
 static int lenGoboPrograms = 0;
 static char* relativeGoboPrograms = NULL;
@@ -75,23 +77,28 @@ static char* os_listdir(os_dir* dir) {
    return NULL;
 }
 
-inline void string_replace1(char* dest, char* buffer, char* from, char* to, int len) {
+inline bool string_replace1(char* dest, char* buffer, char* from, char* to, int len) {
    char tmpbuffer[len+1];
    char* out;
    if (dest == buffer)
       out = tmpbuffer;
    else
       out = dest;
-   char* match = strstr(buffer, to);
+   char* match = strstr(buffer, from);
    if (match) {
       int index = match-buffer;
       int indexrest = index + strlen(to);
       strncpy(out, buffer, index);
       strncpy(out + index, to, len - index);
       strncpy(out + indexrest, match + strlen(from), len - indexrest);
+   } else {
+      if (dest != buffer)
+         strcpy(dest, buffer);
+      return false;
    }
    if (dest == buffer)
       strcpy(buffer, tmpbuffer);
+   return true;
 }
 
 inline void string_set(char* buffer, int len, ...) {
@@ -218,7 +225,8 @@ static void create_single_link(char* src, char* dest) {
    snprintf(dotdest, PATH_MAX, "./%s", dest);
    if (relative) {
       char relativesrc[PATH_MAX+1];
-      string_replace1(relativesrc, src, realpathGoboPrograms, relativeGoboPrograms, PATH_MAX);
+      if (!string_replace1(relativesrc, src, realpathGoboPrograms, relativeGoboPrograms, PATH_MAX))
+         string_replace1(relativesrc, src, goboProgramsSansPrefix, relativeGoboPrograms, PATH_MAX);
       symlink(relativesrc, dotdest);
    } else {
       symlink(src, dotdest);
@@ -228,12 +236,7 @@ static void create_single_link(char* src, char* dest) {
 static void Link_Or_Expand(char* new) {
    count++;
    if (relative) {
-      char* prefix = getenv("goboPrefix");
-      char* candidate = goboPrograms;
-      if (prefix) {
-         assert(strlen(candidate) >= strlen(prefix));
-         candidate += strlen(prefix);
-      }
+      char* candidate = goboProgramsSansPrefix;
       if (*candidate == '/')
          candidate++;
       char buffer[1024];
@@ -356,6 +359,7 @@ int main(int argc, char** argv) {
       Log_Error("Could not determine $goboPrograms");
       exit(1);
    }
+   goboPrefix = getenv("goboPrefix");
    lenGoboPrograms = strlen(goboPrograms);
    // if goboPrograms ends with a '/'
    if (goboPrograms[lenGoboPrograms - 1] == '/')
@@ -371,6 +375,15 @@ int main(int argc, char** argv) {
          relative = true;
       } else if (strcmp(argv[argc], "--overwrite") == 0) {
          overwrite = true;
+      }
+   }
+
+   if (relative) {
+      if (goboPrefix) {
+         assert(strlen(goboPrograms) >= strlen(goboPrefix));
+         goboProgramsSansPrefix = goboPrograms + strlen(goboPrefix);
+      } else {
+         goboProgramsSansPrefix = goboPrograms;
       }
    }
 
