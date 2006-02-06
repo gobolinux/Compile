@@ -32,6 +32,7 @@ Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
 Add_Option_Boolean "C" "no-configure" "Do not run ./configure." # useful when resuming or retrying
 Add_Option_Boolean "S" "no-symlink" "Do not symlink."
+Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "U" "use-directory" "Use the directory already uncompressed"
 
 Parse_Conf Compile.conf
@@ -39,6 +40,8 @@ Parse_Conf Compile.conf
 Parse_Options "$@"
 shift $parsedArguments
 [ "$compileFlags" ] && Parse_Options $compileFlags
+
+Boolean "no-web" && noweb="--no-web"
 
 if Is_Writable "$goboExecutables" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
@@ -129,7 +132,10 @@ function install_extras() {
 }
 
 function wrapup() {
-   [ "$compileMetaRecipe" ] || SignProgram "$appname" "$versionnumber"
+   if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
+   then
+      SignProgram "$appname" "$versionnumber"
+   fi
 
    recipedeps="$reciperesources/Dependencies"
    Quiet mkdir -p "$reciperesources"
@@ -215,7 +221,6 @@ else
    shift 2
    # Find recipe:
    Log_Normal "Locating a recipe for $app $version..."
-   noweb=`Forward_Boolean_Entry "no-web"`
    String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
    [ "${rawrecipes[*]}" ] || {
       FindPackage $noweb --type=recipe "$app" &> /dev/null && {
@@ -399,7 +404,7 @@ if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    dep="$recipedir/Resources/Dependencies"
    Boolean no-build && batch="--batch"
-   [ -f "$dep" ] && Dependencies $crossCompile $batch -d -c -h -e $0 "$dep"
+   [ -f "$dep" ] && Dependencies $crossCompile $batch -d -c -h -e "$0 $noweb" "$dep"
 fi
 
 ##################################################
@@ -410,9 +415,9 @@ foreach_if_array_set "include" '
    iname=`echo $item | sed '\''s/--.*//'\''`
    iversion=`echo $item | sed '\''s/.*--//'\''`
    Boolean no-build && nobuild=--no-build
+   Boolean no-web && noweb=--no-web
    Boolean batch && batch=--batch
    Boolean use-directory && usedirectory=--use-directory
-   noweb=`Forward_Boolean_Entry "no-web"`
    export compileMetaRecipe=1
    if [ "$directrecipe" = "yes" ]
    then
