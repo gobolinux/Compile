@@ -88,6 +88,7 @@ else
    bname=`basename "$1" .tar.gz`
    bname=`basename "$bname" .tar.bz2`
    bname=`basename "$bname" .tgz`
+   bname=`basename "$bname" .tbz2`
    bname=`basename "$bname" .zip`
 
    if [ ! "$packagename" ]
