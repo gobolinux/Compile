@@ -247,7 +247,7 @@ if [ -f "$dependencies_file" ]
 then
    for dep in `cat "$dependencies_file" | tr ' ' ':' `
    do
-      dep_name="${dep%:*}";
+      dep_name="${dep%:*}"
       guess_dep_name=`GuessProgramCase "${dep_name}" 2> /dev/null`
       [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
       lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
@@ -334,6 +334,7 @@ then
    crossCompile="--cross-compile $arch"
    
    installprefix="$target"
+   # shouldn't this be $arch???
    archsubdir=$bakedrecipedir/$ARCH
    archrecipe=$bakedrecipedir/$ARCH/Recipe
    compileSourcesDir="$compileDir/Sources-$arch"
@@ -346,8 +347,9 @@ else
    installprefix="$target"
    crossCompile=""
 
-   archsubdir=$bakedrecipedir/`uname -m`
-   archrecipe=$bakedrecipedir/`uname -m`/Recipe
+   arch=`uname -m`
+   archsubdir=$bakedrecipedir/$arch
+   archrecipe=$bakedrecipedir/$arch/Recipe
 fi
 
 . "$recipe"
