@@ -34,10 +34,10 @@ done
 
 # Shortcircuit for LiveCD
 [ "$modescript" = "LiveCD" ] && exec /bin/StartLiveCD
-]
+
 ### Launch the actual scripts ###
 
-local theme="$BootScriptsDir/Themes/$BootTheme"
+theme="$BootScriptsDir/Themes/$BootTheme"
 if ! [ -e "$theme" ]
 then 
    echo "Theme $BootTheme not found. Reverting to failsafe."
