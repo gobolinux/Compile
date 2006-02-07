@@ -196,7 +196,7 @@ scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
 is_cvs=`echo $scriptsversion | grep CVS`
-if [ ! "$is_cvs" ] && [ "$scriptsversion" -a $svnr -gt 5 -o \
+if [ ! "$is_cvs" ] && [ "$scriptsversion" -a "$svnr" -gt 5 -o \
    \( `GuessLatest $smajormiddle 2.1` != $smajormiddle -a "$scriptsversion" != "GIT" \) \) ]
 then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
