@@ -30,10 +30,9 @@ Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
-Add_Option_Boolean "C" "no-configure" "Do not run ./configure." # useful when resuming or retrying
 Add_Option_Boolean "S" "no-symlink" "Do not symlink."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
-Add_Option_Boolean "U" "use-directory" "Use the directory already uncompressed"
+Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
 
 Parse_Conf Compile.conf
 
@@ -416,18 +415,19 @@ fi
 foreach_if_array_set "include" '
    iname=`echo $item | sed '\''s/--.*//'\''`
    iversion=`echo $item | sed '\''s/.*--//'\''`
-   Boolean no-build && nobuild=--no-build
-   Boolean no-web && noweb=--no-web
-   Boolean batch && batch=--batch
-   Boolean use-directory && usedirectory=--use-directory
+   unset options
+   Boolean no-build && options="$options --no-build"
+   Boolean no-web && options="$options --no-web"
+   Boolean batch && options="$options --batch"
+   Boolean lazy && options="$options --lazy"
    export compileMetaRecipe=1
    if [ "$directrecipe" = "yes" ]
    then
       ipath=${rawrecipes/$appname/$iname}
       ipath=${ipath/$versionnumber/$iversion}
-      $0 $nobuild $batch $usedirectory $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
+      $0 $options $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
    else
-      $0 $nobuild $batch $usedirectory $noweb $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+      $0 $options $crossCompile --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
    fi
    if [ "$?" -gt 0 ]
    then
@@ -550,7 +550,7 @@ else
    unpack=yes
    if [ -d "${dirs[0]}" ]
    then
-      if Boolean "use-directory"
+      if Boolean "lazy"
       then REPLY=u
       elif Boolean "batch"
       then REPLY=r
@@ -724,7 +724,7 @@ then
       PrepareProgram -t $batch $keep $prepareCross "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    is_function_set pre_build && pre_build
-   if ! Boolean "no-configure"
+   if ! Boolean "lazy"
    then
 	  [ -f "$configure" ] && chmod +x "$configure"
       (
