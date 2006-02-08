@@ -43,7 +43,7 @@ mv "$prefix" "$disabled" || Die "Couldn't disable $programname $versionnumber."
 
 filesdir=`mktemp`
 cd "$disabled"
-find -lname "${prefix}/*" > $filesdir
+find > $filesdir
 GrepReplace "./lib/"     "./Libraries/"    $filesdir
 GrepReplace "./sbin/"    "./Executables/"  $filesdir
 GrepReplace "./bin/"     "./Executables/"  $filesdir
@@ -51,7 +51,7 @@ GrepReplace "./man/"     "./Manuals/"      $filesdir
 GrepReplace "./include/" "./Headers/"      $filesdir
 GrepReplace "./info/"    "./Manuals/info/" $filesdir
 GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
-find ${goboEnvironment} -lname "${prefix}/*"  >> $filesdir
+find ${goboEnvironment} >> $filesdir
 cd ${goboLinks}
 
 Log_Normal "Removing links..."
