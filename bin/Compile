@@ -40,6 +40,7 @@ Parse_Options "$@"
 shift $parsedArguments
 [ "$compileFlags" ] && Parse_Options $compileFlags
 
+Boolean "lazy" && Set_Boolean "no-web"
 Boolean "no-web" && noweb="--no-web"
 
 if Is_Writable "$goboExecutables" || [ "$compileDisableSudo" = "yes" ]
