@@ -289,7 +289,7 @@ then versionnumber=`Entry "version-number"`
 else versionnumber="$version"
 fi
 
-if [ "$versionnumber" = "CVS" ]
+if [ "$versionnumber" = "CVS" -o "$versionnumber" = "cvs" ]
 then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
