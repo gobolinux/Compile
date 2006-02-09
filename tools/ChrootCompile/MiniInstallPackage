@@ -1,0 +1,35 @@
+#!/bin/sh
+
+goboPrograms=/Programs
+
+[ "$2" ] || {
+   echo "Usage:   `basename $0` <package-file> <root>"
+   echo "Example: `basename $0` Glibc--2.3.2--i686.tar.bz2 /Mount/Disk/"
+   exit 1
+} 
+
+package=`readlink -f "$1"`
+root="$2"
+
+base=$(basename $package)
+name=${base%%--*}
+version=${base#*--}
+version=${version%%--*}
+
+echo "Installing $name version $version..."
+
+cd "$root/$goboPrograms"
+unpacked=$(dirname $package)/$name
+if [ -d "$unpacked" ]
+then
+   #cp -R "$unpacked" .
+   mkdir "$name"
+   mount --bind "$unpacked" "$name"
+else
+   tar xjpf "$package"
+fi
+dsettings="$name/$version/Resources/Defaults/Settings"
+[ -d "$dsettings" ] && cp -R "$dsettings" "$name/Settings"
+cd -
+
+$(dirname $0)/MiniSymlinkProgram /Programs/$name/$version $root
