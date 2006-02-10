@@ -102,16 +102,19 @@ fi
 
 ### Parse options #######################################################################
 # 
-package=`GuessProgramCase $1 $2`
-if [ "$2" ]
+if ! Boolean "dependencies-file"
 then
-   version=`Get_Version "$package" "$2"`
-else
-   version=`Get_Version "$package" "Current"`
+   package=`GuessProgramCase $1 $2`
+   if [ "$2" ]
+   then
+      version=`Get_Version "$package" "$2"`
+   else
+      version=`Get_Version "$package" "Current"`
+   fi
+   prefix=`readlink -f $goboPrograms/$package/$version`
 fi
 
 execute=`Entry "execute"`
-prefix=`readlink -f $goboPrograms/$package/$version`
 
 if [ "$execute" ] && [ "`basename $execute`" = "Compile" ]
 then execute="$execute $crossCompile"
