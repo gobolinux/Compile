@@ -493,7 +493,7 @@ function Parse_Conf() {
 }
 
 # Some simple define for sudo
-sudo_validate="sudo -u #0 -v"
+sudo_validate="sudo -v"
 sudo_exec="sudo -u #0"
 
 # Respawn the script, asking for root privileges
