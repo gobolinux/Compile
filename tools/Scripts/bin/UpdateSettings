@@ -28,15 +28,24 @@ Add_Option_Boolean "c" "check" "Only check whether current settings differ from 
 Add_Option_Boolean "r" "report" "Only report whether current settings and defaults differ."
 Add_Option_Boolean "l" "list" "Only list files that differ between current settings and defaults. Don't change anything."
 Add_Option_Boolean "u" "update" "Interactively update the settings (deafult)."
+Add_Option_Boolean "q" "quick"  "Quickly update the settings, prompting only when necessary."
+Add_Option_Boolean "d" "diffs"  "When a file has been modified, show differences."
 
 Parse_Options "$@"
 shift $parsedArguments
+
+# If we're doing a quick update, we're still doing an update.
+if Boolean "quick"; then
+    Set_Boolean "report"
+    Set_Boolean "update"
+fi
+
 
 # The argument can be a path or a program name
 case "$1" in
        /*)  pdir="$1"           ; abs_path=yes ;;
        */*) pdir="$(pwd)/$1"    ; abs_path=no ;;
-       *)   pdir="/Programs/`GuessProgramCase $1`" ; abs_path=yes ;;
+       *)   pdir="${goboPrograms}/`GuessProgramCase $1`" ; abs_path=yes ;;
 esac
 
 Is_Directory "$pdir" || Die "$pdir not found or is not a directory"
@@ -73,6 +82,7 @@ function input_option() {
       read REPLY <&$stdinFD
       [ "$REPLY" != "" ] && break
    done
+   REPLY="`echo $REPLY | tr '[:upper:] [:lower:]'`"
 }
 
 function out()
@@ -185,30 +195,47 @@ function input_action()
        # Returns the selected option in $ACTION.
 
        Parameters "$@" num difftype file
-
-       echo "" >&$questionFD
-       echo " $num $difftype $file" >&$questionFD
-       echo "" >&$questionFD
+       
+       function show_changes()
+       {
+               echo "" >&$questionFD
+               echo " $num $difftype $file" >&$questionFD
+               echo "" >&$questionFD
+       }
 
        local action=""
        while [ "$action" = "" ]; do
                REPLY=""
                case $difftype in
                new*)
-                       input_option "[L]ist/[V]iew/[U]se/[S]kip/[SA]Skip all? "
-                       case $REPLY in
+                       if Boolean "quick"; then
+                               action=u
+                       else
+                               show_changes
+                               input_option "[L]ist/[V]iew/[U]se/[S]kip/[SA]Skip all? "
+                               case $REPLY in
                                v) action=vn ;;
                                l|vn|u|s|sa) action=$REPLY;;
-                       esac
+                               esac
+                       fi
                        ;;
                del*)
-                       input_option "[L]ist/[V]iew/[D]elete/[S]kip/[SA]Skip all? "
-                       case $REPLY in
+                       if Boolean "quick"; then
+                               action=s
+                       else
+                               show_changes
+                               input_option "[L]ist/[V]iew/[D]elete/[S]kip/[SA]Skip all? "
+                               case $REPLY in
                                v) action=vc ;;
                                l|vc|d|s|sa) action=$REPLY;;
-                       esac
+                               esac
+                       fi
                        ;;
                mod*)
+                       if Boolean "diffs"; then
+                          diff -u "${cur}" "${default}" >&$questionFD
+                       fi
+                       show_changes
                        input_option "[L]ist/[V]iew/[U]se new/[M]erge and edit/[S]kip/[SA]Skip all? "
                        case $REPLY in
                                v) input_option "View new [vn] or current [vc]? " ;;
@@ -238,6 +265,8 @@ function update_one_file()
                input_action $num $type "$file_to_show"
                case $ACTION in
                        s)      case "$difftype" in
+                                       mod*)    Log_Normal "Not updating $default" ;;
+                                       del*)    Log_Normal "Not deleting $default" ;;
                                        new*)    Log_Normal "Not using $default" ;;
                                        *) Log_Normal "Leaving $cur" ;;
                                esac
@@ -356,14 +385,17 @@ fi
 # Update settings
 ##############################################
 if Boolean "update"; then
-
-       while true; do
-               Ask_Option "Update settings in $pdir [y/n]? "
-               case "$REPLY" in
+       if Boolean "quick"; then #--Dan
+               Log_Normal "Quick-updating settings in $pdir"
+       else
+               while true; do
+                       Ask_Option "Update settings in $pdir [y/n]? "
+                       case "$REPLY" in
                        y|Y) break ;;
                        n|N) exit 0 ;;
-               esac
-       done
+                       esac
+               done
+       fi
 
        if Is_Directory "$pdir/Settings"; then
                mkdir -p "$pdir/Current/Resources"
