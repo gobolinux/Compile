@@ -133,7 +133,7 @@ class GoboApplication
       addOptionBoolean("debug", [], "Enable debug mode")
 
       @name = File.basename($0)
-      @version = File.basename(File.dirname(Gobo.RealPath(Gobo.RealPath("#{$0}/.."))))
+      @version = File.basename(File.dirname(File.dirname(Gobo.RealPath("#{$0}"))))
       @startDir = Dir.getwd
       $startDir = @startDir
       setLogLevel(LogLevelNormal)
