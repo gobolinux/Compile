@@ -23,7 +23,7 @@ end
 module Gobo
   DEFAULT_ARCH = "i686"
   def Gobo.RealPath (symLink)
-    return `readlink -f #{symLink}`.chomp!
+    return `readlink -f #{symLink}`.chomp
   end
 
   def Gobo.goodLink?(symlink)
