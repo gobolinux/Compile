@@ -702,7 +702,7 @@ fi
 if [ -d "$installprefix" -a "$needs_safe_linking" = "yes" ]
 then
    if [ -d "$installprefix-Compile-old" ]
-   then Log_Terse "Warning: backup version of this program already exists at $installprefix-Compile-old. Aborting."
+   then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
       cp -R "$installprefix" "$installprefix-Compile-old"
       do_symlink --no-make "$appname" "$version-Compile-old"
