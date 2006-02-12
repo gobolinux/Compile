@@ -35,43 +35,53 @@ Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricte
 Parse_Options "$@"
 shift $parsedArguments
 
+Parse_Conf Directories.conf
+
 ### Operation #################################################################
 Verify_Superuser
 
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
 
-sandbox_mp=`Temporary_Dir`
-if Is_Entry_Set "writedir"
-then
-    sandbox_rw=`Entry "writedir"`
-    Assert_Dir $sandbox_rw
-else
-    sandbox_rw=`Temporary_Dir`
-fi
+sandbox_mp=`mktemp -d "${unionSandboxMP}.tmp.XXXXXXXXXXX"`
+sandbox_rw=`mktemp -d "${unionSandboxRW}.tmp.XXXXXXXXXXX"`
 
 function RealPath {
     readlink -f $@
 }
 
-List_To_Array "sandbox" allowed
-allowed=(`Map RealPath "${allowed[@]}"`)
+List_To_Array "sandbox" bindmounts
+bindmounts=(`Map RealPath "${bindmounts[@]}"`)
 
 # Preset cmd status
 result=0
+
 # Called at end of script and by signal handler
 function cleanup() {
     Log_Normal "Cleaning up."
 #    Log_Verbose "Undoing the sandbox..."
 
     # Unmount bind mounts
-    For_Each allowed 'umount ${sandbox_mp}/${each}'
+    For_Each bindmounts 'umount ${sandbox_mp}/${each}'
     # Unmount unionfs
-    umount ${sandbox_mp}
+    For_Each unionSandbox 'umount ${sandbox_mp}${each}
+        rmdir ${sandbox_mp}${each}
+        rmdir ${sandbox_rw}${each} '
+
+    # Clean up legacy links
+    rm -rf ${sandbox_mp}/usr
+    rm  ${sandbox_mp}/bin ${sandbox_mp}/dev ${sandbox_mp}/etc 
+    rm  ${sandbox_mp}/lib ${sandbox_mp}/proc ${sandbox_mp}/sbin 
+    rm  ${sandbox_mp}/sys ${sandbox_mp}/tmp ${sandbox_mp}/var 
+
     # Remove tmp dirs
-    if ! Is_Entry_Set "writedir"
+    if Is_Entry_Set "writedir"
     then
-	rm -rf $sandbox_rw
+	writedir=`Entry "writedir"`
+	Log_Normal "Moving entries to: $writedir"
+	Assert_Dir $writedir
+	cp -ra "$sandbox_rw/." "$writedir"
     fi
+    rmdir $sandbox_rw
     rmdir $sandbox_mp
 
     exit $result
@@ -82,18 +92,30 @@ function sandbox_die() {
     result=1
     cleanup
 }
-trap "sandbox_dir 'Interrupted...'" SIGHUP SIGINT SIGTERM
+
+function mount_union() {
+    dir=$1
+    Assert_Dir ${sandbox_mp}${dir}
+    Assert_Dir ${sandbox_rw}${dir}
+    mount -t unionfs -o dirs=${sandbox_rw}${dir}=rw:${dir}=ro none ${sandbox_mp}${dir}
+    [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
+}
+
+trap "sandbox_die 'Interrupted...'" SIGHUP SIGINT SIGTERM
 
 Log_Verbose "Preparing the sandbox..."
 
 # Mount unionfs
-mount -t unionfs -o dirs=${sandbox_rw}=rw:/=ro none ${sandbox_mp}
-[ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
+For_Each unionSandbox 'mount_union $each'
 
 # Bind mount writable areas
 error=false
-For_Each allowed 'mount -o bind $each ${sandbox_mp}/${each}; [ "$?" = "0" ] || error=true'
+For_Each bindmounts 'mount -o bind $each ${sandbox_mp}/${each}; [ "$?" = "0" ] || error=true'
 [ "$error" = "false" ] || sandbox_die "Unable to mount writable areas in chroot"
+
+# Create legacy links
+cp -ar /usr "$sandbox_mp"
+cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var "$sandbox_mp"
 
 # Create wrapper
 newpwd="$PWD"
@@ -106,7 +128,6 @@ chmod a+x "${sandbox_mp}/.wrapper"
 
 
 # Run program in chrooted sandbox
-
 chroot $sandbox_mp /.wrapper
 result=$?
 
