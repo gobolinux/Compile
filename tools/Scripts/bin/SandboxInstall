@@ -50,6 +50,12 @@ fi
 
 [ "$1" -o "$1" = "--" ] || Die "Argument missing: specify the program name."
 
+if [ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] 
+then
+    Log_Error "unionfs is unavailable.  Fallback to FiboSandbox!"
+    unset UNIONSANDBOX
+fi
+
 package="`basename "$1" /`"
 package="`GuessProgramCase "$1"`"
 packageDir=`Get_Dir runtime "$package" ''`

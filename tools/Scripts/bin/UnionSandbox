@@ -41,6 +41,7 @@ Parse_Conf Directories.conf
 Verify_Superuser
 
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
+[ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] && Die "unionfs is unavailabe on this system."
 
 sandbox_mp=`mktemp -d "${unionSandboxMP}.tmp.XXXXXXXXXXX"`
 sandbox_rw=`mktemp -d "${unionSandboxRW}.tmp.XXXXXXXXXXX"`
