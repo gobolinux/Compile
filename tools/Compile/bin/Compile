@@ -963,8 +963,8 @@ then
       fulldst="$installprefix/$dst"
       mkdir -p $(dirname "$fulldst")
       if [ -d "$src" -a -d "$fulldst" ]
-      then cp "$src"/* "$fulldst"
-      else cp "$src" "$fulldst"
+      then cp -R "$src"/* "$fulldst"
+      else cp -R "$src" "$fulldst"
       fi
    done
    is_function_set pre_link && pre_link
