@@ -31,7 +31,8 @@ It may also confuse symbolic links that flow through the sandbox.
 Add_Option_Entry "w" "writedir" "The dir where writes outside sandbox are written."
 Add_Option_Entry "d" "directory" "The program should be run at <entry>. "\
 "This path should be either absolute, or relative to the sandbox root."
-Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted user has write access to." "."
+Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted process has write access to." "."
+Add_Option_List "m" "map" "Colon-separated mapping (lhs=rhs) where writes to rhs are mapped to lhs." ""
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -52,6 +53,7 @@ function RealPath {
 
 List_To_Array "sandbox" bindmounts
 bindmounts=(`Map RealPath "${bindmounts[@]}"`)
+List_To_Array "map" mapmounts
 
 # Preset cmd status
 result=0
@@ -61,12 +63,15 @@ function cleanup() {
     Log_Normal "Cleaning up."
 #    Log_Verbose "Undoing the sandbox..."
 
+    # Unmount map mounts
+    For_Each mapmounts 'rhs=$(readlink -f `echo $each | cut -d= -f2`)
+        umount ${sandbox_mp}${rhs}'
     # Unmount bind mounts
     For_Each bindmounts 'umount ${sandbox_mp}/${each}'
     # Unmount unionfs
     For_Each unionSandbox 'umount ${sandbox_mp}${each}
         rmdir ${sandbox_mp}${each}
-        rmdir ${sandbox_rw}${each} '
+        Quiet rmdir ${sandbox_rw}${each} '
 
     # Clean up legacy links
     rm -rf ${sandbox_mp}/usr
@@ -82,7 +87,7 @@ function cleanup() {
 	Assert_Dir $writedir
 	cp -ra "$sandbox_rw/." "$writedir"
     fi
-    rmdir $sandbox_rw
+    rm -rf $sandbox_rw
     rmdir $sandbox_mp
 
     exit $result
@@ -113,6 +118,15 @@ For_Each unionSandbox 'mount_union $each'
 error=false
 For_Each bindmounts 'mount -o bind $each ${sandbox_mp}/${each}; [ "$?" = "0" ] || error=true'
 [ "$error" = "false" ] || sandbox_die "Unable to mount writable areas in chroot"
+
+error=false
+For_Each mapmounts 'lhs=$(readlink -f `echo $each | cut -d= -f1`)
+    rhs=$(readlink -f `echo $each | cut -d= -f2`)
+    Assert_Dir $rhs
+    mount -o bind $lhs ${sandbox_mp}/$rhs 
+    [ "$?" = "0" ] || error=true
+    '
+[ "$error" = "false" ] || sandbox_die "Unable to mount map areas in chroot"
 
 # Create legacy links
 cp -ar /usr "$sandbox_mp"
