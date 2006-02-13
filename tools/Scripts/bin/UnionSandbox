@@ -63,14 +63,15 @@ function cleanup() {
     Log_Normal "Cleaning up."
 #    Log_Verbose "Undoing the sandbox..."
 
-    # Unmount map mounts
-    For_Each mapmounts 'rhs=$(readlink -f `echo $each | cut -d= -f2`)
-        umount ${sandbox_mp}${rhs}'
-    # Unmount bind mounts
-    For_Each bindmounts 'umount ${sandbox_mp}/${each}'
-    # Unmount unionfs
-    For_Each unionSandbox 'umount ${sandbox_mp}${each}
-        rmdir ${sandbox_mp}${each}
+    # Unmount everythin under $sandbox_mp
+    cat $goboStatus/mounts |tac |cut -d' ' -f2 |grep $sandbox_mp | \
+    while read mp
+    do
+        umount $mp
+    done
+
+    # Clean up unionfs mountpoints
+    For_Each unionSandbox 'rmdir ${sandbox_mp}${each}
         Quiet rmdir ${sandbox_rw}${each} '
 
     # Clean up legacy links
