@@ -40,8 +40,15 @@ assert_dir "$getRecipeRecipeDir"
 
 if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;} && ! [ -f "$1" ]
 then
-   GetRecipe `FindPackage --type=recipe $@`
-   exit 0
+   url=`FindPackage --type=recipe $@`
+   if [ "${url}" ]
+   then
+      GetRecipe "${url}"   
+      exit $?
+   else
+      Log_Terse "Recipe for $@ not found" 
+      exit 1
+   fi
 fi
 
 for rawrecipe in $@
@@ -122,8 +129,7 @@ do
    #####################################################
    
    Log_Normal "Error getting recipe $rawrecipe"
-   
-   
+
 done
 
 Die "Could not get recipe"
