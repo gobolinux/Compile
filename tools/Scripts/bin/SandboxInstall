@@ -54,6 +54,9 @@ if [ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ]
 then
     Log_Error "unionfs is unavailable.  Fallback to FiboSandbox!"
     unset UNIONSANDBOX
+else
+    Log_Normal "unionfs is available.  Using UnionSandbox!"
+    UNIONSANDBOX="true"
 fi
 
 package="`basename "$1" /`"
@@ -115,7 +118,6 @@ then
     sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
     map_settings="--map $installPackageDir/$version/Resources/Defaults/Settings=$installPackageDir/Settings"
     fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings"
-    Log_Normal "Using UnionSandbox!!!!!!"
 else
     fibosandbox="FiboSandbox -s $allowed"
 fi
