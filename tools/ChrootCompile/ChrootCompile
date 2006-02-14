@@ -152,7 +152,7 @@ do
       echo "Base dependency $dep could not be filled."
       exit 1
    }
-   sudo MiniInstallPackage "$pkg" "$root"
+   sudo $(dirname $0)/MiniInstallPackage "$pkg" "$root"
 done
 
 function sudo_rm_if_e() {

@@ -28,7 +28,7 @@ then
 fi
 
 #cp -R "$unpacked" .
-mkdir "$name"
+mkdir -p "$name"
 mount --bind "$unpacked" "$name"
 [ `ls "$name" | grep -v Settings | grep -v Variable | grep -v Current | wc -l` -gt 1 ] && {
    echo "MiniInstallPackage: too many versions inside directory $name. Bailing out."
