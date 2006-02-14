@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-CompileConfDir=/System/Settings/Compile
+source $(dirname `readlink -f $0`)/ChrootCompile.conf
 
 if [ "$1" == "--repack" ]
 then
@@ -215,7 +215,7 @@ sudo mount --bind Archives $root/Files/Compile/Archives
 trap cleanup TERM STOP HUP EXIT
 
 (
-   source "$CompileConfDir/Compile.conf"
+   source "$chrootcompileCompileConf"
    source "$1/Recipe"
    cd "$root/Files/Compile/Archives"
    if [ "$url" ]
