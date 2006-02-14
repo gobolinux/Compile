@@ -20,7 +20,6 @@ If no program version is specified, Current is assumed.
 Add_Option_Entry "s" "settings" "Link settings into ${goboSettings}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "l" "libraries" "Link libraries into ${goboLibraries}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "e" "executables" "Link executables into ${goboExecutables}: 'yes', 'no' or 'safe'." "yes"
-Add_Option_Entry "d" "daemons" "Link daemons into ${goboDaemons}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "h" "headers" "Link headers into ${goboHeaders}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "a" "shared" "Link shared files into ${goboShared}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "w" "wrappers" "Link wrappers into ${goboExecutables}: 'yes', 'no' or 'safe'." "yes"
@@ -64,7 +63,6 @@ Is_Writable "$goboExecutables" || Verify_Superuser
 linksettings=`Entry "settings"`
 linklibraries=`Entry "libraries"`
 linkexecutables=`Entry "executables"`
-linkdaemons=`Entry "daemons"`
 linktasks=`Entry "tasks"`
 linkheaders=`Entry "headers"`
 linkshared=`Entry "shared"`
@@ -247,14 +245,6 @@ if [ "$linktasks" != "no" ]
 then
    Log_Normal "Symlinking tasks..."
    link_directory "$current/Resources/Tasks" "$goboTasks"
-fi
-
-################################################################################
-
-if [ "$linkdaemons" != "no" ]
-then
-   Log_Normal "Symlinking daemon entries..."
-   link_defaults "$current/Resources/Daemons" "$goboDaemons"
 fi
 
 ################################################################################
