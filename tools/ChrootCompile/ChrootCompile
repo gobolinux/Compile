@@ -87,6 +87,12 @@ root=Area
 cleanup
 
 #sudo rm -rf $root
+if [ -d "$root" ]
+then
+   date=`date +%Y%m%d-%H%M`
+   echo "Backing up old $root to $root-old-$date."
+   sudo mv $root $root-old-$date
+fi
 
 mkdir -p $root
 mkdir -p $root/System/Links/Executables
@@ -136,20 +142,29 @@ ln -nfs /System/Links/Shared $root/usr/share
 
 cp -r Recipes $root/Files/Compile
 
+function filter_dir() {
+   grep -v Settings | grep -v Variable | grep -v Current
+}
+
 for dep in "${base_dependencies[@]}"
 do
-   [ `ls Clean/$dep--* 2> /dev=null | wc -l` -gt 1 ] && {
-      echo "More than one entry for $dep in Clean/ directory."
-      exit 1
-   } || true
-   [ `ls Bootstrap/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
-      echo "More than one entry for $dep in Bootstrap/ directory."
-      exit 1
-   } || true
-   pkg=`ls Clean/$dep--* 2> /dev/null || true`
-   [ ! "$pkg" ] && pkg=`ls Bootstrap/$dep--* 2> /dev/null | head -n 1`
+   pkg=
+   for repo in Clean Bootstrap
+   do
+      [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
+         echo "More than one entry for $dep in $repo/ directory."
+         exit 1
+      } || true
+      [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
+         echo "More than one entry for $dep in $repo/ directory."
+         exit 1
+      } || true
+      pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
+      [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
+      [ "$pkg" ] && break
+   done
    [ ! "$pkg" ] && {
-      echo "Base dependency $dep could not be filled."
+      echo "Base dependency $dep could not be found."
       exit 1
    }
    sudo $(dirname $0)/MiniInstallPackage "$pkg" "$root"
