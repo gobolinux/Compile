@@ -113,7 +113,8 @@ Log_Verbose "Sandbox: $allowed"
 if [ "$UNIONSANDBOX" ] 
 then
     sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
-    fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed"
+    map_settings="--map $installPackageDir/$version/Resources/Defaults/Settings=$installPackageDir/Settings"
+    fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings"
     Log_Normal "Using UnionSandbox!!!!!!"
 else
     fibosandbox="FiboSandbox -s $allowed"
