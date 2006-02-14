@@ -82,7 +82,7 @@ function input_option() {
       read REPLY <&$stdinFD
       [ "$REPLY" != "" ] && break
    done
-   REPLY="`echo $REPLY | tr '[:upper:] [:lower:]'`"
+   REPLY="`echo $REPLY | tr '[:upper:]' '[:lower:]'`"
 }
 
 function out()
