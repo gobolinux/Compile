@@ -53,20 +53,52 @@ Log_Normal "Creating script '${target}/CompressAndBuildISO'..."
 
 echo '#!/bin/sh
 
+mp=Environment
+
+# Ensure that no remaning mountpoint is still in use
+for dir in System/Kernel/Status \
+           System/Kernel/Devices \
+           Mount/CD-ROM/Programs_Local \
+           Mount/CD-ROM/Depot_Local \
+           Mount/CD-ROM/Users_Local \
+           Mount/CD-ROM
+do
+   umount "${mp}/${dir}" 2> /dev/null
+done
+
 if [ $1 ]
 then
     echo "Bypassing squashfs creation "
     echo "(call $0 without parameters to create it)"
 else
-    # compress the uncompressed files into a squashfs file
+    #
+    # do not compress Files/Compile/{Archives,Sources} (except kernel sources)
+    #
+    echo "Moving ${mp}/Files/Compile/{Archives,Sources} to a temporary place..."
+    mkdir -p CompileTemp/{Archives,Sources}
+    mv ${mp}/Files/Compile/Archives/*     CompileTemp/Archives 2> /dev/null
+    mv ${mp}/Files/Compile/Sources/*      CompileTemp/Sources  2> /dev/null
+	mv CompileTemp/Sources/linux-2*       ${mp}/Files/Compile/Sources  2> /dev/null
+	mv CompileTemp/Archives/linux-2*      ${mp}/Files/Compile/Archives 2> /dev/null
+
+    #
+    # compress files into a squashfs image
+    #
     echo "Creating squashfs compressed file..."
     time nice -20 mksquashfs Environment/* LiveCD/GoboLinux.squashfs -noappend
+
+    #
+    # Move back {Archives,Sources} to the Compile tree
+    #
+    echo "Moving back {Archives,Sources} to the Compile tree..."
+    mv CompileTemp/Archives/*     ${mp}/Files/Compile/Archives 2> /dev/null
+    mv CompileTemp/Sources/*      ${mp}/Files/Compile/Sources  2> /dev/null
 fi
 
 # having the squashfs file, you can prepare the bootable iso
 echo "Building ISO..."
 iso_name="BuiltISO/GoboLinux-NoVersion.iso"
-time nice -20 mkisofs -R -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table LiveCD  > $iso_name
+time nice -20 mkisofs -R -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table LiveCD > $iso_name
 ' > "${target}/CompressAndBuildISO"
 chmod +x "${target}/CompressAndBuildISO"
 
@@ -91,7 +123,9 @@ then
    mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
 
    echo "Chrooting into ${mp} "
+   chroot ${mp} StartTask GoboHide 2> /dev/null
    chroot ${mp}
+   chroot ${mp} StopTask  GoboHide 2> /dev/null
 
    sync
 
@@ -114,18 +148,60 @@ then
 else
    echo "Error: $mp" "dont exist."
 fi
-
-# additional thing to check before releasing a LiveCD
-# cd /Programs/; time for i in *; do echo $i; mkdir $i/Current/Resources/; Dependencies $i > $i/Current/Resources/Dependencies; done
-# cd /Programs/; du --max-depth=1 > /Depot/Install/Wizard/Auxiliary/Programs_du.txt
-# cd /Programs/; \ls > /Depot/Install/Wizard/Profiles/Full
-# cd /Programs/; grep Warn */Current/Resources/Dependencies
-# cd /Depot/Install/Wizard/Profiles/; for i in `cat Typical`; do [ "`grep "$i" Full`" ] || echo $i; done
-# cd /Depot/Install/Wizard/Profiles/; for i in `cat Base`; do [ "`grep "$i" Full`" ] || echo $i; done
-# for i in *; do [ -d $i/Settings ] && { diff -r $i/Settings $i/Current/Resources/Defaults/Settings &> /dev/null  || echo $i; }; done
 ' > "${target}/ChrootEnvironment"
-
 chmod +x "${target}/ChrootEnvironment"
+
+
+Log_Normal "Creating script '${target}/PerformLastSteps'..."
+echo '#!/bin/sh
+
+# Perform additional things before releasing the LiveCD
+
+mp="Environment"
+export CURR_HOSTNAME=`hostname`
+
+# Quiet perl!
+unset LANG
+unset LC_ALL
+
+skip_dependencies=0
+[ "$1" = "--nodeps" ] && skip_dependencies=1
+
+if [ -d "$mp" ]
+then
+   pushd ${mp}/Programs >& /dev/null
+
+   if [ "$skip_dependencies" ]
+   then
+       echo -e "Updating the dependencies list"
+           for i in *
+           do
+                   echo "   $i"
+                   mkdir -p $i/Current/Resources
+                   chroot .. Dependencies $i > $i/Current/Resources/Dependencies
+           done
+   fi
+
+   echo -e "\nCreating the Programs_du text file"
+   du --max-depth=1 > Installer/Current/Shared/Installer/Information/Programs_du.txt
+
+   echo -e "\nUpdating the Full profile"
+   \ls > Installer/Current/Shared/Installer/Profiles/Full
+
+   echo -e "\nChecking for missing dependencies"
+   grep Warn */Current/Resources/Dependencies
+   popd >& /dev/null
+
+   echo -e "\nChecking for missing applications listed on Base profile"
+   pushd ${mp}/Programs/Installer/Current/Shared/Installer/Profiles >& /dev/null
+   for i in `cat Base`
+   do
+           [ "`grep "$i" Full`" ] || echo $i
+   done
+   popd >& /dev/null
+fi
+' > "${target}/PerformLastSteps"
+chmod +x "${target}/PerformLastSteps"
 
 
 Log_Normal "Creating file '${target}/README'..."
@@ -134,15 +210,13 @@ echo '
 ==============================================================================
  GoboLinux LiveCD Building Environment
  --------------------------------------
- André Detsch - Last Updated 22/02/2005
+ André Detsch - Last Updated 14/02/2006
 ==============================================================================
 
 This is a simple environment on which someone can easily customize gobolinux
 live/installation CD (012 or above).
 
-The process is really # Unmount LiveCD:
-#   umount /Mount/CD-ROM
-easy, and has evolved through the lasts releases.
+The process is really easy, and has evolved through the lasts releases.
 
 ==============================================================================
  Performing basic changes on the GoboLinux LiveCD
@@ -156,7 +230,7 @@ There is a convenience script that binds /dev and /proc,
 calls chroot and do some other simple tasks. All you have to do is run
   ChrootEnvironment
 
-Since 012aplha1 (when we started to use squashfs), you can perform changes
+Since 012alpha1 (when we started to use squashfs), you can perform changes
 directly in the "Environment" directory without having to call this script
 (in this case, jump to Phase 4). By the way, chrooting into the Enviroment
 directory enables you to use the management scripts (InstallPackage, RemoveProgram, etc.)
@@ -170,12 +244,17 @@ Just call
   "exit" or "^d"
 The "ChrootEnvironment" script will do the rest, including unbinding everything
 
-=> Phase 4 - Building the new ISO
+=> Phase 4 - Make sane checks on the environment before creating the ISO
+call
+  PerformLastSteps
+The script will check for dependencies and warn you on any problems.
+
+=> Phase 5 - Building the new ISO
 call
   CompressAndBuildISO
 as the name sugests, it will do two things:
-- it creates an squashfs file (inside LiveCD)
-- it builds an BuiltISO/GoboLinux-NoVersion.iso iso file.
+- create an squashfs file (inside LiveCD)
+- build an BuiltISO/GoboLinux-NoVersion.iso iso file.
 
 Thats it!
 
@@ -184,7 +263,7 @@ Thats it!
 ==============================================================================
 
 => Changing the kernel: to change the kernel to be used in LiveCD, you must
-udpate it the kernel image at LiveCD/isolinux/kernel;
+udpate the kernel image at LiveCD/isolinux/kernel;
 
 
 ==============================================================================
@@ -202,9 +281,6 @@ to place or get files easily from outside the chrooted environment.
 
 - LiveCD -> cointains the things needed to build the LveCD (squashfs file
 and isolinux directory)
-
-You may change any of the above names, just correct the "ChrootEnvironment"
-and "CompressAndBuildISO" scripts.
 
 Tip: if you dont have enough free space in one partition, you can create symlinks
 (e.g. ${DIR}BuiltISO -> /Depot/BuiltISO), so you dont have to edit the scripts.
