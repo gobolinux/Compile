@@ -18,18 +18,25 @@ version=${version%%--*}
 
 echo "Installing $name version $version..."
 
-cd "$root/$goboPrograms"
+pushd "$root/$goboPrograms" &> /dev/null
 unpacked=$(dirname $package)/$name
-if [ -d "$unpacked" ]
+if ! [ -d "$unpacked" ]
 then
-   #cp -R "$unpacked" .
-   mkdir "$name"
-   mount --bind "$unpacked" "$name"
-else
+   pushd $(dirname $package) &> /dev/null
    tar xjpf "$package"
+   popd &> /dev/null
 fi
+
+#cp -R "$unpacked" .
+mkdir "$name"
+mount --bind "$unpacked" "$name"
+[ `ls "$name" | grep -v Settings | grep -v Variable | grep -v Current | wc -l` -gt 1 ] && {
+   echo "MiniInstallPackage: too many versions inside directory $name. Bailing out."
+   exit 1
+}
+
 dsettings="$name/$version/Resources/Defaults/Settings"
 [ -d "$dsettings" ] && cp -R "$dsettings" "$name/Settings"
-cd -
+popd &> /dev/null
 
 $(dirname $0)/MiniSymlinkProgram /Programs/$name/$version $root
