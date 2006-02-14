@@ -96,8 +96,8 @@ function expand_dirs()
        local difftype file
 
        while read difftype file; do
-               if Is_Directory "$file"; then
-                       find "$file" -type f | sed "s/^/$difftype /"
+               if Is_Directory "$file" && [ "$file" != "CVS" ]; then
+                       find "$file" -type f | grep -v "/CVS/" |sed "s/^/$difftype /"
                else
                        echo "$difftype $file"
                fi
