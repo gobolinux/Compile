@@ -216,18 +216,18 @@ echo '
 This is a simple environment on which someone can easily customize gobolinux
 live/installation CD (012 or above).
 
-The process is really easy, and has evolved through the lasts releases.
+The process is really easy, and has evolved through the latest releases.
 
 ==============================================================================
  Performing basic changes on the GoboLinux LiveCD
 ==============================================================================
 
-Package needed: SquashFS-Tools 2.0
-                A squashfs enabled kernel
+Packages needed: SquashFS-Tools 2.0
+                 A squashfs enabled kernel
 
 => Phase 1 - Chroot into copied system:
 There is a convenience script that binds /dev and /proc,
-calls chroot and do some other simple tasks. All you have to do is run
+calls chroot and does some other simple tasks. All you have to do is run
   ChrootEnvironment
 
 Since 012alpha1 (when we started to use squashfs), you can perform changes
@@ -244,7 +244,7 @@ Just call
   "exit" or "^d"
 The "ChrootEnvironment" script will do the rest, including unbinding everything
 
-=> Phase 4 - Make sane checks on the environment before creating the ISO
+=> Phase 4 - Make sanity checks on the environment before creating the ISO
 call
   PerformLastSteps
 The script will check for dependencies and warn you on any problems.
@@ -252,18 +252,18 @@ The script will check for dependencies and warn you on any problems.
 => Phase 5 - Building the new ISO
 call
   CompressAndBuildISO
-as the name sugests, it will do two things:
+As the name sugests, it will do two things:
 - create an squashfs file (inside LiveCD)
 - build an BuiltISO/GoboLinux-NoVersion.iso iso file.
 
-Thats it!
+That'\''s it!
 
 ==============================================================================
  Advanced features:
 ==============================================================================
 
 => Changing the kernel: to change the kernel to be used in LiveCD, you must
-udpate the kernel image at LiveCD/isolinux/kernel;
+update the kernel image at LiveCD/isolinux/kernel;
 
 
 ==============================================================================
@@ -282,8 +282,8 @@ to place or get files easily from outside the chrooted environment.
 - LiveCD -> cointains the things needed to build the LveCD (squashfs file
 and isolinux directory)
 
-Tip: if you dont have enough free space in one partition, you can create symlinks
-(e.g. ${DIR}BuiltISO -> /Depot/BuiltISO), so you dont have to edit the scripts.
+Tip: if you don'\''t have enough free space in one partition, you can create symlinks
+(e.g. ${DIR}BuiltISO -> /Depot/BuiltISO), so you don'\''t have to edit the scripts.
 ' > "${target}/README"
 
 
