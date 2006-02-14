@@ -1,6 +1,7 @@
 #!/bin/sh (source)
 
 Import File
+Import String
 
 function Get_Version() {
    Parameters "$@" package version
@@ -13,6 +14,19 @@ function Get_Version() {
    fi
    return 1
 }
+
+function Parse_Version() {
+    Parameters "$@" url
+    if Starts_With "http" "$url"
+    then
+        echo `echo "$url" | sed s/'.*--\(.*\)--.*'/'\1'/`
+	return 0
+    else
+        echo `Get_Token "$url" "/" "-1"`
+	return 0
+    fi
+}
+
 
 function Link_Or_Expand_All() {
 
