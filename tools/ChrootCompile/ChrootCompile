@@ -1,6 +1,8 @@
 #!/bin/sh -e
 
-source $(dirname `readlink -f $0`)/ChrootCompile.conf
+scriptdir=$(dirname `readlink -f $0`)
+
+source $scriptdir/ChrootCompile.conf
 
 if [ "$1" == "--repack" ]
 then
@@ -167,7 +169,7 @@ do
       echo "Base dependency $dep could not be found."
       exit 1
    }
-   sudo $(dirname $0)/MiniInstallPackage "$pkg" "$root"
+   sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
 done
 
 function sudo_rm_if_e() {
@@ -240,6 +242,7 @@ sudo chroot $root ldconfig
 echo "ChrootCompile: Will run Compile..."
 sudo chroot $root Compile --no-web --no-sign $name $version
 sudo chroot $root CreatePackage --no-sign --no-verify $name $version
-cp $root/$name--$version--`uname -m`.tar.bz2 Clean
+mkdir -p $scriptdir/Clean
+cp $root/$name--$version--`uname -m`.tar.bz2 $scriptdir/Clean
 
 
