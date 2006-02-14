@@ -118,16 +118,17 @@ function install_extras() {
 
    for d in "${dirs[@]}"
    do
-      cd "$d"
-      for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval ls "${docs[@]}"`
-      do
-         if [ -e "$d/$i" ]
-         then
-            $sudo mkdir -p "$docdir"
-            $sudo cp "$d/$i" "$docdir"
-         fi
-      done
-      cd -
+      Quiet pushd "$d" && {
+         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval ls "${docs[@]}"`
+         do
+            if [ -e "$d/$i" ]
+            then
+               $sudo mkdir -p "$docdir"
+               $sudo cp "$d/$i" "$docdir"
+            fi
+         done
+         popd
+      }
    done
 }
 
