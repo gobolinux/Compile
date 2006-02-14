@@ -140,7 +140,7 @@ ln -nfs /System/Links/Executables $root/usr/sbin
 ln -nfs /System/Links/Shared $root/usr/share
 
 
-cp -r Recipes $root/Files/Compile
+cp -rL Recipes $root/Files/Compile
 
 function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
