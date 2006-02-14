@@ -115,6 +115,29 @@ function strip_and_link() {
    fi
 }
 
+function copy_directory() {
+   Parameters "$@" from to
+
+   if Is_Directory "$from" && {
+         ! Exists "$to" || Is_Empty_Directory "$to"
+      }
+   then
+      Make_Directory "$to"
+      Quiet cp -dR --preserve=mode,timestamps,links "$from"/* "$to"
+   fi
+}
+
+function link_defaults() {
+   Parameters "$@" src dst
+   local bdir ddir
+   
+   bdir=`basename "$src"`
+   ddir="$current/Resources/Defaults/$bdir"
+   copy_directory "$ddir" "$src"
+   link_directory "$src" "$dst"
+   copy_directory "$src" "$ddir"
+}
+
 function system_is_ok() {
    #TODO: check more needed stuff (sed, awk, head, ...)
    python -V                &> /dev/null || { Log_Error "Python is not working";           return 1 ;}

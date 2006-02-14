@@ -113,10 +113,12 @@ allowed=".$expandsandbox:$installPackageDir/$version:$packageDir/Settings:$packa
 Is_Entry "add-allowed" && allowed="$allowed:`Entry "add-allowed"`"
 Log_Verbose "Sandbox: $allowed"
 
+settings="$installPackageDir/Settings"
+default_settings="$installPackageDir/$version/Resources/Defaults/Settings"
 if [ "$UNIONSANDBOX" ] 
 then
     sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
-    map_settings="--map $installPackageDir/$version/Resources/Defaults/Settings=$installPackageDir/Settings"
+    map_settings="--map ${default_settings}=${settings}"
     fibosandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings"
 else
     fibosandbox="FiboSandbox -s $allowed"
@@ -124,6 +126,16 @@ fi
 
 Boolean "no-sandbox" && fibosandbox=
 [ "$ROOTLESS_GOBOLINUX" ] && fibosandbox=
+
+# If not using UnionSandbox (including --no-sandbox" and rootless)
+# symlink Settings to Defaults/Settings
+if [ "$UNIONSANDBOX" = "" ] || [ "$fibosandbox" = "" ]
+then
+    Assert_Dir $default_settings
+    Is_Directory "${settings}" && mv "${settings}" "${settings}.hold"
+    ln -s "${default_settings}" "${settings}"
+fi
+
 if Is_Entry "command"
 then
    $fibosandbox `Entry "command"` "$@" || Die "Installation failed."
@@ -131,6 +143,12 @@ else
    $fibosandbox make -f "`Entry "makefile"`" "$@" `Entry "target"` || Die "Installation failed."
 fi
 result="$?"
+
+if [ "$UNIONSANDBOX" = "" ] || [ "$fibosandbox" = "" ]
+then
+    Is_Link "${settings}" && rm "${settings}"
+    Is_Directory "${settings}.hold" && mv "${settings}.hold" "${settings}"
+fi
 
 if [ "$UNIONSANDBOX" ] && [ "$fibosandbox" ]
 then
