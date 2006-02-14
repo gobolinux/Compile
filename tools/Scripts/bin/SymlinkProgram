@@ -236,7 +236,7 @@ fi
 if [ "$linksettings" != "no" ]
 then
    Log_Normal "Symlinking global settings..."
-   link_defaults "$packageDir/Settings" "$goboSettings"
+   link_directory "$packageDir/Settings" "$goboSettings"
 fi
 
 ################################################################################

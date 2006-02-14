@@ -280,6 +280,7 @@ then
 fi
 Quiet cd -
 
+UpdateSettings $packagename
 
 if [ "$packagename" = "Scripts" ]
 then
