@@ -44,6 +44,10 @@ Verify_Superuser
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
 [ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] && Die "unionfs is unavailabe on this system."
 
+[ "${unionSandbox[0]}" = "" ] && Die "Please set unionSandbox in Settings/Scripts/Directories.conf"
+[ "$unionSandboxMP" = "" ] && Die "Please set unionSandboxMP in Settings/Scripts/Directories.conf"
+[ "$unionSandboxRW" = "" ] && Die "Please set unionSandboxRW in Settings/Scripts/Directories.conf"
+
 sandbox_mp=`mktemp -d "${unionSandboxMP}.tmp.XXXXXXXXXXX"`
 sandbox_rw=`mktemp -d "${unionSandboxRW}.tmp.XXXXXXXXXXX"`
 
