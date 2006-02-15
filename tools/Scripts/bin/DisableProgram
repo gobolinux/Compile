@@ -39,6 +39,10 @@ Log_Normal "Disabling ${programname}, version ${versionnumber}."
 
 disabled="${goboPrograms}/$programname/$versionnumber-Disabled"
 
+if [ "`Get_Version "$programname" "Current"`" == "$versionnumber" ]
+then
+    rm -rf ${goboPrograms}/$programname/Current
+fi
 mv "$prefix" "$disabled" || Die "Couldn't disable $programname $versionnumber."
 
 filesdir=`mktemp`
