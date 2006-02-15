@@ -3,6 +3,14 @@
 Import File
 Import String
 
+function Get_Architecture() {
+   arch=`uname -m`
+   case "$arch" in
+	   arm*) arch=arm ;;
+   esac
+   echo "$arch"
+}
+
 function Get_Version() {
    Parameters "$@" package version
    ! Exists "$goboPrograms/$package/$version" && return 1
