@@ -4,10 +4,12 @@ Import File
 Import String
 
 function Get_Architecture() {
-   arch=`uname -m`
+   [ "$1" = "" ] && arch=`uname -m` || arch="$1"
+   
    case "$arch" in
 	   arm*) arch=arm ;;
    esac
+   
    echo "$arch"
 }
 
