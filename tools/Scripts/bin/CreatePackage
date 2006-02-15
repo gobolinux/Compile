@@ -68,7 +68,7 @@ if Exists "$archfile"
 then
    architecture=`cat "$archfile"`
 else
-   architecture=`uname -m`
+   architecture=`Get_Architecture`
 fi
 
 packagefile="$package--$versionnumber--$architecture.tar"
