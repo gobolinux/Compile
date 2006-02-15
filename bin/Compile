@@ -840,7 +840,7 @@ then
    if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
    then
       [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-      [ -e `Get_Dir runtime Perl-XML-Writer ''` || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
    fi
 
    if [ "${without[*]}" ]
