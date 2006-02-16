@@ -109,6 +109,7 @@ function mount_union() {
     dir=$1
     Assert_Dir ${sandbox_mp}${dir}
     Assert_Dir ${sandbox_rw}${dir}
+	[ ! -h ${goboDevices}/root ] && ln -s / ${goboDevices}/root
     mount -t unionfs -o dirs=${sandbox_rw}${dir}=rw:${dir}=ro none ${sandbox_mp}${dir}
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 }
