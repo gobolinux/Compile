@@ -6,6 +6,7 @@ Import GoboLinux
 Import Log
 Import OptionParser
 Import Process
+Import PostInstall
 
 ### Options ###################################################################
 
@@ -241,12 +242,14 @@ else
 fi
 
 verify_opts="--quiet"
+package_verified="false"
 Boolean "verbose" && verify_opts="--verbose"
 VerifyProgram $verify_opts "$packagename" "$packageversion"
 result="$?"
 if [ $result -eq 0 ]
 then
    Log_Normal "Package Signature Verified"
+   package_verified="true"
 elif [ $result -eq 2 ]
 then
    Log_Question "GnuPG not installed.  Unable to verify signature"
@@ -291,6 +294,7 @@ then
 fi
 
 SymlinkProgram "$packagename" "$packageversion"
+[ "$package_verified" = "true" ] && Run_PostInstall "$packagename" "$packageversion" "" ""
 
 
 if ! Boolean "no-dependencies"
