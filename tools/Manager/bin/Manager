@@ -923,15 +923,15 @@ class ManagerUIImpl(ManagerUI) :
 			apps.append(p)
 		self.do(cmds, apps)
 	
+	
 	def addCommandsForDependencies(self, p,v,t,u, cmds,apps, justDownload) :
 		if (self.configWindow.autoDependencies.isChecked()) :
-			
 			if self.configWindow.allwaysUpdate.isChecked() :
 				mode='updating'
 			else :
 				mode='missing'
 				
-			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode)
+			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install)
 				
 			tr = []
 			for c in sols :
@@ -942,7 +942,7 @@ class ManagerUIImpl(ManagerUI) :
 					self.addCommandsForInstallPackage(pp,vv,tt,uu,cmds,apps,justDownload)
 				else :
 					assert(False)
-		#TODO: add questions on else here
+		#TODO: add questions on else here. Or not.
 	
 	def addCommandsForInstallPackage(self, p,v,kind,path,cmds,apps,justDownload=False) :
 		if justDownload :
@@ -1282,6 +1282,13 @@ def updateOnlyHook(label=None, i=0, n=0, showWhenChanged = True) :
 	print 'hook'
 	qApp.processEvents()
 	qApp.unlock()
+
+
+def gui_ask_if_install(match) :
+	p,v,t,u=match
+	global widget
+	resp = QMessageBox.warning(widget, 'Dependencies checking', "Install %s %s %s or skip this dependency?"%(p,v,t), 'Install', 'Skip')
+	return resp == 0
 
 widget = ManagerUIImpl()
 qApp.setMainWidget(widget)

@@ -12,7 +12,6 @@
 #  'main()'
 #############################################################################
 from GetAvailable import *
-from GetInstalled import *
 from GuessLatest import *
 
 def applyFilter(availables, filter_rule, report_missing = False) :
