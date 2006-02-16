@@ -10,7 +10,7 @@ function Run_PostInstall() {
    local program_set=`Get_Dir runtimeSettings "$app_name" "$app_ver"`
    local rw_dest="${program_dir}/.PostInstall_Root"
 
-   Is_Executable "${program_dir}/Resources/PostInstall" || return
+   Is_Executable "${program_dir}/Resources/PostInstall" || return 0
 
    local sandbox_options="--sandbox $program_dir"
    Is_Directory "$program_set" && sandbox_options="${sandbox_options}:${program_set}"
