@@ -7,6 +7,7 @@ Parse_Conf Compile/Compile.conf
 
 helpOnNoArguments=yes
 scriptDescription="Perform all sorts of sanity checks in a recipe."
+scriptCredits="(C)2005-2006 Hisham Muhammad, released under the GNU GPL."
 scriptUsage="<recipe-file>"
 scriptExample="Foo--1.0--recipe.tar.bz2"
 Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use cache)."
@@ -82,7 +83,7 @@ touch "$report" &> /dev/null
 
 echo
 msg "RecipeLint"
-msg "by Hisham Muhammad"
+msg "=========="
 msg "Checking $recipename on `date`"
 ###############################################################################
 msg "Checking recipe file..."
@@ -343,7 +344,7 @@ test_urls() {
       then msg "Checking URL..."
       else msg "Downloading file ($file_size bytes)..."
       fi
-      wget --quiet $spider --timeout=10 --tries=3 "$url"
+      wget --quiet $spider --timeout=20 --tries=3 "$url"
    }      
 
    for i in `seq 0 $[${#urls[@]}-1]`
@@ -590,9 +591,28 @@ test_resources() {
    [ -d Resources ] || {
       ERROR "No Resources directory."
    }
-   [ -f Resources/Dependencies ] || {
-      ERROR "No Resources/Dependencies file."
-   }
+   depfile=Resources/Dependencies
+   if [ -f $depfile ]
+   then
+      grep -q "^#" $depfile && {
+         ERROR "Dependencies file contains unmatched library dependencies."
+      }
+      for line in `grep -v "^#" $depfile | tr ' ' '@'`
+      do
+         depname="${line%@*}"
+         depversion="${line#*@}"
+         echo "Checking for dependency $depname $depversion..."
+         if ! FindPackage --types=recipe $depname $depversion &> /dev/null
+         then
+            if FindPackage --types=official_package $depname $depversion &> /dev/null
+            then WARN "$depname $depversion available only as a package."
+            else ERROR "Dependency $depname $depversion not available."
+            fi
+         fi
+      done
+   else
+      ERROR "No $depfile file."
+   fi
    [ -f Resources/Description ] || {
       WARN "No Resources/Description file."
    }
