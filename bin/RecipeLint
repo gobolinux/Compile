@@ -72,7 +72,7 @@ recipetar=$(readlink -f "$1")
 [ "$recipetar" ] || recipetar="$1"
 recipename=$(basename "$recipetar")
 
-report=$(dirname $(readlink -f $0))/$(basename $recipetar .tar.bz2).report.txt
+report=$PWD/$(basename $recipetar .tar.bz2).report.txt
 touch "$report" &> /dev/null
 [ -w "$report" ] || {
    echo "No write permission for report file '$report'."
