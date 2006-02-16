@@ -91,6 +91,7 @@ function cleanup() {
 	Log_Normal "Moving entries to: $writedir"
 	Assert_Dir $writedir
 	cp -ra "$sandbox_rw/." "$writedir"
+	mv $sandbox_mp/* $writedir
     fi
     rm -rf $sandbox_rw
     rmdir $sandbox_mp
