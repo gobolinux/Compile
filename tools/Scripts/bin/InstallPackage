@@ -283,8 +283,6 @@ then
 fi
 Quiet cd -
 
-UpdateSettings $packagename
-
 if [ "$packagename" = "Scripts" ]
 then
     cd "${goboPrograms}/$packagename/Current/bin"
@@ -294,6 +292,9 @@ then
 fi
 
 SymlinkProgram "$packagename" "$packageversion"
+
+UpdateSettings $packagename
+
 [ "$package_verified" = "true" ] && Run_PostInstall "$packagename" "$packageversion" "" ""
 
 
