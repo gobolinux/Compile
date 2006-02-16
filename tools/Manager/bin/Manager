@@ -931,7 +931,7 @@ class ManagerUIImpl(ManagerUI) :
 			else :
 				mode='missing'
 				
-			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install)
+			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook)
 				
 			tr = []
 			for c in sols :
@@ -1132,7 +1132,7 @@ class ManagerUIImpl(ManagerUI) :
 					for pp in blockedPrograms :
 						l = cmd.split() 
 						v = l[-1] # .* Compile .* <program> <version>
-						if does_x_depend_on_y((p, v, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'] ) :
+						if does_x_depend_on_y((p, v, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
 							print p,v,'recipe','DOES! depend on',pp
 							return False
 						else :

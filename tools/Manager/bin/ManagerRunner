@@ -262,12 +262,13 @@ class Logger :
 		return self.runWindow
 
 
-class RunningWindow(QDialog) :
+class RunningWindowWithoutButtons(QDialog) :
 	def __init__(self, callOnClose = None):
 		QDialog.__init__(self)
 		self.setName("RunningWindow")
 		RunningWindowLayout = QGridLayout(self,1,1,11,6,"RunningWindow")
 		self.tabWidget = QTabWidget(self,"tabWidget")
+		
 		RunningWindowLayout.addMultiCellWidget(self.tabWidget,0,0,0,1)
 		self.setCaption("GoboLinux Manager")
 		self.resize(QSize(561,484).expandedTo(self.minimumSizeHint()))
@@ -277,6 +278,76 @@ class RunningWindow(QDialog) :
 	def closeEvent(self, e) :
 		self.callOnClose(False)
 		e.accept()
+
+
+class RunningWindowWithButtons(QDialog):
+	def __init__(self,callOnClose = None):
+		QDialog.__init__(self)
+		self.setName("RunningWindow")
+		Form1Layout = QGridLayout(self,1,1,11,6,"Form1Layout")
+		self.tabWidget = QTabWidget(self,"tabWidget")
+		
+		Form1Layout.addMultiCellWidget(self.tabWidget,0,0,0,3)
+		self.resumeButton = QPushButton(self,"Resume_All")
+		self.resumeButton.setText("Resume All")
+		Form1Layout.addWidget(self.resumeButton,1,1)
+		self.pauseButton = QPushButton(self,"Pause_All")
+		self.pauseButton.setText("Pause All")
+		Form1Layout.addWidget(self.pauseButton,1,2)
+		self.abortButton = QPushButton(self,"Abort_All")
+		self.abortButton.setText("Abort All")
+		Form1Layout.addWidget(self.abortButton,1,3)
+		spacer1 = QSpacerItem(61,20,QSizePolicy.Expanding,QSizePolicy.Minimum)
+		Form1Layout.addItem(spacer1,1,0)
+		self.resize(QSize(600,480).expandedTo(self.minimumSizeHint()))
+		self.clearWState(Qt.WState_Polished)
+		
+		self.connect(self.abortButton,SIGNAL("released()"),self.abortSubprocess)
+		self.connect(self.pauseButton,SIGNAL("released()"),self.pauseSubprocess)
+		self.connect(self.resumeButton,SIGNAL("released()"),self.resumeSubprocess)
+		
+		self.callOnClose = callOnClose
+
+	def closeEvent(self, e) :
+		self.callOnClose(False)
+		e.accept()
+
+	def abortSubprocess(self) :
+		import signal, os		
+		gid = os.getgid()
+		signal.signal(signal.SIGTERM, signal.SIG_IGN)
+		os.killpg(gid, signal.SIGTERM)
+		signal.signal(signal.SIGTERM, signal.SIG_DFL)
+		self.resumeButton.setEnabled(False)
+		self.pauseButton.setEnabled(False)
+		self.abortButton.setEnabled(False)
+			
+	
+	def pauseSubprocess(self) :
+		import signal, os		
+		gid = os.getgid()
+		signal.signal(signal.SIGTSTP, signal.SIG_IGN)
+		os.killpg(gid, signal.SIGTSTP)
+		signal.signal(signal.SIGTSTP, signal.SIG_DFL)
+		#self.append('<font color="#F62217">Paused by the user</font><br>')
+		self.resumeButton.setEnabled(True)
+		self.pauseButton.setEnabled(True)
+		self.abortButton.setEnabled(False)
+		self.disableAllButtonsIfRequired()
+	
+	def resumeSubprocess(self) :
+		import signal, os		
+		gid = os.getgid()
+		os.setpgid(self.subprocessPid, self.availableGid)
+		os.killpg(os.getpgid(self.subprocessPid), signal.SIGCONT)
+		
+		#self.append('<font color="#F62217">Resumed</font><br>')
+		self.pauseButton.setEnabled(True)
+		self.resumeButton.setEnabled(False)
+		self.abortButton.setEnabled(True)
+		
+		self.disableAllButtonsIfRequired()
+RunningWindow=RunningWindowWithButtons
 
 class Runner(Thread) :
 	def __init__(self, widget, qApp, logger, cmd, runningModule = None) :
