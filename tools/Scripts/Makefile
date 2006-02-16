@@ -6,7 +6,7 @@ PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/Scripts--$(VERSION)--$(shell uname -m).tar.bz2
 
 PYTHON_VERSION=2.3
-PYTHON_LIBS=FindPackage GetAvailable GuessLatest
+PYTHON_LIBS=FindPackage GetAvailable GuessLatest CheckDependencies
 PYTHON_SITE=lib/python$(PYTHON_VERSION)/site-packages
 
 all:
