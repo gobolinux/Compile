@@ -117,7 +117,6 @@ function strip_and_link() {
 
 function system_is_ok() {
    #TODO: check more needed stuff (sed, awk, head, ...)
-   python -V                &> /dev/null || { Log_Error "Python is not working";           return 1 ;}
    GuessProgramCase Scripts &> /dev/null || { Log_Error "GuessProgramCase is not working"; return 1 ;}
    return 0
 }
