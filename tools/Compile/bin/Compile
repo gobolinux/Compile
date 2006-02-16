@@ -13,6 +13,7 @@ Import Terminal
 Import GoboLinux
 Import Array
 Import Directories
+Import PostInstall
 
 ##################################################
 # Options and configuration
@@ -100,8 +101,12 @@ function do_symlink() {
    is_function_set pre_link && pre_link
  
    if Boolean "no-symlink"
-   then PrepareProgram --tree-cleanup $batch $cross_flags "$1" "$2"
-   else SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
+   then
+      PrepareProgram --tree-cleanup $batch $cross_flags "$1" "$2"
+   else
+      SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
+      UpdateSettings "$1" "$2"
+      Run_PostInstall "$1" "$2" "" ""
    fi
 }
 
