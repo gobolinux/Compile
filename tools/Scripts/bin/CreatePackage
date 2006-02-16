@@ -140,7 +140,7 @@ fi
 [ "$tree_symlinked" = "yes" ] && Quiet pushd `RealPath ${goboPrograms}/$package/$versionnumber`/../..
 if { Boolean "personal-backup" ;} && [ "$anysettings" ]
 then
-   tar cvpf "$targetdir/$packagefile" `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons"  1>&2`
+   tar cvpf "$targetdir/$packagefile" `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons" -not -name ".PostInstall_Root" -not -name ".SandboxInstall_Root"  1>&2`
    [ "$tree_symlinked" = "yes" ] && Quiet popd
    
    # would make sense as personal-backup.  CJC
@@ -149,7 +149,7 @@ then
 else
    Boolean "gzip" && option="z" || option="j"
    Boolean "gzip" && extension="gz" || extension="bz2"
-   tar cvpf$option "$targetdir/$packagefile".$extension `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons"`  1>&2
+   tar cvpf$option "$targetdir/$packagefile".$extension `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons" -not -name ".PostInstall_Root" -not -name ".SandboxInstall_Root"`  1>&2
    [ "$tree_symlinked" = "yes" ] && Quiet popd
 fi
 
