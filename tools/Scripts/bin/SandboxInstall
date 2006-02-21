@@ -54,7 +54,7 @@ if [ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ]
 then
     Log_Error "unionfs is unavailable.  Fallback to FiboSandbox!"
     unset UNIONSANDBOX
-else
+elsif [ "$UNIONSANDBOX" != "false" ]
     Log_Normal "unionfs is available.  Using UnionSandbox!"
     UNIONSANDBOX="true"
 fi
