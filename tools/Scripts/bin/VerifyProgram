@@ -102,7 +102,7 @@ then
    output=`Check_FileHash "$prefix" "Resources/FileHash"`
    if Failed
    then
-      Boolean "quiet" || Log_Error "FileHash check failed: $rtn"
+      Boolean "quiet" || Log_Error "FileHash check failed: $output"
       printf "%s" "$output"
       exit 3
    fi
