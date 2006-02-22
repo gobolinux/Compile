@@ -12,9 +12,7 @@ if [ -d "$1" ]
 then
    dir=`readlink -f "$1"`
    version=$(basename $dir)
-echo VERSION $version
    name=$(basename `dirname $dir`)
-echo NAME $name
    unpacked=$(dirname $dir)
 else
    package=`readlink -f "$1"`

@@ -30,7 +30,7 @@ full_path="$1"
 root=`readlink -f $2`
 gobolinks=/System/Links
 
-echo "MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
+echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
 
 #function do_link() {
 #   if [ -d "$root/$1" ]
@@ -65,8 +65,9 @@ function do_link() {
    if [ -d "$root/$1" ]
    then
       cd $root/$2
-      goboPrefix=$root goboPrograms=$root/Programs $scriptdir/LinkOrExpandAll $root/$1 --relative
-      cd - 
+      #goboPrefix=$root goboPrograms=$root/Programs $scriptdir/LinkOrExpandAll $root/$1 --relative
+      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative
+      cd - &> /dev/null
    fi
 }
 
@@ -80,6 +81,6 @@ do_link ${full_path}/Shared ${gobolinks}/Shared
 
 ln -nfs $(basename ${full_path}) $root/$(dirname ${full_path})/Current
 
-echo "MiniSymlinkProgram: Done" 1>&2
+echo " MiniSymlinkProgram: Done" 1>&2
 
 exit 0

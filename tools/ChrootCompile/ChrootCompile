@@ -30,6 +30,8 @@ then
    shift
 fi
 
+
+
 #############################################################################
 # Which packages are required to run Compile
 #############################################################################
@@ -44,8 +46,8 @@ base_dependencies=(
      "PCRE" # needed by Grep
     "Grep" # needed by Scripts
     "Python" # needed by Scripts
-#     "OpenSSL" # needed by Wget
-#    "Wget" # needed by Compile
+     "OpenSSL" # needed by Wget
+    "Wget" # needed by Compile
     "Gawk" # needed by Compile
     "FindUtils" # needed by Compile (find)
      "Bzip2" # needed by Atool
@@ -63,6 +65,7 @@ base_dependencies=(
    "GCC"
     "Sudo" # needed by Scripts
     "Make" # needed by Compile
+    "Patch" # needed by Compile
      "E2FSProgs" # needed by Util-Linux (libblkid.so)
     "Util-Linux" # needed by Compile (mount)
     "DiffUtils" # needed by Compile (diff)
@@ -73,14 +76,20 @@ base_dependencies=(
 export LANG=C
 export LC_ALL=C
 
-recipedir="$1"
-if ! [ -d "$1" -o -f "$1/Recipe" ]
+
+if [ -d "$1" -o -f "$1/Recipe" ]
 then
-   echo "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
-   exit 1
+   recipedir="$1"
+   name=$(basename $(dirname $recipedir))
+   version=$(basename $recipedir)
+   #echo "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
+   #exit 1
+else 
+   name=$1
+   version=$2
 fi
-name=$(basename $(dirname $recipedir))
-version=$(basename $recipedir)
+
+
 arch=`uname -m`
 
 echo "ChrootCompile: Compiling $name $version..."
@@ -95,7 +104,7 @@ cleanup() {
    sudo umount $root/System/Kernel/Status || true
    echo "ChrootCompile: Will unmount Archives..."
    sudo umount $root/Files/Compile/Archives || true
-   mount | grep "$root" | awk '{ print $1 }' | while read mp
+   mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
       echo "ChrootCompile: Will unmount $mp..."
       sudo umount $mp
@@ -167,6 +176,18 @@ cp -rL Recipes $root/Files/Compile
 function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
 }
+
+#############################################################################
+# Getting packages for Bootstrap - Temporary only
+#############################################################################
+[ -d Bootstrap ] || mkdir Bootstrap
+cd Bootstrap
+for dep in "${base_dependencies[@]}"
+do
+   [ "`ls $dep--*`" ] || CreatePackage --no-verify --no-sign $dep 
+done
+cd - &> /dev/null
+
 
 #############################################################################
 # Installing base packages inside root directory
@@ -242,6 +263,8 @@ cp /etc/hosts $root/System/Settings/hosts
 #############################################################################
 sudo mount --bind /dev $root/System/Kernel/Devices
 sudo mount --bind /proc $root/System/Kernel/Status
+
+[ -d ./Archives ] || mkdir ./Archives
 sudo mount --bind Archives $root/Files/Compile/Archives
 
 #############################################################################
@@ -252,24 +275,24 @@ trap cleanup TERM STOP HUP EXIT
 #############################################################################
 # Download required archives to ./Archives
 #############################################################################
-(
-   source "$chrootcompileCompileConf"
-   source "$1/Recipe"
-   cd "$root/Files/Compile/Archives"
-   if [ "$url" ]
-   then
-      file=`basename "$url"`
-      [ ! -e "$file" ] && wget "$url"
-   fi
-   if [ "${urls[*]}" ]
-   then
-      for url in "${urls[@]}"
-      do
-         file=`basename "$url"`
-         [ ! -e "$file" ] && wget "$url"
-      done
-   fi
-)
+# (
+#    source "$chrootcompileCompileConf"
+#    source "$1/Recipe"
+#    cd "$root/Files/Compile/Archives"
+#    if [ "$url" ]
+#    then
+#       file=`basename "$url"`
+#       [ ! -e "$file" ] && wget "$url"
+#    fi
+#    if [ "${urls[*]}" ]
+#    then
+#       for url in "${urls[@]}"
+#       do
+#          file=`basename "$url"`
+#          [ ! -e "$file" ] && wget "$url"
+#       done
+#    fi
+# )
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
@@ -283,15 +306,18 @@ sudo chroot $root ldconfig
 # Let the compilation begin!
 #############################################################################
 echo "ChrootCompile: Will run Compile..."
-sudo chroot $root Compile --no-web --no-sign $name $version
+#sudo chroot $root Compile --no-web --no-sign $name $version
+cp `which GenericInstall` $root
+sudo chroot $root ./GenericInstall $name "$version" recipe
+
 
 #############################################################################
 # After the compilation is done (hopefully it will not fail :),
 #  pack the program and copy the resulting package to './Clean', the place
 #  of pure packages
 #############################################################################
-sudo chroot $root CreatePackage --no-sign --no-verify $name $version
+package=`sudo chroot $root CreatePackage --no-sign --no-verify $name $version`
 mkdir -p $scriptdir/Clean
-cp $root/$name--$version--`uname -m`.tar.bz2 $scriptdir/Clean
+cp $root/$package $scriptdir/Clean
 
 
