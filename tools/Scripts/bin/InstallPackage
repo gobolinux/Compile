@@ -88,9 +88,10 @@ then
    then
       Log_Normal "Locating a binary package for $1 $2..."
       noweb=`Forward_Boolean_Entry "no-web"` 
+      pkgType="-t local_package,official_package"
       if [ $2 ] 
       then 
-         found=`FindPackage $noweb -t local_package,official_package $1 $2`
+         found=`FindPackage $noweb $pkgType $1 $2`
          if [ "${found}" ]
          then 
             Log_Normal "Found package for $1 $2: ${found}"
@@ -99,7 +100,7 @@ then
             Die "Package for $1 $2 not found."
          fi
       else
-         found=`FindPackage $noweb $1`
+         found=`FindPackage $noweb $pkgType $1`
          if [ "${found}" ]
          then
             Ask_Continue "Installing ${found}"
