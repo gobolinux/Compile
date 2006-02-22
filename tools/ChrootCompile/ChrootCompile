@@ -1,9 +1,21 @@
 #!/bin/sh -e
 
-scriptdir=$(dirname `readlink -f $0`)
+#############################################################################
+# Current requirements for this script:
+# - './Recipes' directory containing all potentially required recipes
+# - './Bootstrap' directory containing all base dependencies packages
+#############################################################################
 
+
+#############################################################################
+# Parsing options. By now, only 'chrootcompileCompileConf'
+#############################################################################
+scriptdir=$(dirname `readlink -f $0`)
 source $scriptdir/ChrootCompile.conf
 
+#############################################################################
+# '--repack' option: 
+#############################################################################
 if [ "$1" == "--repack" ]
 then
    cd Bootstrap
@@ -18,6 +30,9 @@ then
    shift
 fi
 
+#############################################################################
+# Which packages are required to run Compile
+#############################################################################
 base_dependencies=(
    "Glibc"
     "Ncurses" # needed by Bash
@@ -70,6 +85,9 @@ arch=`uname -m`
 
 echo "ChrootCompile: Compiling $name $version..."
 
+#############################################################################
+# Preparing stub root directory
+#############################################################################
 cleanup() {
    echo "ChrootCompile: Will unmount /dev..."
    sudo umount $root/System/Kernel/Devices || true
@@ -141,13 +159,18 @@ ln -nfs /System/Links/Manuals $root/usr/man
 ln -nfs /System/Links/Executables $root/usr/sbin
 ln -nfs /System/Links/Shared $root/usr/share
 
-
+#############################################################################
+# Copying recipes to root directory
+#############################################################################
 cp -rL Recipes $root/Files/Compile
 
 function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
 }
 
+#############################################################################
+# Installing base packages inside root directory
+#############################################################################
 for dep in "${base_dependencies[@]}"
 do
    pkg=
@@ -172,6 +195,10 @@ do
    sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
 done
 
+#############################################################################
+# Creating files at $root/System/Settings/ 
+# => passwd, group, sudoers, resolv.conf, hosts, fstab
+#############################################################################
 function sudo_rm_if_e() {
    if [ -e "$1" ]
    then
@@ -210,12 +237,21 @@ touch $root/System/Settings/fstab
 cp /etc/resolv.conf $root/System/Settings/resolv.conf
 cp /etc/hosts $root/System/Settings/hosts
 
+#############################################################################
+# Binding /dev, /proc and ./Archives inside root directory
+#############################################################################
 sudo mount --bind /dev $root/System/Kernel/Devices
 sudo mount --bind /proc $root/System/Kernel/Status
 sudo mount --bind Archives $root/Files/Compile/Archives
 
+#############################################################################
+# Setting signal handlers (cleanup before exit if interrupted)
+#############################################################################
 trap cleanup TERM STOP HUP EXIT
 
+#############################################################################
+# Download required archives to ./Archives
+#############################################################################
 (
    source "$chrootcompileCompileConf"
    source "$1/Recipe"
@@ -235,12 +271,25 @@ trap cleanup TERM STOP HUP EXIT
    fi
 )
 
+#############################################################################
+# Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
+#############################################################################
 export LD_LIBRARY_PATH=/System/Links/Libraries
 
 echo "ChrootCompile: Will run ldconfig..."
 sudo chroot $root ldconfig
+
+#############################################################################
+# Let the compilation begin!
+#############################################################################
 echo "ChrootCompile: Will run Compile..."
 sudo chroot $root Compile --no-web --no-sign $name $version
+
+#############################################################################
+# After the compilation is done (hopefully it will not fail :),
+#  pack the program and copy the resulting package to './Clean', the place
+#  of pure packages
+#############################################################################
 sudo chroot $root CreatePackage --no-sign --no-verify $name $version
 mkdir -p $scriptdir/Clean
 cp $root/$name--$version--`uname -m`.tar.bz2 $scriptdir/Clean
