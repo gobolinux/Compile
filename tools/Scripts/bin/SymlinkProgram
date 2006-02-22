@@ -27,7 +27,6 @@ Add_Option_Entry "t" "tasks" "Link tasks into ${goboExecutables}: 'yes', 'no' or
 Add_Option_Boolean "E" "no-environment" "Do not link entries from ${goboEnvironment}."
 Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVariable}."
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
-Add_Option_Boolean "S" "no-strip" "Do not strip executables."
 Add_Option_Entry "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
 Add_Option_Entry "c" "conflict" "What to do on conflicts, 'keep' or 'overwrite'." "keep"
@@ -43,19 +42,15 @@ shift $parsedArguments
 
 if Is_Entry "cross-compile"
 then
-    arch=`Entry "cross-compile"`
+   arch=`Entry "cross-compile"`
     
-    # get the STRIP command as configured in the cross_file
-    cross_line=`grep "crossCompiler=" $goboSettings/Compile/Cross-$arch.conf`
-    eval $cross_line
-    strip_line=`grep "STRIP=" $goboSettings/Compile/Cross-$arch.conf`
-    eval $strip_line
+   cross_line=`grep "crossCompiler=" $goboSettings/Compile/Cross-$arch.conf`
+   eval $cross_line
     
-	. GoboPath Reload
-	prepareCross="--cross-compile $arch"
+   . GoboPath Reload
+   prepareCross="--cross-compile $arch"
 else
-	STRIP=strip
-	prepareCross=""
+   prepareCross=""
 fi
 
 Is_Writable "$goboExecutables" || Verify_Superuser
@@ -96,22 +91,6 @@ function link_directory() {
       cd "$here"
    else
       Quiet rmdir "$rfrom"
-   fi
-}
-
-function strip_and_link() {
-   Parameters "$@" dir
-   local i
-
-   if ! Is_Empty_Directory "$current/$dir"
-   then
-      cd "$current/$dir"
-
-      for i in *
-      do
-         file "$i" | grep -i "ELF .* executable" >/dev/null 2>&1 && ! Boolean "no-strip" && $STRIP "$i" &> /dev/null
-      done
-      link_directory "$current/$dir" "$goboExecutables"
    fi
 }
 
@@ -308,8 +287,8 @@ fi
 if [ "$linkexecutables" != "no" ]
 then
    Log_Normal "Symlinking executables..."
-   strip_and_link bin
-   strip_and_link sbin
+   link_directory "$current/bin" "$goboExecutables"
+   link_directory "$current/sbin" "$goboExecutables"
 fi
 
 if [ "$linkwrappers" != "no" ]
