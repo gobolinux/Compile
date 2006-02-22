@@ -32,6 +32,7 @@ Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
 Add_Option_Boolean "S" "no-symlink" "Do not symlink."
+Add_Option_Boolean "T" "no-strip" "Do not strip executables."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
 
@@ -96,6 +97,23 @@ function do_symlink() {
    if ! [ "$nomake" = "yes" ]
    then
       SandboxInstall ${sandboxopts[@]} $cross_flags -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+   fi
+
+   if ! Boolean "no-strip"
+   then
+      Log_Normal "Stripping executables..."
+      [ "$STRIP" ] || STRIP=strip
+      for dir in bin sbin
+      do
+         Quiet pushd "$target/$dir"
+         for i in *
+         do
+            if file "$i" | grep -q -i "ELF .* executable"
+            then $STRIP "$i" 1>&$verboseFD 2>&$verboseFD
+            fi
+         done
+         Quiet popd
+      done
    fi
 
    is_function_set pre_link && pre_link
@@ -311,6 +329,7 @@ export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 # Check if we are cross-compiling
 ##################################################
 
+unset STRIP
 if Is_Entry "cross-compile"
 then
    arch_conf=`Entry "cross-compile"`
