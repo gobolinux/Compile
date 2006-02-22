@@ -237,7 +237,7 @@ fi
 
 unset directrecipe
 # suport for direct recipe passing
-if [ -d "$1" -a "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
+if [ -d "$1" -o "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
 then
    directrecipe=yes
    rawrecipes="$1"
