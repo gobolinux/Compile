@@ -20,8 +20,8 @@ else
    name=${base%%--*}
    version=${base#*--}
    version=${version%%--*}
-   unpacked=$(dirname $package)/$name/$version
-   if ! [ -d "$unpacked" ]
+   unpacked=$(dirname $package)/$name
+   if ! [ -d "$unpacked/$version" ]
    then
       pushd $(dirname $package) &> /dev/null
       tar xjpf "$package"
@@ -37,7 +37,7 @@ fi
 
 root="$2"
 
-echo "Installing $name version $version..."
+echo "MiniInstallPackage: Installing $name version $version..."
 
 pushd "$root/$goboPrograms" &> /dev/null
 mkdir -p "$name/$version"
