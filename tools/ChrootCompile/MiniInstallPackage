@@ -20,7 +20,7 @@ else
    name=${base%%--*}
    version=${base#*--}
    version=${version%%--*}
-   unpacked=$(dirname $package)/$name
+   unpacked=$(dirname $package)/$name/$version
    if ! [ -d "$unpacked" ]
    then
       pushd $(dirname $package) &> /dev/null
@@ -40,15 +40,19 @@ root="$2"
 echo "Installing $name version $version..."
 
 pushd "$root/$goboPrograms" &> /dev/null
-mkdir -p "$name"
-mount --bind "$unpacked" "$name"
+mkdir -p "$name/$version"
+mount --bind "$unpacked/$version" "$name/$version"
 [ `ls "$name" | grep -v Settings | grep -v Variable | grep -v Current | wc -l` -gt 1 ] && {
    echo "MiniInstallPackage: too many versions inside directory $name. Bailing out."
    exit 1
 }
 
 dsettings="$name/$version/Resources/Defaults/Settings"
-[ -d "$dsettings" ] && cp -R "$dsettings" "$name/Settings"
+if [ -d "$dsettings" ]
+then
+   echo "MiniInstallPackage: Copying default settings for $name $version"
+   cp -R "$dsettings" "$name/Settings"
+fi
 popd &> /dev/null
 
 $(dirname $0)/MiniSymlinkProgram /Programs/$name/$version $root
