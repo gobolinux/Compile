@@ -319,11 +319,11 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			ordered_rules.append(rule)
 	
 	if self_match and self_rule:
-		rule = self_rule
-		ret_type = find_matching_package(rule, ['installed'])[2]
-		if not ((mode == 'missing' and ret_type) or (mode == 'updating' and ret_type == 'installed')) :
-			ordered_matches.append(self_match)
-			ordered_rules.append(self_rule)
+		#rule = self_rule
+		#ret_type = find_matching_package(rule, ['installed'])[2]
+		#if not ((mode == 'missing' and ret_type) or (mode == 'updating' and ret_type == 'installed')) :
+		ordered_matches.append(self_match)
+		ordered_rules.append(self_rule)
 	
 	if hook and first_call:
 		hook("Checking dependencies", len(all_matches), len(all_matches))
