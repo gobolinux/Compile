@@ -1,4 +1,5 @@
-#!/bin/sh -e
+#!/bin/sh 
+#-e
 
 #############################################################################
 # Current requirements for this script:
@@ -24,10 +25,9 @@ then
    cd Bootstrap
    for i in Compile Scripts
    do
-      [ -d $i ] && rm -rf $i
+      [ -d ../Bootstrap/$i ] && rm -rf ../Bootstrap/$i
       rm $i--*
       CreatePackage --no-sign $i
-      aunpack $i--*
    done
    cd -
    shift
@@ -42,7 +42,8 @@ base_dependencies=(
    "Glibc"
     "Ncurses" # needed by Bash
     "Readline" # needed by Bash
-#    "GPM" # needed by Bash (FIXME)
+    "GPM" # needed by Bash (FIXME)
+    "Bison" # needed at the compilation of some programs (FIXME)
    "Bash"
     "CoreUtils" # needed by Scripts (cp...)
     "Sed" # needed by Scripts
@@ -100,6 +101,9 @@ echo "ChrootCompile: Compiling $name $version..."
 #############################################################################
 # Preparing stub root directory
 #############################################################################
+root=Area
+
+echo "ChrootCompile: Preparing $root..."
 cleanup() {
    echo "ChrootCompile: Will unmount /dev..."
    sudo umount $root/System/Kernel/Devices || true
@@ -113,8 +117,6 @@ cleanup() {
       sudo umount $mp
    done
 }
-
-root=Area
 
 cleanup
 
@@ -153,6 +155,8 @@ mkdir -p $root/Mount
 mkdir -p $root/$goboPrograms
 mkdir -p $root/usr
 
+mkdir -p $root/Depot/Packages
+
 ln -nfs /System/Kernel/Objects $root/sys
 ln -nfs /System/Kernel/Devices $root/dev
 ln -nfs /System/Kernel/Status $root/proc
@@ -172,58 +176,103 @@ ln -nfs /System/Links/Manuals $root/usr/man
 ln -nfs /System/Links/Executables $root/usr/sbin
 ln -nfs /System/Links/Shared $root/usr/share
 
+chmod 777 $root/System/Variable/tmp # Fibo also wants to write temp files
+
 #############################################################################
 # Copying recipes to root directory
 #############################################################################
-cp -rL Recipes $root/Files/Compile
+if [ -d Recipes ]
+then
+   cp -rL Recipes $root/Files/Compile
+else
+   echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
+fi
 
-function filter_dir() {
-   grep -v Settings | grep -v Variable | grep -v Current
-}
 
 #############################################################################
 # Getting packages for Bootstrap - Temporary only
 #############################################################################
+[ -d LocalPackages ] || mkdir LocalPackages
 [ -d Bootstrap ] || mkdir Bootstrap
-cd Bootstrap
+[ -d Clean ] || mkdir Clean
 for dep in "${base_dependencies[@]}"
 do
-   [ "`ls $dep--*`" ] || CreatePackage --no-verify --no-sign $dep 
+   if ! ls Bootstrap/$dep--* &> /dev/null #&& ! ls Clean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null
+   then
+      echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,Clean}. Creating package based on host system"
+      cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
+   fi
 done
-cd - &> /dev/null
 
 
 #############################################################################
 # Installing base packages inside root directory
 #############################################################################
-for dep in "${base_dependencies[@]}"
-do
-   pkg=
-   for repo in Clean Bootstrap
+echo "ChrootCompile: Installing base packages inside $root..."
+
+function filter_dir() {
+   grep -v Settings | grep -v Variable | grep -v Current
+}
+
+
+if [ ! `GuessLatest 1 2` = "2" ]
+then
+   for dep in "${base_dependencies[@]}"
    do
-      [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
-         echo "More than one entry for $dep in $repo/ directory."
+      pkg=
+      for repo in Clean Bootstrap
+      do
+         [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
+            echo "More than one entry for $dep in $repo/ directory."
+            exit 1
+         } || true
+         [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
+            echo "More than one entry for $dep in $repo/ directory."
+            exit 1
+         } || true
+         pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
+         [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
+         [ "$pkg" ] && break
+      done
+      [ ! "$pkg" ] && {
+         echo "Base dependency $dep could not be found."
          exit 1
-      } || true
-      [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
-         echo "More than one entry for $dep in $repo/ directory."
-         exit 1
-      } || true
-      pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
-      [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
-      [ "$pkg" ] && break
+      }
+      sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
    done
-   [ ! "$pkg" ] && {
-      echo "Base dependency $dep could not be found."
-      exit 1
-   }
-   sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
-done
+else
+   echo "=> GuessLatest enabled"
+   for dep in "${base_dependencies[@]}"
+   do
+      packed_places="Clean Bootstrap"
+      unpacked_place=BootStrap
+      #packages=`ls -d Bootstrap/$dep/* | filter_dir`
+      packages=`ls -d -U Bootstrap/$dep/* {Bootstrap,Clean,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
+      if [ ! "$packages" ]
+      then
+         echo "Base dependency $dep could not be found."
+         exit 1
+      fi
+      latest=`GuessLatest $packages`
+      echo "ChrootCompile: Using $latest"
+
+      if ! echo "$latest" | grep "^Bootstrap/" &> /dev/null
+      then
+         cp "$latest" Bootstrap/ # only 'packed' packages
+         pkg=Bootstrap/`basename "$latest"`
+      else
+         pkg="$latest"
+      fi
+      sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
+   done
+fi
 
 #############################################################################
 # Creating files at $root/System/Settings/ 
 # => passwd, group, sudoers, resolv.conf, hosts, fstab
 #############################################################################
+echo "ChrootCompile: Creating files at /System/Settings..."
+
 function sudo_rm_if_e() {
    if [ -e "$1" ]
    then
@@ -271,6 +320,9 @@ sudo mount --bind /proc $root/System/Kernel/Status
 [ -d ./Archives ] || mkdir ./Archives
 sudo mount --bind Archives $root/Files/Compile/Archives
 
+sudo mount --bind LocalPackages $root/Depot/LocalPackages
+
+
 #############################################################################
 # Setting signal handlers (cleanup before exit if interrupted)
 #############################################################################
@@ -312,6 +364,12 @@ sudo chroot $root ldconfig
 echo "ChrootCompile: Will run Compile..."
 #sudo chroot $root Compile --no-web --no-sign $name $version
 cp `which GenericInstall` $root
+
+
+sudo echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf
+
+#cp ./OnlyAsk $root/OnlyAsk
+#sudo chroot $root ./OnlyAsk
 sudo chroot $root ./GenericInstall $name "$version" recipe
 
 
@@ -323,5 +381,3 @@ sudo chroot $root ./GenericInstall $name "$version" recipe
 package=`sudo chroot $root CreatePackage --no-sign --no-verify $name $version`
 mkdir -p $scriptdir/Clean
 cp $root/$package $scriptdir/Clean
-
-
