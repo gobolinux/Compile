@@ -42,13 +42,13 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 	
 	#stable_greaterl = [ -1]
 	#stable_greater = ''
-	
+	param_order=0
 	for parameter in versions :
 		if type(parameter) == types.TupleType :
-			l = parameter[0].split("--")
+			l = parameter[0].split("/")
 		else :
-			l = parameter.split("--")
-		
+			l = parameter.split("/")
+		l = l[-1].split('--')
 		if len(l) > 1 :
 			version = l[1]
 		else :
@@ -98,20 +98,21 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			minors.append(internalminors)
 	
 		if not unstable :
-			built_versions_stable.append((minors,parameter))
+			built_versions_stable.append((minors,param_order,parameter))
 			
-		built_versions.append((minors,parameter))
-	
+		built_versions.append((minors,param_order,parameter))
+		param_order -= 1
+
 	built_versions_stable.sort()
 	built_versions.sort()
 	
 	bv = []
 	sbv = []
 	for i in built_versions :
-		bv.append(i[1])
+		bv.append(i[-1])
 	
 	for i in built_versions_stable :
-		sbv.append(i[1])
+		sbv.append(i[-1])
 	
 	if returnList :
 		if stableOnly and built_versions_stable:
