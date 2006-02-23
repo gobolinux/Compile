@@ -12,6 +12,9 @@
 #############################################################################
 scriptdir=$(dirname `readlink -f $0`)
 source $scriptdir/ChrootCompile.conf
+if [ ! "$goboPrograms" ]
+then export goboPrograms=/Programs
+fi
 
 #############################################################################
 # '--repack' option: 
@@ -134,6 +137,7 @@ mkdir -p $root/System/Links/Tasks
 mkdir -p $root/System/Settings
 mkdir -p $root/System/Variable
 mkdir -p $root/System/Variable/tmp
+mkdir -p $root/System/Variable/log
 mkdir -p $root/System/Kernel
 mkdir -p $root/System/Kernel/Boot
 mkdir -p $root/System/Kernel/Objects
@@ -146,7 +150,7 @@ mkdir -p $root/Files
 mkdir -p $root/Files/Compile
 mkdir -p $root/Files/Compile/Archives
 mkdir -p $root/Mount
-mkdir -p $root/Programs
+mkdir -p $root/$goboPrograms
 mkdir -p $root/usr
 
 ln -nfs /System/Kernel/Objects $root/sys
@@ -242,17 +246,17 @@ root:x:0:root
 fibo:x:21:fibo
 EOF
 
-sudo_rm_if_e $root/Programs/Sudo/Settings/sudoers
+sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
 sudo chmod 777 $root/Programs/Sudo/Settings
-cat <<EOF > $root/Programs/Sudo/Settings/sudoers
+cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
 root ALL=(ALL) NOPASSWD: ALL
 EOF
-sudo chmod 755 $root/Programs/Sudo/Settings
+sudo chmod 755 $root/$goboPrograms/Sudo/Settings
 
-sudo chmod 440 $root/Programs/Sudo/Settings/sudoers
-sudo chown 0:0 $root/Programs/Sudo/Settings/sudoers
+sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
+sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
 sudo_rm_if_e $root/System/Settings/sudoers
-ln -nfs /Programs/Sudo/Settings/sudoers $root/System/Settings/sudoers
+ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/System/Settings/sudoers
 touch $root/System/Settings/fstab
 
 cp /etc/resolv.conf $root/System/Settings/resolv.conf
