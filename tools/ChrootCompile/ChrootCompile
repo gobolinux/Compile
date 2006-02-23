@@ -4,7 +4,25 @@
 #############################################################################
 # Current requirements for this script:
 # - './Recipes' directory containing all potentially required recipes
-# - './Bootstrap' directory containing all base dependencies packages
+#   Not a requirement right now, but implies accessing the web if not present
+#
+# - './Bootstrap' directory which will contain unpacked packages installed
+#   within $root. Those unpacked dirs are binded within $root (instead
+#   of simply copied or unpacked) in order to reduce preparation time.
+#   Not exactly a requirement right now, since it is created on demand, based
+#   on packages from './LocalPackages'. Can be thinked as a 'unpacked 
+#   pakages cache'
+#
+# - './LocalPackages' directory containing binary packages available to 
+#    prepare the Bootsrap and fulfill dependencies. It may be, for example,
+#    a mirror of all official packaes available.
+#
+# Other directories:
+# - './Clean' directory where compiled packages are stored.
+#
+# - './Area' directory created at each run, which will contain a complete 
+#    set of installed programs, required to compile something.
+#
 #############################################################################
 
 
@@ -365,7 +383,7 @@ echo "ChrootCompile: Will run Compile..."
 #sudo chroot $root Compile --no-web --no-sign $name $version
 cp `which GenericInstall` $root
 
-
+# Only local packages are used to fullfil dependencies
 sudo echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf
 
 #cp ./OnlyAsk $root/OnlyAsk
