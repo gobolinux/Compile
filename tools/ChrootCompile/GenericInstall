@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 source ScriptFunctions
 Import File
@@ -85,13 +85,10 @@ else # program name [version] [type] [url]
 	t="$3"
 	u="$4"
 fi
-
-#CheckDependencies --add-self=always --mode missing $p $v $t $u 
-#echo 
-
+echo GenericInstall: About to call CheckDependencies --add-self=always --mode missing $p "$v" $t $u
 CheckDependencies --add-self=always --mode missing $p "$v" $t $u | while read line
 do
-	echo $line
+	echo GenericInstall: Line $line
 	if [ "$line" != "" ]
 	then
 		p=`echo $line | cut -f1  -d' '`
@@ -107,9 +104,10 @@ do
 		if [ "$t" = "recipe" ]
 		then
 			Compile --no-sign $u
-		else
+		elif [ "$t" != "installed" ]
+		then
 			InstallPackage $u
 		fi
 	fi
 done
-
+echo GenericInstall: Done
