@@ -235,11 +235,11 @@ fi
 # Find, Get and source Recipe
 ##################################################
 
-unset directrecipe
+#unset directrecipe
 # suport for direct recipe passing
 if [ -d "$1" -o "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
 then
-   directrecipe=yes
+   #directrecipe=yes
    rawrecipes="$1"
    shift 1
    Log_Normal "Using passed recipe $rawrecipes"
@@ -446,14 +446,14 @@ foreach_if_array_set "include" '
    Boolean batch && options="$options --batch"
    Boolean lazy && options="$options --lazy"
    export compileMetaRecipe=1
-   if [ "$directrecipe" = "yes" ]
-   then
-      ipath=${rawrecipes/$appname/$iname}
-      ipath=${ipath/$versionnumber/$iversion}
-      $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
-   else
-      $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
-   fi
+#   if [ "$directrecipe" = "yes" ]
+#   then
+#      ipath=${rawrecipes/$appname/$iname}
+#      ipath=${ipath/$versionnumber/$iversion}
+#      $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
+#   else
+   $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+#   fi
    if [ "$?" -gt 0 ]
    then
       Die "Compilation of $iname $iversion failed."
