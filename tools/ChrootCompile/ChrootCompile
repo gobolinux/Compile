@@ -338,7 +338,7 @@ sudo mount --bind /proc $root/System/Kernel/Status
 [ -d ./Archives ] || mkdir ./Archives
 sudo mount --bind Archives $root/Files/Compile/Archives
 
-sudo mount --bind LocalPackages $root/Depot/LocalPackages
+sudo mount --bind LocalPackages $root/Depot/Packages
 
 
 #############################################################################
