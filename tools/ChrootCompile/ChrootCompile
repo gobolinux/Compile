@@ -173,7 +173,9 @@ mkdir -p $root/Mount
 mkdir -p $root/$goboPrograms
 mkdir -p $root/usr
 
-mkdir -p $root/Depot/Packages
+mkdir -p $root/Depot/LocalPackages
+mkdir -p $root/Depot/Clean
+
 
 ln -nfs /System/Kernel/Objects $root/sys
 ln -nfs /System/Kernel/Devices $root/dev
@@ -338,7 +340,8 @@ sudo mount --bind /proc $root/System/Kernel/Status
 [ -d ./Archives ] || mkdir ./Archives
 sudo mount --bind Archives $root/Files/Compile/Archives
 
-sudo mount --bind LocalPackages $root/Depot/Packages
+sudo mount --bind LocalPackages $root/Depot/LocalPackages
+sudo mount --bind Clean $root/Depot/Clean
 
 
 #############################################################################
@@ -385,6 +388,7 @@ cp `which GenericInstall` $root
 
 # Only local packages are used to fullfil dependencies
 sudo echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf
+sudo echo 'defaultLocalPackagesPaths=( /Depot/Clean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf
 
 #cp ./OnlyAsk $root/OnlyAsk
 #sudo chroot $root ./OnlyAsk

@@ -108,6 +108,7 @@ do
 		then
 			InstallPackage $u
 		fi
+		[ -e $goboPrograms/$p/$v/Resources/Environment ] && . $goboPrograms/$p/$v/Resources/Environment
 	fi
 done
 echo GenericInstall: Done
