@@ -276,7 +276,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 				ret = FindPackage(p, v, accessWeb=not noWeb)
 		
 		if not ret :
-			return
+			return [], []
 		
 		self_rule = { 'program':p, 'lover':'', 'loincluded':False, 'hiver':'', 'hiincluded':False, 'optional':True }
 		self_match = ret[0]
