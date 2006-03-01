@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 source ScriptFunctions
 Import File
@@ -27,7 +27,7 @@ scriptExample="Gimp--2.0.5.tar.gz"
 #         'keep', 'remove', 'ask' or 'cancel'." "ask"
 # Add_Option_Entry "o" "old" "What to do with a previously existing
 #         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
-# Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
+Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
 Parse_Options "$@"
 shift $parsedArguments
@@ -44,6 +44,8 @@ shift $parsedArguments
 # Boolean "no-install" && noinstall="--no-install" && keep="--keep"
 # Is_Writable "${goboPrograms}" || Verify_Superuser
 # Is_Writable "${goboInstall}"  || Verify_Superuser
+
+Boolean "no-web" && noweb=--no-web
 
 if Is_URL "$1" || [ -f "$1" ] # URL or file
 then
@@ -103,10 +105,10 @@ do
 		
 		if [ "$t" = "recipe" ]
 		then
-			Compile --no-sign $u
+			Compile $noweb --no-sign $u
 		elif [ "$t" != "installed" ]
 		then
-			InstallPackage $u
+			InstallPackage $noweb $u
 		fi
 		[ -e $goboPrograms/$p/$v/Resources/Environment ] && . $goboPrograms/$p/$v/Resources/Environment
 	fi
