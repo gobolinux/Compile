@@ -1,6 +1,6 @@
 #!/bin/sh
 
-goboPrograms=/Programs
+source $(diraname `readlink -f $0`)/ChrootCompile.conf
 
 [ "$2" ] || {
    echo "Usage:   `basename $0` <package-file> <root>"
@@ -55,4 +55,4 @@ then
 fi
 popd &> /dev/null
 
-$(dirname $0)/MiniSymlinkProgram /Programs/$name/$version $root
+$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root
