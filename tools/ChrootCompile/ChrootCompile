@@ -217,7 +217,8 @@ fi
 [ -d Clean ] || mkdir Clean
 for dep in "${base_dependencies[@]}"
 do
-   if ! ls Bootstrap/$dep--* &> /dev/null #&& ! ls Clean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null
+   if ! ls Bootstrap/$dep--* &> /dev/null && ! ls Clean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
+   && ! [ -d Bootstrap/$dep -o -d Clean/$dep -o -d LocalPackages/$dep ]
    then
       if [ -e /System/Settings/gobo ]
       then
@@ -334,8 +335,9 @@ sudo_rm_if_e $root/System/Settings/sudoers
 ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/System/Settings/sudoers
 touch $root/System/Settings/fstab
 
-cp /etc/resolv.conf $root/System/Settings/resolv.conf
-cp /etc/hosts $root/System/Settings/hosts
+# This should limit network access inside the chroot
+#cp /etc/resolv.conf $root/System/Settings/resolv.conf
+#cp /etc/hosts $root/System/Settings/hosts
 
 #############################################################################
 # Binding /dev, /proc and ./Archives inside root directory
@@ -358,24 +360,24 @@ trap cleanup TERM STOP HUP EXIT
 #############################################################################
 # Download required archives to ./Archives
 #############################################################################
-# (
-#    source "$chrootcompileCompileConf"
-#    source "$1/Recipe"
-#    cd "$root/Files/Compile/Archives"
-#    if [ "$url" ]
-#    then
-#       file=`basename "$url"`
-#       [ ! -e "$file" ] && wget "$url"
-#    fi
-#    if [ "${urls[*]}" ]
-#    then
-#       for url in "${urls[@]}"
-#       do
-#          file=`basename "$url"`
-#          [ ! -e "$file" ] && wget "$url"
-#       done
-#    fi
-# )
+(
+   source "$chrootcompileCompileConf"
+   source "$1/Recipe"
+   cd "$root/Files/Compile/Archives"
+   if [ "$url" ]
+   then
+      file=`basename "$url"`
+      [ ! -e "$file" ] && wget "$url"
+   fi
+   if [ "${urls[*]}" ]
+   then
+      for url in "${urls[@]}"
+      do
+         file=`basename "$url"`
+         [ ! -e "$file" ] && wget "$url"
+      done
+   fi
+)
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
@@ -389,17 +391,13 @@ sudo chroot $root ldconfig
 # Let the compilation begin!
 #############################################################################
 echo "ChrootCompile: Will run Compile..."
-#sudo chroot $root Compile --no-web --no-sign $name $version
-cp `which GenericInstall` $root
+cp ./GenericInstall $root
 
 # Only local packages are used to fullfil dependencies
-sudo echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf
-sudo echo 'defaultLocalPackagesPaths=( /Depot/Clean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf
+sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
+sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/Clean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
-#cp ./OnlyAsk $root/OnlyAsk
-#sudo chroot $root ./OnlyAsk
-sudo chroot $root ./GenericInstall $name "$version" recipe
-
+sudo chroot $root ./GenericInstall --no-web $name "$version" recipe
 
 #############################################################################
 # After the compilation is done (hopefully it will not fail :),
