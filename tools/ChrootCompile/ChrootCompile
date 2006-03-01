@@ -10,7 +10,7 @@
 #   within $root. Those unpacked dirs are binded within $root (instead
 #   of simply copied or unpacked) in order to reduce preparation time.
 #   Not exactly a requirement right now, since it is created on demand, based
-#   on packages from './LocalPackages'. Can be thinked as a 'unpacked 
+#   on packages from './LocalPackages'. Can be understood as a 'unpacked 
 #   pakages cache'
 #
 # - './LocalPackages' directory containing binary packages available to 
@@ -36,7 +36,7 @@ then export goboPrograms=/Programs
 fi
 
 #############################################################################
-# '--repack' option: 
+# '--repack' option: (to be used only on GoboLinux systems)
 #############################################################################
 if [ "$1" == "--repack" ]
 then
@@ -219,8 +219,14 @@ for dep in "${base_dependencies[@]}"
 do
    if ! ls Bootstrap/$dep--* &> /dev/null #&& ! ls Clean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null
    then
-      echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,Clean}. Creating package based on host system"
-      cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
+      if [ -e /System/Settings/gobo ]
+      then
+         echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,Clean}. Creating package based on host system"
+         cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
+      else
+         echo "Package $dep, needed for bootstrap, was not found."
+         exit 1
+      fi
    fi
 done
 
