@@ -1,4 +1,0 @@
-#!/bin/sh
-
-ifconfig lo 127.0.0.1
-udhcpc --now --script=/System/Settings/udhcpc.script
