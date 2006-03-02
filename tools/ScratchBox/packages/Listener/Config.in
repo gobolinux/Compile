@@ -1,0 +1,7 @@
+config PKG_LISTENER
+    bool "Listener"
+    default y
+    ---help---
+      This program helps to perform automatic system management tasks, such as
+      removing broken links when a program is removed, or installing a package
+      when it's moved into /Programs.

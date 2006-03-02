@@ -1,0 +1,6 @@
+config PKG_XORG
+    bool "Xorg"
+    select PKG_XORG_LIB
+    select PKG_FONTCONFIG
+    select PKG_FREETYPE
+    

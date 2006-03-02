@@ -1,0 +1,2 @@
+config PKG_STARTUP_NOTIFICATION
+    bool "Startup-Notification"

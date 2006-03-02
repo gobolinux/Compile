@@ -1,0 +1,13 @@
+config PKG_SWFDEC
+    bool "Swfdec"
+    select PKG_EXPAT 
+    select PKG_FONTCONFIG 
+    select PKG_FREETYPE 
+    select PKG_GLIB 
+    select PKG_GTK 
+    select PKG_GETTEXT 
+    select PKG_LIBART 
+    select PKG_LIBOIL 
+    select PKG_PANGO 
+    select PKG_SDL 
+    select PKG_XORG_LIB

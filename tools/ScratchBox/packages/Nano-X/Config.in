@@ -1,0 +1,4 @@
+config PKG_NANO_X
+    bool "Nano-X"
+    select PKG_JPEG
+    select PKG_XORG_LIB

@@ -1,0 +1,2 @@
+config PKG_LIBXML2
+    bool "LibXML2"

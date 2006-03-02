@@ -1,0 +1,4 @@
+config PKG_FONTCONFIG
+    bool "Fontconfig"
+    select PKG_EXPAT 
+    select PKG_FREETYPE

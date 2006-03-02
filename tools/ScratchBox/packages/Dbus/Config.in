@@ -1,0 +1,5 @@
+config PKG_DBUS
+    bool "DBus"
+    select PKG_EXPAT 
+    select PKG_GETTEXT 
+    select PKG_XORG_LIB

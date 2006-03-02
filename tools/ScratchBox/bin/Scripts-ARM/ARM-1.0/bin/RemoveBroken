@@ -1,0 +1,15 @@
+#!/bin/sh
+
+if [ $1 = "" ]
+then
+	exit 1
+fi
+
+for i in "$@"
+do
+	if [ ! -f "$i" ] 
+	then
+		echo "$i"
+		rm "$i"
+	fi
+done

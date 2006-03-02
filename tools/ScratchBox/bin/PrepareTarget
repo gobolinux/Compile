@@ -1,0 +1,109 @@
+#!/bin/sh
+
+TOPDIR=..
+
+source ScriptFunctions
+source $TOPDIR/.config
+
+if [ "$CROSS_NONE" = "y" ]
+then 
+	prefix="$INSTALL_PREFIX"
+else
+	[ "$CROSS_ARM"  = "y" ] && arch=ARM
+	[ "$CROSS_SH4"  = "y" ] && arch=SH4
+	
+	source $goboSettings/Compile/Cross-$arch.conf
+	prefix="$crossPrefixDir"
+	symlink_options="--cross-compile $arch -c overwrite"
+fi
+
+#
+# Create the basic GoboLinux structure
+#
+if [ ! -d $prefix/$goboPrograms ]
+then
+    Log_Normal "Creating the GoboLinux tree..."
+    CreateGoboLinuxTree $prefix $SUPER_USER_NAME || exit 1
+fi
+
+if [ ! -c $prefix/$goboDevices/console ]
+then
+    Log_Normal "Populating the device directory..."
+    PopulateDev $prefix || exit 1
+fi
+
+#
+# Create some system files
+#
+CreateFiles $SUPER_USER_NAME
+
+
+#
+# Install the Scripts package
+#
+dirname="$prefix/$goboPrograms/Scripts"
+if [ ! -d "$dirname" ]
+then
+	Log_Normal "Installing the Scripts package..."
+	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+fi
+
+#
+# Install the BootScripts package
+#
+dirname="$prefix/$goboPrograms/BootScripts"
+if [ ! -d "$dirname" ]
+then
+	Log_Normal "Installing the BootScripts package..."
+	cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
+	SymlinkProgram $symlink_options BootScripts >& /dev/null
+fi
+
+#
+# Create a LibGCC package just to satisfy packages with 
+# dependency on libgcc_s.so
+#
+dirname="$prefix/$goboPrograms/LibGCC"
+if [ "$PKG_LIBGCC" = "y" -a ! -d "$dirname" ]
+then
+	Log_Normal "Creating a LibGCC package..."
+	if [ "$CROSS_NONE" = "y" ]
+	then
+		version=`gcc --version | head -n 1 | awk {'print $3'}`
+		gcc_libdir=$goboPrograms/GCC
+	else
+		version=`$CC --version | head -n 1 | awk {'print $3'}`
+	fi
+	
+    mkdir -p $dirname/$version/lib
+    ln -sf $version $dirname/Current
+
+    pushd $dirname/Current/lib >& /dev/null
+    cp -a $gcc_libdir/libgcc* .
+    popd >&/dev/null
+
+    SymlinkProgram $symlink_options LibGCC >& /dev/null
+fi
+
+#
+# Create the Linux-Libc-Headers package
+#
+dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+if [ ! -d  "$dirname" ]
+then
+	Log_Normal "Creating the Linux-Libc-Headers package..."
+	if [ "$CROSS_NONE" = "y" ]
+	then
+		kernelDir="$KERNEL_DIR"
+		kernelVersion="$KERNEL_VERSION"
+	fi
+	
+	mkdir -p "$dirname/$kernelVersion/include"
+	ln -sf $kernelVersion "$dirname/Current"
+	
+	cp -a $kernelDir/include/asm* $dirname/Current/include
+	cp -a $kernelDir/include/linux $dirname/Current/include
+
+	SymlinkProgram $symlink_options Linux-Libc-Headers >& /dev/null
+fi
