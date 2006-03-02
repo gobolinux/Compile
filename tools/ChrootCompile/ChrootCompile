@@ -240,7 +240,7 @@ function filter_dir() {
 }
 
 
-if [ ! `GuessLatest 1 2` = "2" ]
+if ! [ "`GuessLatest 1 2 2> /dev/null`" = "2" ]
 then
    for dep in "${base_dependencies[@]}"
    do
