@@ -29,7 +29,7 @@
 #############################################################################
 # Parsing options. By now, only 'chrootcompileCompileConf'
 #############################################################################
-scriptdir=$(dirname `readlink -f $0`)
+scriptdir=$(readlink -f $(dirname $0))
 source $scriptdir/ChrootCompile.conf
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
