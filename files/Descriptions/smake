@@ -1,5 +1,0 @@
-[Name] SMake
-[Summary] Skeleton Make - Makefile Generator
-[License] GNU General Public License (GPL)
-[Description] SMake is a powerful mechanism to generate standard Makefiles out of skeleton Makefiles which only provide the essential parts. The missing stuff gets automatically filled in by shared include files. It provides a great scheme to create a huge Makefile hierarchy and to keep it consistent for the time of development. The trick is that it merges the skeleton and the templates in a priority-driven way. The idea is taken from X Consortiums Imake, but the goal here is not inherited system independency, the goal is consistency and power without the need of manually maintaining a Makefile hierarchy. SMake is intentionally not a feature-rich Makefile generator like Automake.
-[Homepage] http://www.engelschall.com/sw/smake/

@@ -1,6 +1,0 @@
-[Name]  utempter
-[Summary]  A privileged helper for utmp and wtmp updates
-[Description]  Utempter is a utility that allows non-privileged applications such as terminal emulators to modify the utmp database without having to be setuid root.
-[Suse Category]  Productivity/Security
-[License]  X11/MIT
-[Homepage]  

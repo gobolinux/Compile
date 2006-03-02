@@ -1,7 +1,0 @@
-[Description] LibHTTPD can be used to add basic Web server
-capabilities to an application or embedded device.
-The library handles both static and dynamically
-generated content, has very low overhead, and
-provides many features to simplify the creation of
-Web-based application interfaces.
-[Homepage] http://www.Hughes.com.au/products/libhttpd/

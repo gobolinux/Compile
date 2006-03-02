@@ -1,6 +1,0 @@
-[Name] AbsTK
-[Summary] A python Abtract Toolkit for interface building
-[Description]
-Maintaining different versions for an application in text and graphic modes is costly and problematic. AbsTK is a free Python toolkit for interface building, which abstracts away the visual elements and allows one to develop applications which execute both in textual and graphical environments. 
-It currently supports the Unix console through ncurses and X11 through Qt, and is released under the GNU GPL. 
-[HomePage] http://www.gobolinux.org/abstk/
