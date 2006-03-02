@@ -87,8 +87,8 @@ else # program name [version] [type] [url]
 	t="$3"
 	u="$4"
 fi
-echo GenericInstall: About to call CheckDependencies --add-self=always --mode missing $p "$v" $t $u
-CheckDependencies --add-self=always --mode missing $p "$v" $t $u | while read line
+echo GenericInstall: About to call CheckDependencies $noweb --add-self=always --mode missing $p "$v" $t $u
+CheckDependencies $noweb --add-self=always --mode missing $p "$v" $t $u | while read line
 do
 	echo GenericInstall: Line $line
 	if [ "$line" != "" ]
