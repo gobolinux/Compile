@@ -1,6 +1,9 @@
 #!/bin/sh
 
-source $(dirname `readlink -f $0`)/ChrootCompile.conf
+source $(readlink -f $(dirname $0))/ChrootCompile.conf || {
+   echo "ChrootCompile.conf not found."
+   exit 1
+}
 
 [ "$2" ] || {
    echo "Usage:   `basename $0` <package-file> <root>"
