@@ -123,7 +123,9 @@ function do_symlink() {
       PrepareProgram --tree-cleanup $batch $cross_flags "$1" "$2"
    else
       SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
-      UpdateSettings "$1" "$2"
+      if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "update_each_settings" = "yes" ]
+      then UpdateSettings "$1" "$2"
+      fi
       Run_PostInstall "$1" "$2" "" ""
    fi
 }
