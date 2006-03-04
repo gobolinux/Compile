@@ -25,6 +25,10 @@
 #
 #############################################################################
 
+function die() {
+   echo "ChrootCompile: $*"
+   exit 1
+}
 
 #############################################################################
 # Parsing options. By now, only 'chrootcompileCompileConf'
@@ -105,8 +109,7 @@ then
    name=$(basename $(dirname $recipedir))
    version=$(basename $recipedir)
 else
-   echo "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
-   exit 1
+   die "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
 fi
 
 
@@ -223,8 +226,7 @@ do
 #         echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,Clean}. Creating package based on host system"
 #         cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
 #      else
-         echo "Package $dep, needed for bootstrap, was not found."
-         exit 1
+         die "Package $dep, needed for bootstrap, was not found."
 #      fi
    fi
 done
@@ -239,8 +241,9 @@ function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
 }
 
-
-if ! [ "`GuessLatest 1 2 2> /dev/null`" = "2" ]
+# Avoid guessing for now
+# if ! [ "`GuessLatest 1 2 2> /dev/null`" = "2" ]
+if true
 then
    for dep in "${base_dependencies[@]}"
    do
@@ -248,20 +251,17 @@ then
       for repo in Clean Bootstrap
       do
          [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
-            echo "More than one entry for $dep in $repo/ directory."
-            exit 1
+            die "More than one entry for $dep in $repo/ directory."
          } || true
          [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
-            echo "More than one entry for $dep in $repo/ directory."
-            exit 1
+            die "More than one entry for $dep in $repo/ directory."
          } || true
          pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
          [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
          [ "$pkg" ] && break
       done
       [ ! "$pkg" ] && {
-         echo "Base dependency $dep could not be found."
-         exit 1
+         die "Base dependency $dep could not be found."
       }
       sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
    done
@@ -272,11 +272,10 @@ else
       packed_places="Clean Bootstrap"
       unpacked_place=BootStrap
       #packages=`ls -d Bootstrap/$dep/* | filter_dir`
-      packages=`ls -d -U Bootstrap/$dep/* {Bootstrap,Clean,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
+      packages=`ls -d -U Bootstrap/$dep/* {Clean,Bootstrap,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
       if [ ! "$packages" ]
       then
-         echo "Base dependency $dep could not be found."
-         exit 1
+         die "Base dependency $dep could not be found."
       fi
       latest=`GuessLatest $packages`
       echo "ChrootCompile: Using $latest"
@@ -382,26 +381,58 @@ trap cleanup TERM STOP HUP EXIT
 #############################################################################
 export LD_LIBRARY_PATH=/System/Links/Libraries
 
+function in_chroot() {
+   sudo chroot $root "$@"
+}
+
 echo "ChrootCompile: Will run ldconfig..."
-sudo chroot $root ldconfig
+in_chroot ldconfig
 
 #############################################################################
 # Let the compilation begin!
 #############################################################################
-echo "ChrootCompile: Will run Compile..."
-cp ./GenericInstall $root
 
 # Only local packages are used to fullfil dependencies
 sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
 sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/Clean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
-sudo chroot $root ./GenericInstall --no-web $name "$version" recipe
+echo "ChrootCompile: Checking dependencies..."
+
+in_chroot CheckDependencies --no-web --add-self=never --mode=missing "$name" "$version" recipe | while read depnam depver deptyp depurl
+do
+   [ "$depnam" ] || continue
+   case $deptyp in
+   installed)
+      : # ok, skip
+      ;;
+   local_package)
+      in_chroot InstallPackage --no-web $depurl || die "Installation of dependency $depnam $depver failed ($depurl used)."
+      ;;
+   None)
+      die "ChrootCompile: Unresolved dependency: $depnam $depver"
+      ;;
+   *)
+      die "ChrootCompile: Dependency not available as a package: $depnam $depver ($deptype found)."
+      ;;
+   esac
+done
+
+echo "ChrootCompile: Will run Compile..."
+in_chroot Compile --no-web --no-symlink --no-sign $name $version || die "Dependency not available as a package: $depnam $depver ($deptype found)."
 
 #############################################################################
 # After the compilation is done (hopefully it will not fail :),
 #  pack the program and copy the resulting package to './Clean', the place
 #  of pure packages
 #############################################################################
-package=`sudo chroot $root CreatePackage --no-sign --no-verify $name $version`
-mkdir -p $scriptdir/Clean
-cp $root/$name--$version* $scriptdir/Clean
+
+# FIXME: Should be based on Directories.conf
+if [ "$chrootcompileMode" = "gobo" ]
+then
+   package=`in_chroot CreatePackage --no-sign --no-verify $name $version`
+   mkdir -p $scriptdir/Clean
+   cp $root/$name--$version* $scriptdir/Clean
+else
+   cd Area/View
+   tar jcvpf ../../Clean/$program--$version--i686.tar.bz2 $program/$version
+fi
