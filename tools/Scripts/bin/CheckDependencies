@@ -26,7 +26,7 @@ old_format = s_name+s_blank+s_version
 old_format_c = re.compile(old_format)
 ##
 
-global_dependencies_servers = getGoboVariable('dependenciesServer', 'Scripts/CheckDependencies.conf', True) 
+global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True) 
 global_wget_timeout = getGoboVariable('timeout', 'Scripts/GetAvailable.conf')
 global_dependencies_cache_dir = os.path.expanduser('~/.Settings/dependencies_cache/')
 
@@ -103,7 +103,7 @@ def find_dependencies_file(p, v, t, u=None, noWeb=False):
 			if os.access(compileRecipeDir+'/'+p+'/'+v+'/Resources/Dependencies', os.R_OK) :
 				return compileRecipeDir+'/'+p+'/'+v+'/Resources/Dependencies'
 	
-	if t in [ 'official_package', 'contrib_package', 'recipe' ] and False:
+	if t in [ 'official_package', 'contrib_package', 'recipe' ] :
 		cachedep = global_dependencies_cache_dir+'/'+t+'/'+ name
 		if os.access(cachedep, os.R_OK) :
 			return cachedep
@@ -128,7 +128,7 @@ def find_dependencies_file(p, v, t, u=None, noWeb=False):
 		if s:
 			return s+'/Resources/Dependencies'
 
-	print 'Dependencies for',p,v,t,u,'not found'
+	sys.stderr.write('Dependencies for %s %s %s %s not found\n'%(p,v,t,u))
 	return None
 	  
 def interpret_dependency_line(line) :
@@ -387,7 +387,7 @@ def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=F
 	else :
 		return rules
 	
-def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None) :
+def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=None) :
 	px, vx, tx, ux = x
 	if all_programs == None :
 		all_programs = []
@@ -396,6 +396,8 @@ def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None) :
 		return True
 	
 	for rule in get_rules_for(px, vx, tx, ux) :
+		if hook :
+			hook()
 		p = rule['program']
 		if p.lower() == py.lower() :
 			return True
@@ -404,7 +406,7 @@ def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None) :
 			match = find_matching_package(rule, acceptable_types) # (program, version, type, site)
 			pp, vv, tt, uu = match
 			if tt :
-				x = does_x_depend_on_y((pp, vv, tt, uu), py, acceptable_types, all_programs)
+				x = does_x_depend_on_y((pp, vv, tt, uu), py, acceptable_types, all_programs, hook=hook)
 				if x :
 					return True
 	return False
