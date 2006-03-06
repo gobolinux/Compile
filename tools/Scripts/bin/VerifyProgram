@@ -92,7 +92,7 @@ then
       result=4
    fi
 else
-   Log_Error "GnuPG not installed."
+   Log_Error "GnuPG 1.4.x not installed."
    result=2
 fi
 
