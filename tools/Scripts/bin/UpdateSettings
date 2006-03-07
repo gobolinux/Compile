@@ -23,7 +23,7 @@ Import Process
 helpOnNoArguments=yes
 scriptDescription="Interactively update settings from defaults in Resources/Defaults/Settings"
 scriptCredits="(C)2005 by David Smith. Released under the GNU GPL."
-scriptUsage="[<options>] [<program or directory>]"
+scriptUsage="[<options>] <program> [<version>]"
 Add_Option_Boolean "c" "check" "Only check whether current settings differ from the defaults."
 Add_Option_Boolean "r" "report" "Only report whether current settings and defaults differ."
 Add_Option_Boolean "l" "list" "Only list files that differ between current settings and defaults. Don't change anything."
@@ -40,16 +40,16 @@ if Boolean "quick"; then
     Set_Boolean "update"
 fi
 
-
-# The argument can be a path or a program name
-case "$1" in
-       /*)  pdir="$1"           ; abs_path=yes ;;
-       */*) pdir="$(pwd)/$1"    ; abs_path=no ;;
-       *)   pdir="${goboPrograms}/`GuessProgramCase $1`" ; abs_path=yes ;;
-esac
+pdir="${goboPrograms}/`GuessProgramCase $1`"
+if [ "$2" ]
+then
+   version="$2"
+else
+   version="Current"
+fi
 
 Is_Directory "$pdir" || Die "$pdir not found or is not a directory"
-Is_Directory "$pdir/Current" || Die "$pdir/Current not found"
+Is_Directory "$pdir/$version" || Die "$pdir/$version not found"
 
 # default is list, update, and report
 if [ $parsedArguments -eq 0 ]; then
@@ -59,12 +59,7 @@ if [ $parsedArguments -eq 0 ]; then
 fi
 
 if Boolean "update" && ! Is_Writable "$pdir"; then
-       if [ "$abs_path" = yes ]; then
-               Verify_Superuser
-               exit
-       else
-               Die "$pdir is not writable, and changing to superuser could alter the path"
-       fi
+   Verify_Superuser
 fi
 
 EDITOR=${EDITOR:-vi}
@@ -106,33 +101,33 @@ function expand_dirs()
 
 function list_diffs()
 {
-       # List differing files in ./Settings and ./Current/Resources/
+       # List differing files in ./Settings and ./$version/Resources/
        # Defaults/Settings
 
        [ "$1" = "-s" ] && echo
 
-       if Is_Directory Settings && ! Is_Directory Current/Resources/Defaults/Settings; then
+       if Is_Directory Settings && ! Is_Directory $version/Resources/Defaults/Settings; then
 
                find Settings -type f \
                        | sed 's,^,del: ,'\
                        | cat -n\
                        | sed 's/^ \{4\}//;s/   / /'
 
-       elif ! Is_Directory Settings && Is_Directory Current/Resources/Defaults/Settings; then
+       elif ! Is_Directory Settings && Is_Directory $version/Resources/Defaults/Settings; then
 
-               find Current/Resources/Defaults/Settings -type f \
+               find $version/Resources/Defaults/Settings -type f \
                        | sed 's,^,new: ,'\
                        | cat -n\
                        | sed 's/^ \{4\}//;s/   / /'
 
        else
                # Differing files are presented as "#no new|del|mod <file>"
-               #  1 new: Current/Resources/Defaults/Settings/<file>
+               #  1 new: $version/Resources/Defaults/Settings/<file>
                #  2 del: Settings/<file>
                #  3 mod: Settings/<file>
-               diff -rq Settings Current/Resources/Defaults/Settings\
+               diff -rq Settings $version/Resources/Defaults/Settings\
                        | sed '
-                               s,Only in \(Current[^:]*\): \(.*\),new: \1/\2,
+                               s,Only in \('$version'[^:]*\): \(.*\),new: \1/\2,
                                s,Only in \(Settings[^:]*\): \(.*\),del: \1/\2,
                                s,Files \([^ ]*\) and.*differ,mod: \1,'\
                        | expand_dirs\
@@ -309,13 +304,13 @@ function update_files()
        # Loop through all files and handle each in turn.
        list_diffs | while read num type file; do
                if [ "$type" == "new:" ]; then
-                       # From list_diffs: "#no new: Current/Resources/Defaults/Settings/<file>"
+                       # From list_diffs: "#no new: $version/Resources/Defaults/Settings/<file>"
                        # get current (though yet unexistant) file by removing C/R/D/S.
                        default="$file"
-                       cur=$(echo "$file" | sed 's,Current/Resources/Defaults/,,')
+                       cur=$(echo "$file" | sed 's,'$version'/Resources/Defaults/,,')
                else
                        # From list_diffs: "#no del/mod: Settings/<file>"
-                       default="Current/Resources/Defaults/$file"
+                       default="$version/Resources/Defaults/$file"
                        cur="$file"
                fi
 
@@ -328,7 +323,7 @@ function update_files()
 # Look for differences
 ##############################################
 curdir="$pdir/Settings"
-defaultdir="$pdir/Current/Resources/Defaults/Settings"
+defaultdir="$pdir/$version/Resources/Defaults/Settings"
 
 if Is_Nonempty_Directory "$curdir"; then
        has_current=yes;
@@ -398,8 +393,8 @@ if Boolean "update"; then
        fi
 
        if Is_Directory "$pdir/Settings"; then
-               mkdir -p "$pdir/Current/Resources"
-               backup=$(Unique_Name "$pdir/Current/Resources/SettingsBackup")
+               mkdir -p "$pdir/$version/Resources"
+               backup=$(Unique_Name "$pdir/$version/Resources/SettingsBackup")
 
                Log_Normal "Backing up settings in $backup"
                cp -a "$pdir/Settings" "$backup" || Die "Failed to backup settings"
