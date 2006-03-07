@@ -1,0 +1,35 @@
+#!/bin/sh
+
+mkdir -p Archives
+
+function check_and_dl() {
+   dir="$1"
+   url="$2"
+   if ! [ -d "$dir" ]
+   then
+      url_bn=`basename $url`
+      (cd Archives; wget -c $url)
+      mkdir -p "$dir"
+      sudo tar xvjf Archives/${url_bn} -C "$dir"
+   fi
+}
+
+#check_and_dl "Ext_work/Linux-HOWTOs"  \
+#    "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2"
+
+#check_and_dl "Ext_work/Linux-Kernel"  \
+#    "http://www.calica.com/gobolinux/kernel/Linux--2.6.15.2-Gobo--kernel-i686.tar.bz2"
+
+#check_and_dl "Ext_work/Files-Fonts"  \
+#    "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2"
+
+#check_and_dl "Ext_work/LayerTMP"  \
+#    "http://www.calica.com/gobolinux/livecd/LayerTMP.tar.bz2"
+
+check_and_dl "Ext_work/InitRD"  \
+    "http://www.calica.com/gobolinux/livecd/InitRD.tar.bz2"
+
+# Gobo-Files
+mkdir -p Ext_work/Gobo-Files
+cvs  -q -z3 -d:pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d Ext_work/Gobo-Files files
+
