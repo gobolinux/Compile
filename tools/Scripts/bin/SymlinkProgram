@@ -142,8 +142,8 @@ fi
 
 if ! Exists "$current"
 then
-   youngestdir=`ls --sort=time "$packageDir" | grep -v -e "Settings" -e "Variable" | head -n 1`
-   ln -s "$youngestdir" "$current"
+   youngestdir=`ls --sort=time "$packageDir" | grep -v -e "Settings" -e "Variable" -e "Current" | head -n 1`
+   ln -sf "$youngestdir" "$current"
    version="$youngestdir"
 fi
 
