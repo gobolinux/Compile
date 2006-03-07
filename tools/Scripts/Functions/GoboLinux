@@ -569,3 +569,15 @@ print entry[0]
 '
 }
 
+function Install_Unmanaged_Files() {
+   Parameters "$@" unmanagedfilesfile sourcedir
+   if [ -f "$unmanagedfilesfile" ] 
+   then
+      cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
+      do
+         local dname=$(dirname "${goboPrefix}/$line")
+         mkdir -p "${dname}"
+         cp -a "${sourcedir}/${line}" "${dname}/"
+      done
+   fi
+}

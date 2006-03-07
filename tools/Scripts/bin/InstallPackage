@@ -27,6 +27,7 @@ Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
         'keep', 'remove', 'ask' or 'cancel'." "ask"
 Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
+Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
 Parse_Options "$@"
@@ -291,6 +292,14 @@ then
     Quiet cd -
     exit 0
 fi
+
+cd "${goboPrograms}/$packagename"
+if ! Boolean "no-unmanaged" && [ -f "Current/Resources/UnmanagedFiles" ]
+then
+   Log_Normal "Installing UnmanagedFiles"
+   Install_Unmanaged_Files "Current/Resources/UnmanagedFiles" "Current/Resources/Unmanaged"
+fi
+Quiet cd -
 
 SymlinkProgram "$packagename" "$packageversion"
 
