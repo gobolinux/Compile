@@ -33,5 +33,8 @@ fi
 #
 # Create a new ld.so.conf
 #
-echo "$prefix/$goboLibraries" > "$prefix/$goboSettings/ld.so.conf"
-ldconfig -f "$prefix/$goboSettings/ld.so.conf" -C "$prefix/$goboSettings/ld.so.cache"
+echo "$prefix/$goboLibraries" > "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"
+ldconfig -f "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf" \
+         -C "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache"
+ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"  "$prefix/$goboSettings"
+ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache" "$prefix/$goboSettings"
