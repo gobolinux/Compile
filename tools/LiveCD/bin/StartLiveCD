@@ -45,6 +45,7 @@ export LANG=en_US
 ######################################
 msg "Starting Udev"
 /System/Links/Tasks/Udev
+/System/Links/Tasks/Coldplug
 
 ######################################
 # change console font
@@ -61,8 +62,8 @@ ifconfig lo 127.0.0.1
 ######################################
 # mount extra partitions
 ######################################
-msg "Enabling TmpFS"
-mount -t tmpfs -o size=16m tmpfs ${tmpfsdir}
+#msg "Enabling TmpFS"
+#mount -t tmpfs -o size=16m tmpfs ${tmpfsdir}
 
 for i in `fdisk -l | grep "Linux swap" | cut -d" " -f1`
 do 
@@ -74,18 +75,19 @@ done
 # Initialize Users directory (tmpfs)
 ######################################
 msg "Initializing home directory"
-turn_temporary ${goboUsers}
-rm -rf ${goboUsers}/gobo
-cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default ${goboUsers}/gobo
+#turn_temporary ${goboUsers}
+export HOME=${goboUsers}/gobo
+rm -rf $HOME
+cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default/* $HOME
 
-cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* ${goboUsers}/gobo/Desktop
-cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/.zshrc    ${goboUsers}/gobo/
+cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* $HOME/Desktop
+cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/.zshrc    $HOME
 
-cd ${goboUsers}/gobo/
-GrepReplace -R "/Users/testuser" "${goboUsers}/gobo/"
+cd $HOME
+GrepReplace -R "/Users/testuser" $HOME
 cd - &> /dev/null
 
-rm -f ${goboUsers}/gobo/Desktop/Manager.desktop
+rm -f $HOME/Desktop/Manager.desktop
 
 
 ######################################
@@ -93,25 +95,25 @@ rm -f ${goboUsers}/gobo/Desktop/Manager.desktop
 ######################################
 msg "Activating TmpFS on some directories"
 # Initialize System/Variable directory (tmpfs)
-turn_temporary ${goboVariable}
+#turn_temporary ${goboVariable}
 
-# Initialize some Programs settings directories on the tmpfs
-for prog in Xorg BootScripts RP-PPPoE
-do
-   turn_temporary ${goboPrograms}/${prog}/Settings
-done
+## Initialize some Programs settings directories on the tmpfs
+#for prog in Xorg BootScripts RP-PPPoE
+#do
+#   turn_temporary ${goboPrograms}/${prog}/Settings
+#done
 
-# Initialize some Programs variable directories on the tmpfs
-for prog in Hotplug
-do
-   turn_temporary ${goboPrograms}/${prog}/Variable
-done
+## Initialize some Programs variable directories on the tmpfs
+#for prog in Hotplug
+#do
+#   turn_temporary ${goboPrograms}/${prog}/Variable
+#done
 
-# Initialize System/Settings directory on the tmpfs
-for entry in "${goboSettings}" "/Mount" "/Programs/LiveCD" "/Programs/Installer"
-do
-  turn_temporary $entry
-done
+## Initialize System/Settings directory on the tmpfs
+#for entry in "${goboSettings}" "/Mount" "/Programs/LiveCD" "/Programs/Installer"
+#do
+#  turn_temporary $entry
+#done
 
 ######################################
 # Hostname => "LiveCD"
@@ -124,7 +126,7 @@ hostname LiveCD
 ######################################
 msg "Hiding legacy directories"
 ${goboPrograms}/BootScripts/Current/bin/StartTask GoboHide
-gobohide -h /TmpFS
+#gobohide -h /TmpFS
 
 ######################################
 # Launch the configuration script
@@ -142,4 +144,5 @@ ifconfig eth0 2> /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
 ######################################
 clear
 cat ${goboPrograms}/LiveCD/Current/Data/Language/Welcome_${LANG}
+zsh
 
