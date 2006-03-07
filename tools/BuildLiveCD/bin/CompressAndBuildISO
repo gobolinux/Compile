@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if ! which mksquashfs &> /dev/null
+then
+   echo "You need to install SquashFS-Tools."
+   exit 1
+fi
+
 . Master.conf
 
 if [ "$UID" != "0" ]
@@ -20,18 +26,18 @@ then
 
     # Add few items to layer1
     mkdir -p output/Layer1/Files
-    cp -ar Ext_work/Gobo-Files output/Layer1/Files
-    cp -ar Ext_work/Files-Fonts output/Layer1/Files
+    cp -ar Ext_work/Gobo-Files/* output/Layer1/Files
+    cp -ar Ext_work/Files-Fonts/* output/Layer1/Files
     mkdir -p output/Layer1/Files/Documentation
     cp -ar Ext_work/Linux-HOWTOs output/Layer1/Files/Documentation
-    cp -ar Ext_work/Linux-Kernel/. output/Layer1
+    cp -ar Ext_work/Linux-Kernel/* output/Layer1
 
     # Clean CVS files from Layer1
-    find output/Layer1 -name CVS |xargs rm -rf
+    find output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
     start_at="squashfs"
 fi
 
-if [ "$start_at" = "squashfs" ] || ! [ -f "output/ISO/GoboLinux.squashfs" ]
+if [ "$start_at" = "squashfs" ] || ! [ -f "output/ISO/GoboLinux-files.squashfs" ]
 then
     # Freshen build_chroots
     echo "Freshen"
@@ -48,7 +54,7 @@ then
 	mkdir -p output/$layer_bn
 	cp -ar $layer/. output/$layer_bn
 	# Clean layer of CVS
-	find output/$layer_bn -name CVS |xargs rm -rf
+	find output/$layer_bn -name CVS | grep -v Programs/CVS | xargs rm -rf
     done
 
     mkdir -p output/Environment
@@ -58,12 +64,52 @@ then
     echo mount -t unionfs -o ${unionfs_dirs} none output/Environment
     mount -t unionfs -o ${unionfs_dirs} none output/Environment
 
+    mkdir -p output/Checksums
+    function mksquashfs_on_demand() {
+       out="$1"
+       shift
+       bn=`basename "$out"`
+       # sumsfile=output/Checksums/$bn.sums
+       echo "Checking if $bn needs updating..."
+       echo ==========
+       echo Changes:
+       echo ----------
+       find "$@" -newer "$out" 2> /dev/null
+       echo ==========
+       find "$@" -newer "$out" 2> /dev/null > /tmp/newer.txt
+       diffs=`cat /tmp/newer.txt | wc -l`
+       if [ ! -e "$out" ] || [ $diffs -gt 0 ]
+       #find "$@" | grep -v Devices | xargs -n 100 md5sum > $sumsfile.new 2> /dev/null
+       #if ! diff -q $sumsfile $sumsfile.new
+       then
+          if [ $diffs -eq 3 ] && grep -q "output/Environment/Programs/Glibc/Settings/ld.so.cache" /tmp/newer.txt
+          then
+             md5sum output/Environment/Programs/Glibc/Settings/ld.so.cache > output/ld.so.cache.sum.new
+             return
+          fi
+       
+          echo "Creating squashfs compressed file $bn..."
+          # mv $sumsfile.new $sumsfile
+          nice -20 mksquashfs "$@" "$out" -noappend
+       else
+          echo "Mksquashfs not needed for $bn."
+       fi
+       rm /tmp/newer.txt
+    }
+
     # Final actions on Environment
     chroot output/Environment /bin/ldconfig
+    md5sum output/Environment/Programs/Glibc/Settings/ld.so.cache > output/ld.so.cache.sum
     # compress the uncompressed files into a squashfs file
-    echo "Creating squashfs compressed file..."
-    # rewrite with unionfs and single mksquashfs
-    time nice -20 mksquashfs output/Environment/* output/ISO/GoboLinux.squashfs -noappend
+
+    time mksquashfs_on_demand output/ISO/GoboLinux-files.squashfs output/Environment/Files
+    time mksquashfs_on_demand output/ISO/GoboLinux-programs-a-e.squashfs output/Environment/Programs/[A-E]*
+    time mksquashfs_on_demand output/ISO/GoboLinux-programs-f-j.squashfs output/Environment/Programs/[F-J]*
+    time mksquashfs_on_demand output/ISO/GoboLinux-programs-k-o.squashfs output/Environment/Programs/[K-O]*
+    time mksquashfs_on_demand output/ISO/GoboLinux-programs-p-t.squashfs output/Environment/Programs/[P-T]*
+    time mksquashfs_on_demand output/ISO/GoboLinux-programs-u-z.squashfs output/Environment/Programs/[U-Z]*
+    time mksquashfs_on_demand output/ISO/GoboLinux-rest.squashfs `ls -d output/Environment/* | grep -v Files | grep -v Programs`
+
     umount output/Environment
     rm -rf $tmp_mp
     start_at="initrd"

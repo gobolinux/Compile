@@ -1,6 +1,7 @@
 #/bin/sh
 
 cdrom=/Mount/CD-ROM
+squashfile=$cdrom/GoboLinux-files.squashfs
 #device=`dmesg | grep "\-ROM" | grep hd | cut -d":" -f1 | uniq`
 
 # First attempt to mount the CD-ROM
@@ -16,7 +17,7 @@ do
       device="/dev/$devname"
       mount -t iso9660 "$device" "$cdrom" 2> /dev/null
       # Check for squashfs
-      [ -f "$cdrom/GoboLinux.squashfs" ] && exit 0
+      [ -f "$squashfile" ] && exit 0
       umount "$cdrom"
    fi
 done
@@ -26,7 +27,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   [ -f "$cdrom/GoboLinux.squashfs" ] && exit 0
+   [ -f "$squashfile" ] && exit 0
    umount "$cdrom"
 done
 
@@ -44,7 +45,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   [ -f "$cdrom/GoboLinux.squashfs" ] && exit 0
+   [ -f "$squashfile" ] && exit 0
    umount "$cdrom"
 done
 
