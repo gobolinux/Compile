@@ -344,3 +344,17 @@ svn=<Subversion server>
    
 svn_module=<module name to co>
    Valid modes: all
+
+unmanaged_files=(<files>)
+   Valid modes: all
+   Specify a list of files that the recipes stored in Resources/Unmanaged.
+   These will be copied into the system in an "unmanaged" way, ie, outside
+   of the fs-based package management system based on /Programs.
+   This should be used with caution in exceptional cases only.
+   It is not possible to insert files into /Programs entries using
+   Resources/Unmanaged.
+   Example: 
+   unmanaged_files=(
+      /System/Kernel/Boot/grub/stage1
+      /System/Kernel/Boot/grub/stage2
+   )
