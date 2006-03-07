@@ -28,7 +28,7 @@ fi
 if [ -d ${goboPrograms}/Xorg ]
 then
 	msg_no_nl "Starting X11 detection (<esc> to skip)" 
-	skip_on_esc 3 && echo && { 
+	skip_on_esc 3000 && echo && { 
 	   GenXorgConf > /tmp/xorg.conf && mv /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf || echo FAILED
 	} || echo '<SKIPPED>'
 fi
@@ -61,34 +61,24 @@ echo "export LC_ALL=${LANG}" >> ${goboUsers}/gobo/.bashrc
 ######################################
 # Adjusting .kde to the chosen lang
 ######################################
-if [ "$LANG" == "pt_BR" -a -d ${goboPrograms}/KDE ]
+
+if [ -d "${goboPrograms}/KDE" ]
 then
-    echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-    echo "Country=br" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-    echo "Language=pt_BR" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-
-    eskeldir=${goboShared}/EnhancedSkel/Default/
-    turn_temporary ${eskeldir}/.kde/share/config/
-    
-    echo "[Locale]" >> ${eskeldir}/.kde/share/config/kdeglobals
-    echo "Country=br" >> ${eskeldir}/.kde/share/config/kdeglobals
-    echo "Language=pt_BR" >> ${eskeldir}/.kde/share/config/kdeglobals
+   case "$LANG" in
+   pt_BR) kdecountry=br; kdelanguage=pt_BR ;;
+   de_DE) kdecountry=de; kdelanguage=de ;;
+   esac
+   if [ "$kdecountry" ]
+   then
+      echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
+      echo "Country=$kdecountry" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
+      echo "Language=$kdelanguage" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
+      eskeldir=${goboShared}/EnhancedSkel/Default/
+      echo "[Locale]" >> ${eskeldir}/.kde/share/config/kdeglobals
+      echo "Country=$kdecountry" >> ${eskeldir}/.kde/share/config/kdeglobals
+      echo "Language=$kdelanguage" >> ${eskeldir}/.kde/share/config/kdeglobals
+   fi
 fi
-
-if [ "$LANG" == "de_DE" -a -d ${goboPrograms}/KDE ]
-then
-    echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-    echo "Country=de" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-    echo "Language=de" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-
-    eskeldir=${goboShared}/EnhancedSkel/Default/
-    turn_temporary ${eskeldir}/.kde/share/config/
-    
-    echo "[Locale]" >> ${eskeldir}/.kde/share/config/kdeglobals
-    echo "Country=de" >> ${eskeldir}/.kde/share/config/kdeglobals
-    echo "Language=de" >> ${eskeldir}/.kde/share/config/kdeglobals
-fi
-
 
 ######################################
 # Choose keymap
@@ -111,3 +101,4 @@ then
 	cp -f /tmp/xorg.conf.$$ ${goboPrograms}/Xorg/Settings/X11/xorg.conf
 fi
 
+#
