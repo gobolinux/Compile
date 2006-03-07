@@ -120,7 +120,7 @@ echo "ChrootCompile: Compiling $name $version..."
 #############################################################################
 # Preparing stub root directory
 #############################################################################
-root=Area
+root=Area-$name-$version
 
 echo "ChrootCompile: Preparing $root..."
 cleanup() {
@@ -364,14 +364,14 @@ trap cleanup TERM STOP HUP EXIT
    if [ "$url" ]
    then
       file=`basename "$url"`
-      [ ! -e "$file" ] && wget "$url"
+      [ ! -e "$file" ] && wget -c "$url"
    fi
    if [ "${urls[*]}" ]
    then
       for url in "${urls[@]}"
       do
          file=`basename "$url"`
-         [ ! -e "$file" ] && wget "$url"
+         [ ! -e "$file" ] && wget -c "$url"
       done
    fi
 )
@@ -418,7 +418,7 @@ do
 done
 
 echo "ChrootCompile: Will run Compile..."
-in_chroot Compile --no-web --no-symlink --no-sign $name $version || die "Dependency not available as a package: $depnam $depver ($deptype found)."
+in_chroot Compile --no-web --no-symlink --no-sign $name $version || die "Compilation failed."
 
 #############################################################################
 # After the compilation is done (hopefully it will not fail :),
@@ -433,6 +433,6 @@ then
    mkdir -p $scriptdir/Clean
    cp $root/$name--$version* $scriptdir/Clean
 else
-   cd Area/View
+   cd $root/View
    tar jcvpf ../../Clean/$program--$version--i686.tar.bz2 $program/$version
 fi
