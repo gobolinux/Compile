@@ -27,6 +27,7 @@ Add_Option_Boolean "F" "no-sandbox" "Do not protect the installation with a sand
 Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative to the current "\
 "directory, '.'. Passing 1 to this option will build it relative to the parent directory, '..',"\
 "passing 2 relative to '../..', and so on." ""
+Add_Option_Boolean "l" "allow-leftovers" "When using UnionFS, do not return a failure code when it catches files outside the sandbox."
 
 Parse_Options "$@"
 shift $parsedArguments
@@ -156,7 +157,12 @@ then
    # Postprocess contents of $sandbox_rw here
    Log_Normal "Postprocessing Sandbox"
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
-   [ "$leftovers" ] && Log_Normal "Left over files:\n$leftovers"
+   [ "$leftovers" ] && {
+      Log_Normal "Left over files:\n$leftovers"
+      if ! Boolean "allow-leftovers"
+      then return 21 # Remember Fibo
+      fi
+   }
    Quiet rmdir $sandbox_rw
 fi
 exit $result
