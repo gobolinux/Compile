@@ -1,9 +1,11 @@
 
 VERSION=
+PROGRAM=Scripts
+SCRIPTS_DIR=/Programs/$(PROGRAM)/Current
 PACKAGE_DIR=$(HOME)
-PACKAGE_ROOT=$(PACKAGE_DIR)/Scripts
+PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
-PACKAGE_FILE=$(PACKAGE_DIR)/Scripts--$(VERSION)--$(shell uname -m).tar.bz2
+PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 
 PYTHON_VERSION=2.3
 PYTHON_LIBS=FindPackage GetAvailable GuessLatest CheckDependencies
@@ -22,7 +24,11 @@ version_check:
 dist: version_check all
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
-	find * -not -path "*/CVS" -and -not -path "*/CVS/*" -and -not -path "*.py[oc]" -and -not -path "*~" | cpio -p $(PACKAGE_BASE)
-	cd $(PACKAGE_DIR); tar cvp Scripts | bzip2 > $(PACKAGE_FILE)
+	rm -rf Resources/FileHash*
+	find * -path "*~" -or -path "*/.\#*" | xargs rm -f
+	SignProgram $(PROGRAM)
+	cat Resources/FileHash
+	find * -not -path "CVS" -and -not -path "*/CVS" -and -not -path "*.py[oc]"  | cpio -p $(PACKAGE_BASE)
+	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
 	echo "Package at $(PACKAGE_FILE)"
