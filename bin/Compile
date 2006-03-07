@@ -112,9 +112,10 @@ function do_symlink() {
    then
       Log_Normal "Stripping executables..."
       [ "$STRIP" ] || STRIP=strip
-      for dir in bin sbin
+      local d
+      for d in bin sbin
       do
-         Quiet pushd "$target/$dir"
+         Quiet pushd "$target/$d"
          for i in *
          do
             if file "$i" | grep -q -i "ELF .* executable"
@@ -131,10 +132,10 @@ function do_symlink() {
    then
       PrepareProgram --tree-cleanup $batch $cross_flags "$1" "$2"
    else
-      SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
       if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "update_each_settings" = "yes" ]
       then UpdateSettings "$1" "$2"
       fi
+      SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
    fi
 }
@@ -766,13 +767,14 @@ then
       configure="${dir}/$configure"
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
+
    [ "$create_dirs_first" = "yes" ] && {
       PrepareProgram -t $batch $keep $cross_flags "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    is_function_set pre_build && pre_build
    if ! Boolean "lazy"
    then
-	  [ -f "$configure" ] && chmod +x "$configure"
+      [ -f "$configure" ] && chmod +x "$configure"
       (
          for i in "${configure_variables[@]}"
          do
