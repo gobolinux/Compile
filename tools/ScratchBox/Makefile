@@ -61,6 +61,7 @@ deps:
 world: $(TARGETS)
 	@cd bin && ./PrepareTarget
 	@cd bin && ./InvokeCompile
+	@cd bin && ./FixupEnvironment
 
 .PHONY: all world clean distclean source $(TARGETS) \
 	$(TARGETS_CLEAN) $(TARGETS_SOURCE)
