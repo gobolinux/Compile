@@ -96,7 +96,16 @@ function do_symlink() {
    fi
    if ! [ "$nomake" = "yes" ]
    then
-      SandboxInstall ${sandboxopts[@]} $cross_flags -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+      unset allowleftovers
+      [ "${unmanaged_files[*]}" ] && allowleftovers=--allow-leftovers
+
+      SandboxInstall $allowleftovers ${sandboxopts[@]} $cross_flags -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+
+      if [ "${unmanaged_files[*]}" ]
+      then
+         mkdir -p "$target/Resources/Unmanaged/"
+         cp -a "$target/.SandboxInstall_Root"/* "$target/Resources/Unmanaged/"
+      fi
    fi
 
    if ! Boolean "no-strip"
@@ -158,6 +167,16 @@ function install_extras() {
 }
 
 function wrapup() {
+
+   if [ "${unmanaged_files[*]}" ]
+   then
+      rm -f -- $target/Resources/UnmanagedFiles
+      for file in "${unmanaged_files[@]}"
+      do echo $file >> $target/Resources/UnmanagedFiles
+      done
+      Install_Unmanaged_Files "$target/Resources/UnmanagedFiles" "$target/Resources/Unmanaged"
+   fi
+
    if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
    then
       SignProgram "$appname" "$versionnumber"
