@@ -301,9 +301,9 @@ then
 fi
 Quiet cd -
 
-SymlinkProgram "$packagename" "$packageversion"
+UpdateSettings "$packagename" "$packageversion"
 
-UpdateSettings $packagename
+SymlinkProgram "$packagename" "$packageversion"
 
 [ "$package_verified" = "true" ] && Run_PostInstall "$packagename" "$packageversion" "" ""
 
