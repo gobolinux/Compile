@@ -44,12 +44,12 @@ fi
 #############################################################################
 if [ "$1" == "--repack" ]
 then
-   cd Bootstrap
+   cd Bootstrap || exit 1
    for i in Compile Scripts
    do
-      [ -d ../Bootstrap/$i ] && rm -rf ../Bootstrap/$i
+      [ -d $i ] && rm -rf $i
       rm $i--*
-      CreatePackage --no-sign $i
+      CreatePackage --no-verify --no-sign $i
    done
    cd -
    shift
@@ -139,7 +139,6 @@ cleanup() {
 
 cleanup
 
-#sudo rm -rf $root
 if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
@@ -241,31 +240,29 @@ function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
 }
 
-# Avoid guessing for now
-# if ! [ "`GuessLatest 1 2 2> /dev/null`" = "2" ]
-if true
-then
-   for dep in "${base_dependencies[@]}"
+function load_dependency() {
+   local dep="$1"
+   local pkg=
+   for repo in Clean Bootstrap
    do
-      pkg=
-      for repo in Clean Bootstrap
-      do
-         [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
-            die "More than one entry for $dep in $repo/ directory."
-         } || true
-         [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
-            die "More than one entry for $dep in $repo/ directory."
-         } || true
-         pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
-         [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
-         [ "$pkg" ] && break
-      done
-      [ ! "$pkg" ] && {
-         die "Base dependency $dep could not be found."
-      }
-      sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
+      [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
+         die "More than one entry for $dep in $repo/ directory."
+      } || true
+      [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
+         die "More than one entry for $dep in $repo/ directory."
+      } || true
+      pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
+      [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
+      [ "$pkg" ] && break
    done
-else
+   [ ! "$pkg" ] && {
+      die "Base dependency $dep could not be found."
+   }
+   sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
+}
+
+# unused for now
+function guess_and_load_dependency() {
    echo "=> GuessLatest enabled"
    for dep in "${base_dependencies[@]}"
    do
@@ -289,7 +286,15 @@ else
       fi
       sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
    done
-fi
+}
+
+for dep in `{
+   echo "${base_dependencies[*]} " | tr " " "\n" 
+   [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
+} | sort -u`
+do
+   load_dependency "$dep"
+done
 
 #############################################################################
 # Creating files at $root/System/Settings/ 
@@ -388,6 +393,11 @@ function in_chroot() {
 echo "ChrootCompile: Will run ldconfig..."
 in_chroot ldconfig
 
+if ! [ "$chrootcompileMode" = "gobo" ]
+then
+   ln -nfs /Programs $root/View
+fi
+
 #############################################################################
 # Let the compilation begin!
 #############################################################################
@@ -433,6 +443,8 @@ then
    mkdir -p $scriptdir/Clean
    cp $root/$name--$version* $scriptdir/Clean
 else
+   fullroot=`readlink -f $root`
    cd $root/View
-   tar jcvpf ../../Clean/$program--$version--i686.tar.bz2 $program/$version
+   readlink -f $fullroot/../Clean/$name--$version--i686.tar.bz2
+   tar jcvpf $fullroot/../Clean/$name--$version--i686.tar.bz2 $name/$version
 fi
