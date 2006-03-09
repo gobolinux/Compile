@@ -240,7 +240,7 @@ else
    fi
 
    Log_Normal "Uncompressing to ${goboPrograms}..."
-   tar "$taroption" "$archive" --backup=numbered -C ${goboPrograms} >&$verboseFD
+   tar "$taroption" "$archive" -C ${goboPrograms} >&$verboseFD
 fi
 
 verify_opts="--quiet"
