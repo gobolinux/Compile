@@ -1,5 +1,6 @@
 config PKG_GMP
     bool "GMP arbitrary precision arithmetic library"
+	depends on CONFIG_TARGET_EMBEDDED=n
 	default n
 	---help---
 	  GMP is a free library for arbitrary precision arithmetic, 
