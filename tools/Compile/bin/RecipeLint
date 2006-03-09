@@ -573,6 +573,9 @@ test_recipe() {
    [ "${urls[*]}" ] && test_urls
 
    msg "Looking for common error patterns..."
+   grep -q '$goboPrograms' Recipe && {
+      ERROR "Recipe references \$goboPrograms explicitly. Use \$target and \$<dep>_path."
+   }
    grep -q "/Programs" Recipe && {
       ERROR "Recipe references /Programs tree explicitly. Use \$target and \$<dep>_path."
    }
