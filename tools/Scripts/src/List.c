@@ -43,6 +43,7 @@ char default_ls_colors[] =
 #define COLOR_WHITE_CODE       "\033[0m"
 #define COLOR_GREY_CODE        "\033[01;30m"
 #define COLOR_GREEN_CODE       "\033[22;36m"
+#define COLOR_YELLOW_CODE      "\033[1;33m"
 #define COLOR_LIGHT_WHITE_CODE "\033[1;37m" 
 #define COLOR_LIGHT_GREEN_CODE "\033[1;36m" 
 #define COLORCODE_MAX     16
@@ -378,8 +379,8 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 			if ((namelist[i]->d_name[0] == '.') && (! opt_all && ! opt_hid)) {
 				if ((pass == 0) && strcmp(namelist[i]->d_name, ".") && strcmp(namelist[i]->d_name, "..")) {
 					*hiddenfiles += 1;
+					continue;
 				}
-				continue;
 			}
 
 			memset(link_entry, 0, sizeof(link_entry));
@@ -492,10 +493,12 @@ list_file(const char *path, long *total, long *counter, long *hiddenfiles)
         fprintf(stderr, "lstat %s: %s\n", path, strerror(errno));
         return;
     }
+
     if (!S_ISSOCK(status.st_mode) && !S_ISFIFO(status.st_mode) && !S_ISLNK(status.st_mode)
             && !S_ISDIR(status.st_mode) && !S_ISREG(status.st_mode) && !S_ISCHR(status.st_mode)
-            && !S_ISBLK(status.st_mode))
+            && !S_ISBLK(status.st_mode)) {
         return;
+	}
 
     n = 1;
     namelist = (struct dirent **) malloc(sizeof(struct dirent *));
@@ -526,7 +529,6 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
 	struct dirent **namelist;
     struct file_info *file_info;
 	
-    
 	n = scandir(path, &namelist, NULL, alphasort);
     if (n < 0) {
         list_file(path, total, counter, hiddenfiles);
@@ -646,16 +648,88 @@ get_filesystem(struct statfs status)
     return "filesystem";
 }
 
+void
+summarize_simple(long total, long counter, long hiddenfiles)
+{
+    char *bytes_total_string = colorize_bytes(total, SCHEME_FILES, 9);
+
+	printf("%s                      ---------\n", COLOR_WHITE_CODE);
+
+	if (hiddenfiles)
+		printf("                      %s in %ld%s+%ld%s files\n", bytes_total_string, 
+				counter, COLOR_GREY_CODE, hiddenfiles, COLOR_WHITE_CODE);
+	else
+		printf("                      %s in %ld files\n", bytes_total_string, counter);
+}
+
+void
+summarize(struct statfs status, long total, long counter, long hiddenfiles, int final_info)
+{
+    char *bytes_used_string, *bytes_free_string, *bytes_total_string;
+	static int curses_initialized = 0, cols = 0;
+	static long bytes_used = 0, bytes_free = 0, bytes_total = 0;
+	static float percent = 0.0;
+	int i;
+	
+	/* let's use a sane output */
+	for (i = 10; i; --i) {
+		if (status.f_bsize > 1)
+			status.f_bsize >>= 1;
+		else {
+			status.f_blocks >>= 1;
+			status.f_bfree  >>= 1;
+		}
+	}
+	bytes_used  += (status.f_blocks - status.f_bfree) * status.f_bsize;
+	bytes_free  += status.f_bfree * status.f_bsize;
+	bytes_total += status.f_blocks * status.f_bsize;
+	percent      = ((float) bytes_used / bytes_total) * 100.0;
+
+	if (! final_info) {
+		summarize_simple(total, counter, hiddenfiles);
+		return;
+	}
+	
+#ifdef USE_NCURSES
+	if (! curses_initialized) {
+		initscr();
+		cols = COLS;
+		endwin();
+		curses_initialized = 1;
+	}
+#else
+    cols = 80;
+#endif
+	
+	printf("\033[0m");
+	for (i = 0; i < cols; ++i)
+		printf("=");
+	
+    bytes_used_string  = colorize_bytes(bytes_used, SCHEME_STATUS, -1);
+    bytes_free_string  = colorize_bytes(bytes_free, SCHEME_STATUS, -1);
+    bytes_total_string = colorize_bytes(total, SCHEME_FILES, 9);
+    
+	if (hiddenfiles) {
+		printf("\n%s in %ld%s+%ld%s files - %s: %s%s kB used (%02.0f%%), %s kB free\n", bytes_total_string,
+               counter, COLOR_GREY_CODE, hiddenfiles, COLOR_WHITE_CODE, get_filesystem(status), 
+			   bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string);
+    } else {
+		printf("\n%s in %ld files - %s: %s%s kB used (%02.0f%%), %s kB free\n", bytes_total_string, counter,
+			   get_filesystem(status), bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string);
+    }
+	
+    free(bytes_used_string);
+    free(bytes_free_string);
+    free(bytes_total_string);
+}
+
 int
 main(int argc, char **argv)
 {
-    int c, i, cols;
-    int index;
+    int c, index;
 	long total, counter, hiddenfiles;
-	long bytes_used, bytes_free, bytes_total;
-	float percent;
+	long total_final, counter_final, hidden_final;
 	struct statfs status;
-    char *bytes_used_string, *bytes_free_string, *bytes_total_string;
     
     while ((c=getopt_long(argc, argv, shortopts, long_options, &index)) != -1) {
 		switch (c) {
@@ -696,67 +770,50 @@ main(int argc, char **argv)
 //	dump_colors();
 	
 	total = counter = hiddenfiles = 0;
+	total_final = counter_final = hidden_final = 0;
 	
 	/* prints out a blank line */
 	fprintf(stdout, "\n");
 
 	if (optind == argc) {
 		char curr_dir[PATH_MAX];
+		
 		getcwd(curr_dir, sizeof(curr_dir));	
-		list_entries(curr_dir, &total, &counter, &hiddenfiles);
+		list_entries(curr_dir, &total_final, &counter_final, &hiddenfiles);
 		if ((statfs(curr_dir, &status)) < 0)
 			fprintf(stderr, "statfs %s: %s\n", curr_dir, strerror(errno));
+
+		hidden_final = hiddenfiles;
 	} else {
+		struct stat entry_status;
+		
 		if (optind < argc)
 			if ((statfs(argv[optind], &status)) < 0)
 				fprintf(stderr, "statfs %s: %s\n", argv[optind], strerror(errno));
-	    while (optind < argc)
-			list_entries(argv[optind++], &total, &counter, &hiddenfiles);
-	}
-	
-	/* let's use a sane output */
-	for (i = 10; i; --i) {
-		if (status.f_bsize > 1)
-			status.f_bsize >>= 1;
-		else {
-			status.f_blocks >>= 1;
-			status.f_bfree  >>= 1;
+
+	    while (optind < argc) {
+			stat(argv[optind], &entry_status);
+			if (S_ISDIR(entry_status.st_mode))
+				printf("%s%s%s\n", COLOR_YELLOW_CODE, argv[optind], COLOR_WHITE_CODE);
+				
+			list_entries(argv[optind], &total, &counter, &hiddenfiles);
+			
+			if (S_ISDIR(entry_status.st_mode)) {
+				summarize(status, total, counter, hiddenfiles, 0);
+				if (optind < argc - 1)
+					printf("\n");
+			}
+
+			total_final += total;
+			counter_final += counter;
+			hidden_final += hiddenfiles;
+
+			optind++;
 		}
 	}
-	bytes_used  = (status.f_blocks - status.f_bfree) * status.f_bsize;
-	bytes_free  = status.f_bfree * status.f_bsize;
-	bytes_total = status.f_blocks * status.f_bsize;
-	percent     = ((float) bytes_used / bytes_total) * 100.0;
 
-#ifdef USE_NCURSES
-	initscr();
-	cols = COLS;
-	endwin();
-#else
-    cols = 80;
-#endif
-	
-	printf("\033[0m");
-	for (i = 0; i < cols; ++i)
-		printf("=");
-	
-    bytes_used_string  = colorize_bytes(bytes_used, SCHEME_STATUS, -1);
-    bytes_free_string  = colorize_bytes(bytes_free, SCHEME_STATUS, -1);
-    bytes_total_string = colorize_bytes(total, SCHEME_FILES, 9);
-    
-	if (hiddenfiles) {
-		printf("\n%s in %ld+%ld files - %s: %s kB used (%02.0f%%), %s kB free\n", bytes_total_string,
-               counter, hiddenfiles, get_filesystem(status), bytes_used_string, percent, bytes_free_string);
-    } else {
-		printf("\n%s in %ld files - %s: %s kB used (%02.0f%%), %s kB free\n", bytes_total_string, counter,
-			   get_filesystem(status), bytes_used_string, percent, bytes_free_string);
-    }
-
+	summarize(status, total_final, counter_final, hidden_final, 1);
 	free(colors);
-    free(bytes_used_string);
-    free(bytes_free_string);
-    free(bytes_total_string);
-    
     exit(EXIT_SUCCESS);
 }
 
