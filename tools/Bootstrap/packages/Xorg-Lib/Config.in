@@ -1,6 +1,0 @@
-config PKG_XORG_LIB
-    bool "Xorg-Lib"
-    ---help---
-      This option installs the Xorg libraries, which are needed by many 
-      applications, including Xorg itself. Say Y if you're building a
-      desktop system.
