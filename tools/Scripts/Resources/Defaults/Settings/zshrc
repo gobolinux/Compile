@@ -3,9 +3,6 @@
 
 ### Global ZShell settings.
 
-# This line has to come first for dircolors.
-export SHELL=/System/Links/Executables/zsh
-
 # Disable flow control. (Ctrl-S, Ctrl-Q is annoying)
 stty -ixon
 
@@ -13,8 +10,6 @@ stty -ixon
 setopt autopushd autocd nobeep nohashcmds histignoredups completealiases
 autoload run-help
 unalias run-help 2> /dev/null
-
-eval `dircolors`
 
 alias ll='ls -la'
 alias ls='ls --color=tty'
@@ -49,6 +44,10 @@ fpath=("${goboPrefix}/System/Settings/zsh/functions" "${HOME}/.Settings/zsh/func
 autoload -U promptinit
 promptinit
 colors
+
+# This line has to come first for dircolors.
+export SHELL=`which zsh`
+eval `dircolors`
 
 # The following lines were added by compinstall
 
