@@ -1,0 +1,32 @@
+#!/bin/sh
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="List files from a program in a 'clean' way, skipping some file patterns."
+scriptCredits="Copyright (C) 2006. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<program> [<version>]"
+Parse_Options "$@"
+shift $parsedArguments
+
+program=`GuessProgramCase "$1"`
+if [ "$2" ]
+then
+   version="$2"
+else
+   version=$(readlink -f "$goboPrograms/$program/Current")
+   [ ! "$version" ] && Die "Current not found and no version specified."
+   version=$(basename $version)
+fi
+
+cd "$goboPrograms/$program/$version"
+
+find * \( -path "CVS" \
+      -or -path "*/CVS" \
+      -or -path "Resources/SettingsBackup" \
+      -or -path "*.py[oc]" \) -prune -or -print
