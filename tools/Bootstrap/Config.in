@@ -1,0 +1,143 @@
+#
+# Bootstrap configuration file
+# Author: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+#
+
+mainmenu "Bootstrap - GoboLinux From Scratch"
+
+menu "Build options"
+config HAVE_DOT_CONFIG
+    bool
+    default y
+
+choice
+	prompt "Cross-Compiling"
+	default CROSS_NONE
+
+config CROSS_NONE
+	prompt "Native compiling"
+	bool
+	---help---
+	  Do not cross-compile: generate a distribution suitable to the same 
+	  platform you're running this script on.
+	  
+config CROSS_ARM
+	prompt "ARM target"
+	bool
+	---help---
+	  Run a toolchain to generate a distribution suitable for ARM processors.
+
+config CROSS_SH4
+	prompt "SH-4 target"
+	bool
+	---help---
+	  Run a toolchain to generate a distribution suitable for SH-4 processors.
+	
+endchoice
+
+config INSTALL_PREFIX
+	string "Install prefix"
+	default "/Mount/GoboLinux"
+	depends on CROSS_NONE
+	---help---
+	  Directory where the filesystem will get installed.
+
+config KERNEL_DIR
+	string "Kernel directory"
+	default "/System/Kernel/Modules/Current/build"
+	depends on CROSS_NONE
+	---help---
+	  Directory where the kernel sources are stored.
+
+config KERNEL_VERSION
+	string "Kernel version"
+	default "2.6.15"
+	depends on CROSS_NONE
+	---help---
+	  Version for the kernel supplied above. Will be used to
+	  generate the Linux-Libc-Headers directory.
+
+config SUPER_USER_NAME
+    string "Super-user name"
+    default "root"
+	---help---
+	  Allows to select a different super-user name other than "root".
+
+endmenu
+
+menu "Base system"
+source "packages/Glibc/Config.in"
+source "packages/UClibc/Config.in"
+source "packages/BusyBox/Config.in"
+source "packages/LibGCC/Config.in"
+source "packages/ZLib/Config.in"
+source "packages/GPM/Config.in"
+source "packages/GoboHide/Config.in"
+source "packages/Hotplug/Config.in"
+source "packages/Listener/Config.in"
+source "packages/Udev/Config.in"
+comment "---"
+source "packages/Ncurses/Config.in"
+source "packages/Bash/Config.in"
+endmenu
+
+menu "Development"
+source "packages/GMP/Config.in"
+source "packages/GCC/Config.in"
+source "packages/Strace/Config.in"
+endmenu
+
+menu "Networking"
+source "packages/Links/Config.in"
+source "packages/OpenSSL/Config.in"
+source "packages/OpenSSH/Config.in"
+endmenu
+
+menu "Window Servers"
+source "packages/Xorg-Lib/Config.in"
+source "packages/Xorg/Config.in"
+source "packages/Nano-X/Config.in"
+endmenu
+    
+menu "Desktop"
+comment "Window Managers"
+source "packages/Matchbox/Config.in"
+
+comment "Applications"
+source "packages/ROX-Filer/Config.in"
+source "packages/RXVT/Config.in"
+source "packages/Siag/Config.in"
+source "packages/Swfdec/Config.in"
+source "packages/Xorg-App/Config.in"
+endmenu
+
+menu "Audio, video and graphics"
+source "packages/LibPNG/Config.in"
+source "packages/JPEG/Config.in"
+source "packages/TIFF/Config.in"
+source "packages/SDL/Config.in"
+source "packages/LibMad/Config.in"
+source "packages/LibOGG/Config.in"
+source "packages/LibVorbis/Config.in"
+endmenu
+
+menu "Libraries for the desktop"
+source "packages/Fontconfig/Config.in"
+source "packages/FreeType/Config.in"
+source "packages/GLib/Config.in"
+source "packages/ATK/Config.in"
+source "packages/Pango/Config.in"
+source "packages/GTK+/Config.in"
+source "packages/Dbus/Config.in"
+source "packages/Mowitz/Config.in"
+endmenu
+
+menu "Other" 
+source "packages/Gettext/Config.in"
+source "packages/Expat/Config.in"
+source "packages/LibOIL/Config.in"
+source "packages/Startup-Notification/Config.in"
+source "packages/LibART/Config.in"
+source "packages/LibXML2/Config.in"
+source "packages/Shared-Mime-INFO/Config.in"
+endmenu

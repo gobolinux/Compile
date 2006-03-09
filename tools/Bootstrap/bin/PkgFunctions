@@ -1,0 +1,40 @@
+#!/bin/sh
+
+TOP_DIR=..
+shipped_dir=$TOP_DIR/recipes
+
+#
+# This function is a bit tricky. It relies on the fact that the
+# package is correctly named as subdirectories inside $(TOPDIR)/packages.
+#
+# Thus, it's pretty simple to guess the package's name: by finding the
+# correct 'config PKG_NAME' inside the proper Config.in, its name is revealed
+# by reading the directory's name which holds that file.
+#
+function package_subdir() {
+    pkg_dir=`echo $1 | cut -d"=" -f1`
+    entry=`find . -name Config.in | xargs grep "config $pkg_dir$"`
+    echo $entry | cut -d"/" -f1-2 | sed 's/\.\///g'
+}
+
+#
+# Finds the most appropriate recipe for the given program.
+#
+function get_recipe() {
+	pkg_dir="$1"
+	pkg_name="$2"
+
+	if [ -d /Files/Compile/LocalRecipes/$pkg_name ]; then
+		pkg_dir=/Files/Compile/LocalRecipes/$pkg_name
+	elif [ -d /Files/Compile/Recipes/$pkg_name ]; then
+		pkg_dir=/Files/Compile/Recipes/$pkg_name
+	else
+		pkg_dir=$shipped_dir/$pkg_name
+	fi
+	
+    len="$(( ${#pkg_dir} + 2 ))"
+    pkg_version=`find $pkg_dir -maxdepth 2 -type d | cut -b${len}- | cut -d"/" -f1 | uniq | tail -n 1`
+    recipe=$pkg_dir/$pkg_version
+
+	echo "$recipe"
+}

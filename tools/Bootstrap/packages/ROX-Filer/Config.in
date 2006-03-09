@@ -1,0 +1,4 @@
+config PKG_ROX_FILER
+    bool "ROX-Filer"
+    select PKG_DBUS 
+    select PKG_LIBXML2

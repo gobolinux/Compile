@@ -1,0 +1,6 @@
+config PKG_GOBOHIDE
+    bool "GoboHide"
+    default y
+    ---help---
+      This program is needed to hide the legacy tree from the user's view. Say
+      Y, unless you don't care about ugly symlinks appearing on your filesystem.

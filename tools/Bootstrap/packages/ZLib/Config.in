@@ -1,0 +1,6 @@
+config PKG_ZLIB
+    bool "ZLib"
+    default y
+    ---help---
+      This library is needed by some applications that make use of compression
+      algorithms. Say Y, unless you know what you're doing.

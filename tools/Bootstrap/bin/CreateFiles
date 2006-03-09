@@ -1,0 +1,95 @@
+#!/bin/sh
+
+super_user="$1"
+
+#
+# Create the user's database files
+#
+group_file=$crossPrefixDir/$goboSettings/group
+if [ ! -f $group_file ]
+then
+    echo "$super_user:x:0:" >> $group_file
+    echo "bin:x:1:"         >> $group_file
+    echo "sys:x:2:"         >> $group_file
+    echo "nobody:x:3:"      >> $group_file
+    echo "users:x:100:"     >> $group_file
+fi
+
+passwd_file=$crossPrefixDir/$goboSettings/passwd
+if [ ! -f $passwd_file ]
+then
+    echo "$super_user::0:0:$super_user:/Users/$super_user:/bin/sh" >> $passwd_file
+fi
+
+shadow_file=$crossPrefixDir/$goboSettings/shadow
+if [ ! -f $shadow_file ]
+then
+    echo "$super_user::12889:0:::::" >> $shadow_file
+fi
+
+#
+# Networking stuff
+#
+hosts_file=$crossPrefixDir/$goboSettings/hosts
+if [ ! -f $hosts_file ]
+then
+    echo "127.0.0.1       localhost" >> $hosts_file
+fi
+
+resolv_conf_file=$crossPrefixDir/$goboSettings/resolv.conf
+if [ ! -f $resolv_conf_file ]
+then
+    echo "nameserver 200.176.2.10"   >> $resolv_conf_file
+    echo "nameserver 200.177.250.10" >> $resolv_conf_file
+fi
+
+network_task_file=$crossPrefixDir/$goboTasks/Network
+if [ ! -f $network_task_file ]
+then
+    echo "ifconfig lo 127.0.0.1"     >> $network_task_file
+    chmod +x $network_task_file
+fi
+
+environment_check_file=$crossPrefixDir/$goboTasks/EnvironmentCheck
+if [ ! -f $environment_check_file ]
+then
+    echo "# TODO: do this once"                  >> $environment_check_file
+    echo "update-mime-database $goboShared/mime" >> $environment_check_file
+    chmod +x $environment_check_file
+fi
+
+
+#
+# Initialization
+#
+bootup_file=$crossPrefixDir/$goboSettings/BootScripts/BootUp
+if [ ! -f $bootup_file ]
+then
+    echo -e "#!/bin/sh\n\n" > $bootup_file
+    echo -e "export PATH=/System/Links/Executables:/System/Links/Tasks"                >> $bootup_file
+	echo -e "echo \"Checking remaining file systems...\"; fsck -p -C -T -A -R"         >> $bootup_file
+    echo -e "echo \"Mounting file system read-write...\"; mount -o remount,rw /"       >> $bootup_file
+    echo -e "echo \"Mounting remaining filesystems...\";  mount -a -t noproc"          >> $bootup_file
+    echo -e "echo \"Loading udev task...\";               Udev start"                  >> $bootup_file
+    echo -e "echo \"Hiding the legacy tree...\";          GoboHide start"              >> $bootup_file
+    echo -e "echo \"Configuring network...\";             Network start"               >> $bootup_file
+    echo -e "echo \"Loading GPM driver...\";              gpm -R -m /dev/psaux -t ps2" >> $bootup_file
+    echo -e "echo \"Checking environment...\";            EnvironmentCheck start"      >> $bootup_file
+fi
+chmod +x $bootup_file
+
+fstab_file=$crossPrefixDir/$goboSettings/fstab
+if [ ! -f $fstab_file ]
+then
+    echo "/dev/hda1 /             ext2   defaults 1 1" >  $fstab_file
+    echo "none      /proc         proc   defaults 0 0" >> $fstab_file
+    echo "none      /sys          sysfs  defaults 0 0" >> $fstab_file
+    echo "none      /dev/pts      devpts defaults 0 0" >> $fstab_file
+    echo "none      /dev/shm      tmpfs  defaults 0 0" >> $fstab_file
+fi
+
+ld_so_conf_file=$crossPrefixDir/$goboSettings/ld.so.conf
+if [ ! -f $ld_so_conf_file ]
+then
+	echo "/System/Links/Libraries" > $ld_so_conf_file
+fi

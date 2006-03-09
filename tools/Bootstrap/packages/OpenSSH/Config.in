@@ -1,0 +1,3 @@
+config PKG_OPENSSH
+    bool "OpenSSH"
+    select PKG_OPENSSL

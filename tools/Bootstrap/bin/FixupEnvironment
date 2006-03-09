@@ -1,0 +1,40 @@
+#!/bin/sh
+
+#
+# After the system is cross-compiled, ensure that we have a sane
+# environment ready to be used.
+# 
+# Author: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+#
+
+TOPDIR=..
+
+source ScriptFunctions
+source $TOPDIR/.config
+
+if [ ! $# -eq 1 ]; then
+	echo "Syntax: $0 <root dir>"
+	exit 1
+fi
+
+if [ "$CROSS_NONE" = "y" ]
+then 
+	# nothing to do
+	exit 0
+else
+	[ "$CROSS_ARM"  = "y" ] && arch=ARM
+	[ "$CROSS_SH4"  = "y" ] && arch=SH4
+	
+	source $goboSettings/Compile/Cross-$arch.conf
+	prefix="$crossPrefixDir"
+fi
+
+
+#
+# Create a new ld.so.conf
+#
+echo "$prefix/$goboLibraries" > "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"
+ldconfig -f "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf" \
+         -C "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache"
+ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"  "$prefix/$goboSettings"
+ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache" "$prefix/$goboSettings"

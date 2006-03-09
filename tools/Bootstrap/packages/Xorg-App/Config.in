@@ -1,0 +1,4 @@
+config PKG_XORG_APP
+    bool "Xorg-App"
+    select PKG_FREETYPE 
+    select PKG_XORG_LIB

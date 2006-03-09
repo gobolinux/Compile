@@ -1,0 +1,3 @@
+- When running on GoboLinux, you must 'unalias make', since ColorMake can break
+compilation of packages which offer a graphical frontend based on dialog. These
+programs include uClibc, Busybox and the Linux kernel, among others.

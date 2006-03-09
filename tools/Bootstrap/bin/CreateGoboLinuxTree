@@ -1,0 +1,88 @@
+#!/bin/sh 
+
+source GoboPath
+
+#
+# Prepares the GoboLinux tree for a fresh installation from scratch
+#
+# Author: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+# 19/12/2004
+#
+
+function create_tree() {
+ 	mkdir -p "$1"/"$goboMount"
+ 	mkdir -p "$1"/"$goboPrograms"
+ 
+	mkdir -p "$1"/"$goboLinks/Tasks"
+	mkdir -p "$1"/"$goboEnvironment"
+	mkdir -p "$1"/"$goboExecutables"
+	mkdir -p "$1"/"$goboDaemons"
+	mkdir -p "$1"/"$goboLibraries"
+	mkdir -p "$1"/"$goboHeaders"
+	mkdir -p "$1"/"$goboManuals"/{info,man1,man2,man3,man4,man5,man6,man7,man8}
+	mkdir -p "$1"/"$goboShared"
+	mkdir -p "$1"/"$goboKernel"/{Objects,Modules}
+	
+ 	mkdir -p "$1"/"$goboVariable"/{cache,empty,ftp,lib,lock,log,mail,run,spool,tmp}
+	mkdir -p "$1"/"$goboTemp"
+	
+	mkdir -p "$1"/"$goboSettings"/BootScripts
+	mkdir -p "$1"/"$goboBoot"
+	mkdir -p "$1"/"$goboDevices"
+	mkdir -p "$1"/"$goboStatus"
+
+	mkdir -p "$1"/"$goboUsers"/"$2"/.Settings
+	mkdir -p "$1"/Depot
+	mkdir -p "$1"/Files/{Documentation,Fonts,Manager,Plugins}
+	mkdir -p "$1"/Files/Compile/{Archives,LocalRecipes,Recipes,Sources,Store}
+
+	ln -s "$goboDevices" "$1"/dev
+	ln -s "$goboStatus" "$1"/proc
+ 	ln -s "$goboVariable" "$1"/var
+	ln -s "$goboTemp" "$1"/tmp
+	ln -s "$goboExecutables" "$1"/sbin
+	ln -s "$goboExecutables" "$1"/bin
+	ln -s "$goboLibraries" "$1"/lib
+	ln -s "$goboSettings" "$1"/etc
+	ln -s "$goboKernel"/Objects "$1"/sys
+
+    mkdir -p "$1"/initrd
+	mkdir -p "$1"/usr
+	ln -s /usr/. "$1"/usr/X11R6
+	ln -s /usr/. "$1"/usr/local
+	ln -s "$goboExecutables" "$1"/usr/bin
+	ln -s "$goboExecutables" "$1"/usr/sbin
+	ln -s "$goboHeaders" "$1"/usr/include
+	ln -s "$goboLibraries" "$1"/usr/lib
+	ln -s "$goboManuals" "$1"/usr/man
+	ln -s "$goboShared" "$1"/usr/share
+	ln -s "$goboSettings" "$1"/usr/etc
+
+    pushd "$1"/"$goboLibraries" >& /dev/null
+    ln -s . .libs
+    popd >& /dev/null
+	
+	
+	# ---------------------------------------------------------
+	# Creates the symlink to the root fs (eg: /System/SH4 -> /)
+	# ---------------------------------------------------------
+	pushd "$1" >& /dev/null
+
+	# count how many levels we have in $prefix (/System/SH4 == 2)
+	num_levels=`echo "$1" | sed 's/\//\n/g' | grep -v ^$ | wc -l`
+
+	# extract the base directory (/System/SH4 == /System)
+	base_dir=`echo "$1" | cut -d"/" -f-$num_levels`
+
+	# create the base (/System/SH4 == /System)
+	mkdir -p $base_dir
+
+	# make a symlink ($PWD/System/SH4 -> /)
+	ln -s / `echo "$1" | cut -d"/" -f2-`
+
+	popd >& /dev/null
+}
+
+[ -z "$1" ] && target="." || target="$1"
+[ -z "$2" ] && super_user="root" || super_user="$2"
+create_tree "$target" "$super_user"

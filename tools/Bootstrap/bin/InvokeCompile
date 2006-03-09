@@ -1,0 +1,78 @@
+#!/bin/sh
+
+#
+# InvokeCompile: parses .config and runs Compile for each pkg selected there
+#
+# Author: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+#
+
+TOP_DIR=..
+dot_config=$TOP_DIR/.config
+subdir=$TOP_DIR/packages
+
+
+#
+# Cross-compiling variables
+# 
+source $dot_config
+
+if [ "$CROSS_NONE" = "y" ]
+then 
+    prefix="$INSTALL_PREFIX"
+else
+    [ "$CROSS_ARM"  = "y" ] && arch=ARM
+    [ "$CROSS_SH4"  = "y" ] && arch=SH4
+    cross_options="--cross-compile $arch"
+fi
+
+source GoboPath
+source ScriptFunctions
+source PkgFunctions
+source $goboSettings/Compile/Cross-$arch.conf
+
+#
+# packages known to be broken or that shouldn't be installed through Compile
+#
+blacklist=(
+    "LibGCC"		# LibGCC is installed in a different way
+    "Links"
+    "Matchbox"
+    "Xorg"
+)
+
+pushd $subdir >& /dev/null
+
+for entry in `cat $dot_config | grep "=y" | grep PKG`
+do
+    pkg_dir=`package_subdir $entry`
+    skip=0
+
+    for blacklist_entry in ${blacklist[@]}
+    do
+        [ "$pkg_dir" = "$blacklist_entry" ] && { skip=1; break; }
+    done
+
+    [ ! -d "$pkg_dir" ] && continue
+    [ "$skip" = 1 ]     && continue
+
+    pkg_name=`basename "$pkg_dir"`
+	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
+
+	if [ -d "$crossPrefixDir/$goboPrograms/$pkg_name" ]
+	then
+		Ask_Option "$pkg_name seems to be already compiled. Do you want to skip it? [Y/N]"
+		case "$REPLY" in
+	    	n|N) # compile it
+		 		 ;;
+	    	*)   continue 
+		 		 ;;
+		esac
+	fi
+
+	Log_Normal "Running 'Compile $cross_options $recipe'"
+	echo
+
+	#Compile $cross_options $recipe || break
+done
+
+popd >& /dev/null

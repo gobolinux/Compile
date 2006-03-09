@@ -1,0 +1,2 @@
+config PKG_SDL
+    bool "SDL"

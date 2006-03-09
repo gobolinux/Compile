@@ -1,0 +1,58 @@
+#!/bin/sh
+
+if [ $# != 1 ]
+then
+	echo "Syntax: $0 <.config>"
+	exit 1
+fi
+
+TOPDIR=../
+source PkgFunctions
+source ScriptFunctions
+Import File
+
+
+#
+# Receives a dependency file as parameter, converting 'Name Version'
+# to 'PKG_NAME'
+#
+function gen_pkg_names() {
+	cat "$1" | while read line
+	do
+		pkg_name=PKG_`echo $line | awk {'print $1'} | tr "[:lower:]-" "[:upper:]_"`
+		echo "$pkg_name"
+	done
+}
+
+#
+# Creates the dependency list
+#
+dependency_list=`Temporary_File`
+
+pushd "$TOPDIR"/packages >& /dev/null
+for entry in `cat "$1" | grep ^PKG | cut -d"=" -f1`
+do
+	# Locate the dependency file for the current package
+	pkg_dir=`package_subdir $entry`
+	[ ! -d "$pkg_dir" ] && continue
+	
+	pkg_name=`basename "$pkg_dir"`
+	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
+	dependencies="$recipe/Resources/Dependencies"
+	[ ! -f "$dependencies" ] && continue
+
+	Log_Normal "Parsing dependency file $dependencies"
+	gen_pkg_names "$dependencies" >> $dependency_list
+done
+popd >& /dev/null
+
+#
+# Replaces '# PKG_NAME is not set' by 'PKG_NAME=y' on .config
+#
+cat "$dependency_list" | sort -n | uniq | while read entry
+do
+	Log_Normal "Adding dependency $entry"
+	GrepReplace "# $entry is not set" "$entry=y" $TOPDIR/.config
+done
+
+rm -f -- "$dependency_list"

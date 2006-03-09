@@ -1,0 +1,39 @@
+This is Bootstrap, from the GoboLinux from Scratch project.
+
+It's aimed to generate a new distribution based on the
+GoboLinux hierarchy, focused towards embedded usage.
+Bootstrap handles cross-compiling very fine, and has
+already been used to make successful ARM and SH-4 ports.
+
+In order to use it, it's necessary to have a GoboLinux
+host system, since it relies on its Compile and Scripts
+tools. Just ensure to have their latest versions installed,
+since Bootstrap relies on many bleeding edge features
+from these tools.
+
+If you are cross-compiling, make sure to have a valid
+Cross-$ARCH.conf file, and a functional toolchain installed
+on your host computer. Please refer to the Knowledge Base[1]
+for further explanations about cross compiling scripts and
+their mandatory entries.
+
+Bootstrap usage is then pretty simple. Just issue
+'make menuconfig' to select which packages you want to have
+on your target system, among other questions such as your 
+super-user's name and selecting your target's architecture.
+Finished with that, run 'make deps'. This command will check
+dependencies for each chosen program, and will add them into
+the list of packages that Bootstrap needs to compile, too.
+Finally, 'make' will perform the generation of the GoboLinux
+tree inside the chosen prefix and will spawn Compile for
+each of these packages.
+
+Please make suggestions and bug reports directly in the
+GoboLinux development mailing list[2], and just let us know
+of your experiences with it.
+
+Have a good hacking!
+The GoboLinux Team
+
+[1] http://gobolinux.org/kb
+[2] http://lists.gobolinux.org/mailman/listinfo/gobolinux-devel

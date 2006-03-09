@@ -1,0 +1,8 @@
+config PKG_LINKS
+    bool "Links"
+    select PKG_GPM 
+    select PKG_JPEG 
+    select PKG_LIBPNG 
+    select PKG_OPENSSL 
+    select PKG_SDL
+    select PKG_TIFF

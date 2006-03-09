@@ -1,0 +1,3 @@
+config PKG_GLIB
+    bool "GLib"
+    select PKG_GETTEXT
