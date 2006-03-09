@@ -113,7 +113,6 @@ set_dircolors()
 		env = default_ls_colors;
 	}
 	
-	/* yes, I know this doesn't look reasonable, but 'env' is only a pointer ;-) */
 	env_copy = strdup(env);
 	env = strdup(env_copy);
 	color_list_len = 1;
@@ -480,6 +479,19 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 	}
 }
 
+int
+time_sort(const void *void_a, const void *void_b)
+{
+	struct dirent **a = (struct dirent **) void_a;
+	struct dirent **b = (struct dirent **) void_b;
+	struct stat status_a, status_b;
+
+	stat((*a)->d_name, &status_a);
+	stat((*b)->d_name, &status_b);
+
+	return status_a.st_mtime > status_b.st_mtime;
+}
+
 void
 list_file(const char *path, long *total, long *counter, long *hiddenfiles)
 {
@@ -529,12 +541,18 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
 	struct dirent **namelist;
     struct file_info *file_info;
 	
-	n = scandir(path, &namelist, NULL, alphasort);
+	if (opt_time) {
+		/* sort the list, with the oldest file in the head */
+		n = scandir(path, &namelist, NULL, time_sort);
+	} else {
+		/* alpha sort */
+		n = scandir(path, &namelist, NULL, alphasort);
+	}
     if (n < 0) {
         list_file(path, total, counter, hiddenfiles);
         return;
     }
-	
+
     file_info = (struct file_info *) calloc(n, sizeof(struct file_info));
     if (! file_info) {
         perror("calloc");
