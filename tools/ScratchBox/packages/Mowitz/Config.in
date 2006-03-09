@@ -1,4 +1,0 @@
-
-config PKG_MOWITZ
-    bool "Mowitz"
-    select PKG_XORG_LIB

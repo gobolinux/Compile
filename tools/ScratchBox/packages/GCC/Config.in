@@ -1,5 +1,0 @@
-config PKG_GCC
-    bool "GNU Compiler Collection"
-	default n
-	---help---
-	  Say Y to include the GCC suite of compilers.
