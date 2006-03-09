@@ -13,3 +13,7 @@ debug: all
 
 static: MYCFLAGS += -static
 static: all
+
+clean:
+	cd ../bin; rm -f SuperUserName IsExecutable usleep LinkOrExpandAll 
+

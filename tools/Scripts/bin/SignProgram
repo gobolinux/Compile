@@ -64,7 +64,7 @@ $sudo_exec rm -f "$FileHash_log"
 $sudo_exec rm -f "$FileHash_sig"
 
 Log_Normal "Creating FileHash"
-Gen_FileHash "$prefix" "$FileHash_loc"
+Gen_FileHash "$package" "$prefix" "$FileHash_loc"
 Succeeded || exit 1
 Boolean "no-signature" && exit 0
 

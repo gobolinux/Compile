@@ -11,6 +11,7 @@ scriptDescription="List files from a program in a 'clean' way, skipping some fil
 scriptCredits="Copyright (C) 2006. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<program> [<version>]"
+Add_Option_Boolean "f" "files" "List files only (equivalent to -type f in 'find')"
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -26,7 +27,10 @@ fi
 
 cd "$goboPrograms/$program/$version"
 
+unset type
+Boolean "files" && type="-type f"
+
 find * \( -path "CVS" \
       -or -path "*/CVS" \
       -or -path "Resources/SettingsBackup" \
-      -or -path "*.py[oc]" \) -prune -or -print
+      -or -path "*.py[oc]" \) -prune -or $type -print

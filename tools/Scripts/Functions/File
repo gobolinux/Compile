@@ -111,7 +111,7 @@ function Line_Match() {
 GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
-   Parameters "$@" prefix hash_file
+   Parameters "$@" program prefix hash_file
    local dname=`dirname $hash_file`
    # Validate password
    $sudo_validate
@@ -119,7 +119,7 @@ function Gen_FileHash() {
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gpg must run as normal user.
    Quiet pushd $prefix
-   $sudo_exec find * -type f -and -not -path "CVS" -and -not -path "CVS/*" | grep -v "$hash_file" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hash_file" >/dev/null
+   $sudo_exec ListProgramFiles --files "$program" | grep -v "$hash_file" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hash_file" >/dev/null
    Quiet popd
 }
 
