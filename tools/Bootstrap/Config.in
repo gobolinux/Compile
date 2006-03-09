@@ -35,6 +35,27 @@ config CROSS_SH4
 	
 endchoice
 
+choice
+	prompt "Target profile"
+	default TARGET_EMBEDDED
+
+config TARGET_EMBEDDED
+	prompt "Embedded platform"
+	bool
+	---help---
+	  Select this if the distribution is going to be generated to be used on
+	  an embedded platform. This will reduce a lot the number of packages to
+	  be compiled, given that no development tools will be available on it.
+
+config TARGET_DESKTOP
+	prompt "Desktop platform"
+	bool
+	---help---
+	  Select this if the distribution is going to be generated to be used on
+	  a desktop system.
+
+endchoice
+
 config INSTALL_PREFIX
 	string "Install prefix"
 	default "/Mount/GoboLinux"
@@ -94,7 +115,6 @@ source "packages/OpenSSH/Config.in"
 endmenu
 
 menu "Window Servers"
-source "packages/Xorg-Lib/Config.in"
 source "packages/Xorg/Config.in"
 source "packages/Nano-X/Config.in"
 endmenu
@@ -108,7 +128,6 @@ source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
-source "packages/Xorg-App/Config.in"
 endmenu
 
 menu "Audio, video and graphics"
