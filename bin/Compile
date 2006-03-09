@@ -1010,7 +1010,6 @@ then
       else cp -R "$src" "$fulldst"
       fi
    done
-   is_function_set pre_link && pre_link
    do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
    is_function_set post_install && post_install
    wrapup
