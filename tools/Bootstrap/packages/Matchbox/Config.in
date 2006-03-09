@@ -1,13 +1,2 @@
 config PKG_MATCHBOX
     bool "Matchbox"
-    select PKG_ATK 
-    select PKG_EXPAT 
-    select PKG_FONTCONFIG 
-    select PKG_FREETYPE 
-    select PKG_GLIB 
-    select PKG_GTK 
-    select PKG_GETTEXT 
-    select PKG_JPEG 
-    select PKG_LIBPNG 
-    select PKG_PANGO 
-    select PKG_XORG_LIB

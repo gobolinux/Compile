@@ -1,7 +1,2 @@
 config PKG_PANGO
     bool "Pango"
-    select PKG_EXPAT 
-    select PKG_FONTCONFIG
-    select PKG_FREETYPE
-    select PKG_GLIB
-    select PKG_GETTEXT 

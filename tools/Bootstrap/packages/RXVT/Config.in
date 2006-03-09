@@ -1,3 +1,2 @@
 config PKG_RXVT
     bool "RXVT"
-    select PKG_XORG_LIB

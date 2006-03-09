@@ -1,3 +1,2 @@
 config PKG_LIBVORBIS
     bool "LibVorbis"
-    select PKG_LIBOGG

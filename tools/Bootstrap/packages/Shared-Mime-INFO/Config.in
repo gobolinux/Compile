@@ -1,5 +1,2 @@
 config PKG_SHARED_MIME_INFO
     bool "Shared-Mime-Info"
-    select PKG_GLIB
-    select PKG_GETTEXT 
-    select PKG_LIBXML2

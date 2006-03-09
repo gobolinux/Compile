@@ -1,3 +1,2 @@
 config PKG_ATK
     bool "ATK"
-    select PKG_GLIB

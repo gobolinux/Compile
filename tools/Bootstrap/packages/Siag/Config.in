@@ -1,7 +1,5 @@
 config PKG_SIAG
     bool "Siag"
-    select PKG_MOWITZ 
-    select PKG_XORG_LIB
     ---help---
       This selects the Siag office suite. This package has not been tested with
       uClibc, so please be aware if you're compiling against that library.
