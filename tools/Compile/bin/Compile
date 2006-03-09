@@ -401,7 +401,7 @@ fi
 . "$recipe"
 [ -e "$archrecipe" ] && . "$archrecipe"
 
-Log_Normal "Compiling $app version $version."
+! Boolean "no-build" && Log_Normal "Compiling $app version $version."
 
 ##################################################
 # Set up enviroment
