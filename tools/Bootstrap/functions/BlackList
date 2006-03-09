@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#
+# packages known to be broken or that shouldn't be installed through Compile
+#
+blacklist=(
+    "LibGCC"		# LibGCC is installed in a different way
+    "Links"
+    "Matchbox"
+    "Xorg"
+)
+
+function is_in_blacklist() {
+	ret=1
+    for blacklist_entry in ${blacklist[@]}
+    do
+        [ "$1" = "$blacklist_entry" ] && { ret=0; break; }
+	done
+	return $ret
+}

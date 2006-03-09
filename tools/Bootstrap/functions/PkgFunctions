@@ -2,6 +2,7 @@
 
 TOP_DIR=..
 shipped_dir=$TOP_DIR/recipes
+source ScriptFunctions
 
 #
 # This function is a bit tricky. It relies on the fact that the
@@ -30,6 +31,16 @@ function get_recipe() {
 		pkg_dir=/Files/Compile/Recipes/$pkg_name
 	else
 		pkg_dir=$shipped_dir/$pkg_name
+	fi
+	
+	if [ ! -d "$pkg_dir" ]
+	then
+		recipe_url=`FindPackage --types=recipe $pkg_name`
+		[ -z "$recipe_url" ] && return
+		Compile --no-build --no-web "$recipe_url" || return
+
+		pkg_dir=/Files/Compile/Recipes/$pkg_name
+		[ ! -d "$pkg_dir" ] && return
 	fi
 	
     len="$(( ${#pkg_dir} + 2 ))"

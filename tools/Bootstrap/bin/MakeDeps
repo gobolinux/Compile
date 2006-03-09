@@ -7,9 +7,12 @@ then
 fi
 
 TOPDIR=../
-source PkgFunctions
 source ScriptFunctions
 Import File
+
+PATH=$PATH:$TOPDIR/functions
+source PkgFunctions
+source BlackList
 
 
 #
@@ -37,9 +40,15 @@ do
 	[ ! -d "$pkg_dir" ] && continue
 	
 	pkg_name=`basename "$pkg_dir"`
+	is_in_blacklist "$pkg_name" && continue
+	
 	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
 	dependencies="$recipe/Resources/Dependencies"
-	[ ! -f "$dependencies" ] && continue
+	if [ ! -f "$dependencies" ]
+	then
+		Log_Error "Recipe for $pkg_name not found."
+		exit 1
+	fi
 
 	Log_Normal "Parsing dependency file $dependencies"
 	gen_pkg_names "$dependencies" >> $dependency_list

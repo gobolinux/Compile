@@ -25,38 +25,26 @@ else
     cross_options="--cross-compile $arch"
 fi
 
+# GoboLinux Scripts' functions
 source GoboPath
 source ScriptFunctions
-source PkgFunctions
 source $goboSettings/Compile/Cross-$arch.conf
 
-#
-# packages known to be broken or that shouldn't be installed through Compile
-#
-blacklist=(
-    "LibGCC"		# LibGCC is installed in a different way
-    "Links"
-    "Matchbox"
-    "Xorg"
-)
+# Bootstrap's own functions
+PATH=$PATH:$TOPDIR/functions
+source functions/PkgFunctions
+source functions/BlackList
+
 
 pushd $subdir >& /dev/null
 
 for entry in `cat $dot_config | grep "=y" | grep PKG`
 do
     pkg_dir=`package_subdir $entry`
-    skip=0
-
-    for blacklist_entry in ${blacklist[@]}
-    do
-        [ "$pkg_dir" = "$blacklist_entry" ] && { skip=1; break; }
-    done
-
     [ ! -d "$pkg_dir" ] && continue
-    [ "$skip" = 1 ]     && continue
 
     pkg_name=`basename "$pkg_dir"`
-	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
+	is_in_blacklist "$pkg_name" && continue
 
 	if [ -d "$crossPrefixDir/$goboPrograms/$pkg_name" ]
 	then
@@ -69,6 +57,7 @@ do
 		esac
 	fi
 
+	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
 	Log_Normal "Running 'Compile $cross_options $recipe'"
 	echo
 
