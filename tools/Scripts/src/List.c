@@ -746,7 +746,6 @@ main(int argc, char **argv)
 {
     int c, index;
 	long total, counter, hiddenfiles;
-	long total_final, counter_final, hidden_final;
 	struct statfs status;
     
     while ((c=getopt_long(argc, argv, shortopts, long_options, &index)) != -1) {
@@ -788,7 +787,6 @@ main(int argc, char **argv)
 //	dump_colors();
 	
 	total = counter = hiddenfiles = 0;
-	total_final = counter_final = hidden_final = 0;
 	
 	/* prints out a blank line */
 	fprintf(stdout, "\n");
@@ -797,11 +795,10 @@ main(int argc, char **argv)
 		char curr_dir[PATH_MAX];
 		
 		getcwd(curr_dir, sizeof(curr_dir));	
-		list_entries(curr_dir, &total_final, &counter_final, &hiddenfiles);
+		list_entries(curr_dir, &total, &counter, &hiddenfiles);
 		if ((statfs(curr_dir, &status)) < 0)
 			fprintf(stderr, "statfs %s: %s\n", curr_dir, strerror(errno));
 
-		hidden_final = hiddenfiles;
 	} else {
 		struct stat entry_status;
 		
@@ -811,26 +808,22 @@ main(int argc, char **argv)
 
 	    while (optind < argc) {
 			stat(argv[optind], &entry_status);
-			if (S_ISDIR(entry_status.st_mode))
+			
+			if (S_ISDIR(entry_status.st_mode) && argc != 2)
 				printf("%s%s%s\n", COLOR_YELLOW_CODE, argv[optind], COLOR_WHITE_CODE);
 				
 			list_entries(argv[optind], &total, &counter, &hiddenfiles);
 			
-			if (S_ISDIR(entry_status.st_mode)) {
+			if (S_ISDIR(entry_status.st_mode) && argc != 2) {
 				summarize(status, total, counter, hiddenfiles, 0);
 				if (optind < argc - 1)
 					printf("\n");
 			}
-
-			total_final += total;
-			counter_final += counter;
-			hidden_final += hiddenfiles;
-
 			optind++;
 		}
 	}
 
-	summarize(status, total_final, counter_final, hidden_final, 1);
+	summarize(status, total, counter, hiddenfiles, 1);
 	free(colors);
     exit(EXIT_SUCCESS);
 }
