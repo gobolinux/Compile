@@ -735,7 +735,8 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
 		curses_initialized = 1;
 	}
 #else
-    cols = 80;
+	if (!getenv("COLUMNS") || !sscanf(getenv("COLUMNS"), "%d", &cols)) 
+		cols=80;
 #endif
 	
 	printf("\033[0m");

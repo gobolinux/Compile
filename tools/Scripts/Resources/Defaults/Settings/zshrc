@@ -29,6 +29,7 @@ export HISTIGNORE="ls:exit"
 export HISTFILE="${HOME}/.Settings/zsh_history"
 export HISTSIZE=100
 export SAVEHIST=200
+export COLUMNS
 
 export MANPATH="${goboPrefix}/System/Links/Manuals:${MANPATH}"
 export INFOPATH="${goboPrefix}/System/Links/Manuals/info:${INFOPATH}"
