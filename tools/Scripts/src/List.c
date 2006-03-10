@@ -74,11 +74,13 @@ static int opt_hid = 0;
 static int opt_nolink = 0;
 static int opt_size = 0;
 static int opt_time = 0;
+static int opt_help = 0;
 
-const char shortopts[] = "adhLztsS:";
+const char shortopts[] = "adhLzts";
 static struct option long_options[] = {
     {"all",         0, &opt_all, 1},
     {"directories", 0, &opt_dir, 1},
+	{"help",        0, &opt_help, 1},
     {"hidden",      0, &opt_hid, 1},	/* -d .* */
     {"no-links",    0, &opt_nolink, 1},
     {"size",        0, &opt_size, 1},	/* --sort=size -r */
@@ -376,6 +378,9 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 			memset(link_entry, 0, sizeof(link_entry));
             status = file_info[i].status;
             full_pathname = file_info[i].full_pathname;
+			
+			if (opt_dir && !S_ISDIR(status.st_mode))
+				continue;
             
 			switch (pass) {
 				case 0:
@@ -389,7 +394,7 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 					break;
 
 				case 2:
-					if (!S_ISLNK(status.st_mode))
+					if (!S_ISLNK(status.st_mode) || opt_nolink)
 						continue;
 					memset(tmp_buffer, 0, sizeof(tmp_buffer));
 					readlink(full_pathname, tmp_buffer, sizeof(tmp_buffer));
@@ -599,6 +604,8 @@ usage(char *program_name)
 {
 	fprintf(stderr,
 			"%s: List information about files and directories.\n\n"
+			"Usage:\n\n"
+			"    List [<options>...] <pattern>\n\n"
 			"-a, --all         \n"
 			"    List both regular and dot-files.\n"
 			"-d, --directories \n"
@@ -610,7 +617,7 @@ usage(char *program_name)
 			"-s, --size        \n"
 			"    Sort by size, largest size shown last.\n"
 			"-t, --time        \n"
-			"    Sort by time, most recent file shown last.\n",
+			"    Sort by time, most recent file shown last.\n\n",
 			program_name);
 
     exit(EXIT_FAILURE);
@@ -788,9 +795,14 @@ main(int argc, char **argv)
 			default:
 				printf("invalid option %d\n", c);
 				usage(argv[0]);
-				break;
+				return 1;
 		}
     }
+
+	if (opt_help) {
+		usage(argv[0]);
+		return 0;
+	}
     
 	/* read $LS_COLORS from the environment */
 	set_dircolors();
