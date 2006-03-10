@@ -536,7 +536,7 @@ list_file(const char *path, long *total, long *counter, long *hiddenfiles)
     snprintf(namelist[0]->d_name, sizeof(namelist[0]->d_name), "%s", path);
 
     file_info.status = status;
-    file_info.full_pathname = NULL;
+    file_info.full_pathname = namelist[0]->d_name;
     really_list_entries(&file_info, namelist, n, total, counter, hiddenfiles);
 
     free(namelist[0]);
