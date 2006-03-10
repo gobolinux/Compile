@@ -80,7 +80,7 @@ const char shortopts[] = "adhLzts";
 static struct option long_options[] = {
     {"all",         0, &opt_all, 1},
     {"directories", 0, &opt_dir, 1},
-	{"help",        0, &opt_help, 1},
+    {"help",        0, &opt_help, 1},
     {"hidden",      0, &opt_hid, 1},	/* -d .* */
     {"no-links",    0, &opt_nolink, 1},
     {"size",        0, &opt_size, 1},	/* --sort=size -r */
@@ -443,7 +443,7 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 				fprintf(stdout, "%s%02d/%02d %02d:%02d %s%s %4lld:%3lld \033[%sm%s\n",
 					COLOR_WHITE_CODE,
 					time_info->tm_mday,
-					time_info->tm_mon,
+					time_info->tm_mon + 1,
 					time_info->tm_hour,
 					time_info->tm_min,
 					final_mask,
@@ -458,7 +458,7 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 				fprintf(stdout, "%s%02d/%02d %02d:%02d %s%s%s \033[%sm%s%s\n",
 					COLOR_WHITE_CODE,
 					time_info->tm_mday,
-					time_info->tm_mon,
+					time_info->tm_mon + 1,
 					time_info->tm_hour,
 					time_info->tm_min,
 					final_mask,
