@@ -72,7 +72,6 @@ static int opt_all = 0;
 static int opt_dir = 0;
 static int opt_hid = 0;
 static int opt_nolink = 0;
-static int opt_search = 0;
 static int opt_size = 0;
 static int opt_time = 0;
 
@@ -82,7 +81,6 @@ static struct option long_options[] = {
     {"directories", 0, &opt_dir, 1},
     {"hidden",      0, &opt_hid, 1},	/* -d .* */
     {"no-links",    0, &opt_nolink, 1},
-    {"search",      1, &opt_search, 1},	/* -S */
     {"size",        0, &opt_size, 1},	/* --sort=size -r */
     {"time",        0, &opt_time, 1},	/* --sort=time -r */
     {0, 0, 0, 0}
@@ -144,15 +142,6 @@ set_dircolors()
 	}
 	free(env_copy);
 	free(env);
-}
-
-void
-dump_colors()
-{
-	int i;
-	
-	for (i = 0; i < color_list_len; ++i)
-		printf("%s -> %s\n", colors[i].extension, colors[i].code);
 }
 
 void
@@ -376,11 +365,13 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 				continue;
 			
 			if ((namelist[i]->d_name[0] == '.') && (! opt_all && ! opt_hid)) {
-				if ((pass == 0) && strcmp(namelist[i]->d_name, ".") && strcmp(namelist[i]->d_name, "..")) {
+				if (pass == 0  && strcmp(namelist[i]->d_name, ".") && strcmp(namelist[i]->d_name, ".."))
 					*hiddenfiles += 1;
-					continue;
-				}
+				continue;
 			}
+
+			if (opt_hid && namelist[i]->d_name[0] != '.')
+				continue;
 
 			memset(link_entry, 0, sizeof(link_entry));
             status = file_info[i].status;
@@ -492,6 +483,19 @@ time_sort(const void *void_a, const void *void_b)
 	return status_a.st_mtime > status_b.st_mtime;
 }
 
+int
+size_sort(const void *void_a, const void *void_b)
+{
+	struct dirent **a = (struct dirent **) void_a;
+	struct dirent **b = (struct dirent **) void_b;
+	struct stat status_a, status_b;
+
+	stat((*a)->d_name, &status_a);
+	stat((*b)->d_name, &status_b);
+
+	return status_a.st_size > status_b.st_size;
+}
+
 void
 list_file(const char *path, long *total, long *counter, long *hiddenfiles)
 {
@@ -542,8 +546,11 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
     struct file_info *file_info;
 	
 	if (opt_time) {
-		/* sort the list, with the oldest file in the head */
+		/* sort the list with the oldest file in the head */
 		n = scandir(path, &namelist, NULL, time_sort);
+	} else if (opt_size) {
+		/* sort the list with the smallest file in the head */
+		n = scandir(path, &namelist, NULL, size_sort);
 	} else {
 		/* alpha sort */
 		n = scandir(path, &namelist, NULL, alphasort);
@@ -593,12 +600,17 @@ usage(char *program_name)
 	fprintf(stderr,
 			"%s: List information about files and directories.\n\n"
 			"-a, --all         \n"
+			"    List both regular and dot-files.\n"
 			"-d, --directories \n"
+			"    List directories only.\n"
 			"-h, --hidden      \n"
+			"    List dot-files only.\n"
 			"-L, --no-links    \n"
-			"-S, --search      \n"
+			"    List only files that are not symbolic links.\n"
 			"-s, --size        \n"
-			"-t, --time        \n",
+			"    Sort by size, largest size shown last.\n"
+			"-t, --time        \n"
+			"    Sort by time, most recent file shown last.\n",
 			program_name);
 
     exit(EXIT_FAILURE);
@@ -698,10 +710,10 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
 			status.f_bfree  >>= 1;
 		}
 	}
-	bytes_used  += (status.f_blocks - status.f_bfree) * status.f_bsize;
-	bytes_free  += status.f_bfree * status.f_bsize;
-	bytes_total += status.f_blocks * status.f_bsize;
-	percent      = ((float) bytes_used / bytes_total) * 100.0;
+	bytes_used  = (status.f_blocks - status.f_bfree) * status.f_bsize;
+	bytes_free  = status.f_bfree * status.f_bsize;
+	bytes_total = status.f_blocks * status.f_bsize;
+	percent     = ((float) bytes_used / bytes_total) * 100.0;
 
 	if (! final_info) {
 		summarize_simple(total, counter, hiddenfiles);
@@ -728,12 +740,13 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
     bytes_total_string = colorize_bytes(total, SCHEME_FILES, 9);
     
 	if (hiddenfiles) {
-		printf("\n%s in %ld%s+%ld%s files - %s: %s%s kB used (%02.0f%%), %s kB free\n", bytes_total_string,
+		printf("\n%s in %ld%s+%ld%s files - %s: %s%s kB used (%02.0f%%), %s%s kB free\n", bytes_total_string,
                counter, COLOR_GREY_CODE, hiddenfiles, COLOR_WHITE_CODE, get_filesystem(status), 
-			   bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string);
+			   bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string, COLOR_WHITE_CODE);
     } else {
-		printf("\n%s in %ld files - %s: %s%s kB used (%02.0f%%), %s kB free\n", bytes_total_string, counter,
-			   get_filesystem(status), bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string);
+		printf("\n%s in %ld files - %s: %s%s kB used (%02.0f%%), %s%s kB free\n", bytes_total_string, counter,
+			   get_filesystem(status), bytes_used_string, COLOR_WHITE_CODE, percent, bytes_free_string,
+			   COLOR_WHITE_CODE);
     }
 	
     free(bytes_used_string);
@@ -744,7 +757,7 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
 int
 main(int argc, char **argv)
 {
-    int c, index;
+    int c, index, num_dirs;
 	long total, counter, hiddenfiles;
 	struct statfs status;
     
@@ -770,9 +783,6 @@ main(int argc, char **argv)
 			case 't':
 				opt_time = 1;
 				break;
-			case 'S':
-				opt_search = 1;
-				break;
 			case '?':
 				break;
 			default:
@@ -784,9 +794,9 @@ main(int argc, char **argv)
     
 	/* read $LS_COLORS from the environment */
 	set_dircolors();
-//	dump_colors();
 	
 	total = counter = hiddenfiles = 0;
+	num_dirs = argc - optind;
 	
 	/* prints out a blank line */
 	fprintf(stdout, "\n");
@@ -801,6 +811,7 @@ main(int argc, char **argv)
 
 	} else {
 		struct stat entry_status;
+		long total_local, counter_local, hidden_local;
 		
 		if (optind < argc)
 			if ((statfs(argv[optind], &status)) < 0)
@@ -809,18 +820,24 @@ main(int argc, char **argv)
 	    while (optind < argc) {
 			stat(argv[optind], &entry_status);
 			
-			if (S_ISDIR(entry_status.st_mode) && argc != 2)
+			if (S_ISDIR(entry_status.st_mode) && num_dirs > 1)
 				printf("%s%s%s\n", COLOR_YELLOW_CODE, argv[optind], COLOR_WHITE_CODE);
 				
-			list_entries(argv[optind], &total, &counter, &hiddenfiles);
+			total_local = 0, counter_local = 0, hidden_local = 0;
+			list_entries(argv[optind], &total_local, &counter_local, &hidden_local);
 			
-			if (S_ISDIR(entry_status.st_mode) && argc != 2) {
-				summarize(status, total, counter, hiddenfiles, 0);
+			if (S_ISDIR(entry_status.st_mode) && num_dirs > 1) {
+				summarize(status, total_local, counter_local, hidden_local, 0);
 				if (optind < argc - 1)
 					printf("\n");
 			}
+
+			total += total_local;
+			hiddenfiles += hidden_local;
+			counter += counter_local;
 			optind++;
 		}
+
 	}
 
 	summarize(status, total, counter, hiddenfiles, 1);
