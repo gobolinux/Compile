@@ -966,7 +966,7 @@ fi
 
 if [ "$is_scons" = "yes" ]
 then
-   [ "$scons" ] || scons="scons.py"
+   [ "$scons" ] || scons="scons"
    [ "$install_target" ] || install_target="install"
    if [ ! "$override_default_options" = "yes" ]
    then
