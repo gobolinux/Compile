@@ -31,9 +31,9 @@ source ScriptFunctions
 source $goboSettings/Compile/Cross-$arch.conf
 
 # Bootstrap's own functions
-PATH=$PATH:$TOPDIR/functions
-source functions/PkgFunctions
-source functions/BlackList
+PATH=$PATH:$TOP_DIR/functions
+source PkgFunctions
+source BlackList
 
 
 pushd $subdir >& /dev/null

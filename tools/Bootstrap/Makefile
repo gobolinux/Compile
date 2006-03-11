@@ -64,6 +64,10 @@ world: $(TARGETS) deps
 	@cd bin && ./PrepareTarget
 	@cd bin && ./InvokeCompile
 	@cd bin && ./FixupEnvironment
+	@echo
+	@echo Root filesystem created successfully!
+	@echo Have a good time with GoboLinux on your new platform!
+	@echo
 
 .PHONY: all world clean distclean source $(TARGETS) \
 	$(TARGETS_CLEAN) $(TARGETS_SOURCE)
