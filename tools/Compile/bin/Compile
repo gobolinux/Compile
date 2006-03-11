@@ -384,7 +384,7 @@ then
    arch=`Get_Architecture $ARCH`
    archsubdir=$bakedrecipedir/$arch
    archrecipe=$bakedrecipedir/$arch/Recipe
-   compileSourcesDir="$compileDir/Sources-$arch"
+   compileSourcesDir="$compileDir/Sources-$arch_conf"
 
    mkdir -p $compileSourcesDir
    export cross_compiling=1
