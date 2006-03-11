@@ -237,8 +237,9 @@ then
       --prefix="$programdir"
       --sysconfdir="$settingsdir"
       --localstatedir="$variabledir"
-   	  --host=$HOST
-   	  --target=$TARGET
+	  --build=$HOST
+   	  --host=$TARGET
+   	  --target=$$TARGET
    	  --x-includes=$goboHeaders
    	  --x-libraries=$goboLibraries
    )
