@@ -21,7 +21,6 @@ deps_config := \
 	packages/TIFF/Config.in \
 	packages/JPEG/Config.in \
 	packages/LibPNG/Config.in \
-	packages/Xorg-App/Config.in \
 	packages/Swfdec/Config.in \
 	packages/Siag/Config.in \
 	packages/RXVT/Config.in \
@@ -29,7 +28,6 @@ deps_config := \
 	packages/Matchbox/Config.in \
 	packages/Nano-X/Config.in \
 	packages/Xorg/Config.in \
-	packages/Xorg-Lib/Config.in \
 	packages/OpenSSH/Config.in \
 	packages/OpenSSL/Config.in \
 	packages/Links/Config.in \

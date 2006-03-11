@@ -44,9 +44,14 @@ CreateFiles $SUPER_USER_NAME
 dirname="$prefix/$goboPrograms/Scripts"
 if [ ! -d "$dirname" ]
 then
-	Log_Normal "Installing the Scripts package..."
-	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+	if [ "$TARGET_EMBEDDED" = "y" ]
+	then
+		Log_Normal "Installing the minimalistic Scripts package..."
+	else
+		Log_Normal "Installing the Scripts package..."
+		cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+		RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+	fi
 fi
 
 #
@@ -55,9 +60,14 @@ fi
 dirname="$prefix/$goboPrograms/BootScripts"
 if [ ! -d "$dirname" ]
 then
-	Log_Normal "Installing the BootScripts package..."
-	cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
-	SymlinkProgram $symlink_options BootScripts >& /dev/null
+	if [ "$TARGET_EMBEDDED" = "y" ]
+	then
+		Log_Normal "Installing the minimalistic BootScripts package..."
+	else
+		Log_Normal "Installing the BootScripts package..."
+		cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
+		SymlinkProgram $symlink_options BootScripts >& /dev/null
+	fi
 fi
 
 #

@@ -44,12 +44,14 @@ do
 	
 	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
 	dependencies="$recipe/Resources/Dependencies"
-	if [ ! -f "$dependencies" ]
+	if [ ! -d "$recipe" ]
 	then
 		Log_Error "Recipe for $pkg_name not found."
 		exit 1
 	fi
 
+	[ ! -f "$dependencies" ] && continue
+	
 	Log_Normal "Parsing dependency file $dependencies"
 	gen_pkg_names "$dependencies" >> $dependency_list
 done

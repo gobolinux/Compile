@@ -57,6 +57,9 @@ TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS))
 deps:
 	@cd bin && ./MakeDeps ../.config
 
+dep: deps
+	
+
 world: $(TARGETS) deps
 	@cd bin && ./PrepareTarget
 	@cd bin && ./InvokeCompile
