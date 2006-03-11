@@ -59,9 +59,7 @@ do
 
 	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
 	Log_Normal "Running 'Compile $cross_options $recipe'"
-	echo
-
-	#Compile $cross_options $recipe || break
+	Compile $cross_options $recipe || break
 done
 
 popd >& /dev/null
