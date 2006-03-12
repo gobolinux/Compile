@@ -239,7 +239,6 @@ then
       --localstatedir="$variabledir"
 	  --build=$HOST
    	  --host=$TARGET
-   	  --target=$TARGET
    	  --x-includes=$goboHeaders
    	  --x-libraries=$goboLibraries
    )
