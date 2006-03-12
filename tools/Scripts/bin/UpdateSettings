@@ -30,6 +30,7 @@ Add_Option_Boolean "l" "list" "Only list files that differ between current setti
 Add_Option_Boolean "u" "update" "Interactively update the settings (deafult)."
 Add_Option_Boolean "q" "quick"  "Quickly update the settings, prompting only when necessary."
 Add_Option_Boolean "d" "diffs"  "When a file has been modified, show differences."
+Add_Option_Entry   "x" "cross-compile" "Use prefixes as stated by cross-config file."
 
 Parse_Options "$@"
 shift $parsedArguments
@@ -38,6 +39,11 @@ shift $parsedArguments
 if Boolean "quick"; then
     Set_Boolean "report"
     Set_Boolean "update"
+fi
+
+if Is_Entry "cross-compile"
+then
+	. GoboPath Reload
 fi
 
 pdir="${goboPrograms}/`GuessProgramCase $1`"
