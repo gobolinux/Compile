@@ -99,7 +99,7 @@ function do_symlink() {
       unset allowleftovers
       [ "${unmanaged_files[*]}" ] && allowleftovers=--allow-leftovers
 
-      SandboxInstall $allowleftovers ${sandboxopts[@]} $cross_flags -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+      SandboxInstall $allowleftovers ${sandboxopts[@]} -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
 
       if [ "${unmanaged_files[*]}" ]
       then
@@ -130,12 +130,12 @@ function do_symlink() {
  
    if Boolean "no-symlink"
    then
-      PrepareProgram --tree-cleanup $batch $cross_flags "$1" "$2"
+      PrepareProgram --tree-cleanup $batch "$1" "$2"
    else
       if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "update_each_settings" = "yes" ]
-      then UpdateSettings $cross_flags "$1" "$2"
+      then UpdateSettings "$1" "$2"
       fi
-      SymlinkProgram $safeopts $cross_flags $symlinkopts "$1" "$2" || Die "Linking step failed."
+      SymlinkProgram $safeopts $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
    fi
 }
@@ -192,7 +192,7 @@ function wrapup() {
       if [ ! -f "$recipedeps" ]
       then
          Log_Normal "Generating dependencies list for recipe..."
-         Dependencies $cross_flags $appname > "$recipedeps"
+         Dependencies $appname > "$recipedeps"
          cat "$recipedeps"
       fi
        
@@ -219,6 +219,29 @@ function cleanup() {
       [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
    fi
    exit 0
+}
+
+function combine_arrays() {
+   merge="$1=("
+   shift
+   while [ "$1" ]
+   do eval '[ -n "${'$1'[*]}" ] && merge=$merge'\'' "${'$1'[@]}" '\'
+      shift
+   done
+   merge=$merge")"
+   echo "$merge"
+}
+
+function in_host() {
+   if [ "$goboCrossCompiling" = "yes" ]
+   then
+      unset goboCrossCompiling goboPrefix
+      "$@"
+      export goboCrossCompiling=yes
+      Parse_Conf Directories.conf
+   else
+      "$@"
+   fi
 }
 
 ##################################################
@@ -292,6 +315,61 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 recipe=$bakedrecipedir/Recipe
 
+
+##################################################
+# Check if we are cross-compiling
+##################################################
+
+unset STRIP
+Is_Entry "cross-compile" && export goboCrossCompiling=yes
+
+if [ "$goboCrossCompiling" = "yes" ]
+then
+   arch_conf=`Entry "cross-compile"`
+   Log_Normal "Cross-Compiling for $arch_conf"
+   
+   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch_conf.conf
+   [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
+   
+   source ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
+   source ${crossConfFile}
+
+   # Extra arguments to be passed to 'make' and 'make install'
+   cross_make_variables=(
+   	"CC=$CC"
+   	"CPP=$CPP"
+   	"CXX=$CXX"
+	"CROSS=$crossCompiler"
+   )   
+   eval `combine_arrays compileBuildOptions compileBuildOptions cross_make_variables`
+
+   eval `combine_arrays compileInstallOptions compileInstallOptions cross_install_variables`
+   
+   # ARCH is taken from the cross config file
+   arch=`Get_Architecture $ARCH`
+   archsubdir=$bakedrecipedir/$arch
+   archrecipe=$bakedrecipedir/$arch/Recipe
+   compileSourcesDir="$compileDir/Sources-$arch_conf"
+   
+   mkdir -p $compileSourcesDir
+
+   export CC HOSTCC LD
+   export cross_compiling=yes
+   Parse_Conf Directories.conf
+else
+   cross_flags=""
+   cross_make_variables=""
+
+   arch=`Get_Architecture`
+   archsubdir=$bakedrecipedir/$arch
+   archrecipe=$bakedrecipedir/$arch/Recipe
+fi
+
+
+##################################################
+# Check dependencies
+##################################################
+
 dependencies_file=$bakedrecipedir/Resources/Dependencies
 if [ -f "$dependencies_file" ]
 then
@@ -346,60 +424,10 @@ fi
 export target=`Get_Dir runtime $appname $versionnumber`
 export settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
+export installprefix="$target"
 
-##################################################
-# Check if we are cross-compiling
-##################################################
-
-unset STRIP
-if Is_Entry "cross-compile"
-then
-   arch_conf=`Entry "cross-compile"`
-   Log_Normal "Cross-Compiling for $arch_conf"
-   
-   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch_conf.conf
-   [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
-   
-   source ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
-   source ${crossConfFile}
-   
-   # Keep cross-compile flags so that Meta-Recipes follow cross compilation rules
-   cross_flags="--cross-compile $arch_conf"
-
-   # Extra arguments to be passed to 'make' and 'make install'
-   cross_make_variables=(
-   	"CC=$CC"
-   	"CPP=$CPP"
-   	"CXX=$CXX"
-	"CROSS=$crossCompiler"
-   )   
-   cross_install_variables=(
-   	"$cross_make_variables"
-   )
-   
-   target="$crossPrefixDir/$goboPrograms/$appname/$versionnumber"
-   installprefix="$target"
-
-   # ARCH is taken from the cross config file
-   arch=`Get_Architecture $ARCH`
-   archsubdir=$bakedrecipedir/$arch
-   archrecipe=$bakedrecipedir/$arch/Recipe
-   compileSourcesDir="$compileDir/Sources-$arch_conf"
-
-   mkdir -p $compileSourcesDir
-   export cross_compiling=1
-else
-   cross_flags=""
-   cross_make_variables=""
-   installprefix="$target"
-
-   arch=`Get_Architecture`
-   archsubdir=$bakedrecipedir/$arch
-   archrecipe=$bakedrecipedir/$arch/Recipe
-fi
-
-. "$recipe"
-[ -e "$archrecipe" ] && . "$archrecipe"
+source "$recipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
 
 ! Boolean "no-build" && Log_Normal "Compiling $app version $version."
 
@@ -452,7 +480,7 @@ if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    dep="$recipedir/Resources/Dependencies"
    Boolean no-build && batch="--batch"
-   [ -f "$dep" ] && Dependencies $cross_flags $batch -d -c -h -e "$0 $noweb" "$dep"
+   [ -f "$dep" ] && Dependencies $batch -d -c -h -e "$0 $noweb" "$dep"
 fi
 
 ##################################################
@@ -472,9 +500,9 @@ foreach_if_array_set "include" '
 #   then
 #      ipath=${rawrecipes/$appname/$iname}
 #      ipath=${ipath/$versionnumber/$iversion}
-#      $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
+#      $0 $options --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
 #   else
-   $0 $options $cross_flags --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+   $0 $options --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
 #   fi
    if [ "$?" -gt 0 ]
    then
@@ -583,7 +611,7 @@ then
       echo "Well done!"
    fi
 else
-   Boolean "no-web" || FetchArchive $batch "$recipe" || Die "Error fetching archive(s)."
+   Boolean "no-web" || in_host FetchArchive $batch "$recipe" || Die "Error fetching archive(s)."
    
    pfiles=`
       for i in "${files[@]}"
@@ -710,23 +738,11 @@ unset makevars
 makevars=$(merge_array "make_variables")
 
 
-function combine_arrays() {
-   merge="$1=("
-   shift
-   while [ "$1" ]
-   do eval '[ -n "${'$1'[*]}" ] && merge=$merge'\'' "${'$1'[@]}" '\'
-      shift
-   done
-   merge=$merge")"
-   echo "$merge"
-}
-
-
 unset buildmerged
-eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables cross_make_variables`
+eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables`
 ! [ "$install_target" ] && install_target="install"
 unset installmerged
-eval `combine_arrays installmerged compileMakeOptions make_variables install_variables cross_install_variables`
+eval `combine_arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables`
 
 if [ "$makefile" = "" ]
 then makefile=Makefile
@@ -769,7 +785,7 @@ then
    fi
 
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep $cross_flags "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    is_function_set pre_build && pre_build
    if ! Boolean "lazy"
@@ -788,16 +804,15 @@ then
          prepareoptions=(
             --verbose
             --configure $configure
-            $cross_flags
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram $batch $cross_flags ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
       )
    fi
    $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
    Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep $cross_flags "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -841,7 +856,7 @@ if [ "$is_python" = "yes" ]
 then
    Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
-   PrepareProgram -t $batch $cross_flags $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
    mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
@@ -867,7 +882,7 @@ then
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       sandboxopts=$(merge_array "sandbox_options")
-      SandboxInstall ${sandboxopts[@]} $cross_flags -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || Die "Installation step failed."
+      SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || Die "Installation step failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
    is_function_set post_install && post_install
@@ -903,7 +918,7 @@ fi
 if [ "$is_makefile" = "yes" ]
 then 
    [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $cross_flags $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    if ! [ "$do_build" = "no" ]
    then
@@ -912,7 +927,7 @@ then
    fi
    Boolean "no-install" && exit
    [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep $cross_flags "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    }
    install_extras
    is_function_set pre_install && pre_install
@@ -939,7 +954,7 @@ then
    )
    $make -f "$makefile" $imakevars $build_target || Die "Build failed."
    Boolean "no-install" && exit
-   PrepareProgram $cross_flags -t $batch "$appname" "$versionnumber"
+   PrepareProgram -t $batch "$appname" "$versionnumber"
    install_extras
    if ! [ "$install_target" ]
    then install_target="install"
@@ -975,7 +990,7 @@ then
          "PREFIX=$target"
       )
    fi
-   PrepareProgram $cross_flags -t $batch "$appname" "$versionnumber"
+   PrepareProgram -t $batch "$appname" "$versionnumber"
    is_function_set pre_build && pre_build
    $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || Die "Build failed."
    Boolean "no-install" && exit
@@ -996,7 +1011,7 @@ fi
 
 if [ "$is_manifest" = "yes" ]
 then
-   PrepareProgram $cross_flags -t $batch "$appname" "$versionnumber"
+   PrepareProgram -t $batch "$appname" "$versionnumber"
    is_function_set pre_install && pre_install
    install_extras
    for i in "${manifest[@]}"
