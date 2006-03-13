@@ -26,7 +26,6 @@ Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating dire
 Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the directory hierarchy."
 Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the directory hierarchy."
 Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
-Add_Option_Entry   "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
@@ -74,11 +73,6 @@ remove_symlink() {
 }
 
 ### Operation #############################################################
-
-if Is_Entry "cross-compile"
-then
-	. GoboPath Reload
-fi
 
 programname="$1"
 [ "$1" ] || Die "Missing argument."
@@ -230,18 +224,6 @@ Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./
 if Boolean "no-default-options"
 then
    configure_options=()
-elif config_is_autoconf && Is_Entry "cross-compile"
-then
-   Log_Normal "Autoconf configure script detected."
-   configure_options=(
-      --prefix="$programdir"
-      --sysconfdir="$settingsdir"
-      --localstatedir="$variabledir"
-	  --build=$HOST
-   	  --host=$TARGET
-   	  --x-includes=$goboHeaders
-   	  --x-libraries=$goboLibraries
-   )
 elif config_is_autoconf
 then
    Log_Normal "Autoconf configure script detected."
@@ -250,6 +232,16 @@ then
       --sysconfdir="$settingsdir"
       --localstatedir="$variabledir"
    )
+   if [ "$goboCrossCompiling" = "yes" ]
+   then
+      configure_options=(
+         "${configure_options[@]}"
+         --build=$HOST
+         --host=$TARGET
+         --x-includes=$goboHeaders
+         --x-libraries=$goboLibraries
+      )
+   fi
 elif config_accepts_prefix
 then
    Log_Normal "Non-autoconf configure script detected (accepts --prefix)."
@@ -260,13 +252,7 @@ else
    configure_options=()
 fi
 
-if Is_Entry "cross-compile"
-then
-	CC=$CC HOSTCC=$HOSTCC LD=$LD color_command ${goboSettings}/Scripts/configure.mtailrc \
-	  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
-else
-	color_command ${goboSettings}/Scripts/configure.mtailrc "$configureprogram" \
-	  "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
-fi
+color_command ${goboSettings}/Scripts/configure.mtailrc \
+  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0

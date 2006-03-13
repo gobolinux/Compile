@@ -24,7 +24,6 @@ Add_Option_Boolean "f" "file" "show dependencies of one file only."
 Add_Option_Boolean "c" "check" "check the package's dependency file,\
  instead of generating one."
 Add_Option_Boolean "r" "reverse" "reverse dependency match: indicate who uses a given program."
-Add_Option_Entry   "C" "cross-compile" "lets GoboPath export directories based on \$crossPrefixDir."
 Add_Option_Boolean "a" "all" "inspect all files, not only those in 'bin', 'sbin' and 'lib'."
 Add_Option_Boolean "m" "missing-only" "Display missing dependencies only. (check mode only)"
 Add_Option_Boolean "H" "higher-or-missing-only" "Display missing dependencies or higher versions only. (check mode only)"
@@ -38,17 +37,10 @@ Add_Option_Boolean "w" "write" "Write dependencies to $deps_file."
 Parse_Options "$@"
 shift $parsedArguments
 
-if Is_Entry "cross-compile"
-then
-   arch=`Entry "cross-compile"`
-   crossCompile="--cross-compile $arch"
-   . GoboPath Reload
-fi
-
 ### Utility functions #################################################################
 
 function extract_dependencies_from_file() {
-if Is_Entry "cross-compile"
+if [ "$goboCrossCompiling" = "yes" ]
 then
    readelf_result=`${crossCompiler}readelf -a "$1" 2> /dev/null | grep "Shared library" | cut -d"[" -f2 | cut -d"]" -f1`
    for i in $readelf_result
@@ -112,10 +104,6 @@ then
 fi
 
 execute=`Entry "execute"`
-
-if [ "$execute" ] && [ "`basename $execute`" = "Compile" ]
-then execute="$execute $crossCompile"
-fi
 
 
 ### --reverse: Reverse dependency match #################################################

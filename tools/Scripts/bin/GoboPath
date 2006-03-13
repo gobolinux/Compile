@@ -10,7 +10,7 @@ then
    #           here, since we set it at Rootless/C/bin/StartGobo...
    [ ! "${goboPrefix}" ] && export goboPrefix="${HOME}"
 else
-   if [ ! -z "$crossPrefixDir" -a "$1" = "Reload" ]
+   if [ "$goboCrossCompiling" = "yes" ]
    then export goboPrefix="$crossPrefixDir"
    fi
 fi
@@ -57,12 +57,11 @@ then
    export goboStatus=/proc
 fi
 
+if [ "$goboCrossCompiling" = "yes" ]
+then
+   export goboInstall="$goboPrograms"
+fi
+
 # This is relative to the user's home directory.
 
 export goboUserSettings=.Settings
-
-if [ ! -z "$crossPrefixDir" -a "$1" = "Reload" ]
-then
-	export goboInstall="$goboPrograms"
-	Parse_Conf Directories.conf
-fi

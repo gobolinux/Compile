@@ -27,7 +27,6 @@ Add_Option_Entry "t" "tasks" "Link tasks into ${goboExecutables}: 'yes', 'no' or
 Add_Option_Boolean "E" "no-environment" "Do not link entries from ${goboEnvironment}."
 Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVariable}."
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
-Add_Option_Entry "x" "cross-compile" "Use prefixes as stated by cross-config file."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
 Add_Option_Entry "c" "conflict" "What to do on conflicts, 'keep' or 'overwrite'." "keep"
 Add_Option_Boolean "n" "no-make" "Dummy option. Preserved for backwards compatibility."
@@ -39,19 +38,6 @@ Add_Option_Boolean "t" "rootfs" "Copy program to rootfs if a symlink."
 
 Parse_Options "$@"
 shift $parsedArguments
-
-if Is_Entry "cross-compile"
-then
-   arch=`Entry "cross-compile"`
-    
-   cross_line=`grep "crossCompiler=" $goboSettings/Compile/Cross-$arch.conf`
-   eval $cross_line
-    
-   . GoboPath Reload
-   prepareCross="--cross-compile $arch"
-else
-   prepareCross=""
-fi
 
 Is_Writable "$goboExecutables" || Verify_Superuser
 
@@ -361,7 +347,7 @@ fi
 ################################################################################
 
 Log_Normal "Removing unused directories..."
-PrepareProgram --tree-cleanup $prepareCross "$package" "$version"
+PrepareProgram --tree-cleanup "$package" "$version"
 
 if Boolean "cleanup"
 then

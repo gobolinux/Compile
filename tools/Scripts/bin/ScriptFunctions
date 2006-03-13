@@ -5,13 +5,7 @@
 #not sure why we add "." to PATH. causes problems with busybox.
 #export PATH=.:$PATH
 
-if [ "$cross_compiling" ]
-then
-	# we don't want to execute binaries from another platform
-	export PATH=$PATH:$goboExecutables
-else
-	export PATH=$goboExecutables:$PATH
-fi
+export PATH=$PATH:$goboExecutables
 
 export scriptName=`basename $0`
 export scriptPath=$(dirname $(readlink -f $0))
