@@ -14,7 +14,8 @@ from these tools.
 If you are cross-compiling, make sure to have a valid
 Cross-$ARCH.conf file, and a functional toolchain installed
 on your host computer. Please refer to the Knowledge Base[1]
-for further explanations about cross compiling scripts and
+and to the Cross-ARM.conf and Cross-SH4.conf examples for 
+further explanations about cross compiling scripts and
 their mandatory entries.
 
 Bootstrap usage is then pretty simple. Just issue

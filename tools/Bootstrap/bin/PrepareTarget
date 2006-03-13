@@ -9,12 +9,15 @@ if [ "$CROSS_NONE" = "y" ]
 then 
 	prefix="$INSTALL_PREFIX"
 else
-	[ "$CROSS_ARM"  = "y" ] && arch=ARM
-	[ "$CROSS_SH4"  = "y" ] && arch=SH4
+	[ "$CROSS_ARM"  = "y" ] && export arch=ARM
+	[ "$CROSS_SH4"  = "y" ] && export arch=SH4
 	
 	source $goboSettings/Compile/Cross-$arch.conf
 	prefix="$crossPrefixDir"
-	symlink_options="--cross-compile $arch -c overwrite"
+	symlink_options="-c overwrite"
+
+	# needs to be propagated to Scripts
+	export goboCrossCompiling=yes
 fi
 
 #
@@ -47,6 +50,8 @@ then
 	if [ "$TARGET_EMBEDDED" = "y" ]
 	then
 		Log_Normal "Installing the minimalistic Scripts package..."
+		cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+		RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 	else
 		Log_Normal "Installing the Scripts package..."
 		cp -a $goboPrograms/Scripts $prefix/$goboPrograms
@@ -63,6 +68,8 @@ then
 	if [ "$TARGET_EMBEDDED" = "y" ]
 	then
 		Log_Normal "Installing the minimalistic BootScripts package..."
+		cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
+		SymlinkProgram $symlink_options BootScripts >& /dev/null
 	else
 		Log_Normal "Installing the BootScripts package..."
 		cp -a $goboPrograms/BootScripts $prefix/$goboPrograms

@@ -61,13 +61,11 @@ dep: deps
 	
 
 world: $(TARGETS) deps
-	@cd bin && ./PrepareTarget
-	@cd bin && ./InvokeCompile
-	@cd bin && ./FixupEnvironment
-	@echo
-	@echo Root filesystem created successfully!
-	@echo Have a good time with GoboLinux on your new platform!
-	@echo
+	@cd bin; ./PrepareTarget    || exit 1
+	@cd bin; ./InvokeCompile    || exit 1
+	@cd bin; ./FixupEnvironment || exit 1
+	@echo -e "\nRoot filesystem created successfully!"
+	@echo -e "Have a good time with GoboLinux on your new platform!\n"
 
 .PHONY: all world clean distclean source $(TARGETS) \
 	$(TARGETS_CLEAN) $(TARGETS_SOURCE)

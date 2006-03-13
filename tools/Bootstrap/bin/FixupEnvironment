@@ -12,6 +12,7 @@ TOP_DIR=..
 source ScriptFunctions
 source $TOP_DIR/.config
 
+
 if [ "$CROSS_NONE" = "y" ]
 then 
 	# nothing to do
@@ -24,12 +25,15 @@ else
 	prefix="$crossPrefixDir"
 fi
 
+echo
+Log_Normal "Fixing environment..."
 
 #
 # Create a new ld.so.conf
 #
 if [ -d "$prefix/$goboPrograms/Glibc/Settings" ]
 then
+	Log_Normal "Generating ld.so.cache..."
 	echo "$prefix/$goboLibraries" > "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"
 	ldconfig -f "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf" \
     	     -C "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache"

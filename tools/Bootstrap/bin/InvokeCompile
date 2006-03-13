@@ -10,30 +10,27 @@ TOP_DIR=..
 dot_config=$TOP_DIR/.config
 subdir=$TOP_DIR/packages
 
+# GoboLinux Scripts' functions
+source GoboPath
+source ScriptFunctions
 
-#
+# Bootstrap's own functions
+PATH=$PATH:$TOP_DIR/functions
+source PkgFunctions
+source BlackList
+
 # Cross-compiling variables
-# 
 source $dot_config
 
 if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-    [ "$CROSS_ARM"  = "y" ] && arch=ARM
-    [ "$CROSS_SH4"  = "y" ] && arch=SH4
+    [ "$CROSS_ARM"  = "y" ] && export arch=ARM
+    [ "$CROSS_SH4"  = "y" ] && export arch=SH4
+	source $goboSettings/Compile/Cross-$arch.conf
     cross_options="--cross-compile $arch"
 fi
-
-# GoboLinux Scripts' functions
-source GoboPath
-source ScriptFunctions
-source $goboSettings/Compile/Cross-$arch.conf
-
-# Bootstrap's own functions
-PATH=$PATH:$TOP_DIR/functions
-source PkgFunctions
-source BlackList
 
 
 pushd $subdir >& /dev/null
@@ -58,8 +55,10 @@ do
 	fi
 
 	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
+	echo
 	Log_Normal "Running 'Compile $cross_options $recipe'"
-	Compile $cross_options $recipe || break
+	echo
+	Compile $cross_options $recipe || exit 1
 done
 
 popd >& /dev/null

@@ -1,5 +1,8 @@
 #!/bin/sh 
 
+# use the standard $goboPrefixes
+unset goboCrossCompiling
+
 source GoboPath
 
 #
