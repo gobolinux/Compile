@@ -61,9 +61,10 @@ dep: deps
 	
 
 world: $(TARGETS) deps
-	@cd bin; ./PrepareTarget    || exit 1
-	@cd bin; ./InvokeCompile    || exit 1
-	@cd bin; ./FixupEnvironment || exit 1
+	@cd bin; ./BootStrap start  || exit 1
+	@cd bin; ./PrepareTarget    || ./BootStrap stop
+	@cd bin; ./InvokeCompile    || ./BootStrap stop
+	@cd bin; ./FixupEnvironment || ./BootStrap stop
 	@echo -e "\nRoot filesystem created successfully!"
 	@echo -e "Have a good time with GoboLinux on your new platform!\n"
 
