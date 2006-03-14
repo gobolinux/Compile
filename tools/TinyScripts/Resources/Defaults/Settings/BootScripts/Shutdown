@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# This file is called by Reboot and Halt
+
+echo "Stopping daemons";                      killall -9 klogd syslogd
+echo "Stopping network interfaces";           Network stop
+echo "Sending all processes the TERM signal"; killall5 -15; sleep 1
+echo "Sending all processes the KILL signal"; killall5 -9
+echo "Unmounting filesystems";                umount -a -r; swapoff -a

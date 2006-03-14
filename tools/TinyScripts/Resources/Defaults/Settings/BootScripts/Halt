@@ -1,0 +1,5 @@
+#!/bin/sh
+
+/System/Settings/BootScripts/Shutdown
+
+echo "Halting system";                        halt

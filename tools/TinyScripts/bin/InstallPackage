@@ -1,0 +1,27 @@
+#!/bin/sh
+
+#
+# A simple InstallPackage script
+#
+# Written by Lucas Correia Villa Real <lucasvr@gobolinux.org>
+#
+
+source GoboPath
+
+if [ "$#" != 1 ]
+then
+	echo "Usage: InstallPackage <package_file>"
+	exit 1
+fi
+
+tarball="$1"
+tar jxvf "$tarball" -C "$goboPrograms"
+
+program=`echo $tarball | sed 's/--.*//g'`
+version=`echo $tarball | sed "s%$program--%%g" | sed 's/--.*//g'`
+
+cd "$goboPrograms/$program"
+rm -f Current
+ln -s "$version" Current
+
+SymlinkProgram "$program"
