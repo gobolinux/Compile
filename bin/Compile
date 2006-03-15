@@ -333,6 +333,8 @@ then
    
    source ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
    source ${crossConfFile}
+   source GoboPath
+   Parse_Conf Directories.conf
 
    # Extra arguments to be passed to 'make' and 'make install'
    cross_make_variables=(
@@ -341,9 +343,6 @@ then
    	"CXX=$CXX"
 	"CROSS=$crossCompiler"
    )   
-   eval `combine_arrays compileBuildOptions compileBuildOptions cross_make_variables`
-
-   eval `combine_arrays compileInstallOptions compileInstallOptions cross_install_variables`
    
    # ARCH is taken from the cross config file
    arch=`Get_Architecture $ARCH`
@@ -355,7 +354,6 @@ then
 
    export CC HOSTCC LD
    export cross_compiling=yes
-   Parse_Conf Directories.conf
 else
    cross_flags=""
    cross_make_variables=""
@@ -428,6 +426,15 @@ export installprefix="$target"
 
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
+
+if [ "$goboCrossCompiling" = "yes" ]
+then
+   if [ "$is_compileprogram" = "yes" ]
+   then cross_array=configure_options
+   else cross_array=compileMakeOptions
+   fi
+   eval `combine_arrays $cross_array $cross_array cross_make_variables`
+fi
 
 ! Boolean "no-build" && Log_Normal "Compiling $app version $version."
 
