@@ -62,7 +62,7 @@ popd >& /dev/null
 #
 cat "$dependency_list" | sort -n | uniq | while read entry
 do
-	grep "# $entry is not set" $TOPDIR/.config || continue
+	grep -q "# $entry is not set" $TOPDIR/.config || continue
 	Log_Normal "Adding dependency $entry"
 	GrepReplace "# $entry is not set" "$entry=y" $TOPDIR/.config
 done
