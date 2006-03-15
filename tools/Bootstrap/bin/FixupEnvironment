@@ -8,7 +8,9 @@
 #
 
 TOP_DIR=..
+export PATH=$PATH:$TOP_DIR/functions
 
+source PkgFunctions
 source ScriptFunctions
 source $TOP_DIR/.config
 
@@ -26,17 +28,30 @@ else
 fi
 
 echo
-Log_Normal "Fixing environment..."
 
 #
 # Create a new ld.so.conf
 #
 if [ -d "$prefix/$goboPrograms/Glibc/Settings" ]
 then
-	Log_Normal "Generating ld.so.cache..."
+	Log_Normal "Generating a new ld.so.cache..."
 	echo "$prefix/$goboLibraries" > "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"
 	ldconfig -f "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf" \
     	     -C "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache"
 	ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.conf"  "$prefix/$goboSettings"
 	ln -s "$prefix/$goboPrograms/Glibc/Settings/ld.so.cache" "$prefix/$goboSettings"
+fi
+
+#
+# Install the Tiny Scripts package
+#
+dirname="$prefix/$goboPrograms/Scripts"
+if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
+then
+	dirname="$prefix/$goboPrograms/TinyScripts"
+	Log_Normal "Installing the Tiny Scripts package..."
+	cvs_checkout tools/TinyScripts
+	cvs_make_install tools/TinyScripts "$dirname" "`date +%Y%m%d`-CVS"
+	rm tools/ -Rf
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi

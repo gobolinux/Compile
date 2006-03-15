@@ -49,3 +49,24 @@ function get_recipe() {
 
 	echo "$recipe"
 }
+
+function cvs_checkout() {
+	cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co "$1"
+}
+
+function cvs_make_install() {
+	module="$1"
+	app_dir="$2"
+	version_dir="$3"
+	
+	pushd "$module" >& /dev/null
+	make CC=$CC || exit 1
+	make CC=$CC install PREFIX="$app_dir/$version_dir" || exit 1
+	cp -a * "$app_dir/$version_dir"
+	popd >& /dev/null
+
+	pushd "$app_dir" >& /dev/null
+	rm -f Current
+	ln -s "$version_dir" Current
+	popd >& /dev/null
+}
