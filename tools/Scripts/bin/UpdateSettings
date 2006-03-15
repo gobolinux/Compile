@@ -70,8 +70,8 @@ PAGER=${PAGER:-less}
 ##################################################
 
 function input_option() {
-   echo -n "$*" >&$questionFD
-
+   Question_Line
+   echo "$*" >&$questionFD
    while true
    do
       read REPLY <&$stdinFD
@@ -193,9 +193,9 @@ function input_action()
        
        function show_changes()
        {
-               echo "" >&$questionFD
-               echo " $num $difftype $file" >&$questionFD
-               echo "" >&$questionFD
+               Question_Line; echo "" >&$questionFD
+               Question_Line; echo " $num $difftype $file" >&$questionFD
+               Question_Line; echo "" >&$questionFD
        }
 
        local action=""
@@ -207,7 +207,7 @@ function input_action()
                                action=u
                        else
                                show_changes
-                               input_option "[L]ist/[V]iew/[U]se/[S]kip/[SA]Skip all? "
+                               input_option "[V]iew/[U]se/[S]kip/[L]ist/[SA]Skip all "
                                case $REPLY in
                                v) action=vn ;;
                                l|vn|u|s|sa) action=$REPLY;;
@@ -219,7 +219,7 @@ function input_action()
                                action=s
                        else
                                show_changes
-                               input_option "[L]ist/[V]iew/[D]elete/[S]kip/[SA]Skip all? "
+                               input_option "[V]iew/[D]elete/[S]kip/[L]ist/[SA]Skip all "
                                case $REPLY in
                                v) action=vc ;;
                                l|vc|d|s|sa) action=$REPLY;;
@@ -231,12 +231,13 @@ function input_action()
                           diff -u "${cur}" "${default}" >&$questionFD
                        fi
                        show_changes
-                       input_option "[L]ist/[V]iew/[U]se new/[M]erge and edit/[S]kip/[SA]Skip all? "
+                       input_option "[V]iew/[U]se new/[S]kip/[L]ist/[M]erge and edit/[SA]Skip all "
                        case $REPLY in
-                               v) input_option "View new [vn] or current [vc]? " ;;
+                               v) input_option "View new or current? [N]ew/[C]urrent " ;;
                        esac
                        case $REPLY in
-                               l|vn|vc|u|m|s|sa) action=$REPLY;;
+                               l|u|m|s|sa) action=$REPLY;;
+                               n|c) action=v$REPLY;;
                        esac
                        ;;
                esac
@@ -384,7 +385,7 @@ if Boolean "update"; then
                Log_Normal "Quick-updating settings in $pdir"
        else
                while true; do
-                       Ask_Option "Update settings in $pdir [y/n]? "
+                       Ask "Update settings in $pdir?"
                        case "$REPLY" in
                        y|Y) break ;;
                        n|N) exit 0 ;;

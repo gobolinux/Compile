@@ -28,9 +28,13 @@ function Is_Log_Mode() {
    [ "$1" = "$logMode" ]
 }
 
+function Question_Line() {
+   echo -e -n ${colorNormal}${colorNormal}
+}
+
 function Log_Function() {
     Parameters "$@" message color FD 
-    [ $FD == $questionFD ] && echo -e -n ${colorNormal}${colorNormal}
+    [ $FD == $questionFD ] && Question_Line
     echo -e "${colorGray}${scriptName}:${colorNormal} ${color}$message${colorNormal}" >&$FD 
     echo "$scriptName: $message" >&$logFD
 }
