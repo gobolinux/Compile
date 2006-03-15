@@ -26,10 +26,10 @@ if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-    [ "$CROSS_ARM"  = "y" ] && export arch=ARM
-    [ "$CROSS_SH4"  = "y" ] && export arch=SH4
-	source $goboSettings/Compile/Cross-$arch.conf
-    cross_options="--cross-compile $arch"
+    [ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
+    [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
+	source $goboSettings/Compile/Cross-$arch_conf.conf
+    cross_options="--cross-compile $arch_conf"
 fi
 
 
