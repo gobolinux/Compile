@@ -1,13 +1,14 @@
 #!/bin/sh
 
-TOPDIR=..
+TOP_DIR=..
 
 source ScriptFunctions
-source $TOPDIR/.config
+source $TOP_DIR/.config
 
 if [ "$CROSS_NONE" = "y" ]
 then 
 	prefix="$INSTALL_PREFIX"
+	kernelVersion="$KERNEL_VERSION"
 else
 	[ "$CROSS_ARM"  = "y" ] && export arch=ARM
 	[ "$CROSS_SH4"  = "y" ] && export arch=SH4
@@ -40,41 +41,26 @@ fi
 #
 CreateFiles $SUPER_USER_NAME
 
-
 #
 # Install the Scripts package
 #
 dirname="$prefix/$goboPrograms/Scripts"
 if [ ! -d "$dirname" ]
 then
-	if [ "$TARGET_EMBEDDED" = "y" ]
-	then
-		Log_Normal "Installing the minimalistic Scripts package..."
-		cp -a $goboPrograms/Scripts $prefix/$goboPrograms
-		RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
-	else
-		Log_Normal "Installing the Scripts package..."
-		cp -a $goboPrograms/Scripts $prefix/$goboPrograms
-		RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
-	fi
+	Log_Normal "Installing the Scripts package..."
+	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi
 
 #
 # Install the BootScripts package
 #
 dirname="$prefix/$goboPrograms/BootScripts"
-if [ ! -d "$dirname" ]
+if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
 then
-	if [ "$TARGET_EMBEDDED" = "y" ]
-	then
-		Log_Normal "Installing the minimalistic BootScripts package..."
-		cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
-		SymlinkProgram $symlink_options BootScripts >& /dev/null
-	else
-		Log_Normal "Installing the BootScripts package..."
-		cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
-		SymlinkProgram $symlink_options BootScripts >& /dev/null
-	fi
+	Log_Normal "Installing the BootScripts package..."
+	cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
+	SymlinkProgram $symlink_options BootScripts >& /dev/null
 fi
 
 #
@@ -123,4 +109,13 @@ then
 	cp -a $kernelDir/include/linux $dirname/Current/include
 
 	SymlinkProgram $symlink_options Linux-Libc-Headers >& /dev/null
+fi
+
+#
+# Install the kernel modules
+#
+dirname="$prefix/$goboModules/$kernelVersion"
+if [ ! -d "$dirname" ]
+then
+	Log_Normal "Compiling the Linux kernel..."
 fi
