@@ -60,13 +60,14 @@ deps:
 dep: deps
 	
 
-world: $(TARGETS) deps
-	@cd bin; ./BootStrap start  || exit 1
-	@cd bin; ./PrepareTarget    || ./BootStrap stop
-	@cd bin; ./InvokeCompile    || ./BootStrap stop
-	@cd bin; ./FixupEnvironment || ./BootStrap stop
+world: $(TARGETS)
+	@cd bin; ./BootStrap start  || { ./BootStrap stop; exit 1; }
+	@cd bin; ./PrepareTarget    || { ./BootStrap stop; exit 1; }
+	@cd bin; ./InvokeCompile    || { ./BootStrap stop; exit 1; }
+	@cd bin; ./FixupEnvironment || { ./BootStrap stop; exit 1; }
 	@echo -e "\nRoot filesystem created successfully!"
 	@echo -e "Have a good time with GoboLinux on your new platform!\n"
+	@cd bin; ./BootStrap stop
 
 .PHONY: all world clean distclean source $(TARGETS) \
 	$(TARGETS_CLEAN) $(TARGETS_SOURCE)
