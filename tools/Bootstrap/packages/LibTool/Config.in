@@ -1,0 +1,7 @@
+config PKG_LIBTOOL
+    bool "LibTool"
+	default y
+	---help---
+	  This package is needed by many others who relies on libtool to
+	  generate their shared libraries. Say Y unless you know fine your
+	  package's dependencies.

@@ -106,6 +106,7 @@ menu "Development"
 source "packages/GMP/Config.in"
 source "packages/GCC/Config.in"
 source "packages/Strace/Config.in"
+source "packages/LibTool/Config.in"
 endmenu
 
 menu "Networking"
@@ -131,6 +132,7 @@ source "packages/Swfdec/Config.in"
 endmenu
 
 menu "Audio, video and graphics"
+source "packages/DirectFB/Config.in"
 source "packages/LibPNG/Config.in"
 source "packages/JPEG/Config.in"
 source "packages/TIFF/Config.in"
