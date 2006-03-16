@@ -46,6 +46,7 @@ for i in ['recipe', 'official_package', 'contrib_package', 'local_package'] :
 def get_rules_for(p, v, t, u=None, noWeb=False) :
 	#print p,v,t,u
 	depfile = find_dependencies_file(p, v, t, u, noWeb=False)
+	
 	if depfile and os.access(depfile, os.R_OK) :
 		f = open(depfile)
 		i=0
@@ -253,6 +254,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
 	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None):
 	#print "Entering",p,v
+	print noWeb
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
 	
@@ -286,17 +288,18 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	all_rules = get_rules_for(p, v, t, u, noWeb=noWeb)
 	# optimization only:
 	#all_rules  = [ r for r in all_rules if not any(pp == r['program'] for pp,vv,tt,uu in all_matches) ]	
-	missing_dependencies = [ r for r in all_rules if not find_matching_package(r, ['installed']) ]	
+	missing_dependencies = [ r for r in all_rules if not find_matching_package(r, ['installed'], noWeb=noWeb) ]	
 	for rule in all_rules :
 		if hook :
 			hook("Checking dependencies", len(all_matches), len(all_matches)+1)
 			
-		if mode == 'missing' and find_matching_package(rule, ['installed'])[2] :
+		if mode == 'missing' and find_matching_package(rule, ['installed'], noWeb=noWeb)[2] :
 			continue
 		
-		match = find_matching_package(rule, ['installed']+acceptable_types) # (program, version, type, site)
-		if mode == 'updating' and find_matching_package(rule, ['installed']+acceptable_types)[2] == 'installed' :
+		match = find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb) # (program, version, type, site)
+		if mode == 'updating' and find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb)[2] == 'installed' :
 			continue
+		print '3'
 		# Note: if no package is found, find_matching_package returns a 
 		#       tuple with None in the place of type
 		if not match in all_matches :
@@ -304,10 +307,10 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			# Ask here!
 			if mode != 'all' and (install_optional == 'never' or install_optional == 'ask' and ask_hook and not ask_hook(match)) :
 				continue
-			
+			print '4'
 			pp, vv, tt, uu = match
 			if tt and recursive :
-				rr, mm = get_all_dependencies_and_matches_for(pp, vv, tt, uu, acceptable_types, mode, recursive, hook=hook, all_matches=all_matches, ask_hook=ask_hook, install_optional=install_optional)
+				rr, mm = get_all_dependencies_and_matches_for(pp, vv, tt, uu, acceptable_types, mode, recursive, hook=hook, all_matches=all_matches, ask_hook=ask_hook, install_optional=install_optional, noWeb=noWeb)
 				ordered_matches += mm
 				ordered_rules += rr
 				
@@ -317,10 +320,11 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			#  the later being responsible to avoid infinite recursion on circular dependencies)
 			ordered_matches.append(match)
 			ordered_rules.append(rule)
+			print '5'
 	
 	if self_match and self_rule:
 		#rule = self_rule
-		#ret_type = find_matching_package(rule, ['installed'])[2]
+		#ret_type = find_matching_package(rule, ['installed'], noWeb=noWeb)[2]
 		#if not ((mode == 'missing' and ret_type) or (mode == 'updating' and ret_type == 'installed')) :
 		ordered_matches.append(self_match)
 		ordered_rules.append(self_rule)
@@ -331,20 +335,20 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	return ordered_rules, ordered_matches
 
 
-def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=False, report_updating=False, recursive=True, hook=None) :
+def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=False, report_updating=False, recursive=True, hook=None, noWeb=False) :
 	if not types :
 		types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
 		
-	all_rules, all_matches = get_all_dependencies_and_matches_for(p,v,t,u, types, recursive=recursive, hook=hook, mode='all')
+	all_rules, all_matches = get_all_dependencies_and_matches_for(p,v,t,u, types, recursive=recursive, hook=hook, mode='all', noWeb=noWeb)
 	
 	if report_missing :
-		missing_dependencies      = [ r for r in all_rules if not find_matching_package(r, ['installed'])[2] ]
-		missing_programs          = [ r for r in missing_dependencies if 'program' in find_matching_package(r, ['installed'])[3] ]
-		unresolvable_dependencies = [ r for r in missing_dependencies if not find_matching_package(r, ['installed']+types)[2] ]
+		missing_dependencies      = [ r for r in all_rules if not find_matching_package(r, ['installed'], noWeb=noWeb)[2] ]
+		missing_programs          = [ r for r in missing_dependencies if 'program' in find_matching_package(r, ['installed'], noWeb=noWeb)[3] ]
+		unresolvable_dependencies = [ r for r in missing_dependencies if not find_matching_package(r, ['installed']+types, noWeb=noWeb)[2] ]
 		
 	if report_updating :
-		updating_dependencies          = [ r for r in all_rules if not find_matching_package(r, ['installed']+types)[2] == 'installed' ]
-		tracked_is_higher_dependencies = [ r for r in all_rules if find_matching_package(r, ['installed']+types+['tracked'])[2] == 'tracked' ]
+		updating_dependencies          = [ r for r in all_rules if not find_matching_package(r, ['installed']+types, noWeb=noWeb)[2] == 'installed' ]
+		tracked_is_higher_dependencies = [ r for r in all_rules if find_matching_package(r, ['installed']+types+['tracked'], noWeb=noWeb)[2] == 'tracked' ]
 		
 	if mode == 'terminal' :
 		s = ''
@@ -387,7 +391,7 @@ def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=F
 	else :
 		return rules
 	
-def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=None) :
+def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=None, noWeb=False) :
 	px, vx, tx, ux = x
 	if all_programs == None :
 		all_programs = []
@@ -403,7 +407,7 @@ def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=Non
 			return True
 		if not p in all_programs :
 			all_programs.append(p)
-			match = find_matching_package(rule, acceptable_types) # (program, version, type, site)
+			match = find_matching_package(rule, acceptable_types, noWeb=noWeb) # (program, version, type, site)
 			pp, vv, tt, uu = match
 			if tt :
 				x = does_x_depend_on_y((pp, vv, tt, uu), py, acceptable_types, all_programs, hook=hook)
@@ -518,7 +522,7 @@ Examples of usage:
 	else :              u = None
 	
 	if mode == 'list' :
-		print ListDependencies(p,v,t,u,recursive=recursive,hook=consoleProgressHook)
+		print ListDependencies(p,v,t,u,recursive=recursive,hook=consoleProgressHook,noWeb=noWeb)
 	else :
 		rr, mm = get_all_dependencies_and_matches_for(p, v, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=consoleProgressHook, add_self=add_self, ask_hook=ask_if_install)
 		if rr :
