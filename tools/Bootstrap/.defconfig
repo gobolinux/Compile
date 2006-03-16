@@ -1,7 +1,17 @@
 #
 # Automatically generated make config: don't edit
 #
+
+#
+# Build options
+#
 HAVE_DOT_CONFIG=y
+# CROSS_NONE is not set
+# CROSS_ARM is not set
+CROSS_SH4=y
+TARGET_EMBEDDED=y
+# TARGET_DESKTOP is not set
+SUPER_USER_NAME="root"
 
 #
 # Base system
@@ -18,6 +28,17 @@ PKG_LISTENER=y
 PKG_UDEV=y
 
 #
+# ---
+#
+# PKG_NCURSES is not set
+# PKG_BASH is not set
+
+#
+# Development
+#
+PKG_STRACE=y
+
+#
 # Networking
 #
 # PKG_LINKS is not set
@@ -27,7 +48,6 @@ PKG_UDEV=y
 #
 # Window Servers
 #
-# PKG_XORG_LIB is not set
 # PKG_XORG is not set
 # PKG_NANO_X is not set
 
@@ -47,13 +67,13 @@ PKG_UDEV=y
 # PKG_RXVT is not set
 # PKG_SIAG is not set
 # PKG_SWFDEC is not set
-# PKG_XORG_APP is not set
 
 #
 # Audio, video and graphics
 #
-# PKG_LIBPNG is not set
-# PKG_JPEG is not set
+PKG_DIRECTFB=y
+PKG_LIBPNG=y
+PKG_JPEG=y
 # PKG_TIFF is not set
 # PKG_SDL is not set
 # PKG_LIBMAD is not set
@@ -64,7 +84,7 @@ PKG_UDEV=y
 # Libraries for the desktop
 #
 # PKG_FONTCONFIG is not set
-# PKG_FREETYPE is not set
+PKG_FREETYPE=y
 # PKG_GLIB is not set
 # PKG_ATK is not set
 # PKG_PANGO is not set
@@ -80,6 +100,5 @@ PKG_UDEV=y
 # PKG_LIBOIL is not set
 # PKG_STARTUP_NOTIFICATION is not set
 # PKG_LIBART is not set
-# PKG_STRACE is not set
 # PKG_LIBXML2 is not set
 # PKG_SHARED_MIME_INFO is not set

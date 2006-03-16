@@ -98,16 +98,19 @@ then
 	Log_Normal "Creating the Linux-Libc-Headers package..."
 	if [ "$CROSS_NONE" = "y" ]
 	then
-		kernelDir="$KERNEL_DIR"
-		kernelVersion="$KERNEL_VERSION"
+		case `uname -m` in
+			i386|i486|i586|i686)
+				kernelArch="i386"
+				;;
+			*)
+				Log_Error "Please add your architecture here!"
+				exit 1
+				;;
+		esac
 	fi
 	
-	mkdir -p "$dirname/$kernelVersion/include"
-	ln -sf $kernelVersion "$dirname/Current"
-	
-	cp -a $kernelDir/include/asm* $dirname/Current/include
-	cp -a $kernelDir/include/linux $dirname/Current/include
-
+	# Latest release known to work is 2.6.12.0 (based on LFS)
+	./MakeKernelHeaders 2.6.12 $kernelArch $dirname
 	SymlinkProgram $symlink_options Linux-Libc-Headers >& /dev/null
 fi
 

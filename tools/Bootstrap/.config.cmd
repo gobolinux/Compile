@@ -21,6 +21,7 @@ deps_config := \
 	packages/TIFF/Config.in \
 	packages/JPEG/Config.in \
 	packages/LibPNG/Config.in \
+	packages/DirectFB/Config.in \
 	packages/Swfdec/Config.in \
 	packages/Siag/Config.in \
 	packages/RXVT/Config.in \

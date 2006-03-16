@@ -1,0 +1,494 @@
+#!/bin/sh
+
+# Headers Sanitation Script - Version 00.23
+#
+# By Jim Gifford for the LFS/CLFS Community
+#
+#	Community Memeber Acknowledgement
+#
+#	Ryan Oliver
+#	Joe Ciccone
+#	Matt Darcy
+#	Greg Schafer
+#	Tushar Teredesai
+#	D.J. Lucas
+#	Jeremy Huntwork
+#	Andrew Benton
+#	Florian Schanda
+#	Jürg Billeter
+
+#
+# Small modifications by Lucas Correia Villa Real to adapt to Bootstrap
+#
+
+# LFS/CLFS Build notes
+#
+# You will also need to copy over asm-generic to ensure you have all the
+# necessary headers. In LLH they combine these into the asm-architecture
+# so there is no asm-generic.
+
+# This version requires unifdef - get it at
+#
+# http://ftp.debian.org/debian/pool/main/u/unifdef/unifdef_1.0+20030701.orig.tar.gz
+
+# Conversion Process
+# 
+# Removal of __KERNEL__ - These tags are only during the build of the kernel
+#
+# Conversion u and s varaiables to userspace variables is the following link
+# for more information http://www.linuxdevices.com/articles/AT5340618290.html
+#
+# Removal of <linux/config.h> - Not needed for userspace contains kernel build
+# information.
+#
+# Conversion of linux to __linux__ - converts to a userspace usable
+#
+# Removal of __iomem 
+# for more information http://lwn.net/Articles/102232/
+#
+# version.h is created so that all the kernel versioning information
+# is available
+#
+# compiler.h is removed
+
+# I386 Specific
+#
+# Removal of <asm/processor.h> from all i386 headers.
+#
+
+# MIPS Specific
+#
+# CONFIG_64BIT and CONFIG_32BIT are not defined in userspace so we use
+# __mips64
+
+# Sparc Specific
+#
+# RAW Headers use variables from the configuration to get the PAGE SIZE
+# so we use a function that exists in glibc to figure it out.
+
+# Creation of biarch headers for multilib builds
+
+# Links that inspired my creation
+#
+# http://kerneltrap.org/node/365
+
+VERSION="$1"
+KERNEL_ARCH="$2"
+DEST_DIR="$3/$1"
+CURRENT_DIR="`pwd`"
+
+multilib_stubs() {
+	cd $CURRENT_DIR
+	STUBARCH1=$1
+	STUBARCH2=$2
+	STUBSWITCH=$3
+	HDRS=""
+	DIRS=""
+	for arch in ${STUBARCH1} ${STUBARCH2}; do
+		cd $CURRENT_DIR
+		cd linux-headers-$VERSION/include/asm-${arch}
+		dirs=`find . -type d | sed 's@^\.*\(\|/\)@@g'`
+		hdrs=`find . -type f -name \*.h | sed 's@^\.*\(\|/\)@@g'`
+		DIRS=`echo ${DIRS} ${dirs} | sort | uniq`
+		HDRS=`echo ${HDRS} ${hdrs} | sort | uniq`
+	done
+
+	cd $CURRENT_DIR
+	# Create directories (if required) under include/asm
+	install -d linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch
+	if [ "${DIRS}" != "" ]; then
+		for dir in ${DIRS}; do
+			install -d linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${dir}
+		done
+	fi
+
+	for hdr in ${HDRS}; do
+		# include barrier
+		name=`basename ${hdr} | tr [a-z]. [A-Z]_`
+		cat > linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${hdr} << EOF
+#ifndef __STUB__${name}__
+#define __STUB__${name}__
+
+EOF
+		# check whether we exist in arch1
+		if [ -f linux-headers-$VERSION/include/asm-${STUBARCH1}/${hdr} ]; then
+			# check if we also exist arch2
+			if [ -f linux-headers-$VERSION/include/asm-${STUBARCH2}/${hdr} ]; then
+				# we exist in both
+				cat >> linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${hdr} << EOF
+#ifdef ${STUBSWITCH}
+#include <asm-${STUBARCH1}/${hdr}>
+#else
+#include <asm-${STUBARCH2}/${hdr}>
+#endif
+EOF
+			else
+			# we only exist in arch1
+		cat >> linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${hdr} << EOF
+#ifdef ${STUBSWITCH}
+#include <asm-${STUBARCH1}/${hdr}>
+#endif
+EOF
+			fi
+		# end arch1
+		else
+			# if we get here we only exist in arch2
+			cat >> linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${hdr} << EOF
+#ifndef ${STUBSWITCH}
+#include <asm-${STUBARCH2}/${hdr}>
+#endif
+EOF
+		fi
+		cat >> linux-headers-$VERSION/include/asm-${STUBARCH1}-biarch/${hdr} << EOF
+
+#endif /* __STUB__${name}__ */
+EOF
+	done
+}
+
+if [ "$VERSION" = "" ]; then
+	echo "usage $0 : kernel_version"
+	exit 255
+else
+	P1="`echo $VERSION | cut -f1 -d.`"
+	P2="`echo $VERSION | cut -f2 -d.`"
+	P3="`echo $VERSION | cut -f3 -d.`"
+	if ! [ -e linux-$VERSION.tar.bz2 ]; then
+		echo "Downloading kernel linux-$VERSION from kernel.org..."
+		wget --quiet http://www.kernel.org/pub/linux/kernel/v$P1.$P2/linux-$VERSION.tar.bz2
+		if [ "$?" != "0" ]; then
+			echo "Error during Download."
+			exit 255
+		fi
+	fi
+	echo "Decompressing Kernel Headers only..."
+	rm -rf linux-$VERSION linux-headers-$VERSION linux-headers-$VERSION.orig
+	tar jxf linux-$VERSION.tar.bz2 linux-$VERSION/include/* 
+	echo "Renaming directory to linux-headers-$VERSION..."
+	mv linux-$VERSION linux-headers-$VERSION.orig
+
+	echo "Creating directory Struction..."
+	install -d linux-headers-$VERSION
+	cd linux-headers-$VERSION.orig
+	DIRS="`find * -type d`"	
+	cd $CURRENT_DIR
+	for dir in $DIRS
+		do
+			install -d linux-headers-$VERSION/$dir
+		done
+	echo "Locating all header files..."
+	cd linux-headers-$VERSION.orig
+	HEADERS="`find * -name *.h`"
+	cd $CURRENT_DIR
+	echo "Processing Headers..."
+	for header in $HEADERS
+		do
+			unifdef -e -U__KERNEL__ linux-headers-$VERSION.orig/$header > linux-headers-$VERSION/$header.orig
+			cp linux-headers-$VERSION/$header.orig linux-headers-$VERSION/$header
+			sed -e 's/\b[us]\(8\|16\|32\|64\)\b/__&/g' \
+			    -e 's/\b__\(be\|le\)\(16\|32\|64\)\b/__u\2/g' \
+			    -e 's/\b__iomem\b//g' \
+			    -e 's/\b__user\b//g' \
+			    -e '/#include <linux.autoconf.h>/d' \
+			    -e '/#include <linux.compiler.h>/d' \
+			    -e '/#include <linux.config.h>/d' \
+			    -e '/endif .* __KERNEL__/d' \
+			    -e 's/|| !defined(__KERNEL__)//g' \
+			    -e 's/!defined(__KERNEL__) ..//g' \
+			    -e 's/|| defined(__KERNEL__)//g' \
+			    -e 's/defined(__KERNEL__) ..//g' \
+			    -e 's/#ifdef linux/#ifdef __linux__/g' \
+			    -e 's/#ifndef linux/#ifndef __linux__/g' \
+			    linux-headers-$VERSION/$header  > linux-headers-$VERSION/$header.orig
+			TEST="`echo $header | grep -c mips`"
+			if [ "$TEST" != 0 ]; then
+				cp linux-headers-$VERSION/$header.orig linux-headers-$VERSION/$header
+				sed -e 's/#ifdef CONFIG_32BIT/#ifndef __mips64/g' \
+				    -e 's/#ifdef CONFIG_64BIT/#ifdef __mips64/g' \
+				    linux-headers-$VERSION/$header > linux-headers-$VERSION/$header.orig
+			fi
+			TEST="`echo $header | grep -c i386`"
+			if [ "$TEST" != 0 ]; then
+				cp linux-headers-$VERSION/$header.orig linux-headers-$VERSION/$header
+				sed -e '/#include <asm.processor.h>/d' \
+				    linux-headers-$VERSION/$header > linux-headers-$VERSION/$header.orig
+			fi
+			cp linux-headers-$VERSION/$header.orig linux-headers-$VERSION/$header
+			sed -e '/^$/N;/\n$/D' linux-headers-$VERSION/$header > linux-headers-$VERSION/$header.orig
+			TEST="`cat linux-headers-$VERSION/$header.orig`"
+			if [ "$TEST" != "" ]; then
+				install -m 644 linux-headers-$VERSION/$header.orig linux-headers-$VERSION/$header
+			else
+				rm linux-headers-$VERSION/$header
+			fi
+			rm linux-headers-$VERSION/$header.orig
+		done
+	PLATFORM="arm26 m68k mips sparc sparc64"
+		for platform in $PLATFORM
+			do
+				PAGE_H=linux-headers-$VERSION/include/asm-$platform/page.h
+				echo "Creating page.h for $platform..."
+				case "$platform" in
+				  arm26)
+					FILEHEADER="_ASMARM_PAGE_H" ;;
+				  m68k)
+					FILEHEADER="_M68K_PAGE_H" ;;
+				  mips)
+					FILEHEADER="_ASM_PAGE_H" ;;
+				  sparc)
+					FILEHEADER="_SPARC_PAGE_H" ;;
+				  sparc64)
+					FILEHEADER="_SPARC64_PAGE_H" ;;
+				esac
+				echo "#ifndef $FILEHEADER" > $PAGE_H
+				echo "#define $FILEHEADER" >> $PAGE_H
+				echo "" >> $PAGE_H
+				echo "#include <unistd.h>" >> $PAGE_H
+				if [ "$platform" = "arm26" ]; then
+					echo "#define EXEC_PAGESIZE	32768" >> $PAGE_H
+				fi
+				echo "" >> $PAGE_H
+				echo "#define PAGE_SIZE	(getpagesize())" >> $PAGE_H
+				echo "static __inline__ int getpageshift()" >> $PAGE_H
+				echo "{" >> $PAGE_H
+				echo "    int pagesize = getpagesize();">> $PAGE_H
+				echo "    return (__builtin_clz(pagesize) ^ 31);" >> $PAGE_H
+ 				echo "}" >> $PAGE_H
+				echo "#define PAGE_SHIFT	(getpageshift())" >> $PAGE_H
+				echo "#define PAGE_MASK	(~(PAGE_SIZE-1))" >> $PAGE_H
+				echo "" >> $PAGE_H
+				if [ "$platform" = "arm26" ]; then
+					echo "#define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)" >> $PAGE_H
+				fi
+				if [ "$platform" = "mips" ]; then
+					echo "#ifdef CONFIG_LIMITED_DMA" >> $PAGE_H
+					echo "#define WANT_PAGE_VIRTUAL" >> $PAGE_H
+				fi
+				echo "" >> $PAGE_H
+				echo "#endif /* !($FILEHEADER) */" >> $PAGE_H
+			done
+	VERSION_H=linux-headers-$VERSION/include/linux/version.h
+	echo "Creating version.h..."
+	let LINUXCODE="($P1<<16)+($P2<<8)+$P3"
+	echo "#ifndef _LINUX_VERSION_H" > $VERSION_H
+	echo "#define _LINUX_VERSION_H" >> $VERSION_H
+	echo "" >> $VERSION_H
+	echo "#define UTS_RELEASE \"$P1.$P2.$P3\"" >> $VERSION_H
+	echo "#define LINUX_VERSION_CODE $LINUXCODE"  >> $VERSION_H
+	echo "#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))"  >> $VERSION_H
+	echo "" >> $VERSION_H
+	echo "#endif"  >> $VERSION_H
+	SWAB_H=linux-headers-$VERSION/include/linux/byteorder/swab.h
+	echo "Creating swab.h..."
+	echo "#ifndef _LINUX_BYTEORDER_SWAB_H" > $SWAB_H
+	echo "#define _LINUX_BYTEORDER_SWAB_H" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#include <byteswap.h>" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#ifndef __bswap_constant_16" >> $SWAB_H
+	echo "#define __bswap_constant_16(x) \\" >> $SWAB_H
+	echo "     ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8))" >> $SWAB_H
+	echo "#endif" >> $SWAB_H
+	echo "#ifndef __bswap_constant_32" >> $SWAB_H
+	echo "#define __bswap_constant_32(x) \\" >> $SWAB_H
+	echo "     ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | \\" >> $SWAB_H
+	echo "      (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))" >> $SWAB_H
+	echo "#endif" >> $SWAB_H
+	echo "#if (!defined(__bswap_constant_64)) && defined __GNUC__ && __GNUC__ >= 2" >> $SWAB_H
+	echo "#define __bswap_constant_64(x) \\" >> $SWAB_H
+	echo "     ((((x) & 0xff00000000000000ull) >> 56) \\" >> $SWAB_H
+	echo "      | (((x) & 0x00ff000000000000ull) >> 40) \\" >> $SWAB_H
+	echo "      | (((x) & 0x0000ff0000000000ull) >> 24) \\" >> $SWAB_H
+	echo "      | (((x) & 0x000000ff00000000ull) >> 8)  \\" >> $SWAB_H
+	echo "      | (((x) & 0x00000000ff000000ull) << 8)  \\" >> $SWAB_H
+	echo "      | (((x) & 0x0000000000ff0000ull) << 24) \\" >> $SWAB_H
+	echo "      | (((x) & 0x000000000000ff00ull) << 40) \\" >> $SWAB_H
+	echo "      | (((x) & 0x00000000000000ffull) << 56))" >> $SWAB_H
+	echo "#endif" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#define ___constant_swab16(x) __bswap_constant_16(x)" >> $SWAB_H
+	echo "#define ___constant_swab32(x) __bswap_constant_32(x)" >> $SWAB_H
+	echo "#define ___constant_swab64(x) __bswap_constant_64(x)" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#define __swab16(x) bswap_16(x)" >> $SWAB_H
+	echo "#define __swab32(x) bswap_32(x)" >> $SWAB_H
+	echo "#define __swab64(x) bswap_64(x)" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#define __swab16p(x) __swab16(*(x))" >> $SWAB_H
+	echo "#define __swab32p(x) __swab32(*(x))" >> $SWAB_H
+	echo "#define __swab64p(x) __swab64(*(x))" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#define __swab16s(x) do { *(x) = __swab16p((x)); } while (0)" >> $SWAB_H
+	echo "#define __swab32s(x) do { *(x) = __swab32p((x)); } while (0)" >> $SWAB_H
+	echo "#define __swab64s(x) do { *(x) = __swab64p((x)); } while (0)" >> $SWAB_H
+	echo "" >> $SWAB_H
+	echo "#endif /* _LINUX_BYTEORDER_SWAB_H */" >> $SWAB_H
+	BIG_ENDIAN_H=linux-headers-$VERSION/include/linux/byteorder/big_endian.h
+	echo "#ifndef _LINUX_BYTEORDER_BIG_ENDIAN_H" > $BIG_ENDIAN_H
+	echo "#define _LINUX_BYTEORDER_BIG_ENDIAN_H" >> $BIG_ENDIAN_H
+	echo "" >> $BIG_ENDIAN_H
+	echo "#ifndef __BIG_ENDIAN" >> $BIG_ENDIAN_H
+	echo "#define __BIG_ENDIAN 4321" >> $BIG_ENDIAN_H
+	echo "#endif" >> $BIG_ENDIAN_H
+	echo "#ifndef __BIG_ENDIAN_BITFIELD" >> $BIG_ENDIAN_H
+	echo "#define __BIG_ENDIAN_BITFIELD" >> $BIG_ENDIAN_H
+	echo "#endif" >> $BIG_ENDIAN_H
+	echo "" >> $BIG_ENDIAN_H
+	echo "#include <asm/types.h>" >> $BIG_ENDIAN_H
+	echo "#include <linux/byteorder/swab.h>" >> $BIG_ENDIAN_H
+	echo "" >> $BIG_ENDIAN_H
+	echo "#define __constant_htonl(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_ntohl(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_htons(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_ntohs(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_le64(x) ___constant_swab64((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_le64_to_cpu(x) ___constant_swab64((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_le32(x) ___constant_swab32((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_le32_to_cpu(x) ___constant_swab32((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_le16(x) ___constant_swab16((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_le16_to_cpu(x) ___constant_swab16((x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_be64(x) ((__u64)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_be64_to_cpu(x) ((__u64)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_be32(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_be32_to_cpu(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_cpu_to_be16(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __constant_be16_to_cpu(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le64(x) __swab64((x))" >> $BIG_ENDIAN_H
+	echo "#define __le64_to_cpu(x) __swab64((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le32(x) __swab32((x))" >> $BIG_ENDIAN_H
+	echo "#define __le32_to_cpu(x) __swab32((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le16(x) __swab16((x))" >> $BIG_ENDIAN_H
+	echo "#define __le16_to_cpu(x) __swab16((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be64(x) ((__u64)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be64_to_cpu(x) ((__u64)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be32(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be32_to_cpu(x) ((__u32)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be16(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be16_to_cpu(x) ((__u16)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le64p(x) __swab64p((x))" >> $BIG_ENDIAN_H
+	echo "#define __le64_to_cpup(x) __swab64p((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le32p(x) __swab32p((x))" >> $BIG_ENDIAN_H
+	echo "#define __le32_to_cpup(x) __swab32p((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le16p(x) __swab16p((x))" >> $BIG_ENDIAN_H
+	echo "#define __le16_to_cpup(x) __swab16p((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be64p(x) (*(__u64*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be64_to_cpup(x) (*(__u64*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be32p(x) (*(__u32*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be32_to_cpup(x) (*(__u32*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be16p(x) (*(__u16*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __be16_to_cpup(x) (*(__u16*)(x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le64s(x) __swab64s((x))" >> $BIG_ENDIAN_H
+	echo "#define __le64_to_cpus(x) __swab64s((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le32s(x) __swab32s((x))" >> $BIG_ENDIAN_H
+	echo "#define __le32_to_cpus(x) __swab32s((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_le16s(x) __swab16s((x))" >> $BIG_ENDIAN_H
+	echo "#define __le16_to_cpus(x) __swab16s((x))" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be64s(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "#define __be64_to_cpus(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be32s(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "#define __be32_to_cpus(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "#define __cpu_to_be16s(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "#define __be16_to_cpus(x) do {} while (0)" >> $BIG_ENDIAN_H
+	echo "" >> $BIG_ENDIAN_H
+	echo "#include <linux/byteorder/generic.h>" >> $BIG_ENDIAN_H
+	echo "" >> $BIG_ENDIAN_H
+	echo "#endif /* _LINUX_BYTEORDER_BIG_ENDIAN_H */" >> $BIG_ENDIAN_H
+	LITTLE_ENDIAN_H=linux-headers-$VERSION/include/linux/byteorder/little_endian.h
+	echo "#ifndef _LINUX_BYTEORDER_LITTLE_ENDIAN_H" > $LITTLE_ENDIAN_H
+	echo "#define _LINUX_BYTEORDER_LITTLE_ENDIAN_H" >> $LITTLE_ENDIAN_H
+	echo "" >> $LITTLE_ENDIAN_H
+	echo "#ifndef __LITTLE_ENDIAN" >> $LITTLE_ENDIAN_H
+	echo "#define __LITTLE_ENDIAN 1234" >> $LITTLE_ENDIAN_H
+	echo "#endif" >> $LITTLE_ENDIAN_H
+	echo "#ifndef __LITTLE_ENDIAN_BITFIELD" >> $LITTLE_ENDIAN_H
+	echo "#define __LITTLE_ENDIAN_BITFIELD" >> $LITTLE_ENDIAN_H
+	echo "#endif" >> $LITTLE_ENDIAN_H
+	echo "" >> $LITTLE_ENDIAN_H
+	echo "#include <asm/types.h>" >> $LITTLE_ENDIAN_H
+	echo "#include <linux/byteorder/swab.h>" >> $LITTLE_ENDIAN_H
+	echo "" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_htonl(x) ___constant_swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_ntohl(x) ___constant_swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_htons(x) ___constant_swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_ntohs(x) ___constant_swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_le64(x) ((__u64)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_le64_to_cpu(x) ((__u64)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_le32(x) ((__u32)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_le32_to_cpu(x) ((__u32)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_le16(x) ((__u16)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_le16_to_cpu(x) ((__u16)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_be64(x) ___constant_swab64((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_be64_to_cpu(x) ___constant_swab64((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_be32(x) ___constant_swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_be32_to_cpu(x) ___constant_swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_cpu_to_be16(x) ___constant_swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __constant_be16_to_cpu(x) ___constant_swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le64(x) ((__u64)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le64_to_cpu(x) ((__u64)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le32(x) ((__u32)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le32_to_cpu(x) ((__u32)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le16(x) ((__u16)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le16_to_cpu(x) ((__u16)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be64(x) __swab64((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be64_to_cpu(x) __swab64((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be32(x) __swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be32_to_cpu(x) __swab32((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be16(x) __swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be16_to_cpu(x) __swab16((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le64p(x) (*(__u64*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le64_to_cpup(x) (*(__u64*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le32p(x) (*(__u32*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le32_to_cpup(x) (*(__u32*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le16p(x) (*(__u16*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __le16_to_cpup(x) (*(__u16*)(x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be64p(x) __swab64p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be64_to_cpup(x) __swab64p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be32p(x) __swab32p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be32_to_cpup(x) __swab32p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be16p(x) __swab16p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be16_to_cpup(x) __swab16p((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le64s(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __le64_to_cpus(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le32s(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __le32_to_cpus(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_le16s(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __le16_to_cpus(x) do {} while (0)" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be64s(x) __swab64s((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be64_to_cpus(x) __swab64s((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be32s(x) __swab32s((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be32_to_cpus(x) __swab32s((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __cpu_to_be16s(x) __swab16s((x))" >> $LITTLE_ENDIAN_H
+	echo "#define __be16_to_cpus(x) __swab16s((x))" >> $LITTLE_ENDIAN_H
+	echo "" >> $LITTLE_ENDIAN_H
+	echo "#include <linux/byteorder/generic.h>" >> $LITTLE_ENDIAN_H
+	echo "" >> $LITTLE_ENDIAN_H
+	echo "#endif /* _LINUX_BYTEORDER_LITTLE_ENDIAN_H */" >> $LITTLE_ENDIAN_H
+	rm -f linux-headers-$VERSION/include/linux/{autoconf.h,compiler.h,config.h}
+	
+	echo "Creating multilib headers for x86_64..."
+	multilib_stubs x86_64 i386 __x86_64_
+	
+	echo "Creating multilib headers for Sparc64..."
+	multilib_stubs sparc64 sparc __arch64__
+
+	echo "Configuring headers for chosen platform ($KERNEL_ARCH)..."
+	pushd linux-headers-$VERSION/include >& /dev/null
+	for i in asm-*
+	do
+		[ "$i" = "asm-$KERNEL_ARCH" -o "$i" = "asm-generic" ] && continue
+		rm -Rf "$i"
+	done
+	ln -s asm-$KERNEL_ARCH asm
+	popd >& /dev/null
+	
+	echo "Installing headers on $DEST_DIR..."
+	mkdir -p $DEST_DIR
+	mv linux-headers-$VERSION/* $DEST_DIR
+	rmdir linux-headers-$VERSION
+	rm -f linux-$VERSION.tar.bz2
+
+	pushd $DEST_DIR/.. >& /dev/null
+	rm -f Current
+	ln -s $VERSION Current
+	popd >& /dev/null
+fi
