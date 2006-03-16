@@ -154,7 +154,7 @@ then
    [ "$leftovers" ] && {
       Log_Normal "Left over files:\n$leftovers"
       if ! Boolean "allow-leftovers"
-      then return 21 # Remember Fibo
+      then exit 21 # Remember Fibo.
       fi
    }
    Quiet rmdir $sandbox_rw
