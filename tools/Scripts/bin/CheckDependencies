@@ -254,7 +254,6 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
 	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None):
 	#print "Entering",p,v
-	print noWeb
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
 	
@@ -299,7 +298,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		match = find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb) # (program, version, type, site)
 		if mode == 'updating' and find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb)[2] == 'installed' :
 			continue
-		print '3'
+		
 		# Note: if no package is found, find_matching_package returns a 
 		#       tuple with None in the place of type
 		if not match in all_matches :
@@ -307,7 +306,6 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			# Ask here!
 			if mode != 'all' and (install_optional == 'never' or install_optional == 'ask' and ask_hook and not ask_hook(match)) :
 				continue
-			print '4'
 			pp, vv, tt, uu = match
 			if tt and recursive :
 				rr, mm = get_all_dependencies_and_matches_for(pp, vv, tt, uu, acceptable_types, mode, recursive, hook=hook, all_matches=all_matches, ask_hook=ask_hook, install_optional=install_optional, noWeb=noWeb)
@@ -320,7 +318,6 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			#  the later being responsible to avoid infinite recursion on circular dependencies)
 			ordered_matches.append(match)
 			ordered_rules.append(rule)
-			print '5'
 	
 	if self_match and self_rule:
 		#rule = self_rule
