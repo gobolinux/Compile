@@ -86,11 +86,11 @@ function installPackage() {
    tar xjpf "$package"
 
    dsettings="$name/$version/Resources/Defaults/Settings"
-   [ -d "$dsettings" ] && cp -R "$dsettings" "$name/Settings"
+   [ -d "$dsettings" ] && cp -a "$dsettings" "$name/Settings"
    dvariable="$name/$version/Resources/Defaults/Variable"
    if [ -d "$dvariable" ]
    then
-      cp -R "$dvariable" /System/Variable
+      cp -a "$dvariable" /System/Variable
       ln -s /System/Variable "$name/Variable"
    fi
    popd &> /dev/null

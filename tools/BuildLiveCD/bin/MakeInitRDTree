@@ -6,8 +6,10 @@ then
    exit 1
 fi
 
-root=$PWD/Ext_work/NewInitRD
+root=$PWD/Ext_work/InitRD
 archives=$PWD/Archives
+
+rm -rf $root
 
 mkdir -p $root
 mkdir -p $archives
@@ -16,18 +18,31 @@ mkdir -p $archives
 # Fetch packages
 ####################################################
 
+today=`date +%Y%m%d`
+arch=`uname -m`
+
 packages=(
-   BusyBox-InitRD--20060202-SVN--i686.tar.bz2
-   InitRDScripts--0.1--i686.tar.bz2
-   MiniUdev--0.1--i686.tar.bz2
+   BusyBox-InitRD--20060202-SVN--$arch.tar.bz2
+   MiniUdev--0.1--$arch.tar.bz2
+   InitRDScripts--$today--$arch.tar.bz2
 )
 
-pushd $archives
+pushd $archives &> /dev/null
 for package in "${packages[@]}"
 do
    wget -c "http://gobo.calica.com/initrd-packages/$package"
-done
-popd
+done &> /dev/null
+
+rm -rf InitRDScripts
+mkdir InitRDScripts
+pushd InitRDScripts &> /dev/null
+cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d $today tools/InitRDScripts
+find -type d -name CVS | xargs rm -rf 
+ln -nfs $today Current
+popd &> /dev/null
+tar cjvpf InitRDScripts--$today--$arch.tar.bz2 InitRDScripts
+
+popd &> /dev/null
 
 ####################################################
 # Directory structure
@@ -178,7 +193,7 @@ EOF
 
 cat <<EOF > $root/System/Settings/inittab
 
-::sysinit:/etc/rc
+::sysinit:/bin/startGoboLinux
 ::respawn:-/bin/ash
 tty2::askfirst:-/bin/ash
 tty3::askfirst:-/bin/ash

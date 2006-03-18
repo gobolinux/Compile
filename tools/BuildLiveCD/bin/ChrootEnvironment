@@ -1,6 +1,17 @@
 #!/bin/sh
 
-. Master.conf
+for conf in ./Master.conf /System/Settings/BuildLiveCD/Master.conf fail
+do
+   if [ "$conf" = "fail" ]
+   then
+      echo "Could not find Master.conf."
+      exit 1
+   elif [ -e $conf ]
+   then
+      source $conf
+      break
+   fi
+done
 
 mp="output/Environment"
 layer1="output/Layer1"

@@ -27,14 +27,17 @@ check_and_dl "Ext_work/Linux-Kernel"  \
 check_and_dl "Ext_work/Files-Fonts"  \
     "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2"
 
-check_and_dl "Ext_work/LayerTMP"  \
-    "http://www.calica.com/gobolinux/livecd/LayerTMP.tar.bz2"
+check_and_dl "Ext_work/ISO_Base"  \
+    "http://gobo.calica.com/livecd-packages/ISO_Base-i686.tar.bz2"
 
-check_and_dl "Ext_work/InitRD"  \
-    "http://www.calica.com/gobolinux/livecd/InitRD.tar.bz2"
+# check_and_dl "Ext_work/LayerTMP"  \
+#     "http://www.calica.com/gobolinux/livecd/LayerTMP.tar.bz2"
+
+# check_and_dl "Ext_work/InitRD"  \
+#     "http://www.calica.com/gobolinux/livecd/InitRD.tar.bz2"
 
 # Gobo-Files
 mkdir -p Ext_work/Gobo-Files
 cvs  -q -z3 -d:pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d Ext_work/Gobo-Files files
 
-rsync -r gobo.calica.com::gobolinux-packages/013-test/ Packages/
+rsync --verbose -r gobo.calica.com::gobolinux-packages/013-test/ Packages/

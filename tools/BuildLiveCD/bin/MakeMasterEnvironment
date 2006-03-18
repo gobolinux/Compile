@@ -17,10 +17,18 @@ mkdir -p LiveCD_work/ISO_Base/powerpc
 mkdir -p LiveCD_work/Scripts
 mkdir -p LiveCD_work/InitRDScripts
 
-# grab contents of LiveCD_work/Layer2/System/Kernel/Boot/grub from Grub package
-# grab ./LiveCD_work/Layer2/System/Kernel/Boot/message from Lilo (???)
-# grab contents of LiveCD_work/Layer2/System/Settings from CVS
-# grab contents of LiveCD_work/ISO_Base from somewhere
-# grab contents of LiveCD_work/Scripts from CVS
-# cp Master.conf from... somewhere
+pushd LiveCD_work/Layer2/System/Settings &> /dev/null
+MakeSystemSettings
+popd &> /dev/null
+
+FetchExt
+
+MakeInitRDTree
+
 # generate LiveCD_work/Layer2/System/Links/Environment/Cache
+
+masterconf=/System/Settings/BuildLiveCD/Master.conf 
+if [ -e $masterconf ]
+then cp $masterconf .
+else echo "Reminder: copy Master.conf to this directory."
+fi
