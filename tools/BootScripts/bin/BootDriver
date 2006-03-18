@@ -38,7 +38,7 @@ done
 ### Launch the actual scripts ###
 
 theme="$BootScriptsDir/Themes/$BootTheme"
-if ! [ -e "$theme" ]
+if ! [ -f "$theme" ]
 then 
    echo "Theme $BootTheme not found. Reverting to failsafe."
    theme="$BootScriptsDir/Themes/Slack"
