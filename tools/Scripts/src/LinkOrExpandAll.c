@@ -32,8 +32,9 @@ static int lenGoboPrograms = 0;
 static char* relativeGoboPrograms = NULL;
 static bool overwrite = false;
 static bool relative = false;
+static bool nofollow = false;
 
-inline void os_write(int fd, ...) {
+inline static void os_write(int fd, ...) {
    va_list ap;
    va_start(ap, fd);
    for(;;) {
@@ -43,13 +44,13 @@ inline void os_write(int fd, ...) {
    }
 }
 
-inline bool os_path_islink(char* path) {
+inline static bool os_path_islink(char* path) {
    struct stat stbuf;
    lstat(path, &stbuf);
    return S_ISLNK(stbuf.st_mode);
 }
 
-inline bool os_path_isdir(char* path) {
+inline static bool os_path_isdir(char* path) {
    struct stat stbuf;
    stat(path, &stbuf);
    return S_ISDIR(stbuf.st_mode);
@@ -77,7 +78,7 @@ static char* os_listdir(os_dir* dir) {
    return NULL;
 }
 
-inline bool string_replace1(char* dest, char* buffer, char* from, char* to, int len) {
+inline static bool string_replace1(char* dest, char* buffer, char* from, char* to, int len) {
    char tmpbuffer[len+1];
    char* out;
    if (dest == buffer)
@@ -101,7 +102,7 @@ inline bool string_replace1(char* dest, char* buffer, char* from, char* to, int 
    return true;
 }
 
-inline void string_set(char* buffer, int len, ...) {
+inline static void string_set(char* buffer, int len, ...) {
    va_list ap;
    char tmpbuffer[len+1];
    va_start(ap, len);
@@ -128,15 +129,17 @@ typedef enum {
 } LogMode;
 
 static const char* colorGray = "\033[1;30m";
-static const char* colorBoldBlue = "\033[1;34m";
-static const char* colorBrown = "\033[33m";
-static const char* colorYellow = "\033[1;33m";
-static const char* colorBoldGreen = "\033[1;32m";
 static const char* colorBoldRed = "\033[1;31m";
 static const char* colorCyan = "\033[36m";
 static const char* colorBoldCyan = "\033[1;36m";
 static const char* colorRedWhite = "\033[41;37m";
 static const char* colorNormal = "\033[0m";
+/*
+static const char* colorBoldBlue = "\033[1;34m";
+static const char* colorBrown = "\033[33m";
+static const char* colorYellow = "\033[1;33m";
+static const char* colorBoldGreen = "\033[1;32m";
+*/
 
 static void Log(LogMode mode, char* s, ...) {
    va_list ap;
@@ -151,9 +154,9 @@ static void Log(LogMode mode, char* s, ...) {
    switch (mode) {
    case Debug: color = colorRedWhite; fdName = "debugFD"; break;
    case Verbose: color = colorNormal; fdName = "verboseFD"; break;
-   case Normal: color = colorCyan; fdName = "normalFD"; break;
    case Terse: color = colorBoldCyan; fdName = "terseFD"; break;
    case Error: color = colorBoldRed; fdName = "errorFD"; break;
+   default: color = colorCyan; fdName = "normalFD"; break;
    }
    char* fdString = getenv(fdName); if (!fdString) goto failSafe;
    int fd = atoi(fdString);
@@ -224,6 +227,23 @@ static bool belongs_to_same_app(char* realold, char* realnew) {
    return false;
 }
 
+static void canonicalize_path(char* path) {
+   char *in = path, *out = path;
+   bool skip = false;
+   while (*in) {
+      if (skip && *in != '/')
+         skip = false;
+      if (!skip) {
+         *out = *in;
+         out++;
+      }
+      if (*in == '/')
+         skip = true;
+      in++;
+   }
+   *out = '\0';
+}
+
 static void create_single_link(char* src, char* dest) {
    char dotdest[PATH_MAX+1];
    snprintf(dotdest, PATH_MAX, "./%s", dest);
@@ -255,7 +275,12 @@ static void Link_Or_Expand(char* new) {
          }
       }
    }
-   char* realnew = points_to(new);
+   char* realnew = NULL;
+   if (nofollow) {
+      realnew = strdup(new);
+      canonicalize_path(realnew);
+   } else
+      realnew = points_to(new);
    char* bn = strdup(basename(new));
    char realold[PATH_MAX];
 
@@ -321,7 +346,7 @@ static void Link_Or_Expand(char* new) {
       while ((i = os_listdir(&dir))) {
          char* oldbn = strdup(basename(i));
          char realold_i[PATH_MAX+1];
-         snprintf(realold_i, PATH_MAX, "%s/%s", realold, i);
+         snprintf(realold_i, PATH_MAX, "%s%s/%s", relative ? "../" : "", realold, i);
          create_single_link(realold_i, oldbn);
          free(oldbn);
          free(i);
@@ -369,8 +394,8 @@ int main(int argc, char** argv) {
    if (goboPrograms[lenGoboPrograms - 1] == '/')
       lenGoboPrograms--;
    realpath(goboPrograms, realpathGoboPrograms);
-   if (argc < 2) {
-      fprintf(stderr, "Usage: %s <dir> [--overwrite] [--relative]\n", argv[0]);
+   if (argc < 2 || strcmp(argv[1], "--help") == 0) {
+      fprintf(stderr, "Usage: %s <dir> [--overwrite] [--relative] [--no-follow]\n", argv[0]);
       exit(1);
    }
    while (argc > 2) {
@@ -379,6 +404,8 @@ int main(int argc, char** argv) {
          relative = true;
       } else if (strcmp(argv[argc], "--overwrite") == 0) {
          overwrite = true;
+      } else if (strcmp(argv[argc], "--no-follow") == 0) {
+         nofollow = true;
       }
    }
 
