@@ -1,6 +1,7 @@
 #!/bin/sh
 
-mkdir -p Archives
+externalarchives=Archives/Ext
+external=External
 
 function check_and_dl() {
    dir="$1"
@@ -8,36 +9,33 @@ function check_and_dl() {
    if ! [ "`ls $dir/* 2> /dev/null`" ]
    then
       url_bn=`basename $url`
-      (cd Archives; wget -c $url)
+      (cd $externalarchives; wget -c $url)
       mkdir -p "$dir"
       case "${url##*.}" in
       gz|tgz) mode=xvzf ;;
       bz2) mode=xvjf ;;
       esac
-      sudo tar $mode Archives/${url_bn} -C "$dir"
+      sudo tar $mode $externalarchives/${url_bn} -C "$dir"
    fi
 }
 
-check_and_dl "Ext_work/Linux-HOWTOs"  \
+check_and_dl "$external/Linux-HOWTOs"  \
     "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2"
 
-check_and_dl "Ext_work/Linux-Kernel"  \
+check_and_dl "$external/Linux-Kernel"  \
     "http://www.calica.com/gobolinux/kernel/Linux--2.6.15.2-Gobo--kernel-i686.tar.bz2"
 
-check_and_dl "Ext_work/Files-Fonts"  \
+check_and_dl "$external/Files-Fonts"  \
     "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2"
 
-check_and_dl "Ext_work/ISO_Base"  \
-    "http://gobo.calica.com/livecd-packages/ISO_Base-i686.tar.bz2"
+check_and_dl "$external/CD-Bootloader"  \
+    "http://gobo.calica.com/livecd-packages/CD-Bootloader-i686.tar.bz2"
 
-# check_and_dl "Ext_work/LayerTMP"  \
+# check_and_dl "$external/LayerTMP"  \
 #     "http://www.calica.com/gobolinux/livecd/LayerTMP.tar.bz2"
 
-# check_and_dl "Ext_work/InitRD"  \
-#     "http://www.calica.com/gobolinux/livecd/InitRD.tar.bz2"
-
 # Gobo-Files
-mkdir -p Ext_work/Gobo-Files
-cvs  -q -z3 -d:pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d Ext_work/Gobo-Files files
+mkdir -p $external/Gobo-Files
+cvs  -q -z3 -d:pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d $external/Gobo-Files files
 
-rsync --verbose -r gobo.calica.com::gobolinux-packages/013-test/ Packages/
+rsync --verbose -r gobo.calica.com::gobolinux-packages/013-test/ Archives/Packages/

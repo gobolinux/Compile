@@ -14,15 +14,6 @@ source GoboPath
 source StartFunctions
 
 ######################################
-# Hotplug
-######################################
-if [ -d ${goboPrograms}/Hotplug ]
-then
-	msg_no_nl "Starting Hotplug (<esc> to skip)" 
-	skip_on_esc 3 && echo && ${goboPrograms}/BootScripts/Current/bin/StartTask Hotplug 2>/dev/null || echo '<SKIPPED>'
-fi
-
-######################################
 # X11
 ######################################
 if [ -d ${goboPrograms}/Xorg ]
@@ -52,11 +43,10 @@ fi
 export LANG=${language}
 export LC_ALL="$LANG"
 
-echo "export LANG=${LANG}"   >> ${goboUsers}/gobo/.zshrc
-echo "export LANG=${LANG}"   >> ${goboUsers}/gobo/.bashrc
-echo "export LC_ALL=${LANG}" >> ${goboUsers}/gobo/.zshrc
-echo "export LC_ALL=${LANG}" >> ${goboUsers}/gobo/.bashrc
-
+cat <<EOF | tee -a $HOME/.zshrc > $HOME/.bashrc
+export LANG=${LANG}
+export LC_ALL=${LANG}
+EOF
 
 ######################################
 # Adjusting .kde to the chosen lang
@@ -70,13 +60,12 @@ then
    esac
    if [ "$kdecountry" ]
    then
-      echo "[Locale]" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-      echo "Country=$kdecountry" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
-      echo "Language=$kdelanguage" >> ${goboUsers}/gobo/.kde/share/config/kdeglobals
       eskeldir=${goboShared}/EnhancedSkel/Default/
-      echo "[Locale]" >> ${eskeldir}/.kde/share/config/kdeglobals
-      echo "Country=$kdecountry" >> ${eskeldir}/.kde/share/config/kdeglobals
-      echo "Language=$kdelanguage" >> ${eskeldir}/.kde/share/config/kdeglobals
+cat <<EOF | tee -a $HOME/.kde/share/config/kdeglobals > ${eskeldir}/.kde/share/config/kdeglobals
+[Locale]
+Country=$kdecountry
+Language=$kdelanguage
+EOF
    fi
 fi
 
@@ -85,6 +74,7 @@ fi
 ######################################
 [ -d ${goboTemp}/setup ] || mkdir ${goboTemp}/setup
 KeymapDialog ${LANG} 2> ${goboTemp}/setup/keymap
+clear
 MAPNAME="`tail -n 1 ${goboTemp}/setup/keymap`"
 MAPNAME="`basename $MAPNAME`"
 basename $MAPNAME .map  > ${goboTemp}/setup/keymap
@@ -100,5 +90,3 @@ then
 	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
 	cp -f /tmp/xorg.conf.$$ ${goboPrograms}/Xorg/Settings/X11/xorg.conf
 fi
-
-#

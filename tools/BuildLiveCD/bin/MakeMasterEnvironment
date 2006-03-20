@@ -1,25 +1,7 @@
 #!/bin/sh
 
-mkdir -p Mount_CD-ROM/Users_Local
-mkdir -p Mount_CD-ROM/Depot_Local
-mkdir -p Mount_CD-ROM/Programs_Local
-mkdir -p Mount_CD-ROM/Packages
-mkdir -p Archives
+mkdir -p Archives/{Ext,InitRD,Packages}
 mkdir -p Local_work/LayerLocal
-mkdir -p LiveCD_work/Data
-mkdir -p LiveCD_work/Layer2
-mkdir -p LiveCD_work/Layer2/System/Kernel/Boot/grub
-mkdir -p LiveCD_work/Layer2/System/Kernel/Modules
-mkdir -p LiveCD_work/Layer2/System/Settings
-mkdir -p LiveCD_work/ISO_Base
-mkdir -p LiveCD_work/ISO_Base/i686
-mkdir -p LiveCD_work/ISO_Base/powerpc
-mkdir -p LiveCD_work/Scripts
-mkdir -p LiveCD_work/InitRDScripts
-
-pushd LiveCD_work/Layer2/System/Settings &> /dev/null
-MakeSystemSettings
-popd &> /dev/null
 
 FetchExt
 

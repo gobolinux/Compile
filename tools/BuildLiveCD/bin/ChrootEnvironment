@@ -13,12 +13,9 @@ do
    fi
 done
 
-mp="output/Environment"
-layer1="output/Layer1"
-layer2="LiveCD_work/Layer2"
+mp="Output/Environment"
 
-# Problem using UnionSandbox in chroot
-export UNIONSANDBOX="false"
+mkdir -p ${mp}
 
 if [ "$UID" != "0" ]
 then
@@ -26,38 +23,26 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
-rw_layer_bn="Layer2"
-[ "$1" ] && rw_layer_bn="$1"
-
 if [ -d "$mp" ]
 then
    echo "Unionfs mounting layers."
-   unionfs_dirs=""
-   for layer in "${chroot_layers[@]}"
-   do
-      layer_bn=`basename $layer`
-      if [ "$rw_layer_bn" = "$layer_bn" ]
-      then
-         rw_layer="$layer"
-	 echo "   $layer is writable"
-      else
-         unionfs_dirs="$unionfs_dirs:${layer}=ro"
-      fi
-   done
-   unionfs_dirs="dirs=${rw_layer}=rw${unionfs_dirs}"
-   echo mount -t unionfs -o ${unionfs_dirs} none ${mp}
-   mount -t unionfs -o ${unionfs_dirs} none ${mp}
+   unionfs_dirs=`echo "${chroot_layers[@]}" | tr " " ":"`
+echo   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
+   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
+   
+   mkdir -p Output/Chroot_Mount_CD-ROM/{Programs_Local,Depot_Local,Users_Local,Packages}
 
-   echo "Binding "  ${mp}/Mount/CD-ROM " ..."
-   mount -o bind Mount_CD-ROM ${mp}/Mount/CD-ROM
-   mount -o bind /Programs    ${mp}/Mount/CD-ROM/Programs_Local
-   mount -o bind /Depot       ${mp}/Mount/CD-ROM/Depot_Local
-   mount -o bind /Users       ${mp}/Mount/CD-ROM/Users_Local
-   mount -o bind Packages     ${mp}/Mount/CD-ROM/Packages
+   # Convenience access to directories from the host environment
+   echo "Binding ${mp}/Mount/CD-ROM ..."
+   mount -o bind Output/Chroot_Mount_CD-ROM ${mp}/Mount/CD-ROM
+   mount -o bind /Programs                  ${mp}/Mount/CD-ROM/Programs_Local
+   mount -o bind /Depot                     ${mp}/Mount/CD-ROM/Depot_Local
+   mount -o bind /Users                     ${mp}/Mount/CD-ROM/Users_Local
+   mount -o bind Archives/Packages          ${mp}/Mount/CD-ROM/Packages
 
-   echo "        "  ${mp}/System/Kernel/Devices " ..."
+   echo "        ${mp}/System/Kernel/Devices ..."
    mount -o bind /System/Kernel/Devices ${mp}/System/Kernel/Devices
-   echo "        " ${mp}/System/Kernel/Status  " ..."
+   echo "        ${mp}/System/Kernel/Status ..."
    mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
 
    echo "Chrooting into ${mp} "
@@ -72,18 +57,20 @@ then
 
    echo "Unmounting:"
    mp_path=`readlink -f ${mp}`
-   cat /proc/mounts |tac | cut -d' ' -f2 |grep $mp_path | \
+   cat /proc/mounts | tac | cut -d' ' -f2 |grep $mp_path | \
    while read dir
    do
-      echo "  " "${dir}"
+      echo "  ${dir}"
       umount "${dir}"
    done
 
+   rmdir --ignore-fail-on-non-empty -p Output/Chroot_Mount_CD-ROM/{Programs_Local,Depot_Local,Users_Local,Packages}
+
 else
-   echo "Error: $mp" "dont exist."
+   echo "Error: $mp doesn't exist."
 fi
 
-# additional thing to check before releasing a LiveCD
+# additional things to check before releasing a LiveCD
 # cd /Programs/; time for i in *; do echo $i; mkdir $i/Current/Resources/; Dependencies $i > $i/Current/Resources/Dependencies; done
 # cd /Programs/; du --max-depth=1 > /Depot/Install/Wizard/Auxiliary/Programs_du.txt
 # cd /Programs/; \ls > /Depot/Install/Wizard/Profiles/Full

@@ -6,8 +6,8 @@ then
    exit 1
 fi
 
-root=$PWD/Ext_work/InitRD
-archives=$PWD/Archives
+root=$PWD/Output/InitRD
+archives=$PWD/Archives/InitRD
 
 rm -rf $root
 
@@ -40,7 +40,9 @@ cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d $today tools
 find -type d -name CVS | xargs rm -rf 
 ln -nfs $today Current
 popd &> /dev/null
+rm InitRDScripts--$today--$arch.tar.bz2
 tar cjvpf InitRDScripts--$today--$arch.tar.bz2 InitRDScripts
+rm -rf InitRDScripts
 
 popd &> /dev/null
 

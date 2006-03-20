@@ -40,14 +40,14 @@ function do_link() {
 
          export goboPrefix=$root
          export goboPrograms=$root/Programs 
-         LinkOrExpandAll $root/$1 --relative
+         LinkOrExpandAll $root/$1 --relative --no-follow
       )
       popd &>/dev/null
    fi
 }
 
 
-function symlinkProgram() {
+function symlink_program() {
    full_path="$1"
    root=`readlink -f $2`
    gobolinks=/System/Links
@@ -71,7 +71,7 @@ function symlinkProgram() {
    ln -nfs $version ${root}$(dirname ${full_path})/Current
 }
 
-function installPackage() {
+function install_package() {
    package=`readlink -f "$1"`
    root="$2"
    
@@ -95,14 +95,15 @@ function installPackage() {
    fi
    popd &> /dev/null
    
-   symlinkProgram /Programs/$name/$version $root
+   symlink_program /Programs/$name/$version $root
 
 }
 
-echo "BuildRoot: Building root $root..."
-
+echo "BuildRoot: Cleaning up $root if any..."
 
 rm -rf $root
+
+echo "BuildRoot: Building root $root..."
 
 mkdir -p $root
 mkdir -p $root/System/Links/Executables
@@ -164,6 +165,10 @@ ln -nfs /System/Links/Shared $root/usr/share
 mknod -m0666 $root/System/Kernel/Devices/null c 1 3
 mknod -m0600 $root/System/Kernel/Devices/console c 5 1
 
+pushd $root/System/Settings &> /dev/null
+MakeSystemSettings
+popd &> /dev/null
+
 # cp -r Recipes $root/Files/Compile
 # 
 cat $packagelist |while read line
@@ -176,7 +181,7 @@ do
       echo "Package $packagename could not be filled."
       exit 1
    }
-   installPackage "$pkg" "$root"
+   install_package "$pkg" "$root"
 done
 
 [ -f "${root}/System/Links/Environment/Cache}" ] && rm ${root}/System/Links/Environment/Cache
@@ -197,33 +202,3 @@ function rm_if_e() {
 }
 
 exit 0
-# Need to generate these properly.  Use Layer2 for now.
-
-rm_if_e $root/System/Settings/passwd
-cat <<EOF > $root/System/Settings/passwd
-root:x:0:0:Gobo:/Users/root:/bin/bash
-fibo:x:21:21:Fibo:/tmp:/bin/bash
-EOF
-
-rm_if_e $root/System/Settings/group
-cat <<EOF > $root/System/Settings/group
-root:x:0:root
-fibo:x:21:fibo
-EOF
-
-rm_if_e $root/Programs/Sudo/Settings/sudoers
-chmod 777 $root/Programs/Sudo/Settings
-cat <<EOF > $root/Programs/Sudo/Settings/sudoers
-root ALL=(ALL) NOPASSWD: ALL
-EOF
-chmod 755 $root/Programs/Sudo/Settings
-
-chmod 440 $root/Programs/Sudo/Settings/sudoers
-chown 0:0 $root/Programs/Sudo/Settings/sudoers
-rm_if_e $root/System/Settings/sudoers
-ln -nfs /Programs/Sudo/Settings/sudoers $root/System/Settings/sudoers
-
-cp /etc/resolv.conf $root/System/Settings/resolv.conf
-cp /etc/hosts $root/System/Settings/hosts
-
-
