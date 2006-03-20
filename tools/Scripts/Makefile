@@ -1,7 +1,6 @@
 
 VERSION=
 PROGRAM=Scripts
-SCRIPTS_DIR=/Programs/$(PROGRAM)/Current
 PACKAGE_DIR=$(HOME)
 PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
@@ -11,8 +10,13 @@ PYTHON_VERSION=2.3
 PYTHON_LIBS=FindPackage GetAvailable GuessLatest CheckDependencies
 PYTHON_SITE=lib/python$(PYTHON_VERSION)/site-packages
 
-all:
+all: python
 	cd src; make all
+
+debug: python
+	cd src; make debug
+
+python:
 	for f in $(PYTHON_LIBS); \
 	do libf=$(PYTHON_SITE)/$$f.py; \
 	   rm $$libf; ln -nfs ../../../bin/$$f $$libf; \

@@ -1,4 +1,6 @@
 
+MYCFLAGS = -O2 -Wall
+
 all:
 	gcc $(MYCFLAGS) -o SuperUserName SuperUserName.c
 	gcc $(MYCFLAGS) -o IsExecutable IsExecutable.c
@@ -7,10 +9,10 @@ all:
 	gcc $(MYCFLAGS) -o List List.c
 	mv SuperUserName IsExecutable usleep LinkOrExpandAll List ../bin/ 
 
-debug: MYCFLAGS += -g -DDEBUG
+debug: MYCFLAGS = -g -DDEBUG
 debug: all
 
-static: MYCFLAGS += -static
+static: MYCFLAGS = -static
 static: all
 
 clean:
