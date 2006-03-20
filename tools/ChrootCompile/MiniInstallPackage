@@ -11,6 +11,13 @@ source $(readlink -f $(dirname $0))/ChrootCompile.conf || {
    exit 1
 } 
 
+unset realcopy
+if [ "$1" = "--real-copy" ] 
+then
+   realcopy=yes
+   shift
+fi
+
 if [ -d "$1" ] 
 then
    dir=`readlink -f "$1"`
@@ -43,8 +50,15 @@ root="$2"
 echo "MiniInstallPackage: Installing $name version $version..."
 
 pushd "$root/$goboPrograms" &> /dev/null
-mkdir -p "$name/$version"
-mount --bind "$unpacked/$version" "$name/$version"
+if [ "$realcopy" ]
+then
+   mkdir -p "$name"
+   cp -aR "$unpacked/$version" "$name"
+else
+   mkdir -p "$name/$version"
+   mount --bind "$unpacked/$version" "$name/$version"
+fi
+
 [ `ls "$name" | grep -v Settings | grep -v Variable | grep -v Current | wc -l` -gt 1 ] && {
    echo "MiniInstallPackage: too many versions inside directory $name. Bailing out."
    exit 1

@@ -18,7 +18,10 @@
 #    a mirror of all official packaes available.
 #
 # Other directories:
-# - './Clean' directory where compiled packages are stored.
+# - './$getclean' directory where newly compiled packages are fetched.
+# - './$putclean' directory where compiled packages are stored.
+#   (These are usually the same (./Clean) but can be different for
+#   debugging purposes.)
 #
 # - './Area' directory created at each run, which will contain a complete 
 #    set of installed programs, required to compile something.
@@ -38,11 +41,12 @@ source $scriptdir/ChrootCompile.conf
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
 fi
+sudo=sudo
 
 #############################################################################
 # '--repack' option: (to be used only on GoboLinux systems)
 #############################################################################
-if [ "$1" == "--repack" ]
+if [ "$1" == "--repack" -o "$1" == "--just-repack" ]
 then
    cd Bootstrap || exit 1
    for i in Compile Scripts
@@ -52,6 +56,7 @@ then
       CreatePackage --no-verify --no-sign $i
    done
    cd -
+   [ "$1" == "--just-repack" ] && exit 0
    shift
 fi
 
@@ -121,21 +126,30 @@ echo "ChrootCompile: Compiling $name $version..."
 # Preparing stub root directory
 #############################################################################
 root=Area-$name-$version
+getclean=Clean
+putclean=CleanPackages
 
 echo "ChrootCompile: Preparing $root..."
-cleanup() {
+
+#############################################################################
+# Setting signal handlers (cleanup before exit if interrupted)
+#############################################################################
+
+function cleanup() {
    echo "ChrootCompile: Will unmount /dev..."
-   sudo umount $root/System/Kernel/Devices || true
+   $sudo umount $root/System/Kernel/Devices || true
    echo "ChrootCompile: Will unmount /proc..."
-   sudo umount $root/System/Kernel/Status || true
+   $sudo umount $root/System/Kernel/Status || true
    echo "ChrootCompile: Will unmount Archives..."
-   sudo umount $root/Files/Compile/Archives || true
+   $sudo umount $root/Files/Compile/Archives || true
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
       echo "ChrootCompile: Will unmount $mp..."
-      sudo umount $mp
+      $sudo umount $mp
    done
 }
+
+trap cleanup TERM STOP HUP EXIT
 
 cleanup
 
@@ -143,7 +157,7 @@ if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
    echo "Backing up old $root to $root-old-$date."
-   sudo mv $root $root-old-$date
+   $sudo mv $root $root-old-$date
 fi
 
 mkdir -p $root
@@ -174,7 +188,7 @@ mkdir -p $root/$goboPrograms
 mkdir -p $root/usr
 
 mkdir -p $root/Depot/LocalPackages
-mkdir -p $root/Depot/Clean
+mkdir -p $root/Depot/$getclean
 
 
 ln -nfs /System/Kernel/Objects $root/sys
@@ -214,22 +228,21 @@ fi
 #############################################################################
 [ -d LocalPackages ] || mkdir LocalPackages
 [ -d Bootstrap ] || mkdir Bootstrap
-[ -d Clean ] || mkdir Clean
+[ -d $getclean ] || mkdir $getclean
 for dep in "${base_dependencies[@]}"
 do
-   if ! ls Bootstrap/$dep--* &> /dev/null && ! ls Clean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
-   && ! [ -d Bootstrap/$dep -o -d Clean/$dep -o -d LocalPackages/$dep ]
+   if ! ls Bootstrap/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
+   && ! [ -d Bootstrap/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
    then
 #      if [ -e /System/Settings/gobo ]
 #      then
-#         echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,Clean}. Creating package based on host system"
+#         echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,$getclean}. Creating package based on host system"
 #         cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
 #      else
          die "Package $dep, needed for bootstrap, was not found."
 #      fi
    fi
 done
-
 
 #############################################################################
 # Installing base packages inside root directory
@@ -243,7 +256,7 @@ function filter_dir() {
 function load_dependency() {
    local dep="$1"
    local pkg=
-   for repo in Clean Bootstrap
+   for repo in $getclean Bootstrap
    do
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
          die "More than one entry for $dep in $repo/ directory."
@@ -258,7 +271,11 @@ function load_dependency() {
    [ ! "$pkg" ] && {
       die "Base dependency $dep could not be found."
    }
-   sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
+   if [ $dep = $name ]
+   then realcopy="--real-copy"
+   else realcopy=""
+   fi
+   $sudo $scriptdir/MiniInstallPackage $realcopy "$pkg" "$root"
 }
 
 # unused for now
@@ -266,10 +283,10 @@ function guess_and_load_dependency() {
    echo "=> GuessLatest enabled"
    for dep in "${base_dependencies[@]}"
    do
-      packed_places="Clean Bootstrap"
+      packed_places="$getclean Bootstrap"
       unpacked_place=BootStrap
       #packages=`ls -d Bootstrap/$dep/* | filter_dir`
-      packages=`ls -d -U Bootstrap/$dep/* {Clean,Bootstrap,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
+      packages=`ls -d -U Bootstrap/$dep/* {$getclean,Bootstrap,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
       if [ ! "$packages" ]
       then
          die "Base dependency $dep could not be found."
@@ -284,7 +301,11 @@ function guess_and_load_dependency() {
       else
          pkg="$latest"
       fi
-      sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
+      if [ $dep = $name ]
+      then realcopy="--realcopy"
+      else realcopy=""
+      fi
+      $sudo $scriptdir/MiniInstallPackage "$pkg" "$root"
    done
 }
 
@@ -306,7 +327,7 @@ function sudo_rm_if_e() {
    if [ -e "$1" ]
    then
       echo "ChrootCompile: removing $1..."
-      sudo rm -f "$1"
+      $sudo rm -f "$1"
    else
       return 0
    fi
@@ -325,14 +346,14 @@ fibo:x:21:fibo
 EOF
 
 sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
-sudo chmod 777 $root/Programs/Sudo/Settings
+sudo chmod 777 $root/$goboPrograms/Sudo/Settings
 cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
 root ALL=(ALL) NOPASSWD: ALL
 EOF
 sudo chmod 755 $root/$goboPrograms/Sudo/Settings
 
-sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
-sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
+$sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
+$sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
 sudo_rm_if_e $root/System/Settings/sudoers
 ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/System/Settings/sudoers
 touch $root/System/Settings/fstab
@@ -344,20 +365,14 @@ touch $root/System/Settings/fstab
 #############################################################################
 # Binding /dev, /proc and ./Archives inside root directory
 #############################################################################
-sudo mount --bind /dev $root/System/Kernel/Devices
-sudo mount --bind /proc $root/System/Kernel/Status
+$sudo mount --bind /dev $root/System/Kernel/Devices
+$sudo mount --bind /proc $root/System/Kernel/Status
 
 [ -d ./Archives ] || mkdir ./Archives
-sudo mount --bind Archives $root/Files/Compile/Archives
+$sudo mount --bind Archives $root/Files/Compile/Archives
 
-sudo mount --bind LocalPackages $root/Depot/LocalPackages
-sudo mount --bind Clean $root/Depot/Clean
-
-
-#############################################################################
-# Setting signal handlers (cleanup before exit if interrupted)
-#############################################################################
-trap cleanup TERM STOP HUP EXIT
+$sudo mount --bind LocalPackages $root/Depot/LocalPackages
+$sudo mount --bind $getclean $root/Depot/$getclean
 
 #############################################################################
 # Download required archives to ./Archives
@@ -387,15 +402,20 @@ trap cleanup TERM STOP HUP EXIT
 export LD_LIBRARY_PATH=/System/Links/Libraries
 
 function in_chroot() {
-   sudo chroot $root "$@"
+   $sudo chroot $root "$@"
 }
 
 echo "ChrootCompile: Will run ldconfig..."
 in_chroot ldconfig
 
+if [ -e Directories.conf ]
+then
+   $sudo cp Directories.conf $root/$goboPrograms/Scripts/Settings/Scripts/Directories.conf
+fi
+
 if ! [ "$chrootcompileMode" = "gobo" ]
 then
-   ln -nfs /Programs $root/View
+   ln -nfs Programs $root/View
 fi
 
 #############################################################################
@@ -403,36 +423,41 @@ fi
 #############################################################################
 
 # Only local packages are used to fullfil dependencies
-sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
-sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/Clean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
+$sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
+$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$getclean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
-echo "ChrootCompile: Checking dependencies..."
+function check_dependencies() {
+   echo "ChrootCompile: Checking dependencies..."
+   
+   in_chroot CheckDependencies --no-web --add-self=never --mode=missing "$name" "$version" recipe | while read depnam depver deptyp depurl
+   do
+      [ "$depnam" ] || continue
+      case $deptyp in
+      installed)
+         : # ok, skip
+         ;;
+      local_package)
+         in_chroot InstallPackage --no-web $depurl || die "Installation of dependency $depnam $depver failed ($depurl used)."
+         ;;
+      None)
+         die "ChrootCompile: Unresolved dependency: $depnam $depver"
+         ;;
+      *)
+         die "ChrootCompile: Dependency not available as a package: $depnam $depver ($deptype found)."
+         ;;
+      esac
+   done
+}
 
-in_chroot CheckDependencies --no-web --add-self=never --mode=missing "$name" "$version" recipe | while read depnam depver deptyp depurl
-do
-   [ "$depnam" ] || continue
-   case $deptyp in
-   installed)
-      : # ok, skip
-      ;;
-   local_package)
-      in_chroot InstallPackage --no-web $depurl || die "Installation of dependency $depnam $depver failed ($depurl used)."
-      ;;
-   None)
-      die "ChrootCompile: Unresolved dependency: $depnam $depver"
-      ;;
-   *)
-      die "ChrootCompile: Dependency not available as a package: $depnam $depver ($deptype found)."
-      ;;
-   esac
-done
+# disabled for now
+# check_dependencies
 
 echo "ChrootCompile: Will run Compile..."
-in_chroot Compile --no-web --no-symlink --no-sign $name $version || die "Compilation failed."
+in_chroot Compile --batch --no-web --no-symlink --no-sign $name $version || die "Compilation failed."
 
 #############################################################################
-# After the compilation is done (hopefully it will not fail :),
-#  pack the program and copy the resulting package to './Clean', the place
+#  After the compilation is done,
+#  pack the program and copy the resulting package to './$putclean', the place
 #  of pure packages
 #############################################################################
 
@@ -440,11 +465,12 @@ in_chroot Compile --no-web --no-symlink --no-sign $name $version || die "Compila
 if [ "$chrootcompileMode" = "gobo" ]
 then
    package=`in_chroot CreatePackage --no-sign --no-verify $name $version`
-   mkdir -p $scriptdir/Clean
-   cp $root/$name--$version* $scriptdir/Clean
+   mkdir -p $scriptdir/$putclean
+   cp $root/$name--$version* $scriptdir/$putclean
 else
    fullroot=`readlink -f $root`
    cd $root/View
-   readlink -f $fullroot/../Clean/$name--$version--i686.tar.bz2
-   tar jcvpf $fullroot/../Clean/$name--$version--i686.tar.bz2 $name/$version
+   mkdir -p $fullroot/../$putclean/
+   readlink -f $fullroot/../$putclean/$name--$version--i686.tar.bz2
+   tar jcvpf $fullroot/../$putclean/$name--$version--i686.tar.bz2 $name/$version
 fi
