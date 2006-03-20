@@ -155,7 +155,12 @@ if Boolean "check"
 then
 
    function ask_install_or_skip() {
-      Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
+      if ! Boolean "batch"
+      then Ask_Option "Install $program $version or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
+      else 
+         Log_Terse "Batch mode: skipping all dependencies."
+         REPLY=sa
+      fi
       case "$REPLY" in
       I|i)
          case `Get_Token "$execute" "/" "-1"` in

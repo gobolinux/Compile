@@ -106,7 +106,7 @@ then
    unset keepdir
    Boolean "remove" && unset ask
    Boolean "keep" && { unset ask; keepdir=yes; }
-   Boolean "batch" && { unset ask; keepdir=yes; }
+   Boolean "batch" && unset ask
 
    if [ "$ask" -a -e "$programdir" ]
    then
@@ -143,7 +143,7 @@ then
    if Dir_Set Shared
    then
       [ -L "$programdir/share" ]  && rm -- "$programdir/share"
-	  [ -d "$programdir/Shared" ] && ln -nsf "$programdir/Shared" "$programdir/share"
+      [ -d "$programdir/Shared" ] && ln -nsf "$programdir/Shared" "$programdir/share"
    fi
 
    dirop="Make_Directory"
