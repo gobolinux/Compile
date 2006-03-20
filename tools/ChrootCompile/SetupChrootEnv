@@ -1,0 +1,103 @@
+#!/bin/bash
+
+server=http://gobo.calica.com
+#server=http://gobo.kundor.org
+
+function download_packages() {
+    if [ -d Bootstrap ]
+	then return;
+    fi
+    server_packages=(
+	Atool--0.32.0--i686.tar.bz2
+	Bash--3.0--i686.tar.bz2
+	BinUtils--2.16.1--i686.tar.bz2
+	CoreUtils--5.93--i686.tar.bz2
+	DiffUtils--2.8.1--i686.tar.bz2
+	E2FSProgs--1.38--i686.tar.bz2
+	File--4.16--i686.tar.bz2
+	FindUtils--4.2.21--i686.tar.bz2
+	GCC--4.0.2--i686.tar.bz2
+	Gawk--3.1.4--i686.tar.bz2
+	Glibc--2.3.2--i686.tar.bz2
+	Grep--2.5.1a--i686.tar.bz2
+	Gzip--1.3.5--i686.tar.bz2
+	Make--3.80--i686.tar.bz2
+	MkTemp--1.5--i686.tar.bz2
+	Mtail--1.1.1--i686.tar.bz2
+	Ncurses--5.5--i686.tar.bz2
+	PCRE--6.4--i686.tar.bz2
+	Perl--5.8.7--i686.tar.bz2
+	Python--2.4.2--i686.tar.bz2
+	Readline--5.0--i686.tar.bz2
+	Sed--4.1.4--i686.tar.bz2
+	Sudo--1.6.8p7--i686.tar.bz2
+	Tar--1.15.1--i686.tar.bz2
+	Util-Linux--2.12r--i686.tar.bz2
+	ZLib--1.2.3--i686.tar.bz2
+	Linux--2.4.20--i686.tar.bz2
+        # Dependencies which should probably go away
+        GPM--1.20.1--i686.tar.bz2
+        Bison--2.1--i686.tar.bz2
+        Bzip2--1.0.3--i686.tar.bz2
+        Patch--2.5.4--i686.tar.bz2
+    )
+    
+    mkdir -p Bootstrap
+    pushd Bootstrap
+    for i in ${server_packages[@]}
+    do
+       if ! [ -e "$i" ]
+       then
+          wget "$server/packages/official/$i"
+          tar -xjpf $i
+       fi
+    done
+    popd
+}
+
+function update_tools() {
+    cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/ChrootCompile 
+    cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Compile 
+    cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Scripts 
+    pushd tools/Scripts
+    make
+    popd
+    mkdir -p Bootstrap/Scripts
+    mkdir -p Bootstrap/Compile
+    cp -a tools/Scripts Bootstrap/Scripts/2.1-CVS
+    cp -a tools/Compile Bootstrap/Compile/1.4-CVS
+    ln -nfs tools/Scripts/bin/LinkOrExpandAll .
+    ln -nfs tools/ChrootCompile/ChrootCompile .
+    ln -nfs tools/ChrootCompile/MiniInstallPackage .
+    ln -nfs tools/ChrootCompile/MiniSymlinkProgram .
+    ln -nfs tools/ChrootCompile/GenericInstall .
+    mkdir -p Archives
+}
+
+function configure_tools() {
+    {
+       echo "chrootcompileCompileConf=$PWD/Compile.conf"
+       echo "goboPrograms=/Programs"
+    } > ChrootCompile.conf
+    cp tools/Compile/Resources/Defaults/Settings/Compile/Compile.conf .
+}
+
+download_packages
+update_tools
+configure_tools
+
+if [ -e "./SetupAddon" ]
+then
+   chmod +x SetupAddon
+   ./SetupAddOn
+fi
+
+echo 
+echo
+echo
+echo "You can now add compilation recipes to the Recipes/ directory"
+echo "and run builds with ./ChrootCompile Recipes/App/Version"
+echo
+echo
+echo
+
