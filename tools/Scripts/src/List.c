@@ -12,6 +12,7 @@
  */
 
 #include <stdio.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -20,9 +21,6 @@
 #include <dirent.h>
 #include <getopt.h>
 #include <time.h>
-#ifdef USE_NCURSES
-#include <curses.h>
-#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
@@ -76,6 +74,8 @@ static int opt_size = 0;
 static int opt_time = 0;
 static int opt_help = 0;
 
+static char *current_dir;
+
 const char shortopts[] = "adhLzts";
 static struct option long_options[] = {
     {"all",         0, &opt_all, 1},
@@ -88,6 +88,14 @@ static struct option long_options[] = {
     {0, 0, 0, 0}
 };
 
+int
+is_hidden(char *filename)
+{
+	char *base = basename(filename);
+	if (!strcmp(base, "..") || !strcmp(base, "."))
+		return 0;
+	return (base[0] == '.' ? 1 : 0);
+}
 
 void 
 set_color(char *ext, char *code, int index)
@@ -246,7 +254,7 @@ char *
 colorize_bytes(unsigned long value, int color_scheme, int pad_bytes)
 {
     int len;
-    char *color_3, *color_6, *color_start;
+    char *color_3 = NULL, *color_6 = NULL, *color_start = NULL;
     char tmp_buf[64], buf[64], *ptr_3, *ptr_6, *ptr_start;
 
     sprintf(tmp_buf, "%ld", value);
@@ -362,17 +370,25 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
     struct stat status, target_status;
 
 	for (pass = 0; pass < 7; ++pass) {
+		if (opt_time || opt_size)
+			pass = 99;
+		
 		for (i = 0; i < stat_num; ++i) {
 			if (namelist[i] == NULL)
 				continue;
 			
-			if ((namelist[i]->d_name[0] == '.') && (! opt_all && ! opt_hid)) {
-				if (pass == 0  && strcmp(namelist[i]->d_name, ".") && strcmp(namelist[i]->d_name, ".."))
+			if (namelist[i]->d_name[0] == '.' && !opt_all && !opt_hid) {
+				if (is_hidden(namelist[i]->d_name)) {
 					*hiddenfiles += 1;
-				continue;
+					continue;
+				}
+
+				if (! strcmp(namelist[i]->d_name, "..") ||
+					! strcmp(namelist[i]->d_name, "."))
+					continue;
 			}
 
-			if (opt_hid && namelist[i]->d_name[0] != '.')
+			if (opt_hid && !is_hidden(namelist[i]->d_name))
 				continue;
 
 			memset(link_entry, 0, sizeof(link_entry));
@@ -394,16 +410,8 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 					break;
 
 				case 2:
-					if (!S_ISLNK(status.st_mode) || opt_nolink)
+					if ((!S_ISLNK(status.st_mode) || opt_nolink))
 						continue;
-					memset(tmp_buffer, 0, sizeof(tmp_buffer));
-					readlink(full_pathname, tmp_buffer, sizeof(tmp_buffer));
-					realpath(full_pathname, symlink_path);
-					lstat(symlink_path, &target_status);
-
-					get_file_extension(symlink_path, extension, sizeof(extension));
-					get_file_color(symlink_path, extension, color_code, sizeof(color_code), target_status.st_mode);
-					snprintf(link_entry, sizeof(link_entry), "%s -> \033[%sm%s", COLOR_WHITE_CODE, color_code, tmp_buffer);
 					break;
 
 				case 3:
@@ -425,8 +433,22 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 					if (! S_ISBLK(status.st_mode))
 						continue;
 					break;
+
+				default:
+					break;
 			}
 
+			if ((S_ISLNK(status.st_mode) && !opt_nolink)) {
+				memset(tmp_buffer, 0, sizeof(tmp_buffer));
+				readlink(full_pathname, tmp_buffer, sizeof(tmp_buffer));
+				realpath(full_pathname, symlink_path);
+				lstat(symlink_path, &target_status);
+
+				get_file_extension(symlink_path, extension, sizeof(extension));
+				get_file_color(symlink_path, extension, color_code, sizeof(color_code), target_status.st_mode);
+				snprintf(link_entry, sizeof(link_entry), "%s -> \033[%sm%s", COLOR_WHITE_CODE, color_code, tmp_buffer);
+			}
+				
 			get_file_extension(namelist[i]->d_name, extension, sizeof(extension));
 			get_file_color(full_pathname, extension, color_code, sizeof(color_code), status.st_mode);
 			set_permission_string(&status, mask_U, mask_G, mask_O, sizeof(mask_U), final_mask, sizeof(final_mask));
@@ -481,9 +503,13 @@ time_sort(const void *void_a, const void *void_b)
 	struct dirent **a = (struct dirent **) void_a;
 	struct dirent **b = (struct dirent **) void_b;
 	struct stat status_a, status_b;
+	char filename_a[PATH_MAX];
+	char filename_b[PATH_MAX];
 
-	stat((*a)->d_name, &status_a);
-	stat((*b)->d_name, &status_b);
+	sprintf(filename_a, "%s/%s", current_dir, (*a)->d_name);
+	sprintf(filename_b, "%s/%s", current_dir, (*b)->d_name);
+	stat(filename_a, &status_a);
+	stat(filename_b, &status_b);
 
 	return status_a.st_mtime > status_b.st_mtime;
 }
@@ -494,9 +520,13 @@ size_sort(const void *void_a, const void *void_b)
 	struct dirent **a = (struct dirent **) void_a;
 	struct dirent **b = (struct dirent **) void_b;
 	struct stat status_a, status_b;
+	char filename_a[PATH_MAX];
+	char filename_b[PATH_MAX];
 
-	stat((*a)->d_name, &status_a);
-	stat((*b)->d_name, &status_b);
+	sprintf(filename_a, "%s/%s", current_dir, (*a)->d_name);
+	sprintf(filename_b, "%s/%s", current_dir, (*b)->d_name);
+	stat(filename_a, &status_a);
+	stat(filename_b, &status_b);
 
 	return status_a.st_size > status_b.st_size;
 }
@@ -547,8 +577,13 @@ void
 list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
 {
 	int i, n, ret, len;
+	char complete_path[PATH_MAX];
 	struct dirent **namelist;
     struct file_info *file_info;
+	
+	/* scandir doesn't propagate the complete pathname */
+	realpath(path, complete_path);
+	current_dir = complete_path;
 	
 	if (opt_time) {
 		/* sort the list with the oldest file in the head */
@@ -586,7 +621,7 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
             fprintf(stderr, "lstat %s: %s\n", file_info[i].full_pathname, strerror(errno));
             continue;
         }
-    }
+	}
 
     really_list_entries(file_info, namelist, n, total, counter, hiddenfiles);
 	
@@ -703,7 +738,7 @@ void
 summarize(struct statfs status, long total, long counter, long hiddenfiles, int final_info)
 {
     char *bytes_used_string, *bytes_free_string, *bytes_total_string;
-	static int curses_initialized = 0, cols = 0;
+	static int cols = 0;
 	static long bytes_used = 0, bytes_free = 0, bytes_total = 0;
 	static float percent = 0.0;
 	int i;
@@ -727,17 +762,8 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
 		return;
 	}
 	
-#ifdef USE_NCURSES
-	if (! curses_initialized) {
-		initscr();
-		cols = COLS;
-		endwin();
-		curses_initialized = 1;
-	}
-#else
 	if (!getenv("COLUMNS") || !sscanf(getenv("COLUMNS"), "%d", &cols)) 
 		cols=80;
-#endif
 	
 	printf("\033[0m");
 	for (i = 0; i < cols; ++i)
