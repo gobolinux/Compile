@@ -86,9 +86,9 @@ download_packages
 update_tools
 configure_tools
 
-if [ -e "./SetupAddon" ]
+if [ -e "./SetupAddOn" ]
 then
-   chmod +x SetupAddon
+   chmod +x SetupAddOn
    ./SetupAddOn
 fi
 
