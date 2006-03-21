@@ -206,7 +206,7 @@ then
    }
 
    installall=
-   [ `Boolean "batch"` ] && installall=1 && batch="--batch"
+   [ `Boolean "batch"` ] && installall=1
    skipall=
 
    check_programs=`Entry "programs"`
@@ -277,7 +277,7 @@ then
    done
    for p in "${programs_to_install[@]}"
    do
-       $execute $batch $p || $execute $batch `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
+       $execute $p || $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
    done
    exit $result
 fi
