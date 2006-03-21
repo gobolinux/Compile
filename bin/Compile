@@ -26,6 +26,7 @@ scriptUsage="<program> [<version>]"
 Add_Option_Entry "n" "app-name" "Override application name." ""
 Add_Option_Entry "e" "version-number" "Override version number." ""
 Add_Option_Entry "x" "cross-compile" "Cross-compile to another architecture." ""
+Add_Option_Entry "c" "configure-options" "Options to be passed explicitly to './configure'." ""
 Add_Option_Boolean "k" "keep" "Keep files if program directory already exists."
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
@@ -45,22 +46,28 @@ shift $parsedArguments
 Boolean "lazy" && Set_Boolean "no-web"
 Boolean "no-web" && noweb="--no-web"
 
+if Is_Entry "configure-options"
+then userconfigureoptions=(`Entry "configure-options"`)
+else userconfigureoptions=()
+fi
+
 if Is_Writable "$goboExecutables" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
 
-if [ "$compileMakeCommand" ]
-then make="$compileMakeCommand"
-else make=ColorMake
-fi
-
-if [ "$compileChownCommand" ]
-then chown="$compileChownCommand"
-else chown=chown
-fi
+make="${compileMakeCommand:-ColorMake}"
+chown="${compileChownCommand:-chown}"
 
 Boolean "batch" && batch="--batch"
+
+# Options to be propagated in sub-calls to Compile
+unset compileoptions
+Is_Entry cross-compile && compileoptions="$compleoptions --cross-compile `Entry cross-compile`"
+Boolean no-build && compileoptions="$compileoptions --no-build"
+Boolean no-web && compileoptions="$compileoptions --no-web"
+Boolean batch && compileoptions="$compileoptions --batch"
+Boolean lazy && compileoptions="$compileoptions --lazy"
 
 ### Temporary test for those tracking CVS ###
 PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
@@ -73,13 +80,16 @@ PrepareProgram --help | grep -q no-default-options || Die "Please update your Sc
 Import Compile
 
 function do_symlink() {
-   if [ "$1" = "--no-make" ]
-   then
-      local nomake=yes
-      shift
-   else
-      local nomake=no
-   fi
+   local nomake=no
+   local forcelink=no
+   while true
+   do
+      case "$1" in
+      --no-make) nomake=yes ; shift ;;
+      --force-link) forcelink=yes ; shift ;;
+      *) break ;;
+      esac # it still is.
+   done
    
    unset symlinkopts
    symlinkopts=$(merge_array "symlink_options")
@@ -128,7 +138,7 @@ function do_symlink() {
 
    is_function_set pre_link && pre_link
  
-   if Boolean "no-symlink"
+   if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2"
    else
@@ -237,11 +247,10 @@ function in_host() {
    then
       unset goboCrossCompiling goboPrefix
       "$@"
-	  ret=$?
+      ret=$?
       export goboCrossCompiling=yes
       Parse_Conf Directories.conf
-
-	  return $ret
+      return $ret
    else
       "$@"
    fi
@@ -344,13 +353,12 @@ then
    
    # Extra arguments to be passed to 'make' and 'make install'
    cross_make_variables=(
-   	"CC=$CC"
-   	"CPP=$CPP"
-   	"CXX=$CXX"
-	"LIBTOOL=$LIBTOOL"
-	"CROSS=$crossCompiler"
+      "CC=$CC"
+      "CPP=$CPP"
+      "CXX=$CXX"
+      "LIBTOOL=$LIBTOOL"
+      "CROSS=$crossCompiler"
    )
-
    # ARCH is taken from the cross config file
    arch=`Get_Architecture $ARCH`
    archsubdir=$bakedrecipedir/$arch
@@ -494,7 +502,7 @@ if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    dep="$recipedir/Resources/Dependencies"
    Boolean no-build && batch="--batch"
-   [ -f "$dep" ] && Dependencies $batch -d -c -h -e "$0 $crossmeta $noweb" "$dep"
+   [ -f "$dep" ] && Dependencies $batch -d -c -h -e "$0 $compileoptions" "$dep"
 fi
 
 ##################################################
@@ -504,20 +512,8 @@ fi
 foreach_if_array_set "include" '
    iname=`echo $item | sed '\''s/--.*//'\''`
    iversion=`echo $item | sed '\''s/.*--//'\''`
-   unset options
-   Boolean no-build && options="$options --no-build"
-   Boolean no-web && options="$options --no-web"
-   Boolean batch && options="$options --batch"
-   Boolean lazy && options="$options --lazy"
    export compileMetaRecipe=1
-#   if [ "$directrecipe" = "yes" ]
-#   then
-#      ipath=${rawrecipes/$appname/$iname}
-#      ipath=${ipath/$versionnumber/$iversion}
-#      $0 $options --keep --app-name "$appname" --version-number "$versionnumber" "$ipath"
-#   else
-    in_host $0 $crossmeta $options --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
-#   fi
+   in_host $0 $compileoptions --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
    if [ "$?" -gt 0 ]
    then
       Die "Compilation of $iname $iversion failed."
@@ -650,9 +646,9 @@ else
       case $REPLY in
       [Rr]) rm -rf "${basedirs[0]}" || $sudo rm -rf "${basedirs[0]}"
             if [ "$needs_build_directory" = "yes" ]
-	    then
-	       rm -rf "${basedirs[0]%/}-build" || $sudo rm -rf "${basedirs[0]%/}-build"
-	    fi ;;
+            then
+               rm -rf "${basedirs[0]%/}-build" || $sudo rm -rf "${basedirs[0]%/}-build"
+            fi ;;
       [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" ;;
       [Uu]) unpack=no ;;
       [Cc]) exit 0 ;;
@@ -777,7 +773,7 @@ then
    then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
       cp -R "$installprefix" "$installprefix-Compile-old"
-      do_symlink --no-make "$appname" "$version-Compile-old"
+      do_symlink --force-link --no-make "$appname" "$version-Compile-old"
    fi
 fi
 
@@ -787,7 +783,7 @@ fi
 
 if [ "$is_compileprogram" = "yes" ]
 then
-   eval `combine_arrays config configure_options`
+   eval `combine_arrays config configure_options userconfigureoptions`
    [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
