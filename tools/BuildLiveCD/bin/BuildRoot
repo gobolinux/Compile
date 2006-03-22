@@ -4,10 +4,9 @@ root="$1"
 packagedir="$2"
 packagelist="$3"
 
-if ! [ -d "$root" -a -d "$packagedir" -a -f "$packagelist" ]
+if ! [ -d "$packagedir" -a -f "$packagelist" ]
 then
    echo "Usage: BuildRoot <root> <packagedir> <packagelist>"
-   [ -d "$root" ] ||        echo "   $root does not exist"
    [ -d "$packagedir" ] ||  echo "   $packagedir does not exist"
    [ -f "$packagelist" ] || echo "   $packagelist does not exist"
    exit 1

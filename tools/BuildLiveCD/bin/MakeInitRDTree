@@ -240,7 +240,6 @@ cat <<EOF > $root/System/Settings/rc
 #!/bin/ash
 
 /bin/mount -av
-#hostname `cat /System/Settings/hostname`
 
 /bin/startGoboLinux 
 

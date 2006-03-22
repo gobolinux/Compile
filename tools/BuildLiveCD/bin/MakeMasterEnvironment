@@ -1,7 +1,7 @@
 #!/bin/sh
 
 mkdir -p Archives/{Ext,InitRD,Packages}
-mkdir -p Local_work/LayerLocal
+mkdir -p RWLayer
 
 FetchExt
 
