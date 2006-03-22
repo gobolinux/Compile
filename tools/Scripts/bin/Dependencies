@@ -252,7 +252,7 @@ then
             
             else # program found, but version not installed
                yourversion= #`Get_Version "$iprogram" "Current"`
-               [ "$yourversion" ] || yourversion=`GuessLatest \`ls /Programs/$iprogram |grep -v Settings |grep -v Variable |grep -v Current\``
+               [ "$yourversion" ] || yourversion=`GuessLatest \`ls $goboPrograms/$iprogram |grep -v Settings |grep -v Variable |grep -v Current\``
                
                if [ "`GuessLatest $version $yourversion`" == "$yourversion" ]
                then # a newer version is already installed
@@ -277,7 +277,7 @@ then
    done
    for p in "${programs_to_install[@]}"
    do
-       $execute $p || $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
+       in_host $execute $p || in_host $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
    done
    exit $result
 fi
