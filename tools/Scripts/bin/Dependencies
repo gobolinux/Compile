@@ -277,7 +277,7 @@ then
    done
    for p in "${programs_to_install[@]}"
    do
-       in_host $execute $p || in_host $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
+       $execute $p || $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
    done
    exit $result
 fi
