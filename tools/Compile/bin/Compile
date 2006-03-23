@@ -63,7 +63,7 @@ Boolean "batch" && batch="--batch"
 
 # Options to be propagated in sub-calls to Compile
 unset compileoptions
-Is_Entry cross-compile && compileoptions="$compleoptions --cross-compile `Entry cross-compile`"
+Is_Entry cross-compile && compileoptions="$compileoptions --cross-compile `Entry cross-compile`"
 Boolean no-build && compileoptions="$compileoptions --no-build"
 Boolean no-web && compileoptions="$compileoptions --no-web"
 Boolean batch && compileoptions="$compileoptions --batch"
