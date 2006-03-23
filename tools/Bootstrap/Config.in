@@ -36,6 +36,36 @@ config CROSS_SH4
 endchoice
 
 choice
+    prompt "ARM implementation"
+    depends on CROSS_ARM
+    default ARM_SIRIUSTAR
+
+config ARM_SIRIUSTAR
+    prompt "SiriuStar board"
+    bool
+
+config ARM_GP32
+    prompt "GP32 handheld"
+    bool
+
+endchoice
+
+choice
+    prompt "SH4 implementation"
+    depends on CROSS_SH4
+    default SH4_STI5528
+
+config SH4_ST5528
+    prompt "STi5528 - Espresso Board"
+    bool
+
+config SH4_ST7100
+    prompt "ST7100 - CoCo Board"
+    bool
+
+endchoice
+
+choice
 	prompt "Target profile"
 	default TARGET_EMBEDDED
 
