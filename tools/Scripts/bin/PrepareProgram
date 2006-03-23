@@ -114,23 +114,18 @@ then
       do
          Ask_Option "$programdir already exists. [r]emove, [k]eep, [C]ancel?" || exit 1
          case "$REPLY" in
-         [Rr])
-            rm -rf -- "$programdir"
-            break
-            ;;
-         [Kk])
-            keepdir=yes
-            break
-            ;;
-         [Cc])
-            exit 1
-            ;;
+         [Rr]) break ;;
+         [Kk]) keepdir=yes; break ;;
+         [Cc]) exit 1 ;;
          esac # esac is ridiculous.
       done
    fi
 
    if [ ! "$keepdir" ]
    then
+      if [ -e "$programdir" ]
+      then rm -rf -- "$programdir"
+      fi
       if Dir_Set Install
       then
          Make_Directory `Get_Dir install "$programname"`
