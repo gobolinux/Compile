@@ -1,0 +1,5 @@
+#!/bin/sh
+
+fdisk -l | grep -q "Linux swap" || exit 1
+partition=`fdisk -l | grep "Linux swap" | cut -d" " -f1`
+swapon "$partition"

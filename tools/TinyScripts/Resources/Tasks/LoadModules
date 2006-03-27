@@ -1,0 +1,7 @@
+#!/bin/sh
+
+. GoboPath
+
+# modprobe <module_1> [params]
+# modprobe <module_2> [params]
+# ...
