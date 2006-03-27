@@ -1,6 +1,9 @@
 #!/bin/sh
 
+. GoboPath
+
 # This file is called by Reboot and Halt
+export PATH=$PATH:$goboTasks
 
 echo "Stopping daemons";                      killall -9 klogd syslogd
 echo "Stopping network interfaces";           Network stop
