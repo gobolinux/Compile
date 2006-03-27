@@ -5,7 +5,7 @@
 ::sysinit:/System/Settings/BootScripts/BootUp
 
 # /bin/sh invocations on selected ttys
-#::respawn:-/System/Links/Executables/sh
+::respawn:-/System/Links/Executables/sh
 tty1::respawn:-/System/Links/Executables/getty tty1 9600
 tty2::respawn:-/System/Links/Executables/getty tty2 9600
 tty3::respawn:-/System/Links/Executables/getty tty3 9600

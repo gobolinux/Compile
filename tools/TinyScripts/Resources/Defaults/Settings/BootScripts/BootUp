@@ -7,7 +7,10 @@ echo "Mounting file system read-write..."; mount -o remount,rw /
 echo "Mounting remaining filesystems...";  mount -a
 echo "Loading udev task...";               Udev start
 echo "Hiding the legacy tree...";          GoboHide start
+echo "Loading kernel modules...";          LoadModules start
 echo "Loading network settings...";        Network start
-echo "Loading mouse driver...";            Mouse start
-echo "Loading SSH daemon...";              /Programs/OpenSSH/Current/sbin/sshd
-echo "Loading the NFS portmap daemon...";  portmap
+echo "Configuring swap space...";          Swap start
+# echo "Loading mouse driver...";            Mouse start
+# echo "Loading SSH daemon...";              /Programs/OpenSSH/Current/sbin/sshd
+# echo "Loading the NFS portmap daemon...";  portmap
+# echo "Loading the LIRC daemon...";         lircd
