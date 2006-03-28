@@ -54,7 +54,9 @@ then
 	Log_Normal "Installing the Tiny Scripts package..."
     cvs_checkout TinyScripts tools/TinyScripts
     
-    cvs_make_install TinyScripts "$dirname" "`date +%Y%m%d`-CVS"
+    version="`date +%Y%m%d`-CVS"
+    cvs_make_install TinyScripts "$dirname" "$version"
+    UpdateSettings TinyScripts "$version"
     SymlinkProgram -c overwrite TinyScripts
     popd >& /dev/null
 fi
