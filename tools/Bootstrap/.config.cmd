@@ -1,27 +1,33 @@
 deps_config := \
+	packages/LibOIL/Config.in \
+	packages/Mowitz/Config.in \
 	packages/Shared-Mime-INFO/Config.in \
 	packages/LibXML2/Config.in \
 	packages/LibART/Config.in \
 	packages/Startup-Notification/Config.in \
-	packages/LibOIL/Config.in \
 	packages/Expat/Config.in \
 	packages/Gettext/Config.in \
-	packages/Mowitz/Config.in \
 	packages/Dbus/Config.in \
 	packages/GTK+/Config.in \
 	packages/Pango/Config.in \
 	packages/ATK/Config.in \
 	packages/GLib/Config.in \
-	packages/FreeType/Config.in \
+	packages/ReiserFSProgs/Config.in \
+	packages/Lirc/Config.in \
+	packages/LibUSB/Config.in \
+	packages/MTD-Utils/Config.in \
 	packages/Fontconfig/Config.in \
+	packages/SDL/Config.in \
+	packages/TIFF/Config.in \
+	packages/DirectFB/Config.in \
+	packages/Linux-Fusion/Config.in \
+	packages/LibPNG/Config.in \
+	packages/JPEG/Config.in \
+	packages/FreeType/Config.in \
 	packages/LibVorbis/Config.in \
 	packages/LibOGG/Config.in \
 	packages/LibMad/Config.in \
-	packages/SDL/Config.in \
-	packages/TIFF/Config.in \
-	packages/JPEG/Config.in \
-	packages/LibPNG/Config.in \
-	packages/DirectFB/Config.in \
+	packages/ALSA-Lib/Config.in \
 	packages/Swfdec/Config.in \
 	packages/Siag/Config.in \
 	packages/RXVT/Config.in \
@@ -35,6 +41,7 @@ deps_config := \
 	packages/Strace/Config.in \
 	packages/GCC/Config.in \
 	packages/GMP/Config.in \
+	packages/LibTool/Config.in \
 	packages/Bash/Config.in \
 	packages/Ncurses/Config.in \
 	packages/Udev/Config.in \
@@ -45,6 +52,7 @@ deps_config := \
 	packages/ZLib/Config.in \
 	packages/LibGCC/Config.in \
 	packages/BusyBox/Config.in \
+	packages/Module-Init-Tools/Config.in \
 	packages/UClibc/Config.in \
 	packages/Glibc/Config.in \
 	Config.in

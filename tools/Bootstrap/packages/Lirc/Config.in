@@ -1,0 +1,2 @@
+config PKG_LIRC
+    bool "LIRC (Linux Infrared Remote Control)"

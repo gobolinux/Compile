@@ -1,0 +1,2 @@
+config PKG_MODULE_INIT_TOOLS
+    bool "Module Init Tools"

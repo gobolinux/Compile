@@ -1,0 +1,2 @@
+config PKG_ALSA_LIB
+    bool "ALSA-Lib"

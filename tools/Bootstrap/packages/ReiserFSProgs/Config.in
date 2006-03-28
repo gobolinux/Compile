@@ -1,0 +1,2 @@
+config PKG_REISERFSPROGS
+    bool "ReiserFS Programs"
