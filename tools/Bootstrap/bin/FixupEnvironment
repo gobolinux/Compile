@@ -20,11 +20,13 @@ then
 	# nothing to do
 	exit 0
 else
-	[ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
-	[ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
+	[ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
+	[ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 	
 	source $goboSettings/Compile/Cross-$arch_conf.conf
 	prefix="$crossPrefixDir"
+    
+    export goboCrossCompiling=yes
 fi
 
 echo
@@ -45,14 +47,14 @@ fi
 #
 # Install the Tiny Scripts package
 #
-dirname="$prefix/$goboPrograms/Scripts"
+dirname="$prefix/$goboPrograms/TinyScripts"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
 then
-	dirname="$prefix/$goboPrograms/TinyScripts"
-    tmpdir="$TOP_DIR/downloads/TinyScripts"
+    pushd "$TOP_DIR/downloads" >& /dev/null
 	Log_Normal "Installing the Tiny Scripts package..."
-    cvs_checkout "$tmpdir" tools/TinyScripts
-    cvs_make_install "$tmpdir" "$dirname" "`date +%Y%m%d`-CVS"
-	rm "$tmpdir" -Rf
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+    cvs_checkout TinyScripts tools/TinyScripts
+    
+    cvs_make_install TinyScripts "$dirname" "`date +%Y%m%d`-CVS"
+    SymlinkProgram -c overwrite TinyScripts
+    popd >& /dev/null
 fi

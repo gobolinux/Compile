@@ -63,6 +63,8 @@ function cvs_make_install() {
 	app_dir="$2"
 	version_dir="$3"
 	
+    mkdir -p "$app_dir/$version_dir"
+
 	pushd "$module" >& /dev/null
 	make CC=$CC || exit 1
 	make CC=$CC install PREFIX="$app_dir/$version_dir" || exit 1
