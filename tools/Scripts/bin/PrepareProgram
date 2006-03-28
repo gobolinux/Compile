@@ -231,8 +231,8 @@ then
    then
       configure_options=(
          "${configure_options[@]}"
-         --build=$HOST
-         --host=$TARGET
+         --build=$cross_configure_build
+         --host=$cross_configure_host
          --x-includes=$goboHeaders
          --x-libraries=$goboLibraries
       )
