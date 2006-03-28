@@ -75,6 +75,11 @@ function cvs_make_install() {
 	rm -f Current
 	ln -s "$version_dir" Current
 	popd >& /dev/null
+    
+    pushd "$app_dir/Current" >& /dev/null
+    find . -name CVS | xargs rm -Rf
+    find . -name CVS | xargs rmdir
+    popd >& /dev/null
 }
 
 function DirectFB_hook() {
