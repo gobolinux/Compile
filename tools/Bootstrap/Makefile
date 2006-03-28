@@ -46,13 +46,30 @@ endif
 
 ifeq ($(strip $(HAVE_DOT_CONFIG)),y)
 
-all:   deps world
+all: world
 
 # In this section, we need .config
 include .config.cmd
 
 TARGETS_CLEAN:=$(patsubst %,%-clean,$(TARGETS))
 TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS))
+
+help:
+	@echo 'Automatic dependency selection:'
+	@echo '  dep         - Selects all packages marked as a dependency for the chosen ones'
+	@echo ''
+	@echo 'Cleaning targets:'
+	@echo '  clean       - Remove most generated files but keep the config'
+	@echo ''
+	@echo 'Configuration targets:'
+	@echo '  menuconfig  - Update current config utilising a menu based program'
+	@echo ''
+	@echo 'Other generic targets:'
+	@echo '  all         - Build all targets marked with [*]'
+	@echo ''
+	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
+	@echo 'For further info see the ./README file'
+	@echo ''
 
 deps:
 	@cd bin && ./MakeDeps ../.config
