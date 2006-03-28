@@ -80,8 +80,8 @@ function create_tree() {
 	# create the base (/System/SH4 == /System)
 	mkdir -p $base_dir
 
-	# make a symlink ($PWD/System/SH4 -> /)
-	ln -s / `echo "$1" | cut -d"/" -f2-`
+	# make a symlink ($PWD/System/SH4 -> ..)
+	ln -s .. `echo "$1" | cut -d"/" -f2-`
 
 	popd >& /dev/null
 }
