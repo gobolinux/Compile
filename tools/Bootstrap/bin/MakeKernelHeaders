@@ -7,6 +7,7 @@ kernel_arch="$2"
 dest_dir="$3/$1"
 
 echo "Downloading the Linux-Libc-Headers script..."
+
 pushd "$TOP_DIR/downloads" >& /dev/null
 rm -f headers
 wget --quiet http://ftp.jg555.com/headers/headers
@@ -16,21 +17,36 @@ chmod +x headers
 popd >& /dev/null
 
 echo "Configuring headers for chosen platform ($kernel_arch)..."
-pushd linux-headers-$version/include >& /dev/null
+pushd "$TOP_DIR/downloads/linux-headers-$version/include" >& /dev/null
 for i in asm-*
 do
     [ "$i" = "asm-$kernel_arch" -o "$i" = "asm-generic" ] && continue
     rm -Rf "$i"
 done
-ln -nfs asm-$kernel_arch asm
 popd >& /dev/null
-
 
 echo "Installing headers on $dest_dir..."
+pushd "$TOP_DIR/downloads" >& /dev/null
 mkdir -p $dest_dir
 mv linux-headers-$version/* $dest_dir
-
-pushd $dest_dir/.. >& /dev/null
-rm -f Current
-ln -s $version Current
 popd >& /dev/null
+
+pushd $dest_dir/include >& /dev/null
+ln -nfs $version $dest_dir/../Current
+ln -nfs "asm-$kernel_arch" asm
+popd >& /dev/null
+
+# by some reason, 'headers' is removing compiler.h from the package.
+# let's reintroduce it.
+cp "$TOP_DIR/downloads/linux-headers-$version.orig/include/linux/compiler.h" $dest_dir/include/linux
+
+if [ -d $dest_dir/include/asm-sh ]
+then
+    # asm-sh/byteorder.h fails to recognize __attribute_const__ attribute.
+    # fix that by including linux/compiler.h.
+    GrepReplace "#include <asm/types.h>" \
+        "#include <asm/types.h>\n#include <linux/compiler.h>" \
+        $dest_dir/include/asm-sh/byteorder.h
+fi
+
+SymlinkProgram Linux-Libc-Headers
