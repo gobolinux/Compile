@@ -32,7 +32,6 @@ else
     cross_options="--cross-compile $arch_conf"
 fi
 
-
 pushd $subdir >& /dev/null
 
 for entry in `cat $dot_config | grep "=y" | grep PKG`
@@ -42,6 +41,12 @@ do
 
     pkg_name=`basename "$pkg_dir"`
 	is_in_blacklist "$pkg_name" && continue
+    
+    # If a hook is configured for the current package, execute it
+    # so that a specific version can be used. Hooks are declared
+    # inside functions/PkgFunctions.
+    hook_function="`echo ${pkg_name} | sed 's/-/_/g'`_hook"
+    pkg_version=`${hook_function} 2> /dev/null`
 
 	if [ -d "$crossPrefixDir/$goboPrograms/$pkg_name" ]
 	then
@@ -53,8 +58,8 @@ do
 		 		 ;;
 		esac
 	fi
-
-	recipe=`get_recipe "$pkg_dir" "$pkg_name"`
+ 
+	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
 	echo
 	Log_Normal "Running 'Compile $cross_options $recipe'"
 	echo
