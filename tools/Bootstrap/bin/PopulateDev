@@ -28,6 +28,9 @@ mknod "$target"System/Kernel/Devices/ttyS1       c  4  65
 mknod "$target"System/Kernel/Devices/urandom     c  1   9
 mknod "$target"System/Kernel/Devices/zero        c  1   5
 
+mkdir "$target"System/Kernel/Devices/shm
+mkdir "$target"System/Kernel/Devices/pts
+
 ln -s /System/Kernel/Status/self/fd/0 "$target"System/Kernel/Devices/stdin
 ln -s /System/Kernel/Status/self/fd/1 "$target"System/Kernel/Devices/stdout
 ln -s /System/Kernel/Status/self/fd/2 "$target"System/Kernel/Devices/stderr
