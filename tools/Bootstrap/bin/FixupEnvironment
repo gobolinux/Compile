@@ -49,9 +49,10 @@ dirname="$prefix/$goboPrograms/Scripts"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
 then
 	dirname="$prefix/$goboPrograms/TinyScripts"
+    tmpdir="$TOP_DIR/downloads/TinyScripts"
 	Log_Normal "Installing the Tiny Scripts package..."
-	cvs_checkout tools/TinyScripts
-	cvs_make_install tools/TinyScripts "$dirname" "`date +%Y%m%d`-CVS"
-	rm tools/ -Rf
+    cvs_checkout "$tmpdir" tools/TinyScripts
+    cvs_make_install "$tmpdir" "$dirname" "`date +%Y%m%d`-CVS"
+	rm "$tmpdir" -Rf
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi
