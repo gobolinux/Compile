@@ -256,6 +256,11 @@ function in_host() {
    fi
 }
 
+function config_is_autoconf() {
+   [ "$configure" ] || configure="./configure"
+   grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
+}
+
 ##################################################
 # Prepare Environment
 ##################################################
@@ -442,15 +447,6 @@ export installprefix="$target"
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
 
-if [ "$goboCrossCompiling" = "yes" ]
-then
-   if [ "$is_compileprogram" = "yes" ]
-   then cross_array=configure_options
-   else cross_array=compileMakeOptions
-   fi
-   eval `combine_arrays $cross_array $cross_array cross_make_variables`
-fi
-
 ! Boolean "no-build" && Log_Normal "Compiling $app version $version."
 
 ##################################################
@@ -589,6 +585,18 @@ make_absolute() {
 }
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 dir="${dirs[0]}"
+
+##################################################
+# Create the cross_make_variables array
+##################################################
+if [ "$goboCrossCompiling" = "yes" ]
+then
+   if [ "$is_compileprogram" = "yes" ] && config_is_autoconf
+   then cross_array=configure_options
+   else cross_array=compileMakeOptions
+   fi
+   eval `combine_arrays $cross_array $cross_array cross_make_variables`
+fi
 
 ##################################################
 # Get & Unpack sources
