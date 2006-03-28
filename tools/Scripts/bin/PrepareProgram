@@ -37,6 +37,7 @@ Is_Entry "configure" && export PATH="$PATH:."
 
 ### Functions ############################################################
 
+# TODO: this function is now in Compile and should probably disappear in the future
 function config_is_autoconf() {
    Boolean "autoconf" && return 0
    Boolean "no-autoconf" && return 1
