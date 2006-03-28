@@ -360,7 +360,7 @@ then
       "CROSS=$crossCompiler"
    )
    # ARCH is taken from the cross config file
-   arch=`Get_Architecture $ARCH`
+   arch=`Get_Architecture $cross_uname_m`
    archsubdir=$bakedrecipedir/$arch
    archrecipe=$bakedrecipedir/$arch/Recipe
    compileSourcesDir="$compileDir/Sources-$arch_conf"
