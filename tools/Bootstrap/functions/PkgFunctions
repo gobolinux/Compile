@@ -5,12 +5,12 @@ shipped_dir=$TOP_DIR/recipes
 source ScriptFunctions
 
 #
-# This function is a bit tricky. It relies on the fact that the
-# package is correctly named as subdirectories inside $(TOPDIR)/packages.
+# This function relies on the fact that the package is correctly named 
+# and stored as a subdirectory inside $(TOPDIR)/packages.
 #
-# Thus, it's pretty simple to guess the package's name: by finding the
-# correct 'config PKG_NAME' inside the proper Config.in, its name is revealed
-# by reading the directory's name which holds that file.
+# The package's name can be guessed by finding the correct 'config PKG_NAME'
+# inside the proper Config.in. Its name is then revealed by reading the 
+# directory's name which holds that file.
 #
 function package_subdir() {
     pkg_dir=`echo $1 | cut -d"=" -f1`
@@ -19,11 +19,12 @@ function package_subdir() {
 }
 
 #
-# Finds the most appropriate recipe for the given program.
+# Finds the most appropriate recipe for a given program.
 #
 function get_recipe() {
 	pkg_dir="$1"
 	pkg_name="$2"
+    pkg_version="$3"
 
 	if [ -d /Files/Compile/LocalRecipes/$pkg_name ]; then
 		pkg_dir=/Files/Compile/LocalRecipes/$pkg_name
@@ -44,14 +45,17 @@ function get_recipe() {
 	fi
 	
     len="$(( ${#pkg_dir} + 2 ))"
-    pkg_version=`find $pkg_dir -maxdepth 2 -type d | cut -b${len}- | cut -d"/" -f1 | uniq | tail -n 1`
+    if [ "$pkg_version" = "" ]
+    then
+        pkg_version=`find $pkg_dir -maxdepth 2 -type d | cut -b${len}- | cut -d"/" -f1 | uniq | tail -n 1`
+    fi
     recipe=$pkg_dir/$pkg_version
 
 	echo "$recipe"
 }
 
 function cvs_checkout() {
-	cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co "$1"
+	cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co -d "$1" "$2"
 }
 
 function cvs_make_install() {
@@ -69,4 +73,28 @@ function cvs_make_install() {
 	rm -f Current
 	ln -s "$version_dir" Current
 	popd >& /dev/null
+}
+
+function DirectFB_hook() {
+    # dirty test to check whether we're cross compiling or not
+    [ "$kernelVersion" = "" ] && return
+    [ "$kernelArch" = "sh" ] && echo "CVS"
+}
+
+function Linux_Fusion_hook() {
+    # always fetch from CVS
+    echo "CVS"
+}
+
+function Udev_hook() {
+    # dirty test to check whether we're cross compiling or not
+    [ "$kernelVersion" = "" ] && return
+    
+    kernel_version=`echo $kernelVersion | sed 's/-.*//g'`
+    latest_kernel=`GuessLatest $kernelVersion 2.6.15`
+    [ "$kernel_version" = "$latest_kernel" ] && return
+
+    # if kernelVersion for cross-compile is older than 2.6.15,
+    # recommend usage of Udev 070 instead of the latest release.
+    [ "$latest_kernel" = "2.6.15" ] && echo "070"
 }
