@@ -125,7 +125,6 @@ source "packages/LibGCC/Config.in"
 source "packages/ZLib/Config.in"
 source "packages/GPM/Config.in"
 source "packages/GoboHide/Config.in"
-source "packages/Hotplug/Config.in"
 source "packages/Listener/Config.in"
 source "packages/Udev/Config.in"
 comment "---"
@@ -138,12 +137,6 @@ source "packages/LibTool/Config.in"
 source "packages/GMP/Config.in"
 source "packages/GCC/Config.in"
 source "packages/Strace/Config.in"
-endmenu
-
-menu "Networking"
-source "packages/Links/Config.in"
-source "packages/OpenSSL/Config.in"
-source "packages/OpenSSH/Config.in"
 endmenu
 
 menu "Window Servers"
@@ -159,6 +152,12 @@ source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
+endmenu
+
+menu "Networking"
+source "packages/Links/Config.in"
+source "packages/OpenSSL/Config.in"
+source "packages/OpenSSH/Config.in"
 endmenu
 
 menu "Audio, video and graphics"
