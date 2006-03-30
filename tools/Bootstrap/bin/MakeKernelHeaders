@@ -6,14 +6,19 @@ version="$1"
 kernel_arch="$2"
 dest_dir="$3/$1"
 
-echo "Downloading the Linux-Libc-Headers script..."
+# Remove previous files at downloads/ dir
+rm -Rf "$TOP_DIR/downloads/linux-headers-$version"
+rm -Rf "$TOP_DIR/downloads/linux-headers-$version.orig"
+rm  -f "$TOP_DIR/downloads/linux-headers-2.6.12.tar.bz2"
+rm  -f "$TOP_DIR/downloads/headers"
+
+echo "Downloading the LFS headers script..."
 
 pushd "$TOP_DIR/downloads" >& /dev/null
-rm -f headers
-wget --quiet http://ftp.jg555.com/headers/headers
-GrepReplace "\--quiet" "" headers && rm -f headers~
-chmod +x headers
-./headers "$version"
+wget --quiet http://ftp.jg555.com/headers/headers2
+GrepReplace "\--quiet" "" headers2 && rm -f headers2~
+chmod +x headers2
+./headers2 "$version"
 popd >& /dev/null
 
 echo "Configuring headers for chosen platform ($kernel_arch)..."
