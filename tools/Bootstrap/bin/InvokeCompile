@@ -22,14 +22,42 @@ source BlackList
 # Cross-compiling variables
 source $dot_config
 
+function make_headers() {
+    dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+    [ -d "$dirname" ] && return
+	
+    Log_Normal "Creating the Libc Headers package..."
+	if [ "$CROSS_NONE" = "y" ]
+	then
+		case `uname -m` in
+			i386|i486|i586|i686)
+				kernelArch="i386"
+				;;
+			*)
+				Log_Error "Please add your architecture here!"
+				exit 1
+				;;
+		esac
+	fi
+	
+	# Latest release known to work is 2.6.12.0 (based on LFS)
+    pushd "$TOP_DIR/bin" >& /dev/null
+	./MakeKernelHeaders 2.6.12 $kernelArch $dirname
+	SymlinkProgram $symlink_options Linux-Libc-Headers >& /dev/null
+    popd >& /dev/null
+}
+
 if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
     [ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
     [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
-	source $goboSettings/Compile/Cross-$arch_conf.conf
+	
+    source $goboSettings/Compile/Cross-$arch_conf.conf
+	prefix="$crossPrefixDir"
     cross_options="--cross-compile $arch_conf"
+	symlink_options="-c overwrite"
 fi
 
 pushd $subdir >& /dev/null
@@ -64,6 +92,10 @@ do
 	Log_Normal "Running 'Compile $cross_options $recipe'"
 	echo
 	Compile $cross_options $recipe || exit 1
+
+    # And here is the final trick: if we have just compiled Glibc, create the
+    # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
+    [ "$pkg_name" = "Glibc" ] && make_headers
 done
 
 popd >& /dev/null
