@@ -54,12 +54,15 @@ else
     [ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
     [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
 	
-    source $goboSettings/Compile/Cross-$arch_conf.conf
-	prefix="$crossPrefixDir"
+    # this is the same as evaluating the line 'crossPrefixDir=...'
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep crossPrefixDir | sed 's/\"//g'`
+    prefix=$crossPrefixDir
+
     cross_options="--cross-compile $arch_conf"
 	symlink_options="-c overwrite"
 fi
 
+skip_all=0
 pushd $subdir >& /dev/null
 
 for entry in `cat $dot_config | grep "=y" | grep PKG`
@@ -76,12 +79,22 @@ do
     hook_function="`echo ${pkg_name} | sed 's/-/_/g'`_hook"
     pkg_version=`${hook_function} 2> /dev/null`
 
-	if [ -d "$crossPrefixDir/$goboPrograms/$pkg_name" ]
+	if [ -d "$prefix/$goboPrograms/$pkg_name" ]
 	then
-		Ask_Option "$pkg_name seems to be already compiled. Do you want to skip it? [Y/N]"
+        if [ $skip_all = 1 ]
+        then
+            Log_Normal "Skipping package $pkg_name"
+            continue
+        fi
+
+		Ask_Option "$pkg_name seems to be already compiled. Do you want to skip it? [Y(es)/N(o)/SA(skip all)]"
 		case "$REPLY" in
 	    	n|N) # compile it
 		 		 ;;
+            sa|SA) # skip all
+                 skip_all=1
+                 continue
+                 ;;
 	    	*)   continue 
 		 		 ;;
 		esac
@@ -91,6 +104,7 @@ do
 	echo
 	Log_Normal "Running 'Compile $cross_options $recipe'"
 	echo
+
 	Compile $cross_options $recipe || exit 1
 
     # And here is the final trick: if we have just compiled Glibc, create the
