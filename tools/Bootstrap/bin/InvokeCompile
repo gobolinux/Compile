@@ -24,6 +24,7 @@ source $dot_config
 
 function make_headers() {
     dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+    echo "checando $dirname"
     [ -d "$dirname" ] && return
 	
     Log_Normal "Creating the Libc Headers package..."
@@ -55,7 +56,8 @@ else
     [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
 	
     # this is the same as evaluating the line 'crossPrefixDir=...'
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep crossPrefixDir | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export crossPrefixDir=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export kernelArch=" | sed 's/\"//g'`
     prefix=$crossPrefixDir
 
     cross_options="--cross-compile $arch_conf"
