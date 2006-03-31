@@ -45,10 +45,29 @@ CreateFiles $SUPER_USER_NAME
 # Install the Scripts package
 #
 dirname="$prefix/$goboPrograms/Scripts"
-if [ ! -d "$dirname" ]
+if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
 then
 	Log_Normal "Installing the Scripts package..."
 	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+else
+	Log_Normal "Symlinking the Scripts package..."
+	ln -nsf $goboPrograms/Scripts $prefix/$goboPrograms
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+fi
+
+#
+# Install the Compile package
+#
+dirname="$prefix/$goboPrograms/Compile"
+if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
+then
+	Log_Normal "Installing the Compile package..."
+	cp -a $goboPrograms/Compile $prefix/$goboPrograms
+	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+else
+	Log_Normal "Symlinking the Compile package..."
+	ln -nsf $goboPrograms/Compile $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi
 
