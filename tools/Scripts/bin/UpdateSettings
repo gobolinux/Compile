@@ -203,7 +203,7 @@ function input_action()
                REPLY=""
                case $difftype in
                new*)
-                       if Boolean "quick"; then
+                       if [ $has_current = no ] || Boolean "quick"; then
                                action=u
                        else
                                show_changes
@@ -383,7 +383,7 @@ fi
 if Boolean "update"; then
        if Boolean "quick"; then #--Dan
                Log_Normal "Quick-updating settings in $pdir"
-       else
+       elif [ $has_current = yes ]; then
                while true; do
                        Ask "Update settings in $pdir?"
                        case "$REPLY" in
@@ -393,7 +393,7 @@ if Boolean "update"; then
                done
        fi
 
-       if Is_Directory "$pdir/Settings"; then
+       if Is_Directory "$pdir/Settings" && [ $has_current = yes ]; then
                mkdir -p "$pdir/$version/Resources"
                backup=$(Unique_Name "$pdir/$version/Resources/SettingsBackup")
 
