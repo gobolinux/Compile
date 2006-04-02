@@ -18,7 +18,7 @@ deps_file="Resources/Dependencies"
 scriptDescription="Queries dependencies in a GoboLinux package."
 scriptCredits="Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{ [-c] <package> [<version>] | -f <file> }"
+scriptUsage="{ [-c] { <package> [<version>] | -d <dep_file> } | -f <file> }"
 scriptNotes="If no version is specified, Current is assumed. "
 Add_Option_Boolean "f" "file" "show dependencies of one file only."
 Add_Option_Boolean "c" "check" "check the package's dependency file,\
@@ -90,16 +90,19 @@ fi
 
 
 ### Parse options #######################################################################
-# 
-if ! Boolean "dependencies-file"
+
+if Boolean "dependencies-file"
 then
+   dependenciesfile="$1"
+   [ -f "$dependenciesfile" ] || Die "File $dependenciesfile not found."
+else
    package=`GuessProgramCase $1 $2`
-   if [ "$2" ]
-   then
-      version=`Get_Version "$package" "$2"`
-   else
-      version=`Get_Version "$package" "Current"`
-   fi
+   [ "$2" ] && version="$2" || version="Current"
+   version=`Get_Version "$package" "$version"`
+   Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+   Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+   Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+   dependenciesfile=`Dependencies_File "$package" "$version"`
    prefix=`readlink -f $goboPrograms/$package/$version`
 fi
 
@@ -110,6 +113,7 @@ execute=`Entry "execute"`
 
 if Boolean "reverse"
 then
+   Boolean "dependencies-file" && Die "Incompatible options --dependencies-file and --reverse."
    for f in "${goboPrograms}"/*/*/Resources/Dependencies
    do
       echo "$f" | grep -q "/Current/" && continue
@@ -125,20 +129,6 @@ then
 fi
 
 
-
-if Boolean "dependencies-file"
-then
-   dependenciesfile="$1"
-   [ -f "$dependenciesfile" ] || Die "File $dependenciesfile not found."
-   #echo $dependenciesfile
-else
-   Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
-   Is_Empty "$version" && Die "Couldn't find a proper version for $package."
-   Is_Directory "$prefix" || Die "$package version $version is not a valid package."
-   dependenciesfile=`Dependencies_File "$package" "$version"`
-fi
-
-
 ### --list: Print dependencies ##########################################################
 
 if Boolean "list"
@@ -146,8 +136,8 @@ then
    if [ "$dependenciesfile" ]
    then
       cat "$dependenciesfile"
-      exit 0
    fi
+   exit 0
 fi
 
 ### --check: Verify dependencies ########################################################
@@ -283,6 +273,9 @@ then
 fi
 
 ### default: Generate a dependency report ###############################################
+
+Boolean "dependencies-file" && Die "--dependencies-file requires --check or --list."
+
 if Boolean "write"
 then
    $sudo_validate

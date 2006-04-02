@@ -28,7 +28,7 @@ function buggy_module() {
    return 1
 }
 
-for i in `lsmod | tail +2 | cut -f 1 -d " "`
+for i in `lsmod | tail -n +2 | cut -f 1 -d " "`
 do
 if ! `buggy_module "$i"`
 then
