@@ -143,7 +143,7 @@ else
 fi
 result="$?"
 
-if ! [ "$sandbox" ]
+if ! [ "$unionsandbox" ]
 then
     Is_Link "${settings}" && rm "${settings}"
     Is_Directory "${settings}.hold" && mv "${settings}.hold" "${settings}"
