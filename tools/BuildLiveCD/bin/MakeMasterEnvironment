@@ -1,11 +1,29 @@
 #!/bin/sh
 
+if [ "$1" == "--help" ]
+then
+   echo "Usage:"
+   echo "   MakeMasterEnvironment [ <cvs-account> [ <local-account> ] ]"
+   echo
+   echo "Run this on an empty directory to create the"
+   echo "GoboLinux LiveCD mastering environment."
+   echo "It will fetch all needed files off the network"
+   echo "and create the proper directory layout."
+   echo "If you have CVS write access, pass your savannah"
+   echo "username as a parameter and, optionally,"
+   echo "the username in the current machine"
+   echo "which holds your savannah SSH credentials,"
+   echo "if it is not the same as your savannah username."
+   echo
+   exit 0
+fi
+
 mkdir -p Archives/{Ext,InitRD,Packages}
 mkdir -p RWLayer
 
 FetchExt
 
-MakeInitRDTree
+MakeInitRDTree --network "$@"
 
 # generate LiveCD_work/Layer2/System/Links/Environment/Cache
 

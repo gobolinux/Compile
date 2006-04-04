@@ -1,5 +1,43 @@
 #!/bin/sh
 
+if [ "$1" == "--help" ]
+then
+   echo "Usage:"
+   echo "   MakeInitRDTree [ --network ] [ <cvs-account> [ <local-account> ] ]"
+   echo
+   echo "Run this inside the GoboLinux LiveCD mastering environment"
+   echo "to rebuild the InitRD tree."
+   echo "Network access is only performed if --network is passed."
+   echo "If you have CVS write access, pass your savannah"
+   echo "username as a parameter and, optionally,"
+   echo "the username in the current machine"
+   echo "which holds your savannah SSH credentials,"
+   echo "if it is not the same as your savannah username."
+   echo "(Only the first run, usually called by MakeMasterEnvironment,"
+   echo "requires account names to be given.)"
+   echo
+   exit 0
+fi
+
+network=no
+if [ "$1" == "--network" ]
+then
+   network=yes
+   shift
+fi
+
+if [ "$1" ]
+then
+   cvsuser="$1"
+   if [ "$2" ]
+   then localuser="$2"
+   else localuser="$1"
+   fi
+else
+   cvsuser=anonymous
+fi
+
+
 if [ "$UID" != 0 ]
 then
    echo "Must be run as superuser."
@@ -7,6 +45,7 @@ then
 fi
 
 root=$PWD/Output/InitRD
+localcvs=$PWD/LocalCVS/
 archives=$PWD/Archives/InitRD
 
 rm -rf $root
@@ -21,30 +60,60 @@ mkdir -p $archives
 today=`date +%Y%m%d`
 arch=`uname -m`
 
+irdscripts_tarbz2=InitRDScripts--$today--$arch.tar.bz2
+
 packages=(
    BusyBox-InitRD--20060202-SVN--$arch.tar.bz2
    MiniUdev--0.1--$arch.tar.bz2
-   InitRDScripts--$today--$arch.tar.bz2
+   $irdscripts_tarbz2
 )
 
-pushd $archives &> /dev/null
-for package in "${packages[@]}"
-do
-   wget -c "http://gobo.calica.com/initrd-packages/$package"
-done &> /dev/null
+if [ "$network" = "yes" ]
+then
+   
+   cd $archives
+   
+   for package in "${packages[@]}"
+   do
+      wget -c "http://gobo.calica.com/initrd-packages/$package" &> /dev/null
+   done
+   
+   mkdir -p $localcvs
+   cd $localcvs
+   
+   if [ -e InitRDScripts ]
+   then
+      cd InitRDScripts
+      cvs up
+   else
+      if [ "$cvsuser" = "anonymous" ]
+      then
+         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d InitRDScripts tools/InitRDScripts
+      else
+         export CVS_RSH=ssh
+         chown $localuser .
+         sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co -d InitRDScripts tools/InitRDScripts
+      fi
+   fi
+fi
+
+cd $archives
 
 rm -rf InitRDScripts
-mkdir InitRDScripts
-pushd InitRDScripts &> /dev/null
-cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d $today tools/InitRDScripts
+pkgdir=InitRDScripts/$today
+mkdir -p $pkgdir
+cp -R $localcvs/InitRDScripts/* $pkgdir
+cd $archives/$pkgdir
 find -type d -name CVS | xargs rm -rf 
+cd $archives/InitRDScripts
 ln -nfs $today Current
-popd &> /dev/null
-rm InitRDScripts--$today--$arch.tar.bz2
-tar cjvpf InitRDScripts--$today--$arch.tar.bz2 InitRDScripts
+cd $archives
+
+rm $irdscripts_tarbz2
+tar cjvpf $irdscripts_tarbz2 InitRDScripts
 rm -rf InitRDScripts
 
-popd &> /dev/null
+cd $root
 
 ####################################################
 # Directory structure
@@ -115,29 +184,30 @@ ln -nfs bin/startGoboLinux $root/linuxrc
 # Nano-InstallPackage
 ####################################################
 
-pushd $root/Programs
+cd $root/Programs
+
 for package in "${packages[@]}"
 do
    tar xjvpf $archives/$package
 done
-popd
 
 ####################################################
 # Nano-SymlinkProgram
 ####################################################
 
-pushd $root
+cd $root
+
 ls -d Programs/*/Current/bin/* Programs/*/Current/sbin/* | while read i
 do
    ln -nfs ../../../$i System/Links/Executables
 done
-popd
 
 ####################################################
 # Populate /System/Kernel/Devices
 ####################################################
 
-pushd $root/System/Kernel/Devices
+cd $root/System/Kernel/Devices
+
 mknod console c 5 1
 mknod hda b 3 0
 mknod hdb b 3 64
@@ -173,7 +243,6 @@ mknod tty5 c 4 5
 mknod tty6 c 4 6
 mknod ttyS0 c 4 64
 mknod urandom c 1 9
-popd
 
 ####################################################
 # Populate /System/Settings
@@ -265,8 +334,10 @@ EOF
 # Hack?
 ####################################################
 
-pushd $archives
-wget -c "http://gobo.calica.com/initrd-packages/usb-storage.ko"
-popd
+if [ "$network" = "yes" ]
+then
+   cd $archives
+   wget -c "http://gobo.calica.com/initrd-packages/usb-storage.ko"
+fi
 
 cp $archives/usb-storage.ko $root/System/Kernel/Modules

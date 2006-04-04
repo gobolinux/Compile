@@ -133,12 +133,11 @@ if [ "$start_at" = "initrd" ] || ! [ -f "Output/ISO/isolinux/initrd.gz" ]
 then
     #Rebuild initrd
     echo "Building initrd.gz"
-    if ! [ -d "Output/InitRD" ]
-    then MakeInitRDTree
-    fi
-    cp External/Linux-Kernel/System/Kernel/Modules/2.6.15.2-Gobo/kernel/drivers/usb/storage/usb-storage.ko Output/InitRD/System/Kernel/Modules/
+    initrd_dir=Output/InitRD
+    MakeInitRDTree
+    cp External/Linux-Kernel/System/Kernel/Modules/2.6.15.2-Gobo/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
     cp External/Linux-Kernel/System/Kernel/Boot/kernel-2.6.15.2-Gobo Output/ISO/isolinux/kernel
-    mkfs.cramfs Output/InitRD Output/ISO/isolinux/initrd
+    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
 fi
 
 if [ "$start_at" = "" ]
