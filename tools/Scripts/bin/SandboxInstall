@@ -155,7 +155,7 @@ then
    Log_Normal "Postprocessing Sandbox"
    Quiet pushd $sandbox_rw
    rm -f Programs/Glibc/Settings/ld.so.cache
-   find -type d | xargs rmdir -p --ignore-fail-on-non-empty
+   find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
    Quiet popd
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
    [ "$leftovers" ] && {

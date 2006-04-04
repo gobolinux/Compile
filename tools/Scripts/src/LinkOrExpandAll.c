@@ -160,7 +160,11 @@ static void Log(LogMode mode, char* s, ...) {
    }
    char* fdString = getenv(fdName); if (!fdString) goto failSafe;
    int fd = atoi(fdString);
-   os_write(fd, colorGray, getenv("scriptName"), ":", colorNormal, " ", color, s, colorNormal, "\n", NULL);
+   char* scriptName = getenv("scriptName");
+   if (scriptName)
+      os_write(fd, colorGray, scriptName, ":", colorNormal, " ", color, s, colorNormal, "\n", NULL);
+   else
+      os_write(fd, s, "\n", NULL);
    return;
   failSafe:
    fprintf(stderr, "%s[LOG PROBLEM]%s %s\n", colorRedWhite, colorNormal, s);
