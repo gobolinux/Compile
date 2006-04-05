@@ -4,6 +4,9 @@ if [ "$1" = "--help" ]
 then
    echo "$0 [<stage>]"
    echo "   where stage can be: layer1, squashfs, initrd, iso"
+   echo " "
+   echo "   for more information, see http://gobolinux.org/?page=livecd"
+   echo " "
    exit 0
 fi
 
@@ -89,13 +92,16 @@ then
        # sumsfile=Output/Checksums/$bn.sums
        echo "Checking if $bn needs updating..."
        find "$@" -type f -newer "$out" 2> /dev/null > /tmp/newer.txt
-       echo ==========
-       echo Changes:
-       echo ----------
-       cat /tmp/newer.txt
-       echo ==========
        diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
        ld_so_cache_changed
+	   if [ $diffs -ne 0 ]
+	   then
+          echo ==========
+          echo Changes:
+          echo ----------
+          cat /tmp/newer.txt
+          echo ==========
+	   fi
        if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
        #find "$@" | grep -v Devices | xargs -n 100 md5sum > $sumsfile.new 2> /dev/null
        #if ! diff -q $sumsfile $sumsfile.new
