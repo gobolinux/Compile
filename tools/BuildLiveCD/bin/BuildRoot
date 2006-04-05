@@ -115,6 +115,8 @@ mkdir -p $root/System/Links/Tasks
 mkdir -p $root/System/Settings
 mkdir -p $root/System/Variable
 mkdir -p $root/System/Variable/tmp
+mkdir -p $root/System/Variable/log
+mkdir -p $root/System/Variable/run
 mkdir -p $root/System/Kernel
 mkdir -p $root/System/Kernel/Boot
 mkdir -p $root/System/Kernel/Objects
