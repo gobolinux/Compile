@@ -14,7 +14,6 @@ echo "Mounting GoboLinux Install CD..."
 echo /sbin/hotplug >/proc/sys/kernel/hotplug
 
 echo "Initializing GoboLinux squashfs..."
-mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-programs-a-e.squashfs /Mount/SquashFS/Programs-A-E
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-programs-f-j.squashfs /Mount/SquashFS/Programs-F-J
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-programs-k-o.squashfs /Mount/SquashFS/Programs-K-O
@@ -23,8 +22,11 @@ mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-programs-u-z.squashfs /Moun
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs /Mount/SquashFS/Rest
 
 mount -t tmpfs none /Mount/TmpFS
-mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Files=ro:/Mount/SquashFS/Rest=ro:/Mount/UnionFS=ro none /Mount/UnionFS
+mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Rest=ro:/Mount/UnionFS=ro none /Mount/UnionFS
 mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Programs-A-E=ro:/Mount/SquashFS/Programs-F-J=ro:/Mount/SquashFS/Programs-K-O=ro:/Mount/SquashFS/Programs-P-T=ro:/Mount/SquashFS/Programs-U-Z=ro none /Mount/UnionFS/Programs
+
+# Has to be mounted after the root unionfs or else it will hide this.
+mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/UnionFS/Files
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices

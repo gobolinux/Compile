@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 cdrom=/Mount/CD-ROM
 squashfile=$cdrom/GoboLinux-files.squashfs
