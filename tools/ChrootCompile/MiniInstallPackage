@@ -18,6 +18,13 @@ then
    shift
 fi
 
+unset verbose
+if [ "$1" = "--verbose" ] 
+then
+   verbose=yes
+   shift
+fi
+
 if [ -d "$1" ] 
 then
    dir=`readlink -f "$1"`
@@ -47,7 +54,7 @@ fi
 
 root="$2"
 
-echo "MiniInstallPackage: Installing $name version $version..."
+[ "$verbose" ] && echo "MiniInstallPackage: Installing $name version $version..."
 
 pushd "$root/$goboPrograms" &> /dev/null
 if [ "$realcopy" ]
@@ -67,7 +74,7 @@ fi
 dsettings="$name/$version/Resources/Defaults/Settings"
 if [ -d "$dsettings" ]
 then
-   echo "MiniInstallPackage: Copying default settings for $name $version"
+   [ "$verbose" ] && echo "MiniInstallPackage: Copying default settings for $name $version"
    cp -R "$dsettings" "$name/Settings"
 fi
 popd &> /dev/null

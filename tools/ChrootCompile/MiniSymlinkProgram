@@ -26,11 +26,18 @@ then
    exit 1
 fi
 
+unset verbose
+if [ "$1" = "--verbose" ]
+then
+    verbose=yes
+    shift
+fi
+
 full_path="$1"
 root=`readlink -f $2`
 gobolinks=/System/Links
 
-echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
+[ "$verbose" ] && echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
 
 #function do_link() {
 #   if [ -d "$root/$1" ]
@@ -80,6 +87,6 @@ do_link ${full_path}/Shared ${gobolinks}/Shared
 
 ln -nfs $(basename ${full_path}) $root/$(dirname ${full_path})/Current
 
-echo " MiniSymlinkProgram: Done" 1>&2
+[ "$verbose" ] && echo " MiniSymlinkProgram: Done" 1>&2
 
 exit 0
