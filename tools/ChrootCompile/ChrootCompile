@@ -77,8 +77,6 @@ base_dependencies=(
      "PCRE" # needed by Grep
     "Grep" # needed by Scripts
     "Python" # needed by Scripts
-#     "OpenSSL" # needed by Wget
-#    "Wget" # needed by Compile
     "Gawk" # needed by Compile
     "FindUtils" # needed by Compile (find)
      "Bzip2" # needed by Atool
@@ -108,7 +106,7 @@ export LANG=C
 export LC_ALL=C
 
 
-if [ -d "$1" -o -f "$1/Recipe" ]
+if [ -d "$1" -a -f "$1/Recipe" ]
 then
    recipedir="$1"
    name=$(basename $(dirname $recipedir))
@@ -125,9 +123,9 @@ echo "ChrootCompile: Compiling $name $version..."
 #############################################################################
 # Preparing stub root directory
 #############################################################################
-root=Area-$name-$version
+root=$PWD/Area-$name-$version
 getclean=Clean
-putclean=CleanPackages
+putclean=Clean
 
 echo "ChrootCompile: Preparing $root..."
 
@@ -312,6 +310,7 @@ function guess_and_load_dependency() {
 for dep in `{
    echo "${base_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
+   [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
 } | sort -u`
 do
    load_dependency "$dep"
@@ -377,24 +376,51 @@ $sudo mount --bind $getclean $root/Depot/$getclean
 #############################################################################
 # Download required archives to ./Archives
 #############################################################################
-(
-   source "$chrootcompileCompileConf"
-   source "$1/Recipe"
-   cd "$root/Files/Compile/Archives"
-   if [ "$url" ]
-   then
-      file=`basename "$url"`
-      [ ! -e "$file" ] && wget -c "$url"
-   fi
-   if [ "${urls[*]}" ]
-   then
-      for url in "${urls[@]}"
-      do
-         file=`basename "$url"`
-         [ ! -e "$file" ] && wget -c "$url"
-      done
-   fi
-)
+
+function fetch_archive_off_recipe() {
+   (
+      unset is_meta
+      unset include
+      echo "=====> $1"
+      [ -f "$1/Recipe" ] || die "Can't find $1/Recipe."
+      source "$1/Recipe"
+      if [ -f "$1/$arch/Recipe" ]
+      then source "$1/$arch/Recipe"
+      fi
+      if [ "$is_meta" = "yes" ]
+      then
+         for pkgver in "${include[@]}"
+         do
+            ipkg="${pkgver%--*}"
+            ver="${pkgver#*--}"
+            pushd "$1/../../" &> /dev/null
+            pkg=`ls | grep -i "^$ipkg$"`
+            [ "$pkg" ] || die "Can't find recipe for $ipkg"
+            popd &> /dev/null
+            fetch_archive_off_recipe "$1/../../$pkg/$ver" || die
+         done
+      else
+         cd "$root/Files/Compile/Archives"
+         if [ "$url" ]
+         then
+            file=`basename "$url"`
+            [ ! -e "$file" ] && { wget -c "$url" || die "Couldn't fetch $url" ;}
+         fi
+         if [ "${urls[*]}" ]
+         then
+            for url in "${urls[@]}"
+            do
+               file=`basename "$url"`
+               [ ! -e "$file" ] && { wget -c "$url" || die "Couldn't fetch $url" ;}
+            done
+         fi
+      fi
+   ) || die
+}
+
+source "$chrootcompileCompileConf"
+
+fetch_archive_off_recipe "$1"
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
