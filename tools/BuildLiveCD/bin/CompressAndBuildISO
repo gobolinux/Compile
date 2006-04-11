@@ -1,5 +1,7 @@
 #!/bin/sh
 
+kernel_version="2.6.16.2-Gobo"
+
 if [ "$1" = "--help" ]
 then
    echo "$0 [<stage>]"
@@ -141,8 +143,8 @@ then
     echo "Building initrd.gz"
     initrd_dir=Output/InitRD
     MakeInitRDTree
-    cp External/Linux-Kernel/System/Kernel/Modules/2.6.15.2-Gobo/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
-    cp External/Linux-Kernel/System/Kernel/Boot/kernel-2.6.15.2-Gobo Output/ISO/isolinux/kernel
+    cp External/Linux-Kernel/System/Kernel/Modules/$kernel_version/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
+    cp External/Linux-Kernel/System/Kernel/Boot/kernel-$kernel_version Output/ISO/isolinux/kernel
     mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
 fi
 

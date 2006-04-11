@@ -23,7 +23,7 @@ check_and_dl "$external/Linux-HOWTOs"  \
     "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2"
 
 check_and_dl "$external/Linux-Kernel"  \
-    "http://www.calica.com/gobolinux/kernel/Linux--2.6.15.2-Gobo--kernel-i686.tar.bz2"
+    "http://gobo.calica.com/livecd-packages/Linux--2.6.16.2-Gobo--kernel-i686.tar.bz2"
 
 check_and_dl "$external/Files-Fonts"  \
     "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2"
