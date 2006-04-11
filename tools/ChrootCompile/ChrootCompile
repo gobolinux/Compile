@@ -63,7 +63,7 @@ fi
 unset verbose
 if [ "$1" == "--verbose" ]
 then
-    verbose=yes
+    verbose="$1"
     shift
 fi
 
