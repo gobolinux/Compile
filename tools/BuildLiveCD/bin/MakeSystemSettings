@@ -1,15 +1,28 @@
 #!/bin/sh
 
-cat <<EOF > GoboLinuxVersion
+function write_file() {
+   mv "$1" "$1.old"
+   cat > "$1"
+   if diff "$1" "$1.old"
+   then
+      rm "$1"
+      mv "$1.old" "$1"
+   else
+      rm "$1.old"
+   fi
+}
+
+write_file GoboLinuxVersion <<EOF
 013-pre1
 EOF
 
-cat <<EOF > gobo
+write_file gobo <<EOF
 LFS 3521
 2002-03-20 01:51
 EOF
+touch -t 200203200151 gobo
 
-cat <<EOF > group
+write_file group <<EOF
 gobo:x:0:
 bin:x:1:
 sys:x:2:gobo
@@ -32,11 +45,11 @@ video:x:103:
 sshd:x:104:
 EOF
 
-cat <<EOF > hosts
+write_file hosts <<EOF
 127.0.0.1 localhost.localdomain localhost LiveCD
 EOF
 
-cat <<EOF > passwd
+write_file passwd <<EOF
 gobo:x:0:0:SuperUser:/Users/gobo:/bin/zsh
 nobody:x:12:12:nobody:/tmp:
 mail:x:8:12:mail:/:
@@ -47,12 +60,12 @@ fibo:x:21:21::/tmp:/bin/zsh
 sshd:x:22:104::/var/empty:/bin/false
 EOF
 
-cat <<EOF > resolv.conf
+write_file resolv_conf <<EOF
 #nameserver 200.176.2.10
 #nameserver 200.177.250.10
 EOF
 
-cat <<EOF > shadow
+write_file shadow <<EOF
 gobo:aSt9IU/wQKWM2:13184::::::
 nobody:*:9797:0:::::
 uucp:*:9797:0:::::
@@ -61,7 +74,7 @@ fibo:!:12154:0:99999:7:::
 sshd:!:12341:0:99999:7:::
 EOF
 
-cat <<EOF > fstab
+write_file fstab <<EOF
 # Sys filesystem
 none /System/Kernel/Objects sysfs defaults 0 0
 

@@ -3,36 +3,57 @@
 externalarchives=Archives/Ext
 external=External
 
+function get_md5() {
+   md5sum "$1" 2>/dev/null | awk '{print $1}'
+}
+
 function check_and_dl() {
    dir="$1"
    url="$2"
+   md5="$3"
+   urlbn=`basename $url`
+   localfile="$externalarchives/$urlbn"
+   localmd5=`get_md5 "$localfile"`
+   if ! [ "$localmd5" = "$md5" ]
+   then
+      rm -f "$localfile"
+      rm -rf "$dir"
+      (cd $externalarchives; wget -c $url)
+      localmd5=`get_md5 "$localfile"`
+      if ! [ "$localmd5" = "$md5" ]
+      then
+         echo "Failed fetching file with expected md5 sum."
+         echo "Expected md5: $md5"
+         echo "     Got md5: $localmd5"
+         exit 1
+      fi
+   fi
    if ! [ "`ls $dir/* 2> /dev/null`" ]
    then
-      url_bn=`basename $url`
-      (cd $externalarchives; wget -c $url)
       mkdir -p "$dir"
       case "${url##*.}" in
       gz|tgz) mode=xvzf ;;
       bz2) mode=xvjf ;;
       esac
-      sudo tar $mode $externalarchives/${url_bn} -C "$dir"
+      sudo tar $mode $localfile -C "$dir"
    fi
 }
 
 check_and_dl "$external/Linux-HOWTOs"  \
-    "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2"
+    "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2" \
+    "94d5b387980e15605cea59c2c826dcf1"
 
 check_and_dl "$external/Linux-Kernel"  \
-    "http://gobo.calica.com/livecd-packages/Linux--2.6.16.2-Gobo--kernel-i686.tar.bz2"
+    "http://gobo.calica.com/livecd-packages/Linux--2.6.16.2-Gobo--kernel-i686.tar.bz2" \
+    "d2538ac43905e1d46971c25e1d60d18a"
 
 check_and_dl "$external/Files-Fonts"  \
-    "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2"
+    "http://www.calica.com/gobolinux/livecd/Files-Fonts.tar.bz2" \
+    "374747070d2585c905e24c0f5d30f029"
 
 check_and_dl "$external/CD-Bootloader"  \
-    "http://gobo.calica.com/livecd-packages/CD-Bootloader-i686.tar.bz2"
-
-# check_and_dl "$external/LayerTMP"  \
-#     "http://www.calica.com/gobolinux/livecd/LayerTMP.tar.bz2"
+    "http://gobo.calica.com/livecd-packages/CD-Bootloader-i686.tar.bz2" \
+    "141c0438c45dcdbee307178d88db93a6"
 
 # Gobo-Files
 mkdir -p $external/Gobo-Files
