@@ -379,7 +379,8 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 			
 			if (namelist[i]->d_name[0] == '.' && !opt_all && !opt_hid) {
 				if (is_hidden(namelist[i]->d_name)) {
-					*hiddenfiles += 1;
+					if (pass == 0 || pass == 99)
+						*hiddenfiles += 1;
 					continue;
 				}
 
