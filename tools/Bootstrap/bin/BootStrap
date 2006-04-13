@@ -8,26 +8,25 @@ source $TOPDIR/.config
 
 if [ "$CROSS_NONE" = "y" ]
 then 
-	prefix="$INSTALL_PREFIX"
+    prefix="$INSTALL_PREFIX"
 else
-	[ "$CROSS_ARM"  = "y" ] && export arch=ARM
-	[ "$CROSS_SH4"  = "y" ] && export arch=SH4
-	
-	source $goboSettings/Compile/Cross-$arch.conf
-	prefix="$crossPrefixDir"
+    [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
+    [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
+
+    source $goboSettings/Compile/Cross-$arch_conf.conf
+    prefix="$crossPrefixDir"
 fi
 
 case "$1" in
-	[sS]tart)
-		mkdir -p $prefix/$goboStatus $prefix/$goboDevices
-        # let's disable unionsandbox for a while...
-		# [ ! -d $prefix/$goboStatus/self ]  && mount -o bind $goboStatus  $prefix/$goboStatus
-		# [ ! -e $prefix/$goboDevices/null ] && mount -o bind $goboDevices $prefix/$goboDevices
-		;;
-	[sS]top)
-		# umount $prefix/$goboStatus
-		# umount $prefix/$goboDevices
-		;;
+    [sS]tart)
+        mkdir -p $prefix/$goboStatus $prefix/$goboDevices
+        [ ! -e $prefix/$goboStatus/self ]  && mount -o bind $goboStatus  $prefix/$goboStatus
+        [ ! -e $prefix/$goboDevices/kmem ] && mount -o bind $goboDevices $prefix/$goboDevices
+        ;;
+    [sS]top)
+        umount $prefix/$goboStatus  && echo "Unmounted binded proc filesystem"
+        umount $prefix/$goboDevices && echo "Unmounted binded dev filesystem"
+        ;;
 esac
 
 true
