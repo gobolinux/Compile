@@ -1,19 +1,45 @@
 #!/bin/sh
 
 TOP_DIR=..
+export PATH=$PATH:$TOP_DIR/functions
 
+source PkgFunctions
 source ScriptFunctions
 source $TOP_DIR/.config
+
+function cleanup() {
+    cd "$TOP_DIR/bin"
+    ./BootStrap stop
+}
+
+trap cleanup TERM INT STOP HUP
+
+#
+# Install the ChrootCompile package on the host's root system
+#
+dirname="$goboPrograms/ChrootCompile"
+if [ ! -d "$dirname" ]
+then
+    pushd "$TOP_DIR/downloads" >& /dev/null
+    Log_Normal "Installing the ChrootCompile package on the host system..."
+    rm -Rf tools/ChrootCompile
+    cvs_checkout ChrootCompile tools/ChrootCompile
+
+    version="`date +%Y%m%d`-CVS"
+    cvs_make_install ChrootCompile "$dirname" "$version" "VERSION=$version"
+    SymlinkProgram ChrootCompile
+    popd >& /dev/null
+fi
 
 if [ "$CROSS_NONE" = "y" ]
 then 
 	prefix="$INSTALL_PREFIX"
 	kernelVersion="$KERNEL_VERSION"
 else
-	[ "$CROSS_ARM"  = "y" ] && export arch=ARM
-	[ "$CROSS_SH4"  = "y" ] && export arch=SH4
+	[ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
+	[ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 	
-	source $goboSettings/Compile/Cross-$arch.conf
+	source $goboSettings/Compile/Cross-$arch_conf.conf
 	prefix="$crossPrefixDir"
 	symlink_options="-c overwrite"
 
