@@ -60,6 +60,26 @@ then
    shift
 fi
 
+unset crossopts
+if [ "$1" == "--cross-compile" ]
+then
+    [ "$2" = "" ] && die "Expected architecture as a parameter."
+    crossopts="--cross-compile $2"
+    crossconf=`ls Bootstrap/Compile/*/Resources/Defaults/Settings/Compile/Cross-$2.conf`
+
+    [ ! -f $crossconf ] && die "$crossconf: file not found."
+    eval `cat $crossconf | grep "crossPrefixDir=" | sed 's/"//g'`
+    eval `cat $crossconf | grep "toolchainDir="   | sed 's/"//g'`
+    eval `cat $crossconf | grep "cross_uname_m="  | sed 's/"//g'`
+    crossprefixdir=$crossPrefixDir
+    toolchaindir=$toolchainDir
+    arch=$cross_uname_m
+
+    shift 2
+else
+    arch=`uname -m`
+fi
+
 unset verbose
 if [ "$1" == "--verbose" ]
 then
@@ -69,10 +89,11 @@ fi
 
 if [ "$1" == "--help" ]
 then
-    echo "Usage: $0 [--repack] [--verbose]"
+    echo "Usage: $0 [--repack] [--cross-compile <arch>] [--verbose] <recipe directory>"
     echo " "
-    echo "   --repack:  run CreatePackage after compilation (GoboLinux only)"
-    echo "   --verbose: verbose output"
+    echo "   --repack:               run CreatePackage after compilation (GoboLinux only)"
+    echo "   --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
+    echo "   --verbose:              verbose output"
     exit 0
 fi
 
@@ -129,9 +150,6 @@ else
    die "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
 fi
 
-
-arch=`uname -m`
-
 echo "ChrootCompile: Compiling $name $version..."
 
 #############################################################################
@@ -159,6 +177,8 @@ function cleanup() {
    do 
       Umount $mp
    done
+   [ "$crossopts" ] && Umount $root/$crossprefixdir
+   [ "$crossopts" ] && Umount $root/$toolchaindir
 }
 
 trap cleanup TERM STOP HUP EXIT
@@ -168,7 +188,7 @@ cleanup
 if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
-   [ "$verbose" ] && echo "Backing up old $root to $root-old-$date."
+   echo "Backing up old $root to $root-old-$date."
    $sudo mv $root $root-old-$date
 fi
 
@@ -201,7 +221,6 @@ mkdir -p $root/usr
 
 mkdir -p $root/Depot/LocalPackages
 mkdir -p $root/Depot/$getclean
-
 
 ln -nfs /System/Kernel/Objects $root/sys
 ln -nfs /System/Kernel/Devices $root/dev
@@ -278,6 +297,7 @@ function load_dependency() {
       } || true
       pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
       [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
+      [ ! "$pkg" -a "$crossopts" ] && pkg=`ls -d $crossprefixdir/$goboPrograms/$dep 2> /dev/null || true`
       [ "$pkg" ] && break
    done
    [ ! "$pkg" ] && {
@@ -387,6 +407,15 @@ $sudo mount --bind Archives $root/Files/Compile/Archives
 $sudo mount --bind LocalPackages $root/Depot/LocalPackages
 $sudo mount --bind $getclean $root/Depot/$getclean
 
+if [ "$crossopts" ]
+then
+    mkdir -p $root/$crossprefixdir
+    mkdir -p $root/$toolchaindir
+    echo $sudo mount --bind $crossprefixdir $root/$crossprefixdir
+    $sudo mount --bind $crossprefixdir $root/$crossprefixdir
+    $sudo mount --bind $toolchaindir $root/$toolchaindir
+fi
+
 #############################################################################
 # Download required archives to ./Archives
 #############################################################################
@@ -455,7 +484,10 @@ fi
 
 if ! [ "$chrootcompileMode" = "gobo" ]
 then
-   ln -nfs Programs $root/View
+   if [ "$crossopts" ]
+   then ln -nfs $crossprefixdir/Programs $root/View
+   else ln -nfs Programs $root/View
+   fi
 fi
 
 #############################################################################
@@ -493,7 +525,7 @@ function check_dependencies() {
 # check_dependencies
 
 [ "$verbose" ] && echo "ChrootCompile: Will run Compile..."
-in_chroot Compile --batch --no-web --no-symlink --no-sign $name $version || die "Compilation failed."
+in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
 
 #############################################################################
 #  After the compilation is done,
@@ -511,8 +543,8 @@ else
    fullroot=`readlink -f $root`
    cd $root/View
    mkdir -p $fullroot/../$putclean/
-   readlink -f $fullroot/../$putclean/$name--$version--i686.tar.bz2
-   tar jcvpf $fullroot/../$putclean/$name--$version--i686.tar.bz2 $name/$version
+   readlink -f $fullroot/../$putclean/$name--$version--$arch.tar.bz2
+   tar jcvpf $fullroot/../$putclean/$name--$version--$arch.tar.bz2 $name/$version
 fi
 
 # Remove the left over Area
