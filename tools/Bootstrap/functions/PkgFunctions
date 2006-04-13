@@ -62,12 +62,14 @@ function cvs_make_install() {
 	module="$1"
 	app_dir="$2"
 	version_dir="$3"
+    shift 3
 	
     mkdir -p "$app_dir/$version_dir"
 
 	pushd "$module" >& /dev/null
-	make CC=$CC || exit 1
-	make CC=$CC install PREFIX="$app_dir/$version_dir" || exit 1
+    [ "$kernelVersion" != "" ] && source "$goboSettings/Compile/Cross-$arch_conf.conf"
+    make CC=$CC "$@" || exit 1
+	make CC=$CC install PREFIX="$app_dir/$version_dir" "$@" || exit 1
 	cp -a * "$app_dir/$version_dir"
 	popd >& /dev/null
 
@@ -77,8 +79,8 @@ function cvs_make_install() {
 	popd >& /dev/null
     
     pushd "$app_dir/Current" >& /dev/null
-    find . -name CVS | xargs rm -Rf
-    find . -name CVS | xargs rmdir
+    find . -name CVS | xargs rm -Rf 2> /dev/null
+    find . -name CVS | xargs rmdir  2> /dev/null
     popd >& /dev/null
 }
 
