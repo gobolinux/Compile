@@ -90,6 +90,10 @@ function DirectFB_hook() {
     [ "$kernelArch" = "sh" ] && echo "CVS"
 }
 
+function Linux() {
+    [ "$kernelVersion" != "" ] && echo "$kernelVersion"
+}
+
 function Linux_Fusion_hook() {
     # always fetch from CVS
     echo "CVS"
