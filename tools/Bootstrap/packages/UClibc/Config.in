@@ -1,6 +1,5 @@
 config PKG_UCLIBC
     bool "uClibc"
-    default n
     ---help---
       This selects the uClibc library, a replacement to Glibc, the GNU C library.
       If you want to priorize space against performance or you're generating the
