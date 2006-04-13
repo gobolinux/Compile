@@ -152,15 +152,11 @@ function Umount() {
 }
 
 function cleanup() {
-   [ "$verbose" ] && echo "ChrootCompile: Will unmount /dev..."
    Umount $root/System/Kernel/Devices || true
-   [ "$verbose" ] && echo "ChrootCompile: Will unmount /proc..."
    Umount $root/System/Kernel/Status || true
-   [ "$verbose" ] && echo "ChrootCompile: Will unmount Archives..."
    Umount $root/Files/Compile/Archives || true
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
-      [ "$verbose" ] && echo "ChrootCompile: Will unmount $mp..."
       Umount $mp
    done
 }
