@@ -152,9 +152,9 @@ function Umount() {
 }
 
 function cleanup() {
-   Umount $root/System/Kernel/Devices || true
-   Umount $root/System/Kernel/Status || true
-   Umount $root/Files/Compile/Archives || true
+   Umount $root/System/Kernel/Devices
+   Umount $root/System/Kernel/Status
+   Umount $root/Files/Compile/Archives
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
       Umount $mp
