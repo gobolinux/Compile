@@ -2,10 +2,14 @@
 VERSION =
 PROGRAM = ChrootCompile
 PREFIX = /Programs/$(PROGRAM)/$(VERSION)
+SETTINGS_DIR = /Programs/$(PROGRAM)/Settings
 PACKAGE_DIR = $(HOME)
 PACKAGE_ROOT = $(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE = $(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE = $(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
+
+CONF_FILES = ChrootCompile.conf
+BIN_FILES = ChrootCompile GenericInstall MiniInstallPackage MiniSymlinkProgram SetupChrootEnv
 
 all: version_check
 
@@ -34,5 +38,6 @@ dist: version_check cleanup verify all
 	! { cvs up 2>&1 | grep "^M" ;}
 
 install: version_check
-	mkdir -p $(PREFIX)
-	cp -R * $(PREFIX)
+	mkdir -p $(PREFIX)/bin $(SETTINGS_DIR)
+	cp $(BIN_FILES) $(PREFIX)/bin
+	cp $(CONF_FILES) $(SETTINGS_DIR)
