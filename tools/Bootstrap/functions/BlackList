@@ -5,9 +5,7 @@
 #
 blacklist=(
     "LibGCC"		# LibGCC is installed in a different way
-    "Links"
     "Matchbox"
-    "Xorg"
 )
 
 function is_in_blacklist() {
