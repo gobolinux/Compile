@@ -1,13 +1,13 @@
 This is Bootstrap, from the GoboLinux from Scratch project.
 
 It's aimed to generate a new distribution based on the
-GoboLinux hierarchy, focused towards embedded usage.
-Bootstrap handles cross-compiling very fine, and has
+GoboLinux hierarchy, focused on embedded systems.
+Bootstrap handles cross-compiling very well, and has
 already been used to make successful ARM and SH-4 ports.
 
 In order to use it, it's necessary to have a GoboLinux
 host system, since it relies on its Compile and Scripts
-tools. Just ensure to have their latest versions installed,
+tools. Just ensure that you have the latest versions installed,
 since Bootstrap relies on many bleeding edge features
 from these tools.
 
