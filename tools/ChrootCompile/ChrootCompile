@@ -147,17 +147,21 @@ putclean=Clean
 # Setting signal handlers (cleanup before exit if interrupted)
 #############################################################################
 
+function Umount() {
+    $sudo umount $1 2> /dev/null || true
+}
+
 function cleanup() {
    [ "$verbose" ] && echo "ChrootCompile: Will unmount /dev..."
-   $sudo umount $root/System/Kernel/Devices || true
+   Umount $root/System/Kernel/Devices || true
    [ "$verbose" ] && echo "ChrootCompile: Will unmount /proc..."
-   $sudo umount $root/System/Kernel/Status || true
+   Umount $root/System/Kernel/Status || true
    [ "$verbose" ] && echo "ChrootCompile: Will unmount Archives..."
-   $sudo umount $root/Files/Compile/Archives || true
+   Umount $root/Files/Compile/Archives || true
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
       [ "$verbose" ] && echo "ChrootCompile: Will unmount $mp..."
-      $sudo umount $mp
+      Umount $mp
    done
 }
 
