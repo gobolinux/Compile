@@ -13,6 +13,7 @@ subdir=$TOP_DIR/packages
 # GoboLinux Scripts' functions
 source GoboPath
 source ScriptFunctions
+Import GoboLinux
 
 # Bootstrap's own functions
 PATH=$PATH:$TOP_DIR/functions
@@ -24,29 +25,44 @@ source $dot_config
 
 function make_headers() {
     dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
-    echo "checando $dirname"
     [ -d "$dirname" ] && return
 	
     Log_Normal "Creating the Libc Headers package..."
-	if [ "$CROSS_NONE" = "y" ]
-	then
-		case `uname -m` in
-			i386|i486|i586|i686)
-				kernelArch="i386"
-				;;
-			*)
-				Log_Error "Please add your architecture here!"
-				exit 1
-				;;
-		esac
-	fi
-	
-	# Latest release known to work is 2.6.12.0 (based on LFS)
+    if [ "$CROSS_NONE" = "y" ]
+    then
+        case `uname -m` in
+            i386|i486|i586|i686)
+            kernelArch="i386"
+            ;;
+        *)
+            Log_Error "Please add your architecture here!"
+            exit 1
+            ;;
+        esac
+    else
+        export goboCrossCompiling=yes
+        Parse_Conf Directories.conf
+    fi
+
+    # Latest release known to work is 2.6.12.0 (based on LFS)
     pushd "$TOP_DIR/bin" >& /dev/null
-	./MakeKernelHeaders 2.6.12 $kernelArch $dirname
-	SymlinkProgram $symlink_options Linux-Libc-Headers >& /dev/null
+    ./MakeKernelHeaders 2.6.12 $kernelArch $dirname
+    SymlinkProgram $symlink_options Linux-Libc-Headers
     popd >& /dev/null
+
+    if [ "$CROSS_NONE" = "n" ]
+    then
+        unset goboCrossCompiling goboPrefix
+        Parse_Conf Directories.conf
+    fi
 }
+
+function cleanup() {
+    cd "$TOP_DIR/bin"
+    ./BootStrap stop
+}
+
+trap cleanup TERM INT STOP HUP
 
 if [ "$CROSS_NONE" = "y" ]
 then 
@@ -54,14 +70,14 @@ then
 else
     [ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
     [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
-	
+
     # this is the same as evaluating the line 'crossPrefixDir=...'
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export crossPrefixDir=" | sed 's/\"//g'`
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export kernelArch=" | sed 's/\"//g'`
     prefix=$crossPrefixDir
 
     cross_options="--cross-compile $arch_conf"
-	symlink_options="-c overwrite"
+    symlink_options="-c overwrite"
 fi
 
 skip_all=0
@@ -70,10 +86,10 @@ pushd $subdir >& /dev/null
 for entry in `cat $dot_config | grep "=y" | grep PKG`
 do
     pkg_dir=`package_subdir $entry`
-    [ ! -d "$pkg_dir" ] && continue
+    [ ! -d "$pkg_dir" ] && { Log_Error "$pkg_dir not found"; continue; }
 
     pkg_name=`basename "$pkg_dir"`
-	is_in_blacklist "$pkg_name" && continue
+    is_in_blacklist "$pkg_name" && { Log_Error "$pkg_name is in blacklist"; continue; }
     
     # If a hook is configured for the current package, execute it
     # so that a specific version can be used. Hooks are declared
@@ -81,33 +97,34 @@ do
     hook_function="`echo ${pkg_name} | sed 's/-/_/g'`_hook"
     pkg_version=`${hook_function} 2> /dev/null`
 
-	if [ -d "$prefix/$goboPrograms/$pkg_name" ]
-	then
+    if [ -d "$prefix/$goboPrograms/$pkg_name" ]
+    then
         if [ $skip_all = 1 ]
         then
             Log_Normal "Skipping package $pkg_name"
             continue
         fi
 
-		Ask_Option "$pkg_name seems to be already compiled. Do you want to skip it? [Y(es)/N(o)/SA(skip all)]"
-		case "$REPLY" in
-	    	n|N) # compile it
-		 		 ;;
+        Ask_Option "$pkg_name seems to be already compiled. Do you want to skip it? [Y(es)/N(o)/SA(skip all)]"
+        case "$REPLY" in
+            n|N)  # compile it
+                  ;;
             sa|SA) # skip all
-                 skip_all=1
-                 continue
-                 ;;
-	    	*)   continue 
-		 		 ;;
-		esac
-	fi
+                  skip_all=1
+                  continue
+                  ;;
+            *)    continue 
+                  ;;
+        esac
+    fi
  
-	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
-	echo
-	Log_Normal "Running 'Compile $cross_options $recipe'"
-	echo
+#	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
+    recipe=`FindPackage -t recipe $pkg_name`
+    echo
+    Log_Normal "Running 'Compile $cross_options $recipe'"
+    echo
 
-	Compile $cross_options $recipe || exit 1
+    Compile $cross_options $recipe || exit 1
 
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
