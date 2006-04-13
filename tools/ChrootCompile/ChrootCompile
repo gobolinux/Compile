@@ -41,7 +41,10 @@ source $scriptdir/ChrootCompile.conf
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
 fi
-sudo=sudo
+if [ "$UID" -ne 0 ]
+then sudo=sudo
+else sudo=
+fi
 
 #############################################################################
 # '--repack' option: (to be used only on GoboLinux systems)
@@ -61,6 +64,9 @@ then
 fi
 
 unset crossopts
+unset crossrepodir
+unset crossprefixdir
+unset crosstoolchaindir
 if [ "$1" == "--cross-compile" ]
 then
     [ "$2" = "" ] && die "Expected architecture as a parameter."
@@ -72,7 +78,8 @@ then
     eval `cat $crossconf | grep "toolchainDir="   | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_uname_m="  | sed 's/"//g'`
     crossprefixdir=$crossPrefixDir
-    toolchaindir=$toolchainDir
+    crosstoolchaindir=$toolchainDir
+    crossrepodir="$crossprefixdir/$goboPrograms"
     arch=$cross_uname_m
 
     shift 2
@@ -159,26 +166,27 @@ root=$PWD/Area-$name-$version
 getclean=Clean
 putclean=Clean
 
-[ "$verbose" ] && echo "ChrootCompile: Preparing $root..."
+echo "ChrootCompile: Preparing $root..."
 
 #############################################################################
 # Setting signal handlers (cleanup before exit if interrupted)
 #############################################################################
 
-function Umount() {
-    $sudo umount $1 2> /dev/null || true
+function unmount_dir() {
+   [ "$verbose" ] && echo "ChrootCompile: Will unmount $point..."
+   $sudo umount $1 2>&1 | grep -v "not mounted" /dev/null || true
 }
 
 function cleanup() {
-   Umount $root/System/Kernel/Devices
-   Umount $root/System/Kernel/Status
-   Umount $root/Files/Compile/Archives
+   unset LANG LC_ALL
+   for point in /System/Kernel/Devices /System/Kernel/Status /Files/Compile/Archives $crossprefixdir $crosstoolchaindir
+   do
+      unmount_dir $point
+   done
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
-      Umount $mp
+      umount_dir $mp
    done
-   [ "$crossopts" ] && Umount $root/$crossprefixdir
-   [ "$crossopts" ] && Umount $root/$toolchaindir
 }
 
 trap cleanup TERM STOP HUP EXIT
@@ -278,7 +286,7 @@ done
 #############################################################################
 # Installing base packages inside root directory
 #############################################################################
-[ "$verbose" ] && echo "ChrootCompile: Installing base packages inside $root..."
+echo "ChrootCompile: Installing base packages inside $root..."
 
 function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
@@ -287,7 +295,7 @@ function filter_dir() {
 function load_dependency() {
    local dep="$1"
    local pkg=
-   for repo in $getclean Bootstrap
+   for repo in $getclean Bootstrap $crossrepodir
    do
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
          die "More than one entry for $dep in $repo/ directory."
@@ -297,11 +305,10 @@ function load_dependency() {
       } || true
       pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
       [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
-      [ ! "$pkg" -a "$crossopts" ] && pkg=`ls -d $crossprefixdir/$goboPrograms/$dep 2> /dev/null || true`
       [ "$pkg" ] && break
    done
    [ ! "$pkg" ] && {
-      die "Base dependency $dep could not be found."
+      die "Dependency $dep could not be found."
    }
    if [ $dep = $name ]
    then realcopy="--real-copy"
@@ -410,10 +417,10 @@ $sudo mount --bind $getclean $root/Depot/$getclean
 if [ "$crossopts" ]
 then
     mkdir -p $root/$crossprefixdir
-    mkdir -p $root/$toolchaindir
+    mkdir -p $root/$crosstoolchaindir
     echo $sudo mount --bind $crossprefixdir $root/$crossprefixdir
     $sudo mount --bind $crossprefixdir $root/$crossprefixdir
-    $sudo mount --bind $toolchaindir $root/$toolchaindir
+    $sudo mount --bind $crosstoolchaindir $root/$crosstoolchaindir
 fi
 
 #############################################################################
@@ -424,7 +431,7 @@ function fetch_archive_off_recipe() {
    (
       unset is_meta
       unset include
-      echo "=====> $1"
+      [ "$verbose" ] && echo "Fetching files for $1/Recipe..."
       [ -f "$1/Recipe" ] || die "Can't find $1/Recipe."
       source "$1/Recipe"
       if [ -f "$1/$arch/Recipe" ]
@@ -484,10 +491,7 @@ fi
 
 if ! [ "$chrootcompileMode" = "gobo" ]
 then
-   if [ "$crossopts" ]
-   then ln -nfs $crossprefixdir/Programs $root/View
-   else ln -nfs Programs $root/View
-   fi
+   ln -nfs $crossprefixdir/Programs $root/View
 fi
 
 #############################################################################
@@ -524,7 +528,7 @@ function check_dependencies() {
 # disabled for now
 # check_dependencies
 
-[ "$verbose" ] && echo "ChrootCompile: Will run Compile..."
+echo "ChrootCompile: Will run Compile..."
 in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
 
 #############################################################################
