@@ -15,10 +15,10 @@ rm  -f "$TOP_DIR/downloads/headers"
 echo "Downloading the LFS headers script..."
 
 pushd "$TOP_DIR/downloads" >& /dev/null
-wget --quiet http://ftp.jg555.com/headers/headers2
-GrepReplace "\--quiet" "" headers2 && rm -f headers2~
-chmod +x headers2
-./headers2 "$version"
+wget --quiet http://ftp.jg555.com/headers/headers
+GrepReplace "\--quiet" "" headers && rm -f headers~
+chmod +x headers
+./headers "$version"
 popd >& /dev/null
 
 echo "Configuring headers for chosen platform ($kernel_arch)..."
