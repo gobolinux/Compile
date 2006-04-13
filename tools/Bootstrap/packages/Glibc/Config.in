@@ -1,6 +1,5 @@
 config PKG_GLIBC
     bool "Glibc"
-    default y
     ---help---
       This selects the Glibc library. Unless you're recompiling your system
       and you already have it installed on your target's directory and you are
