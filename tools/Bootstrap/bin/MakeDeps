@@ -2,8 +2,8 @@
 
 if [ $# != 1 ]
 then
-	echo "Syntax: $0 <.config>"
-	exit 1
+    echo "Syntax: $0 <.config>"
+    exit 1
 fi
 
 TOPDIR=../
@@ -23,12 +23,12 @@ function gen_pkg_names() {
     dependencies="$1"
     dot_config="$2"
 
-	cat "$dependencies" | while read line
-	do
-		pkg_name=PKG_`echo $line | awk {'print $1'} | tr "[:lower:]-" "[:upper:]_"`
+    cat "$dependencies" | while read line
+    do
+        pkg_name=PKG_`echo $line | awk {'print $1'} | tr "[:lower:]-" "[:upper:]_"`
         grep -q "^$pkg_name" "$dot_config" && continue
-		echo "$pkg_name"
-	done
+        echo "$pkg_name"
+    done
 }
 
 #
@@ -40,30 +40,31 @@ pushd "$TOPDIR"/packages >& /dev/null
 dot_config="$1"
 for entry in `cat "$dot_config" | grep ^PKG | cut -d"=" -f1`
 do
-	# Locate the dependency file for the current package
-	pkg_dir=`package_subdir $entry`
-	[ ! -d "$pkg_dir" ] && continue
-	
-	pkg_name=`basename "$pkg_dir"`
-	is_in_blacklist "$pkg_name" && continue
-	
+    # Locate the dependency file for the current package
+    pkg_dir=`package_subdir $entry`
+    [ ! -d "$pkg_dir" ] && continue
+
+    pkg_name=`basename "$pkg_dir"`
+    is_in_blacklist "$pkg_name" && continue
+
     # If a hook is configured for the current package, execute it
     # so that a specific version can be used. Hooks are declared
     # inside functions/PkgFunctions.
     hook_function=`echo ${pkg_name} | sed 's/-/_/g'`
     pkg_version=`${hook_function} 2> /dev/null`
 
-	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
-	dependencies="$recipe/Resources/Dependencies"
-	if [ ! -d "$recipe" ]
-	then
-		Log_Error "Recipe for $pkg_name not found."
-		exit 1
-	fi
+    #	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
+    recipe=`FindPackage -t recipe $pkg_name`
+    dependencies="$recipe/Resources/Dependencies"
+    if [ ! -d "$recipe" ]
+    then
+        Log_Error "Recipe for $pkg_name not found."
+        exit 1
+    fi
 
-	[ ! -f "$dependencies" ] && continue
-	
-	Log_Normal "Parsing dependency file $dependencies"
+    [ ! -f "$dependencies" ] && continue
+
+    Log_Normal "Parsing dependency file $dependencies"
     gen_pkg_names "$dependencies" "$dot_config" >> $dependency_list
 done
 popd >& /dev/null
@@ -73,9 +74,9 @@ popd >& /dev/null
 #
 cat "$dependency_list" | sort -n | uniq | while read entry
 do
-	grep -q "# $entry is not set" $TOPDIR/.config || continue
-	Log_Normal "Adding dependency $entry"
-	GrepReplace "# $entry is not set" "$entry=y" $TOPDIR/.config
+    grep -q "# $entry is not set" $TOPDIR/.config || continue
+    Log_Normal "Adding dependency $entry"
+    GrepReplace "# $entry is not set" "$entry=y" $TOPDIR/.config
 done
 
 rm -f -- "$dependency_list"
