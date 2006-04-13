@@ -117,8 +117,14 @@ config SUPER_USER_NAME
 endmenu
 
 menu "Base system"
+
+choice
+    prompt "Libc implementation"
+    default PKG_GLIBC
 source "packages/Glibc/Config.in"
 source "packages/UClibc/Config.in"
+endchoice
+
 source "packages/Module-Init-Tools/Config.in"
 source "packages/BusyBox/Config.in"
 source "packages/LibGCC/Config.in"
