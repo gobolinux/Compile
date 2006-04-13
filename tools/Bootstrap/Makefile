@@ -75,13 +75,12 @@ deps:
 	@cd bin && ./MakeDeps ../.config
 
 dep: deps
-	
 
 world: $(TARGETS)
-	@cd bin; ./BootStrap start  || { ./BootStrap stop; exit 1; }
-	@cd bin; ./PrepareTarget    || { ./BootStrap stop; exit 1; }
-	@cd bin; ./InvokeCompile    || { ./BootStrap stop; exit 1; }
-	@cd bin; ./FixupEnvironment || { ./BootStrap stop; exit 1; }
+	@cd bin; ./BootStrap start  || { echo "argh!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./PrepareTarget    || { echo "ouch!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./InvokeCompile    || { echo "ewww!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./FixupEnvironment || { echo "uugh!"; ./BootStrap stop; exit 1; }
 	@echo -e "\nRoot filesystem created successfully!"
 	@echo -e "Have a good time with GoboLinux on your new platform!\n"
 	@cd bin; ./BootStrap stop
