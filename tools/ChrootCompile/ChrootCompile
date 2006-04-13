@@ -514,3 +514,7 @@ else
    readlink -f $fullroot/../$putclean/$name--$version--i686.tar.bz2
    tar jcvpf $fullroot/../$putclean/$name--$version--i686.tar.bz2 $name/$version
 fi
+
+# Remove the left over Area
+cleanup
+[ -d "$root" ] && rm -rf "$root"
