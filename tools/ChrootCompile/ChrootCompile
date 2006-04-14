@@ -185,7 +185,7 @@ function cleanup() {
    done
    mount | grep "$root" | awk '{ print $3 }' | while read mp
    do 
-      umount_dir $mp
+      unmount_dir $mp
    done
 }
 
