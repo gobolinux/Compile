@@ -80,7 +80,9 @@ if ! Boolean "no-dependencies"
 then
    resources="$package/$versionnumber/Resources"
    Make_Directory "$resources"
-   Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
+   if ! [ -e "$resources/Dependencies" ]
+   then Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
+   fi
 fi
 
 verify_opts=""
