@@ -14,22 +14,11 @@ function cleanup() {
 
 trap cleanup TERM INT STOP HUP
 
-#
-# Install the ChrootCompile package on the host's root system
-#
-dirname="$goboPrograms/ChrootCompile"
-if [ ! -d "$dirname" ]
-then
-    pushd "$TOP_DIR/downloads" >& /dev/null
-    Log_Normal "Installing the ChrootCompile package on the host system..."
-    rm -Rf tools/ChrootCompile
-    cvs_checkout ChrootCompile tools/ChrootCompile
 
-    version="`date +%Y%m%d`-CVS"
-    cvs_make_install ChrootCompile "$dirname" "$version" "VERSION=$version"
-    SymlinkProgram ChrootCompile
-    popd >& /dev/null
-fi
+#
+# Ensure that dependencies are installed
+#
+InstallDependencies
 
 if [ "$CROSS_NONE" = "y" ]
 then 
@@ -77,7 +66,7 @@ then
 	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-	Log_Normal "Symlinking the Scripts package..."
+	Log_Normal "Installing a temporary Scripts package..."
 	ln -nsf $goboPrograms/Scripts $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi
@@ -92,7 +81,7 @@ then
 	cp -a $goboPrograms/Compile $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-	Log_Normal "Symlinking the Compile package..."
+	Log_Normal "Installing a temporary Compile package..."
 	ln -nsf $goboPrograms/Compile $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 fi
@@ -115,7 +104,7 @@ fi
 dirname="$prefix/$goboPrograms/LibGCC"
 if [ "$PKG_LIBGCC" = "y" -a ! -d "$dirname" ]
 then
-	Log_Normal "Creating a LibGCC package..."
+	Log_Normal "Creating the LibGCC package..."
 	if [ "$CROSS_NONE" = "y" ]
 	then
 		version=`gcc --version | head -n 1 | awk {'print $3'}`
@@ -132,13 +121,4 @@ then
     popd >&/dev/null
 
     SymlinkProgram $symlink_options LibGCC >& /dev/null
-fi
-
-#
-# Install the kernel modules
-#
-dirname="$prefix/$goboModules/$kernelVersion"
-if [ ! -d "$dirname" ]
-then
-	Log_Normal "Compiling the Linux kernel..."
 fi
