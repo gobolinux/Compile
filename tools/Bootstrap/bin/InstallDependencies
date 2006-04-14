@@ -1,0 +1,38 @@
+#!/bin/sh
+
+TOP_DIR=..
+export PATH=$PATH:$TOP_DIR/functions
+
+source PkgFunctions
+source ScriptFunctions
+source $TOP_DIR/.config
+
+#
+# Install the ChrootCompile package on the host's root system
+#
+dirname="$goboPrograms/ChrootCompile"
+if [ ! -d "$dirname" ]
+then
+    pushd "$TOP_DIR/downloads" >& /dev/null
+    Log_Normal "Installing the ChrootCompile package on the host system..."
+    rm -Rf tools/ChrootCompile
+    cvs_checkout ChrootCompile tools/ChrootCompile
+
+    version="`date +%Y%m%d`-CVS"
+    cvs_make_install ChrootCompile "$dirname" "$version" "VERSION=$version"
+    SymlinkProgram ChrootCompile
+    popd >& /dev/null
+fi
+
+#
+# Create the chroot environment
+#
+dirname="$TOP_DIR/chroot"
+if [ ! -d "$dirname" ]
+then
+    Log_Normal "Creating the ChrootCompile environment..."
+    mkdir -p "$dirname"
+    pushd "$dirname" >& /dev/null
+    SetupChrootEnv --quiet
+    popd >& /dev/null
+fi
