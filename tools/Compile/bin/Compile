@@ -640,6 +640,12 @@ else
    
    Boolean "no-build" && exit 0
    
+   if [ "$uncompress" = "no" ]
+   then
+      [ "$dir" ] || dir=$appname
+      [ "$unpack_files" ] || unpack_files=files_in_root
+   fi
+   
    unpack=yes
    if [ -d "${dirs[0]}" ]
    then
@@ -701,7 +707,10 @@ else
       fi
 
       Log_Normal "Unpacking file ${files[i]}..."
-      aunpack --extract-to="${tempdir}" -f "${files[i]}" >&$verboseFD || Die "Could not unpack '$f'."
+      if [ "$uncompress" = "no" ]
+      then cp -v "${files[i]}" "${tempdir}" >&$verboseFD || Die "Could not copy '$f'."
+      else aunpack --extract-to="${tempdir}" -f "${files[i]}" >&$verboseFD || Die "Could not unpack '$f'."
+      fi
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
          mkdir -p "$drop"
@@ -896,7 +905,6 @@ then
    then
       [ "$install_target" ] || install_target="install"
       build_python_options $install_target
-      echo "opts is {${opts[@]}}"
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       sandboxopts=$(merge_array "sandbox_options")
