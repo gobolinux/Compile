@@ -179,7 +179,7 @@ function unmount_dir() {
 
 function cleanup() {
    unset LANG LC_ALL
-   for point in /System/Kernel/Devices /System/Kernel/Status /Files/Compile/Archives $crossprefixdir $crosstoolchaindir
+   for point in $root/Files/Compile/Archives $crossprefixdir $crosstoolchaindir
    do
       unmount_dir $point
    done
