@@ -64,6 +64,20 @@ function cleanup() {
 
 trap cleanup TERM INT STOP HUP
 
+# the verbose flag and the keywords which are going to be filtered from stdout
+[ "$CC" = "" ] && CC=gcc
+[ "$LD" = "" ] && LD=ld
+
+verbose_build=$1
+verbose_filter="configure\|checking\|Try\|config.status"
+verbose_filter="$verbose_filter\|Making\|Entering\|Leaving\|Nothing\|$CC\|$LD"
+verbose_filter="$verbose_filter\|mkinstalldirs\|install"
+
+if [ "$verbose_build" = "1" ]
+then Log_Terse "Verbose build enabled"
+else Log_Terse "Verbose build disabled"
+fi
+
 if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
@@ -120,11 +134,23 @@ do
  
 #	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
     recipe=`FindPackage -t recipe $pkg_name`
+    if [ `echo $recipe | grep -q "http://"` ]
+    then
+        # download it to make ChrootCompile's life easier
+        local_recipe=`GetRecipe $recipe`
+    else
+        local_recipe=$recipe
+    fi
+    
     echo
-    Log_Normal "Running 'Compile $cross_options $recipe'"
+    Log_Normal "Running 'Compile $cross_options $local_recipe'"
     echo
 
-    Compile $cross_options $recipe || exit 1
+    if [ "$verbose_build" = "1" ]
+    then Compile $cross_options $local_recipe || exit 1
+    else Compile $cross_options $local_recipe 2>&1 | grep -v $verbose_filter
+    fi
+    continue
 
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
