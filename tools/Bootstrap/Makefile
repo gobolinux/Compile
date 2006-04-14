@@ -67,9 +67,16 @@ help:
 	@echo 'Other generic targets:'
 	@echo '  all         - Build all targets marked with [*]'
 	@echo ''
+	@echo '  make V=0|1  - Quiet (default) or verbose build'
+	@echo ''
 	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
 	@echo 'For further info see the ./README file'
 	@echo ''
+
+VERBOSE_BUILD=0
+ifdef V
+	VERBOSE_BUILD=$(V)
+endif
 
 deps:
 	@cd bin && ./MakeDeps ../.config
@@ -77,10 +84,10 @@ deps:
 dep: deps
 
 world: $(TARGETS)
-	@cd bin; ./BootStrap start  || { echo "argh!"; ./BootStrap stop; exit 1; }
-	@cd bin; ./PrepareTarget    || { echo "ouch!"; ./BootStrap stop; exit 1; }
-	@cd bin; ./InvokeCompile    || { echo "ewww!"; ./BootStrap stop; exit 1; }
-	@cd bin; ./FixupEnvironment || { echo "uugh!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./BootStrap start                || { echo "argh!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./PrepareTarget                  || { echo "ouch!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./InvokeCompile $(VERBOSE_BUILD) || { echo "ewww!"; ./BootStrap stop; exit 1; }
+	@cd bin; ./FixupEnvironment               || { echo "uugh!"; ./BootStrap stop; exit 1; }
 	@echo -e "\nRoot filesystem created successfully!"
 	@echo -e "Have a good time with GoboLinux on your new platform!\n"
 	@cd bin; ./BootStrap stop
