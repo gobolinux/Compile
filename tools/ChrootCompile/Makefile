@@ -41,3 +41,4 @@ install: version_check
 	mkdir -p $(PREFIX)/bin $(SETTINGS_DIR)
 	cp $(BIN_FILES) $(PREFIX)/bin
 	cp $(CONF_FILES) $(SETTINGS_DIR)
+	ln -s $(SETTINGS_DIR)/* $(PREFIX)/bin
