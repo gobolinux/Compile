@@ -1,14 +1,19 @@
 #!/bin/sh
 
 function write_file() {
-   mv "$1" "$1.old"
-   cat > "$1"
-   if diff "$1" "$1.old"
+   if ! [ -e "$1" ]
    then
-      rm "$1"
-      mv "$1.old" "$1"
+      cat > "$1"
    else
-      rm "$1.old"
+      mv "$1" "$1.old"
+      cat > "$1"
+      if diff "$1" "$1.old"
+      then
+         rm "$1"
+         mv "$1.old" "$1"
+      else
+         rm "$1.old"
+      fi
    fi
 }
 
