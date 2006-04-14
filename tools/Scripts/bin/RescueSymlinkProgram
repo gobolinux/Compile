@@ -75,7 +75,8 @@ if [ -d ${gobolinks}/../Settings ]
 then
 	cd ${gobolinks}/../Settings
 	echo RescueSymlinkProgram: ${gobolinks}/../Settings > /dev/stderr
-	[ -d ${full_path}/../Settings  ] && ln -sfn ${full_path}/../Settings/* .
+    app_settings_dir=`readlink -f ${full_path}/../Settings`
+	[ -d ${full_path}/../Settings  ] && ln -sfn ${app_settings_dir}/* .
 fi
 
 
