@@ -4,8 +4,7 @@
 # packages known to be broken or that shouldn't be installed through Compile
 #
 blacklist=(
-    "LibGCC"		# LibGCC is installed in a different way
-    "Matchbox"
+    "LibGCC"                # LibGCC is installed in a different way
 )
 
 function is_in_blacklist() {
