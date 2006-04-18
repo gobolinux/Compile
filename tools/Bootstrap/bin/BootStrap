@@ -24,8 +24,8 @@ case "$1" in
         [ ! -e $prefix/$goboDevices/kmem ] && mount -o bind $goboDevices $prefix/$goboDevices
         ;;
     [sS]top)
-        umount $prefix/$goboStatus  && echo "Unmounted binded proc filesystem"
-        umount $prefix/$goboDevices && echo "Unmounted binded dev filesystem"
+        umount $prefix/$goboStatus 2> /dev/null     && echo "Unmounted binded proc filesystem"
+        umount $prefix/$goboDevices 2> /dev/null    && echo "Unmounted binded dev filesystem"
         ;;
 esac
 
