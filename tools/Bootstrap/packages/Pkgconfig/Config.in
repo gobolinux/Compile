@@ -1,0 +1,2 @@
+config PKG_PKGCONFIG
+    bool "PkgConfig"
