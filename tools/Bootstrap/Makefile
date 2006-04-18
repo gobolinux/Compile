@@ -67,13 +67,13 @@ help:
 	@echo 'Other generic targets:'
 	@echo '  all         - Build all targets marked with [*]'
 	@echo ''
-	@echo '  make V=0|1  - Quiet (default) or verbose build'
+	@echo '  make V=0|1  - Quiet or verbose build (default)'
 	@echo ''
 	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
 	@echo 'For further info see the ./README file'
 	@echo ''
 
-VERBOSE_BUILD=0
+VERBOSE_BUILD=1
 ifdef V
 	VERBOSE_BUILD=$(V)
 endif
