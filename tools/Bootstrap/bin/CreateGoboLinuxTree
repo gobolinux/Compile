@@ -26,7 +26,7 @@ function create_tree() {
 	mkdir -p "$1"/"$goboShared"
 	mkdir -p "$1"/"$goboKernel"/{Objects,Modules}
 	
- 	mkdir -p "$1"/"$goboVariable"/{cache,empty,ftp,lib,lock,log,mail,run,spool,tmp}
+ 	mkdir -p "$1"/"$goboVariable"/{cache,empty,ftp,lib,lock,log,mail,run,spool,tmp} 
 	mkdir -p "$1"/"$goboTemp"
 	
 	mkdir -p "$1"/"$goboSettings"/BootScripts
@@ -65,10 +65,15 @@ function create_tree() {
     ln -s . .libs
     popd >& /dev/null
 	
+    #
+    # Fix permissions
+    #
+    chmod 755   "$1/$goboVariable/empty"
+    chown 0:sys "$1/$goboVariable/empty"
 	
-	# ---------------------------------------------------------
-	# Creates the symlink to the root fs (eg: /System/SH4 -> /)
-	# ---------------------------------------------------------
+	#
+    # Creates the symlink to the root fs (eg: /System/SH4 -> /)
+    #
 	pushd "$1" >& /dev/null
 
 	# count how many levels we have in $prefix (/System/SH4 == 2)
