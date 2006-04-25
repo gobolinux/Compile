@@ -23,6 +23,8 @@ source BlackList
 # Cross-compiling variables
 source $dot_config
 
+# TODO: the headers script have shown to be broken on many releases I've tested.
+#       we're relying on the existence of a binary package for now.
 function make_headers() {
     dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
     [ -d "$dirname" ] && return
@@ -32,16 +34,13 @@ function make_headers() {
     then
         case `uname -m` in
             i386|i486|i586|i686)
-            kernelArch="i386"
-            ;;
-        *)
-            Log_Error "Please add your architecture here!"
-            exit 1
-            ;;
+                kernelArch="i386"
+                ;;
+            *)
+                Log_Error "Please add your architecture to this file!"
+                exit 1
+                ;;
         esac
-    else
-        export goboCrossCompiling=yes
-        Parse_Conf Directories.conf
     fi
 
     # Latest release known to work is 2.6.12.0 (based on LFS)
@@ -55,6 +54,73 @@ function make_headers() {
         unset goboCrossCompiling goboPrefix
         Parse_Conf Directories.conf
     fi
+}
+
+function download_headers() {
+    dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+    [ -d "$dirname" ] && return
+	
+    Log_Normal "Downloading the Libc Headers package..."
+    if [ "$CROSS_NONE" = "y" ]
+    then
+        case `uname -m` in
+            i386|i486|i586|i686)
+                repository="http://gobo.calica.com/packages/official"
+                cross_uname_m=i686
+                ;;
+            *)
+                Log_Error "Please add your architecture to this file!"
+                exit 1
+                ;;
+        esac
+    else
+        repository="http://gobo.calica.com/packages/$cross_uname_m"
+    fi
+    
+    # download the headers package
+    download_dir="`readlink -f $TOP_DIR/downloads`"
+    pushd $download_dir >& /dev/null
+    wget -c $repository/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2
+    if [ $? != 0 ]
+    then
+        Log_Error "Could not download $repository/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2"
+        exit 1
+    fi
+    popd >& /dev/null
+     
+    # uncompress it
+    pushd "$prefix/$goboPrograms" >& /dev/null
+    tar jxvf $download_dir/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2
+    popd >& /dev/null
+     
+    # symlink it
+    if [ ! "$CROSS_NONE" = "y" ] && export goboCrossCompiling=yes
+    SymlinkProgram $symlink_options Linux-Libc-Headers
+    if [ ! "$CROSS_NONE" = "y" ] && unset goboCrossCompiling
+    if [ ! "$CROSS_NONE" = "y" ] && Parse_Conf Directories.conf
+}
+
+function chroot_compile() {
+    local_recipe="$1"
+    
+    echo
+    Log_Normal "Running 'ChrootCompile --local-repository $cross_options $local_recipe'"
+    echo
+    
+    pushd "$TOP_DIR/chroot" >& /dev/null
+    
+    common_options="--local-repository $cross_options"
+    if [ "$verbose_build" = "1" ]
+    then ChrootCompile $common_options --verbose $local_recipe || exit 1
+    else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
+    fi
+    
+    export goboCrossCompiling=yes
+    SymlinkProgram $pkg_name $pkg_version
+    unset goboCrossCompiling
+    Parse_Conf Directories.conf
+    
+    popd >& /dev/null
 }
 
 function cleanup() {
@@ -71,6 +137,7 @@ trap cleanup TERM INT STOP HUP
 verbose_build=$1
 verbose_filter="configure\|checking\|Try\|config.status"
 verbose_filter="$verbose_filter\|Making\|Entering\|Leaving\|Nothing\|$CC\|$LD"
+verbose_filter="$verbose_filter\|/bin/make\|gawk"
 verbose_filter="$verbose_filter\|mkinstalldirs\|install"
 
 if [ "$verbose_build" = "1" ]
@@ -82,16 +149,19 @@ if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-    [ "$CROSS_ARM"  = "y" ] && arch_conf=ARM
-    [ "$CROSS_SH4"  = "y" ] && arch_conf=SH4
+    [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
+    [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 
-    # this is the same as evaluating the line 'crossPrefixDir=...'
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export crossPrefixDir=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "^export kernelArch=" | sed 's/\"//g'`
+    # this is the same as evaluating the line 'export crossPrefixDir=...'
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "crossPrefixDir=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "kernelArch=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "kernelVersion=" | sed 's/\"//g'`
     prefix=$crossPrefixDir
 
     cross_options="--cross-compile $arch_conf"
     symlink_options="-c overwrite"
+
+    export cross_compiling=yes
 fi
 
 skip_all=0
@@ -133,28 +203,14 @@ do
     fi
  
 #	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
-    recipe=`FindPackage -t recipe $pkg_name`
-    if [ `echo $recipe | grep -q "http://"` ]
-    then
-        # download it to make ChrootCompile's life easier
-        local_recipe=`GetRecipe $recipe`
-    else
-        local_recipe=$recipe
-    fi
+    recipe=`FindPackage -t recipe $pkg_name $pkg_version`
+    echo $recipe | grep -q "^http" && local_recipe=`GetRecipe $recipe` || local_recipe=$recipe
     
-    echo
-    Log_Normal "Running 'Compile $cross_options $local_recipe'"
-    echo
-
-    if [ "$verbose_build" = "1" ]
-    then Compile $cross_options $local_recipe || exit 1
-    else Compile $cross_options $local_recipe 2>&1 | grep -v $verbose_filter
-    fi
-    continue
+    chroot_compile $local_recipe
 
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
-    [ "$pkg_name" = "Glibc" ] && make_headers
+    [ "$pkg_name" = "Glibc" ] && download_headers
 done
 
 popd >& /dev/null
