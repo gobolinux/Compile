@@ -63,6 +63,13 @@ then
    shift
 fi
 
+unset localrepository
+if [ "$1" == "--local-repository" ]
+then
+    localrepository=yes
+    shift
+fi
+
 unset crossopts
 unset crossrepodir
 unset crossprefixdir
@@ -96,9 +103,11 @@ fi
 
 if [ "$1" == "--help" ]
 then
-    echo "Usage: $0 [--repack] [--cross-compile <arch>] [--verbose] <recipe directory>"
+    echo "Usage: $0 [options] <recipe dir>"
     echo " "
+    echo "Available options are:"
     echo "   --repack:               run CreatePackage after compilation (GoboLinux only)"
+    echo "   --local-repository:     use the repository at /Files/Compile (GoboLinux only)"
     echo "   --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
     echo "   --verbose:              verbose output"
     exit 0
@@ -144,6 +153,17 @@ base_dependencies=(
     "Compile"
 )
 
+cross_dependencies=
+if [ "$crossopts" ]
+then
+    cross_dependencies=(
+        "Automake"  # needed by Recipes which call autogen.sh
+        "Autoconf"  # needed by Recipes which call autogen.sh
+        "M4"        # Automake dependency
+        "Pkgconfig" # this package is a mess to be cross-compiled, keep it on the host platform
+    )
+fi
+
 export LANG=C
 export LC_ALL=C
 
@@ -179,7 +199,7 @@ function unmount_dir() {
 
 function cleanup() {
    unset LANG LC_ALL
-   for point in $root/Files/Compile/Archives $crossprefixdir $crosstoolchaindir
+   for point in $root/Files/Compile/Archives $root/Files/Compile $crossprefixdir $crosstoolchaindir
    do
       unmount_dir $point
    done
@@ -254,6 +274,12 @@ chmod 777 $root/System/Variable/tmp # Fibo also wants to write temp files
 #############################################################################
 # Copying recipes to root directory
 #############################################################################
+if [ "$localrepository" ]
+then
+    [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile at $root/Files/Compile"
+    $sudo mount --bind /Files/Compile $root/Files/Compile
+fi
+
 if [ -d Recipes ]
 then
    cp -rL Recipes $root/Files/Compile
@@ -268,7 +294,7 @@ fi
 [ -d LocalPackages ] || mkdir LocalPackages
 [ -d Bootstrap ] || mkdir Bootstrap
 [ -d $getclean ] || mkdir $getclean
-for dep in "${base_dependencies[@]}"
+for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
 do
    if ! ls Bootstrap/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
    && ! [ -d Bootstrap/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
@@ -295,7 +321,11 @@ function filter_dir() {
 function load_dependency() {
    local dep="$1"
    local pkg=
-   for repo in $getclean Bootstrap $crossrepodir
+   if [ "$crossopts" ]
+   then local repositories="Bootstrap $crossrepodir"
+   else local repositories="$getclean Bootstrap"
+   fi
+   for repo in $repositories
    do
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
          die "More than one entry for $dep in $repo/ directory."
@@ -320,7 +350,7 @@ function load_dependency() {
 # unused for now
 function guess_and_load_dependency() {
    echo "=> GuessLatest enabled"
-   for dep in "${base_dependencies[@]}"
+   for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
    do
       packed_places="$getclean Bootstrap"
       unpacked_place=BootStrap
@@ -349,7 +379,7 @@ function guess_and_load_dependency() {
 }
 
 for dep in `{
-   echo "${base_dependencies[*]} " | tr " " "\n" 
+   echo "${base_dependencies[*]} " "${cross_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
    [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
 } | sort -u`
@@ -409,7 +439,7 @@ $sudo mount --bind /dev $root/System/Kernel/Devices
 $sudo mount --bind /proc $root/System/Kernel/Status
 
 [ -d ./Archives ] || mkdir ./Archives
-$sudo mount --bind Archives $root/Files/Compile/Archives
+[ ! "$localrepository" ] && $sudo mount --bind Archives $root/Files/Compile/Archives
 
 $sudo mount --bind LocalPackages $root/Depot/LocalPackages
 $sudo mount --bind $getclean $root/Depot/$getclean
