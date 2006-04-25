@@ -134,7 +134,7 @@ source "packages/GoboHide/Config.in"
 source "packages/Listener/Config.in"
 source "packages/Udev/Config.in"
 comment "---"
-source "packages/Pkgconfig/Config.in"
+# source "packages/Pkgconfig/Config.in"
 source "packages/Ncurses/Config.in"
 source "packages/Bash/Config.in"
 endmenu
@@ -144,6 +144,58 @@ source "packages/LibTool/Config.in"
 source "packages/GMP/Config.in"
 source "packages/GCC/Config.in"
 source "packages/Strace/Config.in"
+endmenu
+
+menu "Fonts and XML parsers"
+source "packages/Expat/Config.in"
+source "packages/LibXML2/Config.in"
+source "packages/FreeType/Config.in"
+source "packages/Fontconfig/Config.in"
+endmenu
+
+menu "Audio"
+source "packages/ALSA-Lib/Config.in"
+source "packages/LibMad/Config.in"
+source "packages/LibOGG/Config.in"
+source "packages/LibVorbis/Config.in"
+endmenu
+
+menu "Video and graphics"
+source "packages/JPEG/Config.in"
+source "packages/LibPNG/Config.in"
+source "packages/Linux-Fusion/Config.in"
+source "packages/DirectFB/Config.in"
+source "packages/TIFF/Config.in"
+source "packages/SDL/Config.in"
+endmenu
+
+menu "GTK+ suite"
+source "packages/GLib/Config.in"
+source "packages/ATK/Config.in"
+source "packages/Pango/Config.in"
+source "packages/GTK+/Config.in"
+source "packages/Dbus/Config.in"
+source "packages/Gettext/Config.in"
+endmenu
+
+menu "Networking"
+source "packages/Links/Config.in"
+source "packages/OpenSSL/Config.in"
+source "packages/OpenSSH/Config.in"
+endmenu
+
+menu "Other"
+source "packages/Startup-Notification/Config.in"
+source "packages/MTD-Utils/Config.in"
+source "packages/LibUSB/Config.in"
+source "packages/Lirc/Config.in"
+source "packages/ReiserFSProgs/Config.in"
+comment "---"
+source "packages/LibART/Config.in"
+source "packages/Shared-Mime-INFO/Config.in"
+comment "---"
+source "packages/Mowitz/Config.in"
+source "packages/LibOIL/Config.in"
 endmenu
 
 menu "Window Servers"
@@ -161,45 +213,3 @@ source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
 endmenu
 
-menu "Networking"
-source "packages/Links/Config.in"
-source "packages/OpenSSL/Config.in"
-source "packages/OpenSSH/Config.in"
-endmenu
-
-menu "Audio, video and graphics"
-source "packages/ALSA-Lib/Config.in"
-source "packages/LibMad/Config.in"
-source "packages/LibOGG/Config.in"
-source "packages/LibVorbis/Config.in"
-source "packages/FreeType/Config.in"
-source "packages/JPEG/Config.in"
-source "packages/LibPNG/Config.in"
-source "packages/Linux-Fusion/Config.in"
-source "packages/DirectFB/Config.in"
-source "packages/TIFF/Config.in"
-source "packages/SDL/Config.in"
-endmenu
-
-menu "Other"
-source "packages/Fontconfig/Config.in"
-source "packages/MTD-Utils/Config.in"
-source "packages/LibUSB/Config.in"
-source "packages/Lirc/Config.in"
-source "packages/ReiserFSProgs/Config.in"
-comment "---"
-source "packages/GLib/Config.in"
-source "packages/ATK/Config.in"
-source "packages/Pango/Config.in"
-source "packages/GTK+/Config.in"
-source "packages/Dbus/Config.in"
-source "packages/Gettext/Config.in"
-source "packages/Expat/Config.in"
-source "packages/Startup-Notification/Config.in"
-source "packages/LibART/Config.in"
-source "packages/LibXML2/Config.in"
-source "packages/Shared-Mime-INFO/Config.in"
-comment "---"
-source "packages/Mowitz/Config.in"
-source "packages/LibOIL/Config.in"
-endmenu
