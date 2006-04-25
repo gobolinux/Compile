@@ -66,8 +66,9 @@ function cvs_make_install() {
 	
     mkdir -p "$app_dir/$version_dir"
 
+    [ "$cross_compiling" ] && source "$goboSettings/Compile/Cross-$arch_conf.conf"
+    
 	pushd "$module" >& /dev/null
-    [ "$kernelVersion" != "" ] && source "$goboSettings/Compile/Cross-$arch_conf.conf"
     make CC=$CC "$@" || exit 1
 	make CC=$CC install PREFIX="$app_dir/$version_dir" "$@" || exit 1
 	cp -a * "$app_dir/$version_dir"
@@ -85,13 +86,13 @@ function cvs_make_install() {
 }
 
 function DirectFB_hook() {
-    # dirty test to check whether we're cross compiling or not
-    [ "$kernelVersion" = "" ] && return
+    [ ! "$cross_compiling" ] && return
     [ "$kernelArch" = "sh" ] && echo "CVS"
 }
 
 function Linux() {
-    [ "$kernelVersion" != "" ] && echo "$kernelVersion"
+    [ ! "$cross_compiling" ] && return
+    echo "$kernelVersion"
 }
 
 function Linux_Fusion_hook() {
@@ -100,14 +101,14 @@ function Linux_Fusion_hook() {
 }
 
 function Udev_hook() {
-    # dirty test to check whether we're cross compiling or not
-    [ "$kernelVersion" = "" ] && return
+    [ ! "$cross_compiling" ] && return
+    echo "070"
     
-    kernel_version=`echo $kernelVersion | sed 's/-.*//g'`
-    latest_kernel=`GuessLatest $kernelVersion 2.6.15`
-    [ "$kernel_version" = "$latest_kernel" ] && return
+#    kernel_version=`echo $kernelVersion | sed 's/-.*//g'`
+#    latest_kernel=`GuessLatest $kernelVersion 2.6.15`
+#    [ "$kernel_version" = "$latest_kernel" ] && return
 
     # if kernelVersion for cross-compile is older than 2.6.15,
     # recommend usage of Udev 070 instead of the latest release.
-    [ "$latest_kernel" = "2.6.15" ] && echo "070"
+#    [ "$latest_kernel" = "2.6.15" ] && echo "070"
 }
