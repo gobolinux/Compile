@@ -17,7 +17,7 @@ all:
 	do libf=$(PYTHON_SITE)/$$f.py; \
 	   rm -f $$libf; ln -nfs ../../../src/$$f.py $$libf; \
 	done
-	DirPythonCompile $(PYTHON_SITE) 2> /dev/null
+	DirPythonCompile $(PYTHON_SITE) &> /dev/null
 
 
 clean :
