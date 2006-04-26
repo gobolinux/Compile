@@ -50,7 +50,6 @@ then
     cp -ar External/Gobo-Files/* Output/Layer1/Files
     cp -ar External/Files-Fonts/* Output/Layer1/Files
     mkdir -p Output/Layer1/Files/Documentation
-    cp -ar External/Linux-HOWTOs Output/Layer1/Files/Documentation
     cp -ar External/Linux-Kernel/* Output/Layer1
 
     # Clean CVS files from Layer1

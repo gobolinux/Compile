@@ -25,7 +25,8 @@ function check_and_dl() {
          echo "Failed fetching file with expected md5 sum."
          echo "Expected md5: $md5"
          echo "     Got md5: $localmd5"
-         exit 1
+         echo "Press Enter to continue or Ctrl+C to abort."
+         read
       fi
    fi
    if ! [ "`ls $dir/* 2> /dev/null`" ]
@@ -38,10 +39,6 @@ function check_and_dl() {
       sudo tar $mode $localfile -C "$dir"
    fi
 }
-
-check_and_dl "$external/Linux-HOWTOs"  \
-    "http://www.ibiblio.org/pub/linux/docs/HOWTO/Linux-HOWTOs.tar.bz2" \
-    "94d5b387980e15605cea59c2c826dcf1"
 
 check_and_dl "$external/Linux-Kernel"  \
     "http://gobo.calica.com/livecd-packages/Linux--2.6.16.2-Gobo--kernel-i686.tar.bz2" \
