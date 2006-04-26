@@ -3,40 +3,13 @@
 if [ "$1" == "--help" ]
 then
    echo "Usage:"
-   echo "   MakeInitRDTree [ --network ] [ <cvs-account> [ <local-account> ] ]"
+   echo "   MakeInitRDTree"
    echo
    echo "Run this inside the GoboLinux LiveCD mastering environment"
    echo "to rebuild the InitRD tree."
-   echo "Network access is only performed if --network is passed."
-   echo "If you have CVS write access, pass your savannah"
-   echo "username as a parameter and, optionally,"
-   echo "the username in the current machine"
-   echo "which holds your savannah SSH credentials,"
-   echo "if it is not the same as your savannah username."
-   echo "(Only the first run, usually called by MakeMasterEnvironment,"
-   echo "requires account names to be given.)"
    echo
    exit 0
 fi
-
-network=no
-if [ "$1" == "--network" ]
-then
-   network=yes
-   shift
-fi
-
-if [ "$1" ]
-then
-   cvsuser="$1"
-   if [ "$2" ]
-   then localuser="$2"
-   else localuser="$1"
-   fi
-else
-   cvsuser=anonymous
-fi
-
 
 if [ "$UID" != 0 ]
 then
@@ -45,7 +18,6 @@ then
 fi
 
 root=$PWD/Output/InitRD
-localcvs=$PWD/LocalCVS/
 archives=$PWD/Archives/InitRD
 
 rm -rf $root
@@ -60,58 +32,11 @@ mkdir -p $archives
 today=`date +%Y%m%d`
 arch=`uname -m`
 
-irdscripts_tarbz2=InitRDScripts--$today--$arch.tar.bz2
-
 packages=(
    BusyBox-InitRD--20060202-SVN--$arch.tar.bz2
    MiniUdev--0.1--$arch.tar.bz2
-   $irdscripts_tarbz2
+   InitRDScripts--$today--$arch.tar.bz2
 )
-
-if [ "$network" = "yes" ]
-then
-   
-   cd $archives
-   
-   for package in "${packages[@]}"
-   do
-      wget -c "http://gobo.calica.com/initrd-packages/$package" &> /dev/null
-   done
-   
-   mkdir -p $localcvs
-   cd $localcvs
-   
-   if [ -e InitRDScripts ]
-   then
-      cd InitRDScripts
-      cvs up
-   else
-      if [ "$cvsuser" = "anonymous" ]
-      then
-         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co -d InitRDScripts tools/InitRDScripts
-      else
-         export CVS_RSH=ssh
-         chown $localuser .
-         sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co -d InitRDScripts tools/InitRDScripts
-      fi
-   fi
-fi
-
-cd $archives
-
-rm -rf InitRDScripts
-pkgdir=InitRDScripts/$today
-mkdir -p $pkgdir
-cp -R $localcvs/InitRDScripts/* $pkgdir
-cd $archives/$pkgdir
-find -type d -name CVS | xargs rm -rf 
-cd $archives/InitRDScripts
-ln -nfs $today Current
-cd $archives
-
-rm $irdscripts_tarbz2
-tar cjvpf $irdscripts_tarbz2 InitRDScripts
-rm -rf InitRDScripts
 
 cd $root
 
@@ -333,11 +258,5 @@ EOF
 ####################################################
 # Hack?
 ####################################################
-
-if [ "$network" = "yes" ]
-then
-   cd $archives
-   wget -c "http://gobo.calica.com/initrd-packages/usb-storage.ko"
-fi
 
 cp $archives/usb-storage.ko $root/System/Kernel/Modules

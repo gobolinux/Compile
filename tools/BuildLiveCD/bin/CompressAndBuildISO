@@ -1,6 +1,6 @@
 #!/bin/sh
 
-kernel_version="2.6.16.2-Gobo"
+kernel_version=`sed -n 's,.*--\(.*\)--kernel.*,\1,p' /Programs/BuildLiveCD/Current/Data/Packages-Devel-i686`
 
 if [ "$1" = "--help" ]
 then
@@ -47,7 +47,7 @@ then
 
     # Add few items to layer1
     mkdir -p Output/Layer1/Files
-    cp -ar External/Gobo-Files/* Output/Layer1/Files
+    cp -ar LocalCVS/files/* Output/Layer1/Files
     cp -ar External/Files-Fonts/* Output/Layer1/Files
     mkdir -p Output/Layer1/Files/Documentation
     cp -ar External/Linux-Kernel/* Output/Layer1

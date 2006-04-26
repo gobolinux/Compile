@@ -1,0 +1,6 @@
+unpack External/Linux-Kernel  http://gobo.calica.com/packages/livecd-devel/Linux--2.6.16.2-Gobo--kernel-i686.tar.bz2  d2538ac43905e1d46971c25e1d60d18a
+unpack External/Files-Fonts   http://gobo.calica.com/packages/livecd-devel/Files-Fonts.tar.bz2                        374747070d2585c905e24c0f5d30f029
+unpack External/CD-Bootloader http://gobo.calica.com/packages/livecd-devel/CD-Bootloader-i686.tar.bz2                 141c0438c45dcdbee307178d88db93a6
+fetch  Archives/InitRD        http://gobo.calica.com/packages/initrd-devel/BusyBox-InitRD--20060202-SVN--i686.tar.bz2 46ca30ec4834771b771ea7cdb0d56e51
+fetch  Archives/InitRD        http://gobo.calica.com/packages/initrd-devel/MiniUdev--0.1--i686.tar.bz2                2c3a9d7c659f8548ed00657491d4e22f  
+fetch  Archives/InitRD        http://gobo.calica.com/packages/initrd-devel/usb-storage.ko                             e385ed195fa92af1a72f7145d14d1449

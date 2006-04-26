@@ -1,0 +1,161 @@
+#!/bin/sh
+
+if [ "$1" == "--help" ]
+then
+   echo "Usage:"
+   echo "   UpdateEnvironment [ <cvs-account> [ <local-account> ] ]"
+   echo
+   echo "Run this on an empty directory to create the"
+   echo "GoboLinux LiveCD mastering environment."
+   echo "It will fetch all needed files off the network"
+   echo "and create the proper directory layout."
+   echo "If you have CVS write access, pass your savannah"
+   echo "username as a parameter and, optionally,"
+   echo "the username in the current machine"
+   echo "which holds your savannah SSH credentials,"
+   echo "if it is not the same as your savannah username."
+   echo
+   exit 0
+fi
+
+
+if [ "$1" ]
+then
+   cvsuser="$1"
+   if [ "$2" ]
+   then localuser="$2"
+   else localuser="$1"
+   fi
+else
+   cvsuser=anonymous
+fi
+root=$PWD
+localcvs=$PWD/LocalCVS/
+packages=$PWD/Archives/Packages
+externalarchives=$PWD/Archives/Ext
+external=$PWD/External
+
+mkdir -p Archives/{Ext,InitRD,Packages}
+mkdir -p RWLayer
+mkdir -p $localcvs
+
+
+function get_md5() {
+   md5sum "$1" 2>/dev/null | awk '{print $1}'
+}
+
+function check_and_dl() {
+   action="$1"
+   dir="$2"
+   url="$3"
+   md5="$4"
+   urlbn=`basename $url`
+   if [ "$action" = "unpack" ]
+   then downloadtarget="$externalarchives"
+   else downloadtarget="$root/$dir"
+   fi
+   localfile="$downloadtarget/$urlbn"
+   localmd5=`get_md5 "$localfile"`
+   if ! [ "$localmd5" = "$md5" ]
+   then
+      rm -f  "$localfile"
+      (cd $downloadtarget; wget -c $url)
+      localmd5=`get_md5 "$localfile"`
+      if ! [ "$localmd5" = "$md5" ]
+      then
+         echo "Failed fetching file with expected md5 sum."
+         echo "Expected md5: $md5"
+         echo "     Got md5: $localmd5"
+         echo "Press Enter to continue or Ctrl+C to abort."
+         read
+      fi
+      if [ "$action" = "unpack" ] 
+      then
+         cd $root
+         rm -rf "$dir"
+         mkdir -p "$dir"
+         case "${url##*.}" in
+         gz|tgz) sudo tar xzf $localfile -C "$dir";;
+         bz2)    sudo tar xjf $localfile -C "$dir";;
+         esac
+      fi
+   fi
+}
+
+# Tarballs
+echo "Downloading archives..."
+arch=`uname -m`
+cat /Programs/BuildLiveCD/Current/Data/Packages-Devel-$arch | while read action dir url md5
+do
+   echo $url 
+   check_and_dl $action $dir $url $md5
+done
+
+# LocalCVS
+echo "Updating local CVS copy..."
+cd $localcvs
+
+tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts InitRDScripts )
+
+for cvsrepo in files `for x in ${tools[@]}; do echo tools/$x; done`
+do
+   if [ -e $cvsrepo ]
+   then
+      cd $cvsrepo
+      cvs up
+   else
+      if [ "$cvsuser" = "anonymous" ]
+      then
+         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+      else
+         export CVS_RSH=ssh
+         chown $localuser .
+         sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+      fi
+   fi
+done
+cd - &> /dev/null
+
+today=`date +%Y%m%d`
+
+
+echo "Packing CVS snapshots..."
+cd $packages
+for package in ${tools[@]} 
+do
+   tarball=$package--$today--$arch.tar.bz2
+   rm -rf $package
+   pkgdir=$package/$today
+   mkdir -p $pkgdir
+   cp -R $localcvs/tools/$package/* $pkgdir
+   cd $packages/$pkgdir
+   [ -e Makefile ] && make
+   find -type d -name CVS | xargs rm -rf 
+   cd $packages/$package
+   ln -nfs $today Current
+   cd $packages
+   
+   rm -f $tarball
+   tar cjvpf $tarball $package
+   rm -rf $package
+done
+cd $root
+mkdir -p $packages/InitRD/
+mv $packages/InitRDScripts--* Archives/InitRD/
+
+# Packages
+echo "Fetching remote packages..."
+rsync --verbose --progress -r gobo.calica.com::gobolinux-packages/013-test/ $packages/
+
+
+# generate LiveCD_work/Layer2/System/Links/Environment/Cache
+if ! [ -e Master.conf ]
+then
+   masterconf=/System/Settings/BuildLiveCD/Master.conf 
+   if [ -e $masterconf ]
+   then cp $masterconf .
+   else echo "Reminder: copy Master.conf to this directory."
+   fi
+fi
+
+echo "Done."
