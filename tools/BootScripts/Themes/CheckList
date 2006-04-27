@@ -102,4 +102,5 @@ ThemeFinish()
    DisplayBanner >> "$1"
    Color $Default >> "$1"
    Cursor On
+   ScrollArea 0 $[ROWS]
 }
