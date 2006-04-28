@@ -73,13 +73,20 @@ function check_and_dl() {
       then
          cd $root
          rm -rf "$dir"
-         mkdir -p "$dir"
-         case "${url##*.}" in
-         gz|tgz) sudo tar xzf $localfile -C "$dir";;
-         bz2)    sudo tar xjf $localfile -C "$dir";;
-         esac
       fi
    fi
+
+   if [ "$action" = "unpack" ] && ! [ -e "$root/$dir" ]
+   then
+      cd $root
+      mkdir -p "$dir"
+      case "${url##*.}" in
+      gz|tgz) sudo tar xzf $localfile -C "$dir";;
+      bz2)    sudo tar xjf $localfile -C "$dir";;
+      esac
+   fi
+
+
 }
 
 # Tarballs
@@ -96,7 +103,6 @@ echo "Updating local CVS copy..."
 cd $localcvs
 
 tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts InitRDScripts )
-
 for cvsrepo in files `for x in ${tools[@]}; do echo tools/$x; done`
 do
    if [ -e $cvsrepo ]
