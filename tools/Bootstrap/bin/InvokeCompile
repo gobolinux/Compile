@@ -41,11 +41,13 @@ function make_headers() {
                 exit 1
                 ;;
         esac
+	else
+		kernelArch="$cross_kernel_arch"
     fi
 
     # Latest release known to work is 2.6.12.0 (based on LFS)
     pushd "$TOP_DIR/bin" >& /dev/null
-    ./MakeKernelHeaders 2.6.12 $kernelArch $dirname
+    ./MakeKernelHeaders 2.6.12 $cross_kernel_arch $dirname
     SymlinkProgram $symlink_options Linux-Libc-Headers
     popd >& /dev/null
 
@@ -152,11 +154,11 @@ else
     [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
     [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 
-    # this is the same as evaluating the line 'export crossPrefixDir=...'
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "crossPrefixDir=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "kernelArch=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "kernelVersion=" | sed 's/\"//g'`
-    prefix=$crossPrefixDir
+    # this is the same as evaluating the line 'export cross_prefix_dir=...'
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_kernel_arch=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_kernel_version=" | sed 's/\"//g'`
+    prefix=$cross_prefix_dir
 
     cross_options="--cross-compile $arch_conf"
     symlink_options="-c overwrite"

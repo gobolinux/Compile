@@ -14,7 +14,7 @@ else
     [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 
     source $goboSettings/Compile/Cross-$arch_conf.conf
-    prefix="$crossPrefixDir"
+    prefix="$cross_prefix_dir"
 fi
 
 case "$1" in

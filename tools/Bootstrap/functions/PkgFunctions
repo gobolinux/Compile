@@ -87,12 +87,12 @@ function cvs_make_install() {
 
 function DirectFB_hook() {
     [ ! "$cross_compiling" ] && return
-    [ "$kernelArch" = "sh" ] && echo "CVS"
+    [ "$cross_kernel_arch" = "sh" ] && echo "CVS"
 }
 
 function Linux() {
     [ ! "$cross_compiling" ] && return
-    echo "$kernelVersion"
+    echo "$cross_kernel_version"
 }
 
 function Linux_Fusion_hook() {
@@ -104,11 +104,11 @@ function Udev_hook() {
     [ ! "$cross_compiling" ] && return
     echo "070"
     
-#    kernel_version=`echo $kernelVersion | sed 's/-.*//g'`
-#    latest_kernel=`GuessLatest $kernelVersion 2.6.15`
+#    kernel_version=`echo $cross_kernel_version | sed 's/-.*//g'`
+#    latest_kernel=`GuessLatest $cross_kernel_version 2.6.15`
 #    [ "$kernel_version" = "$latest_kernel" ] && return
 
-    # if kernelVersion for cross-compile is older than 2.6.15,
+    # if cross_kernel_version for cross-compile is older than 2.6.15,
     # recommend usage of Udev 070 instead of the latest release.
 #    [ "$latest_kernel" = "2.6.15" ] && echo "070"
 }

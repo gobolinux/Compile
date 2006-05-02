@@ -29,7 +29,8 @@ else
 	[ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
 	
 	source $goboSettings/Compile/Cross-$arch_conf.conf
-	prefix="$crossPrefixDir"
+	prefix="$cross_prefix_dir"
+	kernelVersion="$cross_kernel_version"
 	symlink_options="-c overwrite"
 
 	# needs to be propagated to Scripts
@@ -108,16 +109,17 @@ then
 	if [ "$CROSS_NONE" = "y" ]
 	then
 		version=`gcc --version | head -n 1 | awk {'print $3'}`
-		gcc_libdir=$goboPrograms/GCC
+		gcclibdir=$goboPrograms/GCC/Current/lib
 	else
 		version=`$CC --version | head -n 1 | awk {'print $3'}`
+		gcclibdir=$cross_gcc_libdir
 	fi
 	
     mkdir -p $dirname/$version/lib
     ln -sf $version $dirname/Current
 
     pushd $dirname/Current/lib >& /dev/null
-    cp -a $gcc_libdir/libgcc* .
+    cp -a $gcclibdir/libgcc* .
     popd >&/dev/null
 
     SymlinkProgram $symlink_options LibGCC >& /dev/null
