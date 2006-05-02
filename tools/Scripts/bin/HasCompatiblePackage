@@ -18,10 +18,10 @@ function search_packages() {
    return
 }
 
-if [ "$crossPrefixDir" != "" ]
+if [ "$cross_prefix_dir" != "" ]
 then
    # Use CompatibilityList from the host machine
-   goboSettings=`echo $goboSettings | sed "s%$crossPrefixDir%%g"`
+   goboSettings=`echo $goboSettings | sed "s%$cross_prefix_dir%%g"`
 fi
 
 file="$goboSettings/Scripts/CompatibilityList"

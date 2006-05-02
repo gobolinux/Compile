@@ -42,14 +42,14 @@ shift $parsedArguments
 function extract_dependencies_from_file() {
 if [ "$goboCrossCompiling" = "yes" ]
 then
-   readelf_result=`${crossCompiler}readelf -a "$1" 2> /dev/null | grep "Shared library" | cut -d"[" -f2 | cut -d"]" -f1`
+   readelf_result=`${cross_compiler}readelf -a "$1" 2> /dev/null | grep "Shared library" | cut -d"[" -f2 | cut -d"]" -f1`
    for i in $readelf_result
    do
       if [ ! -h $goboLibraries/$i ]
       then
          echo "# *Warning*: Unresolved library $i"
       else
-        readlink -f "$goboLibraries/$i" | sed "s%$crossPrefixDir%%g"
+        readlink -f "$goboLibraries/$i" | sed "s%$cross_prefix_dir%%g"
       fi
    done
 else

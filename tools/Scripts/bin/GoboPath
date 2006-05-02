@@ -11,7 +11,7 @@ then
    [ ! "${goboPrefix}" ] && export goboPrefix="${HOME}"
 else
    if [ "$goboCrossCompiling" = "yes" ]
-   then export goboPrefix="$crossPrefixDir"
+   then export goboPrefix="$cross_prefix_dir"
    fi
 fi
 
