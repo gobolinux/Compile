@@ -362,7 +362,7 @@ then
       "CPP=$CPP"
       "CXX=$CXX"
       "LIBTOOL=$LIBTOOL"
-      "CROSS=$crossCompiler"
+      "CROSS=$cross_compiler"
    )
    # ARCH is taken from the cross config file
    arch=`Get_Architecture $cross_uname_m`
