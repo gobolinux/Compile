@@ -19,9 +19,11 @@ Import GoboLinux
 PATH=$PATH:$TOP_DIR/functions
 source PkgFunctions
 source BlackList
+source $TOP_DIR/functions/Platforms
 
 # Cross-compiling variables
 source $dot_config
+
 
 # TODO: the headers script have shown to be broken on many releases I've tested.
 #       we're relying on the existence of a binary package for now.
@@ -151,8 +153,7 @@ if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-    [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
-    [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
+	export arch_conf=`get_chosen_arch`
 
     # this is the same as evaluating the line 'export cross_prefix_dir=...'
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`

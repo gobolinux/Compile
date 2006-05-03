@@ -5,14 +5,13 @@ TOPDIR=..
 source GoboPath
 source ScriptFunctions
 source $TOPDIR/.config
+source $TOPDIR/functions/Platforms
 
 if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-    [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
-    [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
-
+    export arch_conf=`get_chosen_arch`
     source $goboSettings/Compile/Cross-$arch_conf.conf
     prefix="$cross_prefix_dir"
 fi

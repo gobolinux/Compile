@@ -13,6 +13,7 @@ export PATH=$PATH:$TOP_DIR/functions
 source PkgFunctions
 source ScriptFunctions
 source $TOP_DIR/.config
+source $TOP_DIR/functions/Platforms
 
 function cleanup() {
     cd "$TOP_DIR/bin"
@@ -26,9 +27,7 @@ then
     # nothing to do
     exit 0
 else
-    [ "$CROSS_ARM"  = "y" ] && export arch_conf=ARM
-    [ "$CROSS_SH4"  = "y" ] && export arch_conf=SH4
-
+    export arch_conf=`get_chosen_arch`
     source $goboSettings/Compile/Cross-$arch_conf.conf
     prefix="$cross_prefix_dir"
 

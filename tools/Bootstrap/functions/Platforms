@@ -1,0 +1,6 @@
+#!/bin/sh
+
+function get_chosen_arch() {
+    [ "$CROSS_ARM"  = "y" ] && echo ARM
+    [ "$CROSS_SH4"  = "y" ] && echo SH4
+}
