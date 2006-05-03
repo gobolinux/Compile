@@ -81,11 +81,11 @@ then
     crossconf=`ls Bootstrap/Compile/*/Resources/Defaults/Settings/Compile/Cross-$2.conf`
 
     [ ! -f $crossconf ] && die "$crossconf: file not found."
-    eval `cat $crossconf | grep "crossPrefixDir=" | sed 's/"//g'`
-    eval `cat $crossconf | grep "toolchainDir="   | sed 's/"//g'`
-    eval `cat $crossconf | grep "cross_uname_m="  | sed 's/"//g'`
-    crossprefixdir=$crossPrefixDir
-    crosstoolchaindir=$toolchainDir
+    eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
+    eval `cat $crossconf | grep "cross_toolchain_dir=" | sed 's/"//g'`
+    eval `cat $crossconf | grep "cross_uname_m=" | sed 's/"//g'`
+    crossprefixdir=$cross_prefix_dir
+    crosstoolchaindir=$cross_toolchain_dir
     crossrepodir="$crossprefixdir/$goboPrograms"
     arch=$cross_uname_m
 
