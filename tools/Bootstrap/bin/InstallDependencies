@@ -10,17 +10,21 @@ source $TOP_DIR/.config
 #
 # Install the ChrootCompile package on the host's root system
 #
-dirname="$goboPrograms/ChrootCompile"
+dirname="$TOP_DIR/downloads/ChrootCompile"
 if [ ! -d "$dirname" ]
 then
+    Log_Normal "Fetching ChrootCompile from the CVS..."
     pushd "$TOP_DIR/downloads" >& /dev/null
-    Log_Normal "Installing the ChrootCompile package on the host system..."
-    rm -Rf tools/ChrootCompile
     cvs_checkout ChrootCompile tools/ChrootCompile
+    popd >& /dev/null
 
-    version="`date +%Y%m%d`-CVS"
-    cvs_make_install ChrootCompile "$dirname" "$version" "VERSION=$version"
-    SymlinkProgram ChrootCompile
+	pushd "$TOP_DIR/chroot" >& /dev/null
+	../downloads/ChrootCompile/SetupChrootEnv
+	popd >& /dev/null
+else
+	Log_Normal "Updating ChrootCompile from the CVS..."
+    pushd "$TOP_DIR/downloads" >& /dev/null
+    cvs_checkout ChrootCompile tools/ChrootCompile
     popd >& /dev/null
 fi
 

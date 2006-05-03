@@ -7,6 +7,8 @@
 #
 
 TOP_DIR=..
+
+PATH=$PATH:$TOP_DIR/functions:$TOP_DIR/downloads/ChrootCompile
 dot_config=$TOP_DIR/.config
 subdir=$TOP_DIR/packages
 
@@ -16,7 +18,6 @@ source ScriptFunctions
 Import GoboLinux
 
 # Bootstrap's own functions
-PATH=$PATH:$TOP_DIR/functions
 source PkgFunctions
 source BlackList
 source $TOP_DIR/functions/Platforms

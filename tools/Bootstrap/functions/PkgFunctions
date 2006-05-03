@@ -51,11 +51,18 @@ function get_recipe() {
     fi
     recipe=$pkg_dir/$pkg_version
 
-	echo "$recipe"
+    echo "$recipe"
 }
 
 function cvs_checkout() {
-	cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co -d "$1" "$2"
+    if [ ! -d "$1" ]
+	then
+		cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co -d "$1" "$2"
+	else
+		pushd "$1" >& /dev/null
+		cvs update
+		popd >& /dev/null
+	fi
 }
 
 function cvs_make_install() {
