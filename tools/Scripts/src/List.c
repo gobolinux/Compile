@@ -326,23 +326,34 @@ set_permission_string(struct stat *status, char *mask_U, char *mask_G, char *mas
 		mask_U[0] = 'r';
 	if (status->st_mode & S_IWUSR)
 		mask_U[1] = 'w';
-	if (status->st_mode & S_IXUSR)
+	if (status->st_mode & S_ISUID)
+		mask_U[2] = 's';
+	else if (status->st_mode & S_IXUSR)
 		mask_U[2] = 'x';
 
 	if (status->st_mode & S_IRGRP)
 		mask_G[0] = 'r';
 	if (status->st_mode & S_IWGRP)
 		mask_G[1] = 'w';
-	if (status->st_mode & S_IXGRP)
+	if (status->st_mode & S_ISGID)
+		mask_G[2] = 's';
+	else if (status->st_mode & S_IXGRP)
 		mask_G[2] = 'x';
 
 	if (status->st_mode & S_IROTH)
 		mask_O[0] = 'r';
 	if (status->st_mode & S_IWOTH)
 		mask_O[1] = 'w';
-	if (status->st_mode & S_IXOTH)
+	if (status->st_mode & S_ISVTX)
+		mask_O[2] = 't';
+	else if (status->st_mode & S_IXOTH)
 		mask_O[2] = 'x';
-
+#if 0
+	if (S_ISSOCK(status->st_mode))
+		mask_U[0] = 's';
+	else if (S_ISFIFO(status->st_mode))
+		mask_U[0] = 'p';
+#endif
 	memset(final_mask, 0, mask_len);
 	if (status->st_uid == geteuid())
 		snprintf(final_mask, mask_len, "%s%s%s%s%s", 
