@@ -8,7 +8,7 @@
 
 TOP_DIR=..
 
-PATH=$PATH:$TOP_DIR/functions:$TOP_DIR/downloads/ChrootCompile
+PATH=$PATH:$TOP_DIR/functions:$TOP_DIR/chroot
 dot_config=$TOP_DIR/.config
 subdir=$TOP_DIR/packages
 
