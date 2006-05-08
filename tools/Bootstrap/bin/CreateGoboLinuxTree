@@ -68,8 +68,9 @@ function create_tree() {
     #
     # Fix permissions
     #
-    chmod 755   "$1/$goboVariable/empty"
-    chown 0:sys "$1/$goboVariable/empty"
+    chmod a+rwxt "$1/$goboVariable/tmp"
+    chmod 755    "$1/$goboVariable/empty"
+    chown 0:sys  "$1/$goboVariable/empty"
 
     #
     # Creates the symlink to the root fs (eg: /System/SH4 -> /)
