@@ -22,6 +22,8 @@
 #include <getopt.h>
 #include <time.h>
 #include <sys/types.h>
+#define __USE_LARGEFILE64
+#define __USE_FILE_OFFSET64
 #include <sys/stat.h>
 #include <sys/statfs.h>
 #include <sys/vfs.h>
