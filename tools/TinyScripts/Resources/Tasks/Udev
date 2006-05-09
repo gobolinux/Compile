@@ -1,0 +1,4 @@
+#!/bin/sh
+
+/sbin/mdev -s
+echo /sbin/mdev > /proc/sys/kernel/hotplug
