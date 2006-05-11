@@ -764,7 +764,6 @@ fi
 unset makevars
 makevars=$(merge_array "make_variables")
 
-
 unset buildmerged
 eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables`
 ! [ "$install_target" ] && install_target="install"
@@ -903,7 +902,6 @@ then
    is_function_set pre_install && pre_install
    if ! [ "$do_install" = "no" ]
    then
-      [ "$install_target" ] || install_target="install"
       build_python_options $install_target
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
@@ -935,8 +933,46 @@ then
    then
       withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
    fi
-   perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
-   is_makefile=yes # fall through!
+   if [ -e ./Build.PL ]
+   then
+      # New Build.PL system
+      [ "$create_dirs_first" = "yes" ] && {
+         PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      }
+      if ! [ "$do_build" = "no" ]
+      then
+         is_function_set pre_build && pre_build
+         perl ./Build.PL
+         ./Build --install_base $target $build_target
+      fi
+      Boolean "no-install" && exit
+      [ ! "$create_dirs_first" = "yes" ] && {
+         PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      }
+      install_extras
+      is_function_set pre_install && pre_install
+      if ! [ "$do_install" = "no" ]
+      then
+         ./Build --install_base $target $install_target
+      fi
+      if [ -d $target/script ]
+      then
+         Quiet pushd $target/bin
+         Quiet ln -nfs ../script/* .
+         Quiet popd
+      fi
+      Quiet pushd $target/lib
+      Quiet mkdir -p perl5
+      Quiet mv * perl5
+      Quiet popd
+      do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+      is_function_set post_install && post_install
+      wrapup
+   else
+      # Old Makefile.PL system 
+      perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
+      is_makefile=yes # fall through!
+   fi
 fi
 
 ##################################################
@@ -982,9 +1018,6 @@ then
    Boolean "no-install" && exit
    PrepareProgram -t $batch "$appname" "$versionnumber"
    install_extras
-   if ! [ "$install_target" ]
-   then install_target="install"
-   fi
    is_function_set pre_install && pre_install
    imakevars=(
       "BINDIR=$installprefix/bin"
@@ -1008,7 +1041,6 @@ fi
 if [ "$is_scons" = "yes" ]
 then
    [ "$scons" ] || scons="scons"
-   [ "$install_target" ] || install_target="install"
    if [ ! "$override_default_options" = "yes" ]
    then
       scons_variables=(

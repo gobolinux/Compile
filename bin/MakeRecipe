@@ -217,7 +217,7 @@ elif grep -q "/configure$" "$file_contents"
 then
    Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
    echo "is_compileprogram=yes" >> "$recipedir/Recipe"
-elif grep -q "Makefile.PL$" "$file_contents"
+elif grep -q "Makefile.PL$" "$file_contents" || grep -q "Build.PL$" "$file_contents" 
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
    echo "is_perl=yes" >> "$recipedir/Recipe"
