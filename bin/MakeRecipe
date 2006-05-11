@@ -235,6 +235,10 @@ elif grep -q "Imakefile$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on imake."
    echo "is_xmkmf=yes" >> "$recipedir/Recipe"
+elif grep -q "SConstruct$" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on SCons."
+   echo "is_scons=yes" >> "$recipedir/Recipe"
 elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -iq makefile && \
        grep -q "\.py$" "$file_contents"
 then
