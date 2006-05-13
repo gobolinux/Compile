@@ -354,6 +354,12 @@ if Boolean "check"; then
        exit
 fi
 
+if [ $has_current = yes -a $has_default = no ]
+then
+	# do not complain if recipe isn't shipped with a default settings
+	exit 0
+fi
+
 if Boolean "report"; then
        if [ $has_current = no -a $has_default = no ]; then
                Log_Normal "No settings exist"
