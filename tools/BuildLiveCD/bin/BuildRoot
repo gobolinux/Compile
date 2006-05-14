@@ -104,6 +104,9 @@ rm -rf $root
 
 echo "BuildRoot: Building root $root..."
 
+#
+# Base Directories
+#
 mkdir -p $root
 mkdir -p $root/System/Links/Executables
 mkdir -p $root/System/Links/Environment
@@ -114,7 +117,7 @@ mkdir -p $root/System/Links/Shared
 mkdir -p $root/System/Links/Tasks
 mkdir -p $root/System/Settings
 mkdir -p $root/System/Variable
-mkdir -p $root/System/Variable/tmp
+mkdir -p $root/System/Variable/tmp; chmod +t $root/System/Variable/tmp 
 mkdir -p $root/System/Variable/log
 mkdir -p $root/System/Variable/run
 mkdir -p $root/System/Kernel
@@ -130,9 +133,6 @@ mkdir -p $root/Files/Compile
 mkdir -p $root/Files/Compile/Archives
 mkdir -p $root/Files/Compile/Sources
 mkdir -p $root/Files/Compile/Store
-mkdir -p $root/Files/Descriptions
-mkdir -p $root/Files/Documentation
-mkdir -p $root/Files/Wallpaper
 mkdir -p $root/Depot
 mkdir -p $root/TmpFS
 mkdir -p $root/Mount
@@ -142,6 +142,10 @@ mkdir -p $root/Mount/GoboLinux
 mkdir -p $root/Mount/Floppy
 mkdir -p $root/Mount/TmpFS
 mkdir -p $root/Programs
+
+#
+# Legacy Links
+#
 mkdir -p $root/usr
 
 ln -nfs /System/Kernel/Objects $root/sys
