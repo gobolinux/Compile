@@ -53,7 +53,7 @@ function symlink_program() {
  
    name=$(basename $(dirname $full_path))
    version=$(basename ${full_path})
-   echo "Linking ${full_path} inside ${gobolinks}" 1>&2
+   #echo "Linking ${full_path} inside ${gobolinks}" 1>&2
    
    do_link ${full_path}/bin ${gobolinks}/Executables
    do_link ${full_path}/sbin ${gobolinks}/Executables
@@ -79,7 +79,7 @@ function install_package() {
    version=${base#*--}
    version=${version%%--*}
    
-   echo "Installing $name version $version..."
+   echo "Installing $name $version..."
    
    pushd "$root/Programs" &> /dev/null
    tar xjpf "$package"
