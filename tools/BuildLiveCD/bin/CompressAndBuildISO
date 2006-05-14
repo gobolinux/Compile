@@ -4,12 +4,39 @@ kernel_version=`sed -n 's,.*--\(.*\)--kernel.*,\1,p' /Programs/BuildLiveCD/Curre
 
 if [ "$1" = "--help" ]
 then
-   echo "$0 [<start_stage>]"
+   echo "$0 [<start_stage> [<end_stage>]]"
    echo "   where stage can be: layer1, squashfs, initrd, iso"
    echo " "
    echo "   for more information, see http://gobolinux.org/?page=livecd"
    echo " "
    exit 0
+fi
+
+# Stages:
+STAGE_LAYER0=0; STAGE_SQUASHFS=1; STAGE_INITRD=2; STAGE_ISO=3
+
+if [ "$1" ]
+then
+   case "$1" in
+   "layer0")   start_at=$STAGE_LAYER0;;
+   "squashfs") start_at=$STAGE_SQUASHFS;;
+   "initrd")   start_at=$STAGE_INITRD;;
+   "iso")      start_at=$STAGE_ISO;;
+   esac
+else
+   [ -d "Output/Layer1" ] && start_at=$STAGE_SQUASHFS || start_at=$STAGE_LAYER0
+fi
+ 
+if [ "$2" ]
+then
+   case $2 in
+   "layer0")   stop_at=$STAGE_LAYER0;;
+   "squashfs") stop_at=$STAGE_SQUASHFS;;
+   "initrd")   stop_at=$STAGE_INITRD;;
+   "iso")      stop_at=$STAGE_ISO;;
+   esac
+else
+   stop_at=$STAGE_ISO
 fi
 
 if ! which mksquashfs &> /dev/null
@@ -37,8 +64,6 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
-start_at=`echo $1| tr 'A-Z' 'a-z'`
-
 tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts )
 today=`date +%Y%m%d`
 arch=`uname -m`
@@ -50,30 +75,36 @@ externalarchives=$PWD/Archives/Ext
 external=$PWD/External
 
 mkdir -p Output/ISO
-if [ "$start_at" = "layer1" ] || ! [ -d "Output/Layer1" ]
+if [ "$start_at" -le "$STAGE_LAYER0" ] && [ "$stop_at" -ge "$STAGE_LAYER0" ]
 then
-
-   echo "Packing CVS snapshots..."
+   echo "=> Layer0 stage started"
+   
    cd $packages
    for package in ${tools[@]} 
    do
+      echo "Packing $package CVS snapshot..."
       tarball=$package--$today--$arch.tar.bz2
       rm -rf $package
       mkdir -p $package/$today
-      cp -R $localcvs/tools/$package/* $package/$today
+      cp -a $localcvs/tools/$package/* $package/$today
       cd $package/$today
-      [ -e Makefile ] && make
+      if [ -e Makefile ]
+      then
+         make > /dev/null
+         grep -q "^install:" Makefile && make install > /dev/null #required at gobohide
+      fi
       find -type d -name CVS | xargs rm -rf 
       cd ..
       ln -nfs $today Current
       cd ..
    
       rm -f $tarball
-      tar cjvpf $tarball $package
+      tar cjpf $tarball $package
       rm -rf $package
    done
    cd $root
 
+   echo "Building root..."
    BuildRoot "Output/Layer1" "Archives/Packages" "Archives/Packages/package.list"
    [ "$?" = "0" ] || exit 1
 
@@ -86,132 +117,125 @@ then
 
    # Clean CVS files from Layer1
    find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
-   start_at="squashfs"
+   echo "=> Layer0 stage done"
 fi
 
-if [ "$start_at" = "squashfs" ] || ! [ -f "Output/ISO/GoboLinux-files.squashfs" ]
+if [ "$start_at" -le "$STAGE_SQUASHFS" ] && [ "$stop_at" -ge "$STAGE_SQUASHFS" ]
 then
-    # Freshen build_chroots
-    echo "Freshen"
+   echo "=> SquashFS stage started"
 
-    unionfs_dirs=`echo "${build_layers[@]}" | tr " " ":"`
+   unionfs_dirs=`echo "${build_layers[@]}" | tr " " ":"`
+   mkdir -p Output/Environment
+   echo "Unionfs mounting layers."
+   tmp_mp=`mktemp -d /tmp/finalize_layer-XXXXX`
+   unionfs_dirs="dirs=${tmp_mp}=rw:${unionfs_dirs}"
+   echo mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
+   mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
 
-    mkdir -p Output/Environment
-    echo "Unionfs mounting layers."
-    tmp_mp=`mktemp -d /tmp/finalize_layer-XXXXX`
-    unionfs_dirs="dirs=${tmp_mp}=rw:${unionfs_dirs}"
-    echo mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
-    mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
+   mkdir -p Output/Checksums
+   
+   function ld_so_cache_changed() {
+      if grep -q "Output/Environment/Programs/Glibc/Settings/ld.so.cache" /tmp/newer.txt
+      then
+         diff Output/ld.so.cache.sum Output/ld.so.cache.sum.old &> /dev/null
+         if [ $? -ne 0 ]
+         then
+            cp Output/ld.so.cache.sum Output/ld.so.cache.sum.old
+            return 0
+         fi
+      fi
+      return 1
+   }
+   
+   function mksquashfs_on_demand() {
+      out="$1"
+      shift
+      bn=`basename "$out"`
+      # sumsfile=Output/Checksums/$bn.sums
+      echo "Checking if $bn needs updating..."
+      find "$@" -type f -newer "$out" 2> /dev/null > /tmp/newer.txt
+      diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
+      ld_so_cache_changed
+	if [ $diffs -ne 0 ]
+	then
+         echo ==========
+         echo Changes:
+         echo ----------
+         cat /tmp/newer.txt
+         echo ==========
+	fi
+      if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
+      #find "$@" | grep -v Devices | xargs -n 100 md5sum > $sumsfile.new 2> /dev/null
+      #if ! diff -q $sumsfile $sumsfile.new
+      then
+         echo "Creating squashfs compressed file $bn..."
+         # mv $sumsfile.new $sumsfile
+         nice -20 mksquashfs "$@" "$out" -noappend
+      else
+         echo "Mksquashfs not needed for $bn."
+      fi
+      rm /tmp/newer.txt
+   }
 
-    mkdir -p Output/Checksums
-    
-    function ld_so_cache_changed() {
-       if grep -q "Output/Environment/Programs/Glibc/Settings/ld.so.cache" /tmp/newer.txt
-       then
-          diff Output/ld.so.cache.sum Output/ld.so.cache.sum.old &> /dev/null
-          if [ $? -ne 0 ]
-          then
-             cp Output/ld.so.cache.sum Output/ld.so.cache.sum.old
-             return 0
-          fi
-       fi
-       return 1
-    }
-    
-    function mksquashfs_on_demand() {
-       out="$1"
-       shift
-       bn=`basename "$out"`
-       # sumsfile=Output/Checksums/$bn.sums
-       echo "Checking if $bn needs updating..."
-       find "$@" -type f -newer "$out" 2> /dev/null > /tmp/newer.txt
-       diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
-       ld_so_cache_changed
-	   if [ $diffs -ne 0 ]
-	   then
-          echo ==========
-          echo Changes:
-          echo ----------
-          cat /tmp/newer.txt
-          echo ==========
-	   fi
-       if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
-       #find "$@" | grep -v Devices | xargs -n 100 md5sum > $sumsfile.new 2> /dev/null
-       #if ! diff -q $sumsfile $sumsfile.new
-       then
-          echo "Creating squashfs compressed file $bn..."
-          # mv $sumsfile.new $sumsfile
-          nice -20 mksquashfs "$@" "$out" -noappend
-       else
-          echo "Mksquashfs not needed for $bn."
-       fi
-       rm /tmp/newer.txt
-    }
+   # Final actions on Environment
+   chroot Output/Environment /bin/ldconfig
+   md5sum Output/Environment/Programs/Glibc/Settings/ld.so.cache > Output/ld.so.cache.sum
+   # compress the uncompressed files into a squashfs file
 
-    # Final actions on Environment
-    chroot Output/Environment /bin/ldconfig
-    md5sum Output/Environment/Programs/Glibc/Settings/ld.so.cache > Output/ld.so.cache.sum
-    # compress the uncompressed files into a squashfs file
+   time mksquashfs_on_demand Output/ISO/GoboLinux-files.squashfs Output/Environment/Files
+   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-a-e.squashfs Output/Environment/Programs/[A-E]*
+   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-f-j.squashfs Output/Environment/Programs/[F-J]*
+   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-k-o.squashfs Output/Environment/Programs/[K-O]*
+   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-p-t.squashfs Output/Environment/Programs/[P-T]*
+   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-u-z.squashfs Output/Environment/Programs/[U-Z]*
+   time mksquashfs_on_demand Output/ISO/GoboLinux-rest.squashfs `ls -d Output/Environment/* | grep -v Files | grep -v Programs`
 
-    time mksquashfs_on_demand Output/ISO/GoboLinux-files.squashfs Output/Environment/Files
-    time mksquashfs_on_demand Output/ISO/GoboLinux-programs-a-e.squashfs Output/Environment/Programs/[A-E]*
-    time mksquashfs_on_demand Output/ISO/GoboLinux-programs-f-j.squashfs Output/Environment/Programs/[F-J]*
-    time mksquashfs_on_demand Output/ISO/GoboLinux-programs-k-o.squashfs Output/Environment/Programs/[K-O]*
-    time mksquashfs_on_demand Output/ISO/GoboLinux-programs-p-t.squashfs Output/Environment/Programs/[P-T]*
-    time mksquashfs_on_demand Output/ISO/GoboLinux-programs-u-z.squashfs Output/Environment/Programs/[U-Z]*
-    time mksquashfs_on_demand Output/ISO/GoboLinux-rest.squashfs `ls -d Output/Environment/* | grep -v Files | grep -v Programs`
-
-    umount Output/Environment
-    rm -rf $tmp_mp
-    start_at="initrd"
+   umount Output/Environment
+   rm -rf $tmp_mp
+   echo "=> SquashFS stage done"
 fi
 
 cp -ra External/CD-Bootloader/$arch/. Output/ISO
 
-if [ "$start_at" = "initrd" ] || ! [ -f "Output/ISO/isolinux/initrd.gz" ]
+if [ "$start_at" -le "$STAGE_INITRD" ] && [ "$stop_at" -ge "$STAGE_INITRD" ]
 then
+   echo "=> InitRD stage started"
    #Rebuild initrd
-   echo "Building initrd.gz"
    initrd_dir=Output/InitRD
-   MakeInitRDTree
 
    cd Archives/InitRD/
    for package in InitRDScripts
    do
+      echo "Packing $package CVS snapshot..."
       tarball=$package--$today--$arch.tar.bz2
       rm -rf $package
       mkdir -p $package/$today
-      cp -R $localcvs/tools/$package/* $package/$today
+      cp -a $localcvs/tools/$package/* $package/$today
       cd $package/$today
-      [ -e Makefile ] && make
+      [ -e Makefile ] && make > /dev/null
       find -type d -name CVS | xargs rm -rf 
       cd ..
       ln -nfs $today Current
       cd ..
    
       rm -f $tarball
-      tar cjvpf $tarball $package
+      tar cjpf $tarball $package
       rm -rf $package
    done
    cd $root
    
+   MakeInitRDTree
    cp External/Linux-Kernel/System/Kernel/Modules/$kernel_version/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
    cp External/Linux-Kernel/System/Kernel/Boot/kernel-$kernel_version Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
+   echo "=> InitRD stage done"
 fi
 
-if [ "$start_at" = "" ]
+if [ "$start_at" -le "$STAGE_ISO" ] && [ "$stop_at" -ge "$STAGE_ISO" ]
 then
-    echo "Starting at last stage (iso)."
-    echo "    if you want earlier stage specify one of:"
-    echo "    layer1, squashfs, initrd, iso"
-    echo ""
-    echo "==================================================================="
-    echo ""
-
+   echo "=> ISO stage started"
+   # having the squashfs file, you can prepare the bootable iso
+   iso_name="Output/GoboLinux-NoVersion.iso"
+   time nice -20 mkisofs -R -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table Output/ISO  > $iso_name
+   echo "=> ISO stage done"
 fi
-
-# having the squashfs file, you can prepare the bootable iso
-echo "Building ISO..."
-iso_name="Output/GoboLinux-NoVersion.iso"
-time nice -20 mkisofs -R -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table Output/ISO  > $iso_name
