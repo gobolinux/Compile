@@ -1,26 +1,17 @@
-#*********************************************************************
-# Only change stuff from here if you know what you're doing
-CC = gcc
-INSTALL = install
-
-CFLAGS = -I./include
-LDFLAGS =
-PREFIX = /usr
+MYCFLAGS = -O2 -Wall
 
 all: gobohide
 
-default: all
+gobohide: gobohide.c
+	gcc $(MYCFLAGS) -o gobohide gobohide.c 
+	mkdir -p ../sbin
+	mv gobohide ../sbin 
+
+debug: MYCFLAGS = -g -DDEBUG
+debug: all
+
+static: MYCFLAGS = -static
+static: all
 
 clean:
-	-rm -f *.o *~ gobohide
-
-install:
-	$(INSTALL) -d $(PREFIX)/sbin
-	$(INSTALL) gobohide $(PREFIX)/sbin
-	
-gobohide: gobohide.o
-	$(CC) -o gobohide gobohide.o $(LDFLAGS)
-
-gobohide.o: gobohide.c
-	$(CC) -c gobohide.c $(CFLAGS)
-
+	cd ../sbin; rm -f gobohide
