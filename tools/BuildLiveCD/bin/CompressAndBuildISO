@@ -4,7 +4,7 @@ kernel_version=`sed -n 's,.*--\(.*\)--kernel.*,\1,p' /Programs/BuildLiveCD/Curre
 
 if [ "$1" = "--help" ]
 then
-   echo "$0 [<stage>]"
+   echo "$0 [<start_stage>]"
    echo "   where stage can be: layer1, squashfs, initrd, iso"
    echo " "
    echo "   for more information, see http://gobolinux.org/?page=livecd"
@@ -39,22 +39,54 @@ fi
 
 start_at=`echo $1| tr 'A-Z' 'a-z'`
 
+tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts )
+today=`date +%Y%m%d`
+arch=`uname -m`
+
+root=$PWD
+localcvs=$PWD/LocalCVS/
+packages=$PWD/Archives/Packages
+externalarchives=$PWD/Archives/Ext
+external=$PWD/External
+
 mkdir -p Output/ISO
 if [ "$start_at" = "layer1" ] || ! [ -d "Output/Layer1" ]
 then
-    BuildRoot "Output/Layer1" "Archives/Packages" "Archives/Packages/package.list"
-    [ "$?" = "0" ] || exit 1
 
-    # Add few items to layer1
-    mkdir -p Output/Layer1/Files
-    cp -ar LocalCVS/files/* Output/Layer1/Files
-    cp -ar External/Files-Fonts/* Output/Layer1/Files
-    mkdir -p Output/Layer1/Files/Documentation
-    cp -ar External/Linux-Kernel/* Output/Layer1
+   echo "Packing CVS snapshots..."
+   cd $packages
+   for package in ${tools[@]} 
+   do
+      tarball=$package--$today--$arch.tar.bz2
+      rm -rf $package
+      mkdir -p $package/$today
+      cp -R $localcvs/tools/$package/* $package/$today
+      cd $package/$today
+      [ -e Makefile ] && make
+      find -type d -name CVS | xargs rm -rf 
+      cd ..
+      ln -nfs $today Current
+      cd ..
+   
+      rm -f $tarball
+      tar cjvpf $tarball $package
+      rm -rf $package
+   done
+   cd $root
 
-    # Clean CVS files from Layer1
-    find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
-    start_at="squashfs"
+   BuildRoot "Output/Layer1" "Archives/Packages" "Archives/Packages/package.list"
+   [ "$?" = "0" ] || exit 1
+
+   # Add few items to layer1
+   mkdir -p Output/Layer1/Files
+   cp -ar LocalCVS/files/* Output/Layer1/Files
+   cp -ar External/Files-Fonts/* Output/Layer1/Files
+   mkdir -p Output/Layer1/Files/Documentation
+   cp -ar External/Linux-Kernel/* Output/Layer1
+
+   # Clean CVS files from Layer1
+   find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
+   start_at="squashfs"
 fi
 
 if [ "$start_at" = "squashfs" ] || ! [ -f "Output/ISO/GoboLinux-files.squashfs" ]
@@ -138,13 +170,34 @@ cp -ra External/CD-Bootloader/$arch/. Output/ISO
 
 if [ "$start_at" = "initrd" ] || ! [ -f "Output/ISO/isolinux/initrd.gz" ]
 then
-    #Rebuild initrd
-    echo "Building initrd.gz"
-    initrd_dir=Output/InitRD
-    MakeInitRDTree
-    cp External/Linux-Kernel/System/Kernel/Modules/$kernel_version/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
-    cp External/Linux-Kernel/System/Kernel/Boot/kernel-$kernel_version Output/ISO/isolinux/kernel
-    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
+   #Rebuild initrd
+   echo "Building initrd.gz"
+   initrd_dir=Output/InitRD
+   MakeInitRDTree
+
+   cd Archives/InitRD/
+   for package in InitRDScripts
+   do
+      tarball=$package--$today--$arch.tar.bz2
+      rm -rf $package
+      mkdir -p $package/$today
+      cp -R $localcvs/tools/$package/* $package/$today
+      cd $package/$today
+      [ -e Makefile ] && make
+      find -type d -name CVS | xargs rm -rf 
+      cd ..
+      ln -nfs $today Current
+      cd ..
+   
+      rm -f $tarball
+      tar cjvpf $tarball $package
+      rm -rf $package
+   done
+   cd $root
+   
+   cp External/Linux-Kernel/System/Kernel/Modules/$kernel_version/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
+   cp External/Linux-Kernel/System/Kernel/Boot/kernel-$kernel_version Output/ISO/isolinux/kernel
+   mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
 fi
 
 if [ "$start_at" = "" ]
