@@ -88,11 +88,7 @@ then
       mkdir -p $package/$today
       cp -a $localcvs/tools/$package/* $package/$today
       cd $package/$today
-      if [ -e Makefile ]
-      then
-         make > /dev/null
-         grep -q "^install:" Makefile && make install > /dev/null #required at gobohide
-      fi
+      [ -e Makefile ] && make > /dev/null
       find -type d -name CVS | xargs rm -rf 
       cd ..
       ln -nfs $today Current
