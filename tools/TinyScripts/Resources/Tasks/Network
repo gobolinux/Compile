@@ -4,7 +4,7 @@ source /System/Settings/NetworkSettings
 
 case "$1" in
     [sS]tart)
-        for i in $network_interfaces
+        for i in $NetworkInterfacesOnBoot
         do
             ipaddr=`eval 'echo $'$i'_IP'`
             netmask=`eval 'echo $'$i'_Netmask'`
@@ -22,7 +22,7 @@ case "$1" in
         route add default gw $Gateway dev $GatewayInterface 2> /dev/null
         ;;
     [sS]top)
-        for i in $network_interfaces
+        for i in $NetworkInterfacesOnBoot
         do
             ifconfig $i down
         done
