@@ -18,42 +18,6 @@ function package_subdir() {
     echo $entry | cut -d"/" -f1-2 | sed 's/\.\///g'
 }
 
-#
-# Finds the most appropriate recipe for a given program.
-#
-function get_recipe() {
-	pkg_dir="$1"
-	pkg_name="$2"
-    pkg_version="$3"
-
-	if [ -d /Files/Compile/LocalRecipes/$pkg_name ]; then
-		pkg_dir=/Files/Compile/LocalRecipes/$pkg_name
-	elif [ -d /Files/Compile/Recipes/$pkg_name ]; then
-		pkg_dir=/Files/Compile/Recipes/$pkg_name
-	else
-		pkg_dir=$shipped_dir/$pkg_name
-	fi
-	
-	if [ ! -d "$pkg_dir" ]
-	then
-		recipe_url=`FindPackage --types=recipe $pkg_name`
-		[ -z "$recipe_url" ] && return
-		Compile --no-build --no-web "$recipe_url" || return
-
-		pkg_dir=/Files/Compile/Recipes/$pkg_name
-		[ ! -d "$pkg_dir" ] && return
-	fi
-	
-    len="$(( ${#pkg_dir} + 2 ))"
-    if [ "$pkg_version" = "" ]
-    then
-        pkg_version=`find $pkg_dir -maxdepth 2 -type d | cut -b${len}- | cut -d"/" -f1 | uniq | tail -n 1`
-    fi
-    recipe=$pkg_dir/$pkg_version
-
-    echo "$recipe"
-}
-
 function cvs_checkout() {
     if [ ! -d "$1" ]
 	then
