@@ -106,7 +106,10 @@ function download_headers() {
 }
 
 function download_meta() {
+    unset is_meta
+    unset include
     arch=`Get_Architecture $cross_uname_m`
+
     source $1/Recipe
     [ -f $1/$arch/Recipe ] && source $1/$arch/Recipe
     if [ "$is_meta" = "yes" ]
@@ -116,9 +119,19 @@ function download_meta() {
             ipkg="${pkgver%--*}"
             ver="${pkgver#*--}"
 
-            # do not build, just fetch the sources
-            Log_Normal "Fetching sources for included recipe $ipkg $ver..."
-            Compile --no-build $ipkg $ver || exit 1
+            # fetch the included recipes
+            Log_Normal "Checking for included recipe $ipkg $ver..."
+            rcp=`FindPackage -W -t recipe $ipkg $ver`
+            if [ -z "$rcp" ]
+            then
+                rcp=`FindPackage -t recipe $ipkg $ver` || exit 1
+            fi
+            if echo $rcp | grep -q "^http"
+            then
+                Log_Normal "Getting included recipe $ipkg $ver..."
+                rcp=`GetRecipe $rcp` || exit 1
+            fi
+            download_meta $rcp
         done
     fi
 }
@@ -229,7 +242,6 @@ do
         esac
     fi
  
-#	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
     recipe=`FindPackage -t recipe $pkg_name $pkg_version`
     echo $recipe | grep -q "^http" && local_recipe=`GetRecipe $recipe` || local_recipe=$recipe
     

@@ -53,7 +53,6 @@ do
     hook_function=`echo ${pkg_name} | sed 's/-/_/g'`
     pkg_version=`${hook_function} 2> /dev/null`
 
-    #	recipe=`get_recipe "$pkg_dir" "$pkg_name" $pkg_version`
     recipe=`FindPackage -t recipe $pkg_name`
     dependencies="$recipe/Resources/Dependencies"
     if [ ! -d "$recipe" ]
