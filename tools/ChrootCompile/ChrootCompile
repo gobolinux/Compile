@@ -448,7 +448,6 @@ if [ "$crossopts" ]
 then
     mkdir -p $root/$crossprefixdir
     mkdir -p $root/$crosstoolchaindir
-    echo $sudo mount --bind $crossprefixdir $root/$crossprefixdir
     $sudo mount --bind $crossprefixdir $root/$crossprefixdir
     $sudo mount --bind $crosstoolchaindir $root/$crosstoolchaindir
 fi
@@ -456,6 +455,28 @@ fi
 #############################################################################
 # Download required archives to ./Archives
 #############################################################################
+
+function fetch_included_recipes() {
+   local ipkg="$2"
+   local ver="$3"
+   local recipedirs="$1/../../"
+
+   if [ "$localrepository" ]
+   then
+       recipedirs[0]=/Files/Compile/LocalRecipes
+       recipedirs[1]=/Files/Compile/Recipes
+   fi
+
+   for dir in ${recipedirs[@]}
+   do
+      pushd "$dir" &> /dev/null
+      pkg=`ls | grep -i "^$ipkg$"`
+      popd &> /dev/null
+      [ ! "$pkg" ] && continue
+      fetch_archive_off_recipe "$dir/$pkg/$ver" && return || die
+   done
+   die "Can't find recipe for $ipkg"
+}
 
 function fetch_archive_off_recipe() {
    (
@@ -473,11 +494,7 @@ function fetch_archive_off_recipe() {
          do
             ipkg="${pkgver%--*}"
             ver="${pkgver#*--}"
-            pushd "$1/../../" &> /dev/null
-            pkg=`ls | grep -i "^$ipkg$"`
-            [ "$pkg" ] || die "Can't find recipe for $ipkg"
-            popd &> /dev/null
-            fetch_archive_off_recipe "$1/../../$pkg/$ver" || die
+            fetch_included_recipes "$1" "$ipkg" "$ver"
          done
       else
          cd "$root/Files/Compile/Archives"
