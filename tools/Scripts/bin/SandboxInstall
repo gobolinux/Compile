@@ -47,7 +47,7 @@ fi
 
 unset unionsandbox
 
-if ! Boolean "no-sandbox" ]
+if ! Boolean "no-sandbox"
 then
    if [ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] 
    then
