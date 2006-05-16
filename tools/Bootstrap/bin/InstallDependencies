@@ -14,7 +14,8 @@ dirname="$TOP_DIR/downloads/ChrootCompile"
 if [ ! -d "$dirname" ]
 then
     Log_Normal "Fetching ChrootCompile from the CVS..."
-    pushd "$TOP_DIR/downloads" >& /dev/null
+    mkdir -p "$TOP_DIR/downloads"
+    pushd "$TOP_DIR/downloads"
     cvs_checkout ChrootCompile tools/ChrootCompile
     popd >& /dev/null
 fi
@@ -22,9 +23,10 @@ fi
 dirname="$TOP_DIR/chroot/tools/ChrootCompile"
 if [ ! -d "$dirname" ]
 then
-	pushd "$TOP_DIR/chroot" >& /dev/null
-	../downloads/ChrootCompile/SetupChrootEnv
-	popd >& /dev/null
+    mkdir -p "$TOP_DIR/chroot"
+    pushd "$TOP_DIR/chroot"
+    ../downloads/ChrootCompile/SetupChrootEnv
+    popd >& /dev/null
 fi
 
 #
