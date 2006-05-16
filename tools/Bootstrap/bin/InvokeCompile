@@ -105,9 +105,30 @@ function download_headers() {
     [ ! "$CROSS_NONE" = "y" ] && Parse_Conf Directories.conf
 }
 
+function download_meta() {
+    arch=`Get_Architecture $cross_uname_m`
+    source $1/Recipe
+    [ -f $1/$arch/Recipe ] && source $1/$arch/Recipe
+    if [ "$is_meta" = "yes" ]
+    then
+        for pkgver in "${include[@]}"
+        do
+            ipkg="${pkgver%--*}"
+            ver="${pkgver#*--}"
+
+            # do not build, just fetch the sources
+            Log_Normal "Fetching sources for included recipe $ipkg $ver..."
+            Compile --no-build $ipkg $ver || exit 1
+        done
+    fi
+}
+
 function chroot_compile() {
     local_recipe="$1"
-    
+
+    # check if needs to download meta recipes
+    download_meta $local_recipe
+
     echo
     Log_Normal "Running 'ChrootCompile --local-repository $cross_options $local_recipe'"
     echo
@@ -131,6 +152,7 @@ function chroot_compile() {
 function cleanup() {
     cd "$TOP_DIR/bin"
     ./BootStrap stop
+    exit 0
 }
 
 trap cleanup TERM INT STOP HUP
@@ -160,6 +182,7 @@ else
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_kernel_arch=" | sed 's/\"//g'`
     `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_kernel_version=" | sed 's/\"//g'`
+    `cat $goboSettings/Compile/Cross-$arch_conf.conf | grep "cross_uname_m=" | sed 's/\"//g'`
     prefix=$cross_prefix_dir
 
     cross_options="--cross-compile $arch_conf"
