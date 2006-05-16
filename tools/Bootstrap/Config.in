@@ -170,12 +170,13 @@ source "packages/SDL/Config.in"
 endmenu
 
 menu "GTK+ suite"
+source "packages/Gettext/Config.in"
 source "packages/GLib/Config.in"
 source "packages/ATK/Config.in"
 source "packages/Pango/Config.in"
+source "packages/Cairo/Config.in"
 source "packages/GTK+/Config.in"
 source "packages/Dbus/Config.in"
-source "packages/Gettext/Config.in"
 endmenu
 
 menu "Networking"
