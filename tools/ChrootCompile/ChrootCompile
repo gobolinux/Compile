@@ -89,9 +89,18 @@ then
     crossrepodir="$crossprefixdir/$goboPrograms"
     arch=$cross_uname_m
 
+    case "$arch" in
+       arm*) recipesubdir=arm ;;
+       *)    recipesubdir="$cross_uname_m"
+    esac
+
     shift 2
 else
     arch=`uname -m`
+    case "$arch" in
+       i686|i585|i486|i386) recipesubdir=i686 ;;
+       *)                   recipesubdir="$arch"
+    esac
 fi
 
 unset verbose
@@ -485,8 +494,8 @@ function fetch_archive_off_recipe() {
       [ "$verbose" ] && echo "Fetching files for $1/Recipe..."
       [ -f "$1/Recipe" ] || die "Can't find $1/Recipe."
       source "$1/Recipe"
-      if [ -f "$1/$arch/Recipe" ]
-      then source "$1/$arch/Recipe"
+      if [ -f "$1/$recipesubdir/Recipe" ]
+      then source "$1/$recipesubdir/Recipe"
       fi
       if [ "$is_meta" = "yes" ]
       then
