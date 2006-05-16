@@ -25,6 +25,7 @@ case "$1" in
     [sS]top)
         umount $prefix/$goboStatus 2> /dev/null     && echo "Unmounted binded proc filesystem"
         umount $prefix/$goboDevices 2> /dev/null    && echo "Unmounted binded dev filesystem"
+        [ "$CROSS_NONE" != "y" ] && rm -Rf $TOPDIR/chroot/Area-*
         ;;
 esac
 
