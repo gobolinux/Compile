@@ -151,7 +151,8 @@ function chroot_compile() {
     common_options="--local-repository $cross_options"
     if [ "$verbose_build" = "1" ]
     then ChrootCompile $common_options --verbose $local_recipe || exit 1
-    else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
+    else ChrootCompile $common_options $local_recipe || exit 1
+    #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
     export goboCrossCompiling=yes
@@ -244,7 +245,8 @@ do
  
     recipe=`FindPackage -t recipe $pkg_name $pkg_version`
     echo $recipe | grep -q "^http" && local_recipe=`GetRecipe $recipe` || local_recipe=$recipe
-    
+    [ -z "$local_recipe" ] && Log_Error "Could not find recipe for $pkg_name" && exit 1
+
     chroot_compile $local_recipe
 
     # And here is the final trick: if we have just compiled Glibc, create the
