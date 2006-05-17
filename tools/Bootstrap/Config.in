@@ -172,17 +172,17 @@ endmenu
 menu "GTK+ suite"
 source "packages/Gettext/Config.in"
 source "packages/GLib/Config.in"
+source "packages/Cairo/Config.in"
 source "packages/ATK/Config.in"
 source "packages/Pango/Config.in"
-source "packages/Cairo/Config.in"
 source "packages/GTK+/Config.in"
 source "packages/Dbus/Config.in"
 endmenu
 
 menu "Networking"
-source "packages/Links/Config.in"
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
+source "packages/Links/Config.in"
 endmenu
 
 menu "Other"
@@ -192,10 +192,10 @@ source "packages/LibUSB/Config.in"
 source "packages/Lirc/Config.in"
 source "packages/ReiserFSProgs/Config.in"
 comment "---"
-source "packages/LibART/Config.in"
 source "packages/Shared-Mime-INFO/Config.in"
 comment "---"
 source "packages/Mowitz/Config.in"
+source "packages/LibART_LGPL/Config.in"
 source "packages/LibOIL/Config.in"
 endmenu
 
@@ -207,6 +207,7 @@ endmenu
 menu "Desktop"
 comment "Window Managers"
 source "packages/Matchbox/Config.in"
+source "packages/XFCE/Config.in"
 comment "Applications"
 source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"

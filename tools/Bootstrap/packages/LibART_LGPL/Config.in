@@ -1,0 +1,2 @@
+config PKG_LIBART_LGPL
+    bool "LibART"
