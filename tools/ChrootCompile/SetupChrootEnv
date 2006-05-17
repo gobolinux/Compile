@@ -40,10 +40,12 @@ function download_packages() {
         Bison--2.1--i686.tar.bz2
         Bzip2--1.0.3--i686.tar.bz2
         Patch--2.5.4--i686.tar.bz2
+        # Cross-compiling dependencies
         Automake--1.9.6--i686.tar.bz2
         Autoconf--2.59--i686.tar.bz2
         M4--1.4.3--i686.tar.bz2
         Pkgconfig--0.19--i686.tar.bz2
+        GLib--2.8.6--i686.tar.bz2
     )
     
     mkdir -p Bootstrap

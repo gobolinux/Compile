@@ -170,6 +170,7 @@ then
         "Autoconf"  # needed by Recipes which call autogen.sh
         "M4"        # Automake dependency
         "Pkgconfig" # this package is a mess to be cross-compiled, keep it on the host platform
+        "GLib"      # GLib build expect its gen-marshall executable to be in $PATH if cross-compiling
     )
 fi
 
@@ -331,7 +332,7 @@ function load_dependency() {
    local dep="$1"
    local pkg=
    if [ "$crossopts" ]
-   then local repositories="Bootstrap $crossrepodir"
+   then local repositories="Bootstrap"
    else local repositories="$getclean Bootstrap"
    fi
    for repo in $repositories
@@ -347,6 +348,10 @@ function load_dependency() {
       [ "$pkg" ] && break
    done
    [ ! "$pkg" ] && {
+      [ "$crossopts" -a -d "$crossrepodir/$dep" ] && {
+         [ "$verbose" ] && echo "ChrootCompile: Dependency $dep found at $crossrepodir/$dep"
+         continue
+      }
       die "Dependency $dep could not be found."
    }
    if [ $dep = $name ]
