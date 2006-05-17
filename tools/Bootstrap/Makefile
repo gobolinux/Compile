@@ -73,7 +73,7 @@ help:
 	@echo 'For further info see the ./README file'
 	@echo ''
 
-VERBOSE_BUILD=1
+VERBOSE_BUILD=0
 ifdef V
 	VERBOSE_BUILD=$(V)
 endif
