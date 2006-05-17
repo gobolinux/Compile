@@ -1,0 +1,2 @@
+config PKG_A2PS
+    bool "A2PS"
