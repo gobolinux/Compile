@@ -143,6 +143,7 @@ menu "Development"
 source "packages/LibTool/Config.in"
 source "packages/GMP/Config.in"
 source "packages/GCC/Config.in"
+source "packages/TCC/Config.in"
 source "packages/Strace/Config.in"
 endmenu
 

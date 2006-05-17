@@ -1,0 +1,3 @@
+config PKG_TCC
+    bool "Tiny C Compiler"
+	default n
