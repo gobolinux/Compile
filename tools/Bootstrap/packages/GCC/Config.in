@@ -1,6 +1,5 @@
 config PKG_GCC
     bool "GNU Compiler Collection"
-	depends on CONFIG_TARGET_EMBEDDED=n
 	default n
 	---help---
 	  Say Y to include the GCC suite of compilers.

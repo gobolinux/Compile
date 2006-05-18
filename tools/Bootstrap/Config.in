@@ -141,9 +141,9 @@ endmenu
 
 menu "Development"
 source "packages/LibTool/Config.in"
-source "packages/GMP/Config.in"
-source "packages/GCC/Config.in"
-source "packages/TCC/Config.in"
+#source "packages/GMP/Config.in"
+#source "packages/GCC/Config.in"
+#source "packages/TCC/Config.in"
 source "packages/Strace/Config.in"
 endmenu
 
@@ -203,17 +203,18 @@ endmenu
 
 menu "Window Servers"
 source "packages/Xorg/Config.in"
-source "packages/Nano-X/Config.in"
+#source "packages/Nano-X/Config.in"
 endmenu
     
 menu "Desktop"
 comment "Window Managers"
 source "packages/Matchbox/Config.in"
-source "packages/XFCE/Config.in"
+#source "packages/XFCE/Config.in"
 comment "Applications"
 source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
 endmenu
-
+    
+endmenu
