@@ -208,8 +208,8 @@ endmenu
     
 menu "Desktop"
 comment "Window Managers"
-source "packages/Matchbox/Config.in"
-#source "packages/XFCE/Config.in"
+#source "packages/Matchbox/Config.in"
+source "packages/XFCE/Config.in"
 comment "Applications"
 source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"
