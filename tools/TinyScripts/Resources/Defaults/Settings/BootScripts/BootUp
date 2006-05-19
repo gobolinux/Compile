@@ -3,10 +3,9 @@
 export PATH=/System/Links/Executables:/System/Links/Tasks
 export LD_LIBRARY_PATH=/System/Links/Libraries
 
-echo "Mounting the proc filesystem...";    mount -n /System/Kernel/Status
+echo "Loading udev task...";               Udev start
 echo "Mounting file system read-write..."; mount -o remount,rw /
 echo "Mounting remaining filesystems...";  mount -a
-echo "Loading udev task...";               Udev start
 echo "Hiding the legacy tree...";          GoboHide start
 echo "Loading kernel modules...";          LoadModules start
 echo "Loading network settings...";        Network start

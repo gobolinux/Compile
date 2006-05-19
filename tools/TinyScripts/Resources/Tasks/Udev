@@ -1,4 +1,11 @@
 #!/bin/sh
 
+mount -n -t proc  none /System/Kernel/Status
+mount -n -t sysfs none /System/Kernel/Objects
+mount -n -t tmpfs none /System/Kernel/Devices
+
 /sbin/mdev -s
-echo /sbin/mdev > /proc/sys/kernel/hotplug
+mkdir /System/Kernel/Devices/pts
+mkdir /System/Kernel/Devices/shm
+
+echo /sbin/mdev > /System/Kernel/Status/sys/kernel/hotplug
