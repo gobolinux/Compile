@@ -112,7 +112,7 @@ do
 	    win++
 	 } else if ($(n) == "82") {
 	    print "# Swap partition."
-	    print $1 " swap swap pri=1 0 0" 
+	    print $1 " none swap pri=1 0 0" 
 	    print ""
 	 } else if ($(n) != "5") {
 	    partnum=substr($1, length($1))
