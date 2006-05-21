@@ -83,13 +83,10 @@ mv "$1" "`invert_function "$1"`"
 
 function media_cap() {
 
-# Avoid directories
-if :
-#[ ! -d "$1" ]
-then
-   # Step 1: all to uppercase
-   extension=.`echo "$1" | sed 's/.*\.//g' | tr "[:upper:]" "[:lower:]"`
-   UPPERCASE=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
+# Step 1: all to uppercase
+extension=.`echo "$1" | sed 's/.*\.//g'`
+UPPERCASE=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
+extension=`echo $extension | tr "[:upper:]" "[:lower:]"`
 
 if [ "`echo "$1" | grep "\."`" = "" ]
 then
@@ -167,17 +164,16 @@ function capitalize(s,     i,t) {
 '`$extension"
 #awk
 
+NEW_NAME=`echo $NEW_NAME | sed 's,  , ,g;s, ),),g;s,( ,(,g'`
+
 if [ "$1" != "$NEW_NAME" ]
 then
-   echo $1
+   echo "$1"
    printf "=> $NEW_NAME"
    if Quiet mv "$1" "$NEW_NAME"
    then echo " [ok]"
    else echo " [error]"
    fi
-fi
-
-#Avoid directories
 fi
 
 }
