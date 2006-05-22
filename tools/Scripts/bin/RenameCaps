@@ -85,7 +85,7 @@ function media_cap() {
 
 # Step 1: all to uppercase
 extension=.`echo "$1" | sed 's/.*\.//g'`
-UPPERCASE=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
+uppercase=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
 extension=`echo $extension | tr "[:upper:]" "[:lower:]"`
 
 if [ "`echo "$1" | grep "\."`" = "" ]
@@ -93,15 +93,19 @@ then
    extension=""
 fi
 
-if [ "`echo "$1" | grep "^[0-9][0-9].[A-Za-z]"`" != "" ]
+if [ "`echo "$uppercase" | grep "^\[[0-9][0-9]\].[A-Za-z]"`" != "" ]
 then
-   prefix="`echo "$1" | cut -b-2` - "
-   UPPERCASE="`echo "$1" | cut -b4-`"
+   prefix="`echo "$uppercase" | cut -b2-3` - "
+   uppercase="`echo "$uppercase" | cut -b6-`"
+elif [ "`echo "$uppercase" | grep "^[0-9][0-9].[A-Za-z]"`" != "" ]
+then
+   prefix="`echo "$uppercase" | cut -b-2` - "
+   uppercase="`echo "$uppercase" | cut -b4-`"
 fi
 
 
 #awk
-NEW_NAME="$prefix`echo "$UPPERCASE" | sed "s/_/ /g" | awk '
+NEW_NAME="$prefix`echo "$uppercase" | sed "s/_/ /g" | awk '
 
 BEGIN {
    excep["I"] = 1
@@ -116,6 +120,7 @@ BEGIN {
    excep["LP"] = 1
    excep["CD"] = 1
    excep["TNT"] = 1                # for the AC/DC song!!!
+   excep["TV"] = 1
    excep["MTV"] = 1
    excep["RPM"] = 1
    excep["MPB4"] = 1
@@ -137,6 +142,9 @@ function capitalize(s,     i,t) {
          if (i>1) printf " - "
          capitalize(t[i])
       }
+   } else if (tolower(substr(s, 1, 2)) == "mc") {
+      printf "Mc"
+      capitalize(tolower(substr(s, 3)))
    } else {
 
       car = toupper(substr(s, 1, 1))
