@@ -85,7 +85,7 @@ function media_cap() {
 
 # Step 1: all to uppercase
 extension=.`echo "$1" | sed 's/.*\.//g'`
-uppercase=`basename "$1" "$extension" | tr "[:lower:]" "[:upper:]"`
+uppercase=`basename "$1" "$extension" | tr "[:lower:]_" "[:upper:] "`
 extension=`echo $extension | tr "[:upper:]" "[:lower:]"`
 
 if [ "`echo "$1" | grep "\."`" = "" ]
@@ -93,10 +93,14 @@ then
    extension=""
 fi
 
-if [ "`echo "$uppercase" | grep "^\[[0-9][0-9]\].[A-Za-z]"`" != "" ]
+if [ "`echo "$uppercase" | grep "^[\[(][0-9][0-9][\])].[A-Za-z]"`" != "" ]
 then
    prefix="`echo "$uppercase" | cut -b2-3` - "
    uppercase="`echo "$uppercase" | cut -b6-`"
+elif [ "`echo "$uppercase" | grep "^[[(][0-9][0-9][])] - "`" != "" ]
+then
+   prefix="`echo "$uppercase" | cut -b2-3` - "
+   uppercase="`echo "$uppercase" | cut -b8-`"
 elif [ "`echo "$uppercase" | grep "^[0-9][0-9].[A-Za-z]"`" != "" ]
 then
    prefix="`echo "$uppercase" | cut -b-2` - "
@@ -105,7 +109,7 @@ fi
 
 
 #awk
-NEW_NAME="$prefix`echo "$uppercase" | sed "s/_/ /g" | awk '
+NEW_NAME="$prefix`echo "$uppercase" | awk '
 
 BEGIN {
    excep["I"] = 1
