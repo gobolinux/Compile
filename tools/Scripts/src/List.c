@@ -545,7 +545,7 @@ size_sort(const void *void_a, const void *void_b)
 	return status_a.st_size > status_b.st_size;
 }
 
-void
+int
 list_file(const char *path, long *total, long *counter, long *hiddenfiles)
 {
     int ret, n;
@@ -554,28 +554,26 @@ list_file(const char *path, long *total, long *counter, long *hiddenfiles)
     struct dirent **namelist;
     
     ret = lstat(path, &status);
-    if (ret < 0) {
-        fprintf(stderr, "lstat %s: %s\n", path, strerror(errno));
-        return;
-    }
+    if (ret < 0)
+        return -1;
 
     if (!S_ISSOCK(status.st_mode) && !S_ISFIFO(status.st_mode) && !S_ISLNK(status.st_mode)
             && !S_ISDIR(status.st_mode) && !S_ISREG(status.st_mode) && !S_ISCHR(status.st_mode)
             && !S_ISBLK(status.st_mode)) {
-        return;
+        return -1;
 	}
 
     n = 1;
     namelist = (struct dirent **) malloc(sizeof(struct dirent *));
     if (! namelist) {
         perror("malloc");
-        return;
+        return -1;
     }
     namelist[0] = (struct dirent *) malloc(sizeof(struct dirent));
     if (! namelist[0]) {
         perror("malloc");
         free(namelist);
-        return;
+        return -1;
     }
     snprintf(namelist[0]->d_name, sizeof(namelist[0]->d_name), "%s", path);
 
@@ -585,9 +583,11 @@ list_file(const char *path, long *total, long *counter, long *hiddenfiles)
 
     free(namelist[0]);
     free(namelist);
+
+	return 0;
 }
 
-void
+int
 list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
 {
 	int i, n, ret, len;
@@ -609,15 +609,13 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
 		/* alpha sort */
 		n = scandir(path, &namelist, NULL, alphasort);
 	}
-    if (n < 0) {
-        list_file(path, total, counter, hiddenfiles);
-        return;
-    }
+    if (n < 0)
+        return list_file(path, total, counter, hiddenfiles);
 
     file_info = (struct file_info *) calloc(n, sizeof(struct file_info));
     if (! file_info) {
         perror("calloc");
-        return;
+        return -1;
     }
     
     for (i=0; i<n; ++i) {
@@ -646,6 +644,8 @@ list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
     }
 	free(namelist);
     free(file_info);
+
+	return 0;
 }
 
 void
@@ -805,7 +805,7 @@ summarize(struct statfs status, long total, long counter, long hiddenfiles, int 
 int
 main(int argc, char **argv)
 {
-    int c, index, num_dirs;
+	int got_statfs, c, index, num_dirs;
 	long total, counter, hiddenfiles;
 	struct statfs status;
     
@@ -848,7 +848,7 @@ main(int argc, char **argv)
 	/* read $LS_COLORS from the environment */
 	set_dircolors();
 	
-	total = counter = hiddenfiles = 0;
+	total = counter = hiddenfiles = got_statfs = 0;
 	num_dirs = argc - optind;
 	
 	/* prints out a blank line */
@@ -857,21 +857,34 @@ main(int argc, char **argv)
 	if (optind == argc) {
 		char curr_dir[PATH_MAX];
 		
+		got_statfs = 1;
 		getcwd(curr_dir, sizeof(curr_dir));	
 		list_entries(curr_dir, &total, &counter, &hiddenfiles);
-		if ((statfs(curr_dir, &status)) < 0)
+
+		if ((statfs(curr_dir, &status)) < 0) {
 			fprintf(stderr, "statfs %s: %s\n", curr_dir, strerror(errno));
+			got_statfs = 0;
+		}
 
 	} else {
 		struct stat entry_status;
 		long total_local, counter_local, hidden_local;
 		
-		if (optind < argc)
-			if ((statfs(argv[optind], &status)) < 0)
-				fprintf(stderr, "statfs %s: %s\n", argv[optind], strerror(errno));
+		if (optind < argc) {
+			if (statfs(argv[optind], &status) == 0)
+				got_statfs = 1;
+		}
 
 	    while (optind < argc) {
-			stat(argv[optind], &entry_status);
+			if ((stat(argv[optind], &entry_status)) < 0) {
+				fprintf(stderr, "%s: %s\n", argv[optind], strerror(errno));
+				optind++;
+				continue;
+			} else if (! got_statfs){
+				/* take statfs having this file as a reference */
+				if (statfs(argv[optind], &status) == 0)
+					got_statfs = 1;
+			}
 			
 			if (S_ISDIR(entry_status.st_mode) && num_dirs > 1)
 				printf("%s%s%s\n", COLOR_YELLOW_CODE, argv[optind], COLOR_WHITE_CODE);
@@ -893,7 +906,8 @@ main(int argc, char **argv)
 
 	}
 
-	summarize(status, total, counter, hiddenfiles, 1);
+	if (got_statfs)
+		summarize(status, total, counter, hiddenfiles, 1);
 	free(colors);
     exit(EXIT_SUCCESS);
 }
