@@ -1,0 +1,260 @@
+#!/bin/sh
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import GoboLinux
+
+##################################################
+# Options and configuration
+##################################################
+
+scriptDescription='Pack a recipe for inclusion in the recipe tree.'
+scriptCredits="(C) 2006 Hisham Muhammad. Released under the GNU GPL."
+scriptNotes="This script will take a recipe in and "\
+"pack it as Foo--1.0-r1--recipe.tar.bz2 at $genRecipeStoreDir."
+scriptUsage="<name> [<version>]"
+Add_Option_Boolean "t" "tag" "Tag a recipe revision (requires CVS write access)"
+Add_Option_Boolean "c" "cleanup" "Cleanup local CVS copy when tagging"
+Parse_Options "$@"
+shift $parsedArguments
+
+Parse_Conf Compile.conf
+
+# need to parse cvs error messages to find missing files...
+unset LANG LC_ALL
+
+##################################################
+
+function files_in_recipepath() {
+   find "$recipepath" -not -path "*/CVS/*" -and -not -path "*/CVS"
+}
+
+function dirs_in_recipepath() {
+   find "$recipepath" -not -path "*/CVS/*" -and -not -path "*/CVS" -and -type d
+}
+
+function tag_revision() {
+   Log_Normal "Tagging revision $reciperevision for $fullname."
+   if Is_Writable "$reciperevisionfile"
+   then echo "$reciperevision" > "$reciperevisionfile"
+   else sudo $SHELL -c "echo '$reciperevision' > '$reciperevisionfile'"
+   fi
+}
+
+function sudo_if_needed_for() {
+   file="$1"
+   shift
+   if Is_Writable "$file"
+   then "$@"
+   else sudo "$@"
+   fi
+}
+
+function cvs_files() {
+   cvs "$@" `files_in_recipepath` || Die "Failed running 'cvs $@'"
+}
+
+function cvs_commit () {
+   cvs commit -m "$*" "$recipepath" || Die "Failed running 'cvs commit'"
+}
+
+function cvs_add() {
+   cvs add "$@" $(dirname "$recipepath") `files_in_recipepath` || Die "Failed running 'cvs add $@'"
+}
+
+function cvs_refresh_local_copy() {
+   find "$recipepath" -path "*/CVS/Root" | while read rootfile
+   do
+      dir=`dirname "$rootfile"`
+      rm -- "$dir"/*
+      rmdir "$dir"
+   done
+   temprecipepath="$recipepath~PackRecipe~"
+   mv "$recipepath" "$temprecipepath"
+   cvs update -dP "$recipepath"
+   find "$temprecipepath" -mindepth 1 | while read file
+   do
+      base="${file#$temprecipepath/}"
+      if [ -d "$file" ]
+      then mkdir -p "$recipepath/$base"
+      else mv "$file" "$recipepath/$base"
+      fi
+   done
+   find "$temprecipepath" -type d | xargs rmdir -p 2> /dev/null
+}
+
+function paint_diff() {
+   mtail --quiet --config=`Find_Conf diff.mtailrc`
+}
+
+function cvs_confirm_diff() {
+
+   function foreach_new_file() {
+      if [ "$newfiles" ]
+      then
+         grep "^? " "$cvsupdate" | while read question file
+         do "$@" "$file"
+         done
+      fi
+   }
+
+   function foreach_deleted_file() {
+      grep "cvs diff: cannot find " "$cvsdiff" | cut -b23- | while read file
+      do "$@" "$file"
+      done
+   }
+
+   function show_diff() {
+      unset old new
+      [ "$1" = "old" ] && old=___ || new=___
+      shift
+      { 
+         echo "diff $1"
+         diff -Nar $new "$1" $old | tail -n -2
+      } | paint_diff
+   }
+   
+   function add_file() {
+      cvs add "$1"
+      cvs commit -m "Adding new file in $fullname." "$1"
+   }
+
+   function remove_file() {
+      cvs remove -f "$1"
+      cvs commit -m "Adding new file in $fullname." "$1"
+   }
+
+   unset newfiles
+
+   cvsdiff=`mktemp`
+   cvs diff "$recipepath" &> "$cvsdiff"
+   diffstatus=$?
+
+   cvsupdate=`mktemp`
+   cvs update -dP "$recipepath" 2> /dev/null > "$cvsupdate"
+   grep -q "^? " "$cvsupdate" && newfiles=yes
+
+   if grep -q "^C " "$cvsupdate"
+   then Die "There's a conflict between your copy and the repository. Please verify."
+   fi
+   
+   if [ "$diffstatus" -ne 0 ] || [ "$newfiles" ]
+   then
+      cat "$cvsdiff" | paint_diff
+      foreach_new_file show_diff new
+      foreach_deleted_file show_diff old
+      Ask_Continue "Confirm these changes and create revision $reciperevision?"
+      foreach_new_file add_file
+      foreach_deleted_file remove_file
+   else
+      Die "Will not make a revision if there are no changes."
+   fi
+   rm -f -- "$cvsdiff" "$cvsupdate"
+}
+
+##################################################
+
+unset confirm
+if [ -d "$1" -a -e "$1/Recipe" ]
+then
+   recipedir=`readlink -f "$1"`
+else
+   if [ "$2" ]
+   then
+      fullname="$1 $2"
+   else
+      fullname="$1"
+      confirm=yes
+   fi
+   
+   recipedir=`FindPackage --no-web --type=recipe $1 $2 | head -n 1`
+   [ "$recipedir" ] || Die "Recipe for $fullname not found in local repositories."
+fi
+
+# e.g. /Files/Compile/LocalRecipes/
+directory=`echo $recipedir | sed 's%\(.*\)/\([^/]*/[^/]*\)*%\1%'`
+# e.g. Portmap/5beta
+recipepath=`echo $recipedir | sed 's%\(.*\)/\([^/]*/[^/]*\)*%\2%'`
+
+fullname=${recipepath//\// }
+
+if [ "$confirm" ]
+then
+   Ask_Continue "Creating recipe file for $fullname."
+fi
+
+cd $directory
+
+reciperevisionfile="$recipepath/Resources/RecipeRevision"
+
+if [ -e "$reciperevisionfile" ]
+then
+   reciperevision=`cat "$reciperevisionfile"`
+   [ "${reciperevision:0:1}" = "r" ] || Die "Invalid recipe revision format '$reciperevision' in $directory/$reciperevisionfile"
+fi
+
+if Boolean "tag"
+then
+   [ -e "CVS/Root" ] || Die "$directory is not a working copy of a CVS repository."
+   
+   if Boolean "cleanup"
+   then cvs_refresh_local_copy
+   fi
+   
+   if [ -e "$recipepath/CVS/Root" ]
+   then
+      reciperevision=`cat "$reciperevisionfile"`
+      if [ "$reciperevision" = "rLOCAL" ]
+      then
+         Ask_Continue "Warning: recipe seems to be in CVS without a proper revision number (must never happen!). Assume r1?"
+         reciperevision="r1"
+      else
+         revisionnumber=$[${reciperevision#r}+1]
+         reciperevision="r$revisionnumber"
+      fi
+      cvs_confirm_diff
+      tag_revision
+   else
+      Log_Normal "Recipe is not yet in CVS."
+      if [ "$reciperevision" -a "$reciperevision" != "rLOCAL" ]
+      then Ask_Continue "Warning: recipe is not in CVS but has non-LOCAL tag (must never happen!). Assume r1?"
+      fi
+      reciperevision="r1"
+      tag_revision
+      cvs_add
+      cvs_commit "Adding $fullname."
+   fi
+   cvs_files tag "$reciperevision"
+   cvs_commit "$fullname revision $reciperevision."
+fi
+
+if ! [ -e "$reciperevisionfile" ]
+then
+   reciperevision="rLOCAL"
+   tag_revision
+fi
+
+nameversion=${fullname// /--}
+
+packedpath="$genRecipeStoreDir/$nameversion-$reciperevision--recipe.tar.bz2"
+
+if [ -e "$packedpath" ]
+then Ask_Continue "$packedpath exists. Overwrite?"
+fi
+
+sudo_if_needed_for "$genRecipeStoreDir" \
+   mkdir -p "$genRecipeStoreDir"
+
+sudo_if_needed_for "$packedpath" \
+   tar cjf "$packedpath" --no-recursion `files_in_recipepath` || Die "Failed packing recipe in $packedpath"
+
+sudo_if_needed_for "$packedpath" \
+   touch "$packedpath" --reference="$recipepath/Recipe"
+
+Log_Normal "Recipe packed in $packedpath"
+
