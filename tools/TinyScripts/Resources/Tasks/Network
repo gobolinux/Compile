@@ -19,13 +19,13 @@ case "$1" in
                 ifconfig "$i" "$ipaddr" "$netmask"
             fi
         done
-        [ ! -z "$Gateway" ] && route add default gw $Gateway dev $GatewayInterface 2> /dev/null
+        [ "$Gateway" ] && route add default gw $Gateway dev $GatewayInterface 2> /dev/null
         ;;
     [sS]top)
         for i in $NetworkInterfacesOnBoot
         do
             ifconfig $i down
         done
-        [ ! -z "$Gateway" ] && route del default gw $Gateway dev $GatewayInterface 2> /dev/null
+        [ "$Gateway" ] && route del default gw $Gateway dev $GatewayInterface 2> /dev/null
         ;;
 esac
