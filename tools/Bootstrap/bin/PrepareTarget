@@ -45,11 +45,18 @@ then
     CreateGoboLinuxTree $prefix $SUPER_USER_NAME || exit 1
 fi
 
+#
+# Since we have $goboDevices bind-mounted, unmount it and mount it afterwards
+#
+umount $prefix/$goboDevices 2> /dev/null
+
 if [ ! -c $prefix/$goboDevices/console ]
 then
     Log_Normal "Populating the device directory..."
     PopulateDev $prefix || exit 1
 fi
+
+mount -o bind $goboDevices $prefix/$goboDevices
 
 #
 # Create some system files
