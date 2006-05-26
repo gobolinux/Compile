@@ -99,10 +99,10 @@ function download_headers() {
     popd >& /dev/null
      
     # symlink it
-    [ ! "$CROSS_NONE" = "y" ] && export goboCrossCompiling=yes
+    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ ! "$CROSS_NONE" = "y" ] && unset goboCrossCompiling
-    [ ! "$CROSS_NONE" = "y" ] && Parse_Conf Directories.conf
+    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling
+    [ "$CROSS_NONE" != "y" ] && Parse_Conf Directories.conf
 }
 
 function download_meta() {
