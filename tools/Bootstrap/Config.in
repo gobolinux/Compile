@@ -281,3 +281,33 @@ source "packages/RXVT/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
 endmenu
+
+#############################################
+menu "Shrink Options"
+#############################################
+depends on TARGET_EMBEDDED
+config SHRINK_HEADERS
+	bool "Remove headers"
+    
+config SHRINK_STATIC_LIBS
+	bool "Remove static libraries"
+    
+config SHRINK_LIBTOOL
+	bool "Remove libtool related files"
+    
+config SHRINK_PKGCONFIG
+	bool "Remove pkgconfig related files"
+    
+config SHRINK_DOCS
+	bool "Remove documentation"
+    
+config SHRINK_DEFAULT_SETTINGS
+	bool "Remove backup of the default settings"
+    
+config SHRINK_LOCALES
+	bool "Remove internationalization files"
+    
+config SHRINK_M4_MACROS
+	bool "Remove aclocal macros"
+    
+endmenu

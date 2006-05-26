@@ -1,0 +1,57 @@
+#!/bin/sh
+
+TOPDIR=..
+
+source GoboPath
+source ScriptFunctions
+source $TOPDIR/.config
+source $TOPDIR/functions/Platforms
+
+if [ "$CROSS_NONE" = "y" ]
+then 
+    prefix="$INSTALL_PREFIX"
+else
+    export arch_conf=`get_chosen_arch`
+    source $goboSettings/Compile/Cross-$arch_conf.conf
+    prefix="$cross_prefix_dir"
+fi
+
+if [ "$SHRINK_HEADERS" = "y" ]
+then
+    echo "Removing headers..."
+fi
+
+if [ "$SHRINK_STATIC_LIBS" ]
+then
+    echo "Removing static libraries..."
+fi
+
+if [ "$SHRINK_LIBTOOL" ]
+then
+    echo "Removing libtool related files..."
+fi
+
+if [ "$SHRINK_PKGCONFIG" ]
+then
+    echo "Removing pkgconfig related files..."
+fi
+
+if [ "$SHRINK_DOCS" ]
+then
+    echo "Removing documentation..."
+fi
+
+if [ "$SHRINK_DEFAULT_SETTINGS" ]
+then
+    echo "Removing backup of the default settings..."
+fi
+
+if [ "$SHRINK_LOCALES" ]
+then
+    echo "Removing internatioalization data..."
+fi
+
+if [ "$SHRINK_M4_MACROS" ]
+then
+    echo "Removing aclocal macros..."
+fi
