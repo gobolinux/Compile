@@ -1,3 +1,44 @@
+
+# odd environment problems:
 - When running on GoboLinux, you must 'unalias make', since ColorMake can break
 compilation of packages which offer a graphical frontend based on dialog. These
 programs include uClibc, Busybox and the Linux kernel, among others.
+
+# probably fixed:
+- conflicts on Scripts and TinyScripts binaries at Symlink time
+- ldconfig: Can't open configuration file /System/ARM/Programs/Glibc/Settings/ld.so.conf:
+            No such file or directory
+
+
+# still open / needs more attention:
+- compiling glibc the first time doesn't work -- seems to be a problem with chrootcompile;
+- populate /Files/Fonts
+- ln -s /Files/Fonts /System/ARM/Programs/Xorg/7.0/lib/X11/fonts
+- add to Glibc recipe: pre_link() { mkdir -p $target/../Settings }
+- add to Pango recipe: pre_link() { mkdir -p $target/../Settings }
+- 'Compile rxvt' doesn't install librxvt.so.1
+- 'Compile XFCE' -> where are the settings going to?
+- Pango: pango-querymodules bug
+- make_options=(LD_LIBRARY_PATH=)
+
+
+# X.org problems:
+- startx:
+  /usr/bin/startx: 127: /System/Links/Executables/mcookie: not found
+  xauth: error while loading shared libraries: libXau.so.6: cannot open shared object file: 
+         No such file or directory (ldconfig?)
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/misc/, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/TTF/, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/OTF, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/Type1/, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/CID/, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/100dpi/, removing from list!
+  Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/75dpi/, removing from list!
+  Fatal server error:
+  could not open default font 'fixed'
+
+  /System/ARM/Programs/Xorg/7.0/lib/X11/xinit/xinitrc: exec: 32: xterm: not found
+
+# XFCE problems:
+- xinit: no program named "/System/ARM/Programs/XFCE/Settings/xdg/xfce4/xinit
+- incompatible module /System/ARM/Programs/XFCE/4.2.3.2/lib/xfce4/mcs-plug...
