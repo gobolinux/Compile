@@ -103,7 +103,7 @@ then
 fi
 
 ld_so_conf_file=$prefix/$goboSettings/ld.so.conf
-if [ ! -e $ld_so_conf_file ]
+if [ ! -a $ld_so_conf_file ]
 then
     if [ "$PKG_GLIBC" = "y" ]
     then ln -s $prefix/$goboPrograms/Glibc/Settings/ld.so.conf $ld_so_conf_file
