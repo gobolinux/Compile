@@ -54,7 +54,7 @@ fi
 #
 # Create some system files
 #
-CreateFiles $SUPER_USER_NAME
+CreateFiles $prefix $SUPER_USER_NAME
 
 #
 # Install the Scripts package
