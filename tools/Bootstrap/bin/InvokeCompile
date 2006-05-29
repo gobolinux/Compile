@@ -48,17 +48,14 @@ function make_headers() {
 		kernelArch="$cross_kernel_arch"
     fi
 
-    # Latest release known to work is 2.6.12.0 (based on LFS)
     pushd "$TOP_DIR/bin" >& /dev/null
-    ./MakeKernelHeaders 2.6.12 $cross_kernel_arch $dirname
-    SymlinkProgram $symlink_options Linux-Libc-Headers
+    ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $cross_kernel_arch $dirname
     popd >& /dev/null
 
-    if [ "$CROSS_NONE" = "n" ]
-    then
-        unset goboCrossCompiling goboPrefix
-        Parse_Conf Directories.conf
-    fi
+    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
+    SymlinkProgram $symlink_options Linux-Libc-Headers
+    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling goboPrefix
+    [ "$CROSS_NONE" != "y" ] && Parse_Conf Directories.conf
 }
 
 function download_headers() {
@@ -101,7 +98,7 @@ function download_headers() {
     # symlink it
     [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling
+    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling goboPrefix
     [ "$CROSS_NONE" != "y" ] && Parse_Conf Directories.conf
 }
 
@@ -252,6 +249,7 @@ do
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
     [ "$pkg_name" = "Glibc" ] && download_headers
+    # [ "$pkg_name" = "Glibc" ] && make_headers
 done
 
 popd >& /dev/null

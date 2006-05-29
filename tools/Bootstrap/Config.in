@@ -147,13 +147,12 @@ config KERNEL_DIR
 	---help---
 	  Directory where the kernel sources are stored.
 
-config KERNEL_VERSION
-	string "Kernel version"
-	default "2.6.15"
-	depends on CROSS_NONE
+config KERNEL_HEADERS_VERSION
+	string "Kernel version for Linux-Libc-Headers package"
+	default "2.6.16.18"
 	---help---
-	  Version for the kernel supplied above. Will be used to
-	  generate the Linux-Libc-Headers directory.
+	  Specifies which kernel version to used to create the 
+      Linux-Libc-Headers package.
 
 config SUPER_USER_NAME
     string "Super-user name"
