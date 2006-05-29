@@ -78,7 +78,7 @@ if [ "$1" == "--cross-compile" ]
 then
     [ "$2" = "" ] && die "Expected architecture as a parameter."
     crossopts="--cross-compile $2"
-    crossconf=`ls Bootstrap/Compile/*/Resources/Defaults/Settings/Compile/Cross-$2.conf`
+    crossconf=`ls Bootstrap/Compile/*/Resources/Defaults/Settings/Compile/Cross/Cross-$2.conf`
 
     [ ! -f $crossconf ] && die "$crossconf: file not found."
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
