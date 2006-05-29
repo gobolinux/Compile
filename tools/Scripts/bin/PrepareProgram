@@ -234,9 +234,11 @@ then
          "${configure_options[@]}"
          --build=$cross_configure_build
          --host=$cross_configure_host
+         --cache-file=$cross_cache_file
          --x-includes=$goboHeaders
          --x-libraries=$goboLibraries
       )
+      cp -f ${goboSettings}/Compile/Cross/$cross_cache_file .
    fi
 elif config_accepts_prefix
 then
