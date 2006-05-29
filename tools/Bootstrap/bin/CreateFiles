@@ -106,7 +106,7 @@ ld_so_conf_file=$prefix/$goboSettings/ld.so.conf
 if [ ! -a $ld_so_conf_file ]
 then
     if [ "$PKG_GLIBC" = "y" ]
-    then ln -s $prefix/$goboPrograms/Glibc/Settings/ld.so.conf $ld_so_conf_file
+    then ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.conf $ld_so_conf_file
     else echo "/System/Links/Libraries" > $ld_so_conf_file
     fi
 fi
