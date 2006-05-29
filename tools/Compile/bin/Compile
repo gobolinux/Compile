@@ -345,10 +345,10 @@ then
    arch_conf=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch_conf"
    
-   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross-$arch_conf.conf
+   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross/Cross-$arch_conf.conf
    [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
    
-   source ${goboPrograms}/Compile/Settings/Compile/Cross-ResetEnv.conf
+   source ${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf
    source ${crossConfFile}
    source GoboPath
    Parse_Conf Directories.conf
