@@ -28,7 +28,7 @@ then
     exit 0
 else
     export arch_conf=`get_chosen_arch`
-    source $goboSettings/Compile/Cross-$arch_conf.conf
+    source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
     prefix="$cross_prefix_dir"
 
     export goboCrossCompiling=yes

@@ -12,7 +12,7 @@ then
     prefix="$INSTALL_PREFIX"
 else
     export arch_conf=`get_chosen_arch`
-    source $goboSettings/Compile/Cross-$arch_conf.conf
+    source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
     prefix="$cross_prefix_dir"
 fi
 
