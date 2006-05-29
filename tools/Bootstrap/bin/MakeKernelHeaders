@@ -9,7 +9,7 @@ dest_dir="$3/$1"
 # Remove previous files at downloads/ dir
 rm -Rf "$TOP_DIR/downloads/linux-headers-$version"
 rm -Rf "$TOP_DIR/downloads/linux-headers-$version.orig"
-rm  -f "$TOP_DIR/downloads/linux-headers-2.6.12.tar.bz2"
+rm  -f "$TOP_DIR/downloads/linux-headers-$version.tar.bz2"
 rm  -f "$TOP_DIR/downloads/headers"
 
 echo "Downloading the LFS headers script..."
@@ -21,7 +21,7 @@ chmod +x headers
 ./headers "$version"
 popd >& /dev/null
 
-echo "Configuring headers for chosen platform ($kernel_arch)..."
+echo "Configuring headers for the $kernel_arch platform..."
 pushd "$TOP_DIR/downloads/linux-headers-$version/include" >& /dev/null
 for i in asm-*
 do
@@ -36,12 +36,13 @@ mkdir -p $dest_dir
 mv linux-headers-$version/* $dest_dir
 popd >& /dev/null
 
+mkdir -p $dest_dir/include
 pushd $dest_dir/include >& /dev/null
 ln -nfs $version $dest_dir/../Current
 ln -nfs "asm-$kernel_arch" asm
 popd >& /dev/null
 
-# by some reason, 'headers' is removing compiler.h from the package.
+# for some reason, 'headers' is removing compiler.h from the package.
 # let's reintroduce it.
 cp "$TOP_DIR/downloads/linux-headers-$version.orig/include/linux/compiler.h" $dest_dir/include/linux
 
@@ -53,5 +54,3 @@ then
         "#include <asm/types.h>\n#include <linux/compiler.h>" \
         $dest_dir/include/asm-sh/byteorder.h
 fi
-
-SymlinkProgram Linux-Libc-Headers
