@@ -1,8 +1,11 @@
 
 # odd environment problems:
 - When running on GoboLinux, you must 'unalias make', since ColorMake can break
-compilation of packages which offer a graphical frontend based on dialog. These
-programs include uClibc, Busybox and the Linux kernel, among others.
+  compilation of packages which offer a graphical frontend based on dialog. These
+  programs include uClibc, Busybox and the Linux kernel, among others.
+- Local cross files are not taken into account by ChrootCompile, which has its
+  own copy of them, taken from the CVS. Need to figure out a clean way to handle
+  this.
 
 # probably fixed:
 - conflicts on Scripts and TinyScripts binaries at Symlink time
