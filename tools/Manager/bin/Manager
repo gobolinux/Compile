@@ -283,7 +283,7 @@ class ManagerUIImpl(ManagerUI) :
 		(self.configWindow.keepDownloadedPackages,           False),
 		(self.configWindow.useCompatibilityModeInteraction,  False),
 		(self.configWindow.noWeb,                            False),
-		(self.configWindow.autoDependencies,                 True),
+		(self.configWindow.autoDependencies,                 False),
 		(self.configWindow.allwaysUpdate,                    False),
 		(self.configWindow.threadsBandwidth,                 1),
 		(self.configWindow.threadsCPU,                       1),
