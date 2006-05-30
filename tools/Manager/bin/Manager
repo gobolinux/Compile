@@ -1123,10 +1123,8 @@ class ManagerUIImpl(ManagerUI) :
 			# if the command fits the running module tasks group (e.g. Compilation)
 			if match and not runningModule["inverse_regex"] or not match and runningModule["inverse_regex"] :
 				if runningModule['name'][:len('Compilation')] != 'Compilation' : 
-					print 'is not compile!'+runningModule['name']
 					return True
 				else :
-					print 'is Ccompile!'+runningModule['name']
 					# When dealing with compilation, all dependencies must have its order respected, 
 					#  so we cannot compile x before y is x depends on y. Not true for binary packages.
 					for pp in blockedPrograms :
