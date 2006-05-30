@@ -25,7 +25,7 @@ shift $parsedArguments
 # ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
 # ~/${goboUserSettings}/.Scripts/INSERT_NAME_HERE.conf 
 
-# ParseConf xxxxx.conf
+# Parse_Conf xxxxx.conf
 
 ### Operation #################################################################
 

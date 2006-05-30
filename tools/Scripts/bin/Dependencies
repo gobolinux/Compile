@@ -284,7 +284,7 @@ else
    writer="cat"
 fi
 
-blacklistfile=`Find_Conf "Dependencies.blacklist"`
+blacklistfile="`Find_Conf "Dependencies.blacklist"`"
 blacklist=("do_not_match")
 if [ "$blacklistfile" ]
 then

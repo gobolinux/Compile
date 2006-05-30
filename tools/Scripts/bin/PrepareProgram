@@ -250,7 +250,7 @@ else
    configure_options=()
 fi
 
-color_command ${goboSettings}/Scripts/configure.mtailrc \
+color_command "`Find_Conf configure.mtailrc`" \
   "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0

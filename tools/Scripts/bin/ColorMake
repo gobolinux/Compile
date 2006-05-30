@@ -2,6 +2,7 @@
 
 . ScriptFunctions
 Import File
+Import GoboLinux
 
 # XXX "Real vs. rootless" support
 if [ -x /bin/make ]
@@ -18,7 +19,7 @@ workaround=`Temporary_File`
 
 { $makecmd "$@" 2>&1
   echo $? > $workaround
-} | mtail --config=${goboSettings}/Scripts/ColorMake.mtailrc -q
+} | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
 
 returnvalue=`cat $workaround`
 rm -- $workaround

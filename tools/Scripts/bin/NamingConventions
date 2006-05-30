@@ -13,7 +13,7 @@ shift $parsedArguments
 
 ### Operation loop ############################################################
 
-grep -i "^$1\$" "$goboSettings/Scripts/NamesDatabase" && exit 0
+grep -i "^$1\$" "`Find_Conf NamesDatabase`" && exit 0
 
 if echo "$1" | grep -E "[[:upper:]]+" &> /dev/null
 then

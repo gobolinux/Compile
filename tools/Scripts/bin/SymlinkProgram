@@ -144,7 +144,7 @@ then
    rootfs="yes"
 fi
 
-if Line_Match "${goboSettings}/Scripts/RootFSPrograms" "$package"
+if Line_Match "`Find_Conf RootFSPrograms`" "$package"
 then
    Log_Verbose "Package found in Scripts/RootFSPrograms."
    rootfs="yes"

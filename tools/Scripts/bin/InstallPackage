@@ -59,7 +59,7 @@ then
 
    if [ "${keep}" ]
    then   
-      . "${goboSettings}/Scripts/GetAvailable.conf"
+      . "`Find_Conf GetAvailable.conf`" || Die "Couldn't read GetAvailable.conf"
       [ -d ${defaultLocalPackagesPaths[0]} ] || mkdir -p ${defaultLocalPackagesPaths[0]}
       Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/`basename $1`."
 

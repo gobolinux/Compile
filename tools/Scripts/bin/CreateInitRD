@@ -29,12 +29,6 @@ Add_Option_Entry "r" "rootdev" "Specify <root_device>." "/dev/sda1"
 Parse_Options "$@"
 shift $parsedArguments
 
-# Use this to parse attributions from
-# ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
-# ~/${goboUserSettings}/.Scripts/INSERT_NAME_HERE.conf 
-
-# ParseConf xxxxx.conf
-
 # Global Defines
 initrd_path="/tmp/initrd"
 raw_initrd="/tmp/initrd-raw.img"

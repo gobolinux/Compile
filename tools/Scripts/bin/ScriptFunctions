@@ -12,6 +12,7 @@ export scriptPath=$(dirname $(readlink -f $0))
 #export scriptVersion=$(basename $(dirname $(readlink -f $(readlink -f $0)/..)))
 export scriptVersion=$(basename $(readlink -f $(dirname $(readlink -f $0))/..))
 
+# Find_Conf is not available yet
 bootOptions="${goboSettings}/BootScripts/Options"
 [ -e "$bootOptions" ] && source "$bootOptions"
 scriptOptions="${goboSettings}/Scripts/Options"

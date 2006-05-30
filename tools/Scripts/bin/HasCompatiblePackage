@@ -18,13 +18,14 @@ function search_packages() {
    return
 }
 
+file="`Find_Conf CompatibilityList`"
+
 if [ "$cross_prefix_dir" != "" ]
 then
    # Use CompatibilityList from the host machine
-   goboSettings=`echo $goboSettings | sed "s%$cross_prefix_dir%%g"`
+   file=${file/$cross_prefix_dir/}
 fi
 
-file="$goboSettings/Scripts/CompatibilityList"
 if [ -r "$file" ]
 then cat "$file" | while read line
    do
