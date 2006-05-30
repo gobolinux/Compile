@@ -15,7 +15,10 @@ scriptUsage="<package> <version> (url)"
 scriptNotes="Optimistically, it assumes only the version number has changed, "\
 "and the compilation process is still identical. The generated recipe is "\
 "better understood as a 'template' for the new version recipe."
-scriptExample="Allegro 4.1.12"
+scriptExample='Allegro 4.1.12, NewVersion --source 0.9.7 Wine 0.9.14'
+
+Add_Option_Entry "s" "source" "Recipe version number to use as a base for the new version" ""
+Add_Option_Entry "n" "former-name" "App name of the Recipe to use as a base. Only necessary if it's different from the name of the new Recipe" ""
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -33,10 +36,20 @@ app="$1"
 newversion="$2"
 newurl="$3"
 
-Log_Normal "Locating a recipe for $app..."
-rawrecipe=`FindPackage --type=recipe "$app" 2> /dev/null`
-[ "$rawrecipe" ] || Die "Could not find a recipe for $app"
-Log_Normal "Found recipe for $app at $rawrecipe"
+if Is_Entry "former-name"
+then srcApp="`Entry "former-name"`"
+else srcApp="$1"
+fi
+
+if Is_Entry "source"
+then sourceVersion="`Entry "source"`"
+else sourceVersion=''
+fi
+
+Log_Normal "Locating a recipe for $srcApp..."
+rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
+[ "$rawrecipe" ] || Die "Could not find a recipe for $srcApp"
+Log_Normal "Found recipe for $srcApp at $rawrecipe"
 
 bakedrecipedir=`GetRecipe $rawrecipe`
 [ "$bakedrecipedir" ] || Die "Error getting recipe"
@@ -46,7 +59,11 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 oldrecipe=$bakedrecipedir/Recipe
 . $oldrecipe
 
-packagename=`Get_Token "$bakedrecipedir" "/" "-2"`
+if Is_Entry "former-name"
+then packagename="$app"
+else packagename=`Get_Token "$bakedrecipedir" "/" "-2"`
+fi
+
 oldversion=`Get_Token "$bakedrecipedir" "/" "-1"`
 
 oldrecipedir="$bakedrecipedir"
