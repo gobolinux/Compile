@@ -1,7 +1,0 @@
-[Name] X-CD-Roast
-[Summary] A program-package dedicated to powerful and easy CD creation.
-[License] GNU General Public License (GPL)
-[Description] X-CD-Roast is a program-package dedicated to easy CD creation under most
-Unix-platforms. It combines command line tools like "cdrecord", "cdda2wav", and
-"mkisofs" into a nice graphical user interface.
-[Homepage] http://www.xcdroast.org/

@@ -1,5 +1,0 @@
-[Name] CppUnit
-[Summary] A C++ port of JUnit.
-[License] GNU Lesser General Public License (LGPL)
-[Description] CppUnit is the C++ port of the famous JUnit framework for unit testing. Test output is in XML for automatic testing and GUI-based for supervised tests.
-[Homepage] http://sourceforge.net/projects/cppunit/

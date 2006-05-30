@@ -1,8 +1,0 @@
-NO - Edicao de GetAvailable.conf, Compile.conf
-OK - Tratar close event
-OK - Setar tooltip e nome das de dialogo com o nome do comando no manager runner
-
-- Vazamento no progresso
-- Tratamento de sinais para os processos filho -> atualmente, se aplica a todos os filhos, e nao apenas o do runner atual :(
-- Suporte a dialog com 4 botoes de opcao
-- Verificacao de versao dos scripts

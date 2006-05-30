@@ -1,3 +1,0 @@
-04/03/2005 - Lucas Correia Villa Real <lucasvr@gobolinux.org>
-   Big cleanup on Kudzu sources to play only with mouse devices on
-   USB, Serial and PSAUX lines.

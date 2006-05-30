@@ -1,2 +1,0 @@
-config PKG_XORG_APP
-    bool "Xorg-App"

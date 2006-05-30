@@ -1,9 +1,0 @@
-[Name] Compile
-[Summary] GoboLinux compilation system
-[License] GNU General Public License (GPL)
-[Description] 
-Compile downloads source tarballs, unpacks, compiles and installs them, with a single command, using simple 
-compilation scripts called "recipes". Compile was introduced in GoboLinux 011, but already features a considerable 
-(and ever-growing) number of recipes, and is able to compile all kinds of software, including Glibc, GCC, KDE and the 
-Linux kernel. 
-[Homepage] http://gobolinux.org/compile/

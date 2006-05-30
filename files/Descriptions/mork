@@ -1,2 +1,0 @@
-[Description] Mork is a compiler tool with XML support. You specify some syntax (either by a traditional grammar or by a DTD), and Mork generates the appropriate parser. It is implemented in Java and generates Java class files.
-[Homepage] http://mork.sourceforge.net

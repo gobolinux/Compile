@@ -1,6 +1,0 @@
-[Name]  xanim
-[Summary]  A multiformat animation viewer for the X Window System
-[Description]  XAnim currently supports the following animation types: FLI, FLC, IFF, GIF87a, GIF89a, GIF89a animation extensions, DL, Amiga PFX, URT RLE, AVI (ULTI (16), CRAM (8 & 16), CVID (24), RGB (8), RLE8), Quicktime Animation (RAW (8), RLE (1,8,16 & 24), SMC (8), RPZA (16), CVID (16), and YUV2 (24)), and any combination of the above on the same command. After 11 pm it makes tea as well. The program seems to be quite nice, and there is even a small control panel included.
-[Suse Category]  Productivity/Multimedia/Video/Players
-[License]  Other License(s), see package
-[Homepage]  http://xanim.va.pubnix.com/home.html
