@@ -146,10 +146,10 @@ fi
 recipedir="$genRecipeRecipeDir/$packagename/$versionnumber"
 
 $sudo mkdir -p $recipedir
-[ "$sudo" ] && Quiet $sudo chown $USER $recipedir
+[ "$sudo" ] && $sudo chown $USER $recipedir
 
 
-${sudo} Quiet rm "$recipedir/Recipe"
+${sudo} rm -f "$recipedir/Recipe"
 
 if [ "$compileRecipeAuthor" != "" ]
 then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipedir/Recipe"
