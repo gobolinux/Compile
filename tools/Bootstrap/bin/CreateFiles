@@ -88,7 +88,6 @@ then
     chmod +x $environment_check_file
 fi
 
-
 #
 # Initialization
 #
@@ -115,4 +114,18 @@ mtab_file=$prefix/$goboSettings/mtab
 if [ ! -e $mtab_file ]
 then
     ln -s $goboStatus/mounts $mtab_file
+fi
+
+#
+# Enhanced skel
+#
+xinitrc_file=$prefix/$goboUsers/$super_user/.xinitrc
+if [ ! -e $xinitrc_file ]
+then
+    cat << EOF > $xinitrc_file
+[ -x /bin/xfce  ] && exec xfce  || \
+[ -x /bin/icewm ] && exec icewm || \
+[ -x /bin/rxvt  ] && exec rxvt  || \
+[ -x /bin/xterm ] && exec xterm
+EOF
 fi
