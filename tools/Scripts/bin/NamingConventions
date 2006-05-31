@@ -2,6 +2,7 @@
 
 source ScriptFunctions
 Import OptionParser
+Import GoboLinux
 
 ### Help ######################################################################
 
