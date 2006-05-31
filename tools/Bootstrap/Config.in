@@ -88,7 +88,6 @@ config TARGET_DESKTOP
       
 endchoice
 
-comment ""
 choice
     prompt "Network interface"
     default NETWORK_DHCP
@@ -127,10 +126,6 @@ config NETWORK_NAMESERVER
     default "192.168.1.1"
     depends on NETWORK_STATIC
 
-config NEW_HOSTNAME
-    string "Hostname"
-    default "GoboLinux"
-
 comment ""
 
 config INSTALL_PREFIX
@@ -151,14 +146,18 @@ config KERNEL_HEADERS_VERSION
 	string "Kernel version for Linux-Libc-Headers package"
 	default "2.6.16.18"
 	---help---
-	  Specifies which kernel version to used to create the 
-      Linux-Libc-Headers package.
+	  Specifies which kernel version to use to create the Linux-Libc-Headers
+	  package.
+
+config NEW_HOSTNAME
+    string "Hostname"
+    default "GoboLinux"
 
 config SUPER_USER_NAME
     string "Super-user name"
     default "root"
 	---help---
-	  Allows to select a different super-user name other than "root".
+	  Allows to select a different super-user name instead of "root".
 
 endmenu # "Build options"
 
@@ -203,7 +202,80 @@ source "packages/Expat/Config.in"
 source "packages/LibXML2/Config.in"
 source "packages/FreeType/Config.in"
 source "packages/Fontconfig/Config.in"
-endmenu
+
+menu "Native language support"
+config NLS_ISO8859_1
+    prompt "ISO8859-1 (Western European Languages)"
+    bool
+    default y
+
+config NLS_ISO8859_2
+    prompt "ISO8859-2 (Slavic/Central European Languages)"
+    bool
+    default n
+
+config NLS_ISO8859_3
+    prompt "ISO8859-3 (Esperanto, Galician, Maltese, Turkish)"
+    bool
+    default n
+
+config NLS_ISO8859_4
+    prompt "ISO8859-4 (Old Baltic charset)"
+    bool
+    default n
+
+config NLS_ISO8859_5
+    prompt "ISO8859-5 (Cyrillic)"
+    bool
+    default n
+
+config NLS_ISO8859_6
+    prompt "ISO8859-6 (Arabic)"
+    bool
+    default n
+
+config NLS_ISO8859_7
+    prompt "ISO8859-7 (Modern Greek)"
+    bool
+    default n
+
+config NLS_ISO8859_8
+    prompt "ISO8859-8 (Arabic)"
+    bool
+    default n
+
+config NLS_ISO8859_9
+    prompt "ISO8859-9 (Turkish)"
+    bool
+    default n
+
+config NLS_ISO8859_13
+    prompt "ISO8859-13 (Baltic)"
+    bool
+    default n
+
+config NLS_ISO8859_14
+    prompt "ISO8859-14 (Celtic)"
+    bool
+    default n
+
+config NLS_ISO8859_15
+    prompt "ISO8859-15 (Western European Languages with Euro)"
+    bool
+    default n
+
+config NLS_KOI8_R
+    prompt "KOI8-R (Russian)"
+    bool
+    default n
+
+config NLS_JISX0201
+    prompt "JISX0201 (Japanese)"
+    bool
+    default n
+
+endmenu # NLS
+endmenu # Fonts and XML parsers
 
 #############################################
 menu "Audio"
@@ -212,6 +284,21 @@ source "packages/ALSA-Lib/Config.in"
 source "packages/LibMad/Config.in"
 source "packages/LibOGG/Config.in"
 source "packages/LibVorbis/Config.in"
+endmenu
+
+#############################################
+menu "Networking"
+#############################################
+source "packages/OpenSSL/Config.in"
+source "packages/OpenSSH/Config.in"
+source "packages/Links/Config.in"
+endmenu
+
+#############################################
+menu "X servers"
+#############################################
+source "packages/Xorg/Config.in"
+source "packages/Nano-X/Config.in"
 endmenu
 
 #############################################
@@ -240,15 +327,7 @@ source "packages/Dbus/Config.in"
 endmenu
 
 #############################################
-menu "Networking"
-#############################################
-source "packages/OpenSSL/Config.in"
-source "packages/OpenSSH/Config.in"
-source "packages/Links/Config.in"
-endmenu
-
-#############################################
-menu "Other"
+menu "Misc"
 #############################################
 source "packages/Startup-Notification/Config.in"
 source "packages/MTD-Utils/Config.in"
@@ -262,14 +341,11 @@ comment ""
 source "packages/Mowitz/Config.in"
 source "packages/LibART_LGPL/Config.in"
 source "packages/LibOIL/Config.in"
-endmenu
-    
+endmenu    
+
 #############################################
 menu "Desktop"
 #############################################
-comment "Window Servers"
-source "packages/Xorg/Config.in"
-source "packages/Nano-X/Config.in"
 comment "Window Managers"
 #source "packages/Matchbox/Config.in"
 source "packages/XFCE/Config.in"
@@ -280,6 +356,7 @@ source "packages/RXVT/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
 endmenu
+
 
 #############################################
 menu "Shrink Options"
