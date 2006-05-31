@@ -14,15 +14,10 @@
 
 
 # still open / needs more attention:
-- compiling glibc the first time doesn't work -- seems to be a problem with chrootcompile;
 - populate /Files/Fonts
 - ln -s /Files/Fonts /System/ARM/Programs/Xorg/7.0/lib/X11/fonts
-- add to Glibc recipe: pre_link() { mkdir -p $target/../Settings }
-- add to Pango recipe: pre_link() { mkdir -p $target/../Settings }
-- 'Compile rxvt' doesn't install librxvt.so.1
+- 'Compile RXVT' doesn't install librxvt.so.1
 - 'Compile XFCE' -> where are the settings going to?
-- Pango: pango-querymodules bug
-- make_options=(LD_LIBRARY_PATH=)
 
 
 # X.org problems:
