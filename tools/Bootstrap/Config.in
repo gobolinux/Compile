@@ -202,79 +202,6 @@ source "packages/Expat/Config.in"
 source "packages/LibXML2/Config.in"
 source "packages/FreeType/Config.in"
 source "packages/Fontconfig/Config.in"
-
-menu "Native language support"
-config NLS_ISO8859_1
-    prompt "ISO8859-1 (Western European Languages)"
-    bool
-    default y
-
-config NLS_ISO8859_2
-    prompt "ISO8859-2 (Slavic/Central European Languages)"
-    bool
-    default n
-
-config NLS_ISO8859_3
-    prompt "ISO8859-3 (Esperanto, Galician, Maltese, Turkish)"
-    bool
-    default n
-
-config NLS_ISO8859_4
-    prompt "ISO8859-4 (Old Baltic charset)"
-    bool
-    default n
-
-config NLS_ISO8859_5
-    prompt "ISO8859-5 (Cyrillic)"
-    bool
-    default n
-
-config NLS_ISO8859_6
-    prompt "ISO8859-6 (Arabic)"
-    bool
-    default n
-
-config NLS_ISO8859_7
-    prompt "ISO8859-7 (Modern Greek)"
-    bool
-    default n
-
-config NLS_ISO8859_8
-    prompt "ISO8859-8 (Arabic)"
-    bool
-    default n
-
-config NLS_ISO8859_9
-    prompt "ISO8859-9 (Turkish)"
-    bool
-    default n
-
-config NLS_ISO8859_13
-    prompt "ISO8859-13 (Baltic)"
-    bool
-    default n
-
-config NLS_ISO8859_14
-    prompt "ISO8859-14 (Celtic)"
-    bool
-    default n
-
-config NLS_ISO8859_15
-    prompt "ISO8859-15 (Western European Languages with Euro)"
-    bool
-    default n
-
-config NLS_KOI8_R
-    prompt "KOI8-R (Russian)"
-    bool
-    default n
-
-config NLS_JISX0201
-    prompt "JISX0201 (Japanese)"
-    bool
-    default n
-
-endmenu # NLS
 endmenu # Fonts and XML parsers
 
 #############################################
@@ -384,6 +311,125 @@ config SHRINK_LOCALES
 	bool "Remove internationalization files"
     
 config SHRINK_M4_MACROS
-	bool "Remove aclocal macros"
-    
-endmenu
+	bool "Remove aclocal macros"  
+
+menu "Native language support"
+config NLS_ISO8859_1
+    prompt "ISO8859-1 (Western European Languages)"
+    bool
+    default y
+    ---help---
+      Say Y here to keep support for the Latin 1 character set, which covers
+      most West European languages such as Albanian, Catalan, Danish, Dutch, 
+      English, Faeroese, Finnish, French, German, Galician, Irish, Icelandic,
+      Italian, Norwegian, Portuguese, Spanish, and Swedish. It is also the 
+      default for the US. If unsure, say Y.
+
+config NLS_ISO8859_2
+    prompt "ISO8859-2 (Slavic/Central European Languages)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 2 character set, which works for 
+      most Latin-written Slavic and Central European languages: Czech, German,
+      Hungarian, Polish, Rumanian, Croatian, Slovak, Slovene.
+
+config NLS_ISO8859_3
+    prompt "ISO8859-3 (Esperanto, Galician, Maltese, Turkish)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 3 character set, which is popular
+      with authors of Esperanto, Galician, Maltese and Turkish.
+
+config NLS_ISO8859_4
+    prompt "ISO8859-4 (Old Baltic charset)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 4 character set, which introduces
+      letters for Estonian, Latvian, and Lithuanian. It is an incomplete 
+      predecessor of Latin 7.
+
+config NLS_ISO8859_5
+    prompt "ISO8859-5 (Cyrillic)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 5 character set, which you can
+      type Bulgarian, Belarusian, Macedonian, Russian, Serbian, and Ukrainian.
+      Note that the charset KOI8-R is preferred in Russia.
+
+config NLS_ISO8859_6
+    prompt "ISO8859-6 (Arabic)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for ISO8859-6, the Arabic character set.
+
+config NLS_ISO8859_7
+    prompt "ISO8859-7 (Modern Greek)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for ISO8859-7, the Greek character set. 
+
+config NLS_ISO8859_9
+    prompt "ISO8859-9 (Turkish)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 5 character set, which replaces
+      the rarely needed Icelandic letters in Latin 1 with the Turkish ones.
+      Useful in Turkey.
+
+config NLS_ISO8859_13
+    prompt "ISO8859-13 (Baltic)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 7 character set, which supports
+      modern Baltic languages including Latvian and Lithuanian.
+
+config NLS_ISO8859_14
+    prompt "ISO8859-14 (Celtic)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 8 character set, which adds the
+      last accented vowels for Welsh (aka Cymraeg) (and Manx Gaelic) that were
+      missing in Latin 1.
+      <http://linux.speech.cymru.org/> has further information.
+
+config NLS_ISO8859_15
+    prompt "ISO8859-15 (Western European Languages with Euro)"
+    bool
+    default y
+    ---help---
+      Say Y here to keep support for the Latin 9 character set, which covers
+      most West European languages such as Albanian, Catalan, Danish, Dutch,
+      English, Estonian, Faeroese, Finnish, French, German, Galician, Irish,
+      Icelandic, Italian, Norwegian, Portuguese, Spanish, and Swedish. Latin 9
+      is an update to Latin 1 (ISO 8859-1) that removes a handful of rarely used
+      characters and instead adds support for Estonian, corrects the support for
+      French and Finnish, and adds the new Euro character.
+      If unsure, say Y.
+
+config NLS_KOI8_R
+    prompt "KOI8-R (Russian)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the preferred Russian character set.
+
+config NLS_JISX0201
+    prompt "JISX0201 (Japanese)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the JISX0201 character set, which defines
+      control characters, ascii characters (#x01 through #x7e) and 'hankaku' 
+      characters (#xa1 through #xdf) for the Japanese language.
+
+endmenu # NLS
+endmenu # Shrink options
