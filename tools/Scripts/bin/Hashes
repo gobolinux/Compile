@@ -66,7 +66,7 @@ cd "$prefix"
 
 function gen_filehashes() {
   mkdir -p "Resources"
-  find * -type f | grep -v "Resources/FileHash" | xargs md5sum >"Resources/FileHash"
+  find * -type f | grep -v "Resources/FileHash" | xargs sha1sum >"Resources/FileHash"
 }
 
 function check_filehashes() {
@@ -91,9 +91,9 @@ for line in hashes:
 for line in sys.stdin:
    line = line.rstrip()
    try:
-      good_md5 = file_checksums[line]
-      test_md5 = re.split('\s+', os.popen('md5sum %s'%line).read().rstrip())[0]
-      if good_md5 != test_md5:
+      good_sum = file_checksums[line]
+      test_sum = re.split('\s+', os.popen('sha1sum %s'%line).read().rstrip())[0]
+      if good_sum != test_sum:
          print line, 'has been modified!'
          errors+=1
    except:
@@ -130,7 +130,7 @@ if Boolean "sign"
 then
    gen_filehashes
 
-   gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee ""${FileHash_sig}"
+   gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee "${FileHash_sig}"
    
    exit 0
 fi
@@ -154,7 +154,7 @@ then
       fi
    fi
    output=`find * -type f | grep -v "Resources/FileHash" | check_filehashes`
-#   md5sum --check "Resources/FileHash"
+#   sha1sum --check "Resources/FileHash"
    rtn=$?
    if [ $rtn -eq "0" ]
    then

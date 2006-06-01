@@ -103,7 +103,6 @@ then
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"
-      printf "%s" "$output"
       exit 3
    fi
    Boolean "quiet" || Log_Normal "FileHash OK"
