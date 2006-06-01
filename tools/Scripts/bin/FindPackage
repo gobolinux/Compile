@@ -8,7 +8,7 @@
 #
 # (C) 2004 Andre Detsch. Released under the GNU GPL.
 
-
+import os, os.path, sys, urllib
 from GetAvailable import *
 
 def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdirs=None, forceupdate=False, accessWeb=True, hook=None, availables=None) :
@@ -77,6 +77,32 @@ def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdir
 		return toReturn
 	
 
+# Proposed addition to FindPackage:
+#   Figure out which is the newest package by checking the date each was
+#   modified on the server
+datehash = {}
+hook = None
+returnedResults = 0
+
+def byNewestOnServer(x, y):
+	for i in (x, y):
+		if datehash.has_key(i): continue
+		try:
+			if i[3][0] == '/':
+				datehash[i] = os.path.getmtime(i[3])
+			else:
+				u = urllib.urlopen(i[3])
+				datehash[i] = time.mktime(u.headers.getdate('Last-Modified'))
+		except:
+			Log_Terse("Failed to get date for %s."% i[3])
+			datehash[i] = '\1'
+		
+		if hook: hook('Sorting by date', len(datehash), returnedResults, False)
+	
+	return cmp(datehash[y], datehash[x])
+
+    
+
 if __name__ == '__main__' :
 	import sys
 	import getopt, os
@@ -84,7 +110,7 @@ if __name__ == '__main__' :
 	try :
 		if not sys.argv[1:] :
 			sys.argv[1:] = [ '--help' ]
-		opts, args = getopt.getopt(sys.argv[1:], 't:Wslh', ['types=', 'type=', 'local-dirs=', 'full-list', 'force-update', 'substring', 'no-web', 'help'])
+		opts, args = getopt.getopt(sys.argv[1:], 't:Wslhn', ['types=', 'type=', 'local-dirs=', 'full-list', 'force-update', 'substring', 'no-web', 'help', 'newest-on-server'])
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
@@ -95,6 +121,7 @@ if __name__ == '__main__' :
 	forceupdate = False
 	substring = False
 	noWeb = False
+	newestOnServer = False
 	
 	for o, a in opts :
 		if o in ['--types','--type', '-t'] :
@@ -114,6 +141,9 @@ if __name__ == '__main__' :
 			fulllist = True
 		elif o == '--force-update' :
 			forceupdate = True
+		elif o in ['-n', '--newest-on-server']:
+			fulllist = True
+			newestOnServer = True
 		elif o in ['--substring','-s'] :
 			substring = True
 			fulllist = True
@@ -153,12 +183,17 @@ Options:
  -l, --full-list      Prints all the occurences that match the passed 
                       parameters, not only the "best".
  
+ -n, --newest-on-server  Tries to sort the result set by how recently the
+                      packages have been modified on the server.
+                      Automatically enables '--full-list'.
+ 
  -s, --substring      Match packages whose names contains the passed substring.
                       Automatically enables '--full-list'.
  
  -W, --no-web         Do not try to download anything and don't lists 
                       remote recipes and packages (if not explicitly listed
-                      in '--types='). Overrides '--force-update'.
+                      in '--types='). Overrides '--force-update' and 
+                      '--newest-on-server'.
 
 Examples of usage:
  FindPackage kde
@@ -184,7 +219,11 @@ Examples of usage:
 	else  :
 		v = ''
 	
-	hook = None
+	if newestOnServer and noWeb:
+		Log_Error("--newest-on-server overridden by --no-web")
+		newestOnServer = False
+
+
 	try :
 		import os.path
 		if not os.path.realpath('/dev/fd/1').find('/fd/pipe:') > 0:
@@ -194,7 +233,12 @@ Examples of usage:
 		pass
 	
 	returned = FindPackage(p, v, fulllist, substring, types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)	
+    
 	if returned :
+		if newestOnServer: 
+			returnedResults = len(returned)
+			returned.sort(byNewestOnServer)
+        
 		for program, version, t, site in returned :
 			print site
 		sys.exit(0)	
