@@ -1,7 +1,7 @@
 #!/bin/sh
 #   bash_completion - some programmable completion functions for bash 2.05a
 #
-#   $Id: completion.bash,v 1.1 2005-08-11 01:10:20 hisham Exp $
+#   $Id: completion.bash,v 1.2 2006-06-02 14:05:59 drmoose Exp $
 #
 #   Copyright (C) Ian Macdonald <ian@caliban.org>
 #
@@ -1281,7 +1281,7 @@ _ncftp()
 
 	if [ $COMP_CWORD -eq 1 ] && [ -f ~/.ncftp/bookmarks ]; then
 	    COMPREPLY=( ` compgen -W '$( sed -ne "s/^\([^,]\{1,\}\),.*$/\1/p" \
-			   ~/.ncftp/bookmarks ) -- $cur ` )
+			   ~/.ncftp/bookmarks )' -- $cur ` )
 	fi
 
 	return 0
