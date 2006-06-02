@@ -1,4 +1,5 @@
-Glibc: UClibc
+Glibc: UClibc Rootless
+GLib: Rootless
 Mesa: Nvidia
 Nvidia: Mesa Xorg XFree86
 Xorg: XFree86
