@@ -1,5 +1,8 @@
 #!/bin/sh
 
+. ScriptFunctions
+Import GoboLinux
+
 if [ "$#" != "1" ]
 then
    echo "Syntax: $0 <package name>"
@@ -12,7 +15,7 @@ function search_packages() {
       if [ -d "$goboPrograms/$package" ]
       then
          echo "$package"
-	 return
+         return
       fi
    done
    return
