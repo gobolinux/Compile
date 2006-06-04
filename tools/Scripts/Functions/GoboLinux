@@ -478,9 +478,9 @@ function Which_Version() {
 
 progname=`Which_Package "$0"`
 conflocations=(
-   "$HOME/${goboUserSettings}/$progname"
-   "$HOME/${goboUserSettings}/Scripts"
-   "$HOME/${goboUserSettings}"
+   "${goboUserSettings}/$progname"
+   "${goboUserSettings}/Scripts"
+   "${goboUserSettings}"
    "${goboSettings}/$progname"
    "${goboSettings}/Scripts"
    "${goboSettings}"

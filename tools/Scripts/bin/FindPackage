@@ -178,7 +178,7 @@ Options:
                       uses the paths defined at GetAvailable.conf.
 
  --force-update       Downloads required packages list even if there is a
-                      local copy (cached in ~/.Settings/cache/) newer than one hour.
+                      local copy (cached in """+getGoboVariable("goboUserSettings")+"""/cache/) newer than one hour.
 
  -l, --full-list      Prints all the occurences that match the passed 
                       parameters, not only the "best".

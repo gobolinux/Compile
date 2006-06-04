@@ -6,13 +6,12 @@
 
 if [ "$ROOTLESS_GOBOLINUX" ]
 then
-   # <detsch> I think setting goboPrefix here should not be needed 
-   #           here, since we set it at Rootless/C/bin/StartGobo...
-   [ ! "${goboPrefix}" ] && export goboPrefix="${HOME}"
+   export goboUserSettings=${goboPrefix}/.Settings
 else
    if [ "$goboCrossCompiling" = "yes" ]
    then export goboPrefix="$cross_prefix_dir"
    fi
+   export goboUserSettings=$HOME/.Settings
 fi
 
 export goboUsers=${goboPrefix}/Users
@@ -62,6 +61,3 @@ then
    export goboInstall="$goboPrograms"
 fi
 
-# This is relative to the user's home directory.
-
-export goboUserSettings=.Settings

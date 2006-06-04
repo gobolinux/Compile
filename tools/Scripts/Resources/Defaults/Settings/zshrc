@@ -24,9 +24,14 @@ alias p='popd'
 # An alias for the lousy typist :)
 alias sl='ls'
 
+if [ "$goboPrefix" ]
+then goboUserPrefix=${goboPrefix}
+else goboUserPrefix=$HOME
+fi
+
 export HISTCONTROL=ignoredups
 export HISTIGNORE="ls:exit"
-export HISTFILE="${HOME}/.Settings/zsh_history"
+export HISTFILE="${goboUserPrefix}/.Settings/zsh_history"
 export HISTSIZE=100
 export SAVEHIST=200
 export COLUMNS
@@ -40,7 +45,9 @@ export TMPDIR="${goboPrefix}/System/Variable/tmp"
 
 export PATH="${goboPrefix}/System/Links/Executables:${PATH}:."
 path=("${goboPrefix}/System/Links/Executables" $path ".")
-fpath=("${goboPrefix}/System/Settings/zsh/functions" "${HOME}/.Settings/zsh/functions" $fpath)
+fpath=("${goboPrefix}/System/Settings/zsh/functions" "${goboUserPrefix}/.Settings/zsh/functions" $fpath)
+
+unset goboUserPrefix
 
 autoload -U promptinit
 promptinit

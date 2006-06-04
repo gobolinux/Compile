@@ -11,7 +11,8 @@ import os.path, sys, string, time, os, threading
 
 from PythonUtils import *
 
-cacheDir = os.path.expanduser('~/.Settings/cache/')
+goboUserSettings = getGoboVariable('goboUserSettings')
+cacheDir = os.path.expanduser(goboUserSettings+'/cache/')
 
 def loadConfig() :
 	goboSettings = getGoboVariable('goboSettings')
@@ -447,7 +448,7 @@ Options:
                       uses the paths defined at GetAvailable.conf
 
  --force-update       downloads required packages list even if there is a
-                      local copy (cached in ~/.Settings/cache/) newer than one hour.
+                      local copy (cached in """+cacheDir+""") newer than one hour.
 
  -W, --no-web         do not try to download anything and don't lists 
                       remote recipes and packages (if not explicitly listed

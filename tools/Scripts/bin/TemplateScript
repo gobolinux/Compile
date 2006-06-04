@@ -23,7 +23,7 @@ shift $parsedArguments
 
 # Use this to parse attributions from
 # ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
-# ~/${goboUserSettings}/.Scripts/INSERT_NAME_HERE.conf 
+# ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
 # Parse_Conf xxxxx.conf
 
