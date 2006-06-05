@@ -305,7 +305,7 @@ then
       link=`readlink -f share` 
       if ! [ "$link" = "$goboShared" ]
       then
-         rm "share"
+         Quiet rm "share"
          [ "`echo ${goboShared:${#goboPrefix}:${#goboShared}} | cut -b1`" != "/" ] && slash="/"
          if Boolean "relative" && [ -d "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" ]
          then
