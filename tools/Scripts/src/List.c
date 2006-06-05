@@ -253,13 +253,13 @@ get_file_color(char *full_pathname, char *extension, char *color, int len, mode_
 #define SCHEME_STATUS 1
 #define SCHEME_FILES  2
 char *
-colorize_bytes(unsigned long value, int color_scheme, int pad_bytes)
+colorize_bytes(unsigned long long value, int color_scheme, int pad_bytes)
 {
     int len;
     char *color_3 = NULL, *color_6 = NULL, *color_start = NULL;
     char tmp_buf[64], buf[64], *ptr_3, *ptr_6, *ptr_start;
 
-    sprintf(tmp_buf, "%ld", value);
+    sprintf(tmp_buf, "%lld", value);
     len = strlen(tmp_buf);
     
     ptr_start = tmp_buf;       /* XXXXXyyyzzz */
@@ -474,7 +474,6 @@ really_list_entries(struct file_info *file_info, struct dirent **namelist, int s
 				continue;
 			}
 
-		//	printf ("%s --> %s (color %s)\n", namelist[i]->d_name, extension, color_code);
 			if (S_ISCHR(status.st_mode) || S_ISBLK(status.st_mode)) {
 				fprintf(stdout, "%s%02d/%02d %02d:%02d %s%s %4lld:%3lld \033[%sm%s\n",
 					COLOR_WHITE_CODE,
