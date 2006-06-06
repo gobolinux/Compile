@@ -14,8 +14,8 @@ scriptCredits="Copyright (C) Hisham Muhammad, 2001-2005 - Released under the GNU
 scriptUsage="[<options>] <program_name> [<program_version>] [ -- <extra_arguments> ]"
 scriptExample="--makefile makefile.unix --target install_shared WeirdSuperLib 2.4"
 scriptNotes="
-Normally you'll want to use CompileProgram(1) instead.
-'$scriptName' is called by CompileProgram(1).
+Normally you'll want to use Compile(1) instead.
+'$scriptName' is called by Compile(1).
 If no program version is specified, Current is assumed.
 "
 Add_Option_Entry "t" "target" "Makefile target to be used." "install"
