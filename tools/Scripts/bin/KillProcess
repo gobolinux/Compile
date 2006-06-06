@@ -39,7 +39,7 @@ Add_Option_List "s" "spare" "Enter a colon-separated list of program names "\
 Parse_Options "$@"
 shift $parsedArguments
 
-Parse_Conf Scripts KillProcess.conf
+Parse_Conf Scripts/KillProcess.conf
 
 ### Operation #################################################################
 
