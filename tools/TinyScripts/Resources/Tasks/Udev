@@ -8,4 +8,7 @@ mount -n -t tmpfs none /System/Kernel/Devices
 mkdir /System/Kernel/Devices/pts
 mkdir /System/Kernel/Devices/shm
 
+# since mdev doesn't handle sub-directories, create some symlinks here
+ln -s /System/Kernel/Devices /System/Kernel/Devices/snd
+
 echo /sbin/mdev > /System/Kernel/Status/sys/kernel/hotplug
