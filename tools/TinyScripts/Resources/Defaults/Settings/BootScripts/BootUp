@@ -10,6 +10,7 @@ echo "Hiding the legacy tree...";          GoboHide start
 echo "Loading kernel modules...";          LoadModules start
 echo "Loading network settings...";        Network start
 echo "Configuring swap space...";          Swap start
+echo "Loading syslogd and klogd...";       syslogd; klogd
 # echo "Loading mouse driver...";            Mouse start
 # echo "Loading SSH daemon...";              /Programs/OpenSSH/Current/sbin/sshd
 # echo "Loading the NFS portmap daemon...";  portmap
