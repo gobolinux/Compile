@@ -21,6 +21,7 @@ commands, in form of shell functions. This is the order the functions
 are called for each operation mode:
 
 compileprogram:
+   pre_patch()
    pre_build()
    configure
    make
@@ -31,6 +32,7 @@ compileprogram:
    post_install()
 
 makefile:
+   pre_patch()
    pre_build()
    make
    pre_install()
@@ -43,6 +45,7 @@ perl:
    same as 'makefile'
 
 python:
+   pre_patch()
    pre_build()
    python setup.py build
    pre_install()
@@ -52,6 +55,7 @@ python:
    post_install()
 
 xmkmf:
+   pre_patch()
    pre_build()
    xmkmf
    make
@@ -62,6 +66,7 @@ xmkmf:
    post_install()
 
 manifest:
+   pre_patch()
    pre_install()
    copy files
    pre_link()
@@ -69,6 +74,7 @@ manifest:
    post_install()
 
 scons:
+   pre_patch()
    pre_build()
    scons.py
    pre_install()
