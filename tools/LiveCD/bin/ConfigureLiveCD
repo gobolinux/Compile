@@ -37,7 +37,8 @@ dialog --title "Language"  --menu "Choose your language"  10 46 3  \
 language=`cat ${goboTemp}/setup/language`
 if [ "$language" = "" ]
 then
-   language=$LANG
+   echo en_US > ${goboTemp}/setup/language
+   language=en_US
 fi
 
 export LANG=${language}

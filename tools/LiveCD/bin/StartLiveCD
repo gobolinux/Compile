@@ -132,6 +132,7 @@ ${goboPrograms}/BootScripts/Current/bin/StartTask GoboHide
 # Launch the configuration script
 ######################################
 ConfigureLiveCD
+LANG=`cat ${goboTemp}/setup/language`
 
 ######################################
 # DHCP
