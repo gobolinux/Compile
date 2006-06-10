@@ -101,7 +101,7 @@ then
    cd $root
 
    echo "Building root..."
-   BuildRoot "Output/Layer1" "Archives/Packages" "Archives/Packages/package.list"
+   BuildRoot "Output/Layer1" "Archives/Packages" "/Programs/BuildLiveCD/Current/Data/Packages-List"
    [ "$?" = "0" ] || exit 1
 
    # Add few items to layer1
