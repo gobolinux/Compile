@@ -13,16 +13,13 @@ do
    fi
 done
 
-mp="Output/Environment"
-
-mkdir -p ${mp}
-
 if [ "$UID" != "0" ]
 then
     echo "Running as superuser."
     exec sudo -u "#0" $0 $*
 fi
 
+mp="Output/Environment"
 if [ -d "$mp" ]
 then
    echo "Unionfs mounting layers."

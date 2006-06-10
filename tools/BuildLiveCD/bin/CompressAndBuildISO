@@ -74,7 +74,13 @@ packages=$PWD/Archives/Packages
 externalarchives=$PWD/Archives/Ext
 external=$PWD/External
 
-mkdir -p Output/ISO
+if ! [ -e $localcvs -a -e $packages -a -e $external ] 
+then
+   echo 'Basic directories could not be found.'
+   echo 'Please check if you are running the script inside a directory populated by UpdateEnviromnent'
+   exit 1
+fi 
+
 if [ "$start_at" -le "$STAGE_LAYER0" ] && [ "$stop_at" -ge "$STAGE_LAYER0" ]
 then
    echo "=> Layer0 stage started"
@@ -115,6 +121,8 @@ then
    find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
    echo "=> Layer0 stage done"
 fi
+
+mkdir -p Output/ISO
 
 if [ "$start_at" -le "$STAGE_SQUASHFS" ] && [ "$stop_at" -ge "$STAGE_SQUASHFS" ]
 then
@@ -191,7 +199,7 @@ then
    echo "=> SquashFS stage done"
 fi
 
-cp -ra External/CD-Bootloader/$arch/. Output/ISO
+cp -ra External/CD-Bootloader/$arch/. Output/ISO/
 
 if [ "$start_at" -le "$STAGE_INITRD" ] && [ "$stop_at" -ge "$STAGE_INITRD" ]
 then
