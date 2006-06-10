@@ -27,8 +27,9 @@ if [ -d "$mp" ]
 then
    echo "Unionfs mounting layers."
    unionfs_dirs=`echo "${chroot_layers[@]}" | tr " " ":"`
-echo   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
-   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
+   mkdir -p RWLayer
+   echo mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
+   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp} || { echo Error mounting Output/Environment; exit 1; }
    
    mkdir -p Output/Chroot_Mount_CD-ROM/{Programs_Local,Depot_Local,Users_Local,Packages}
 
