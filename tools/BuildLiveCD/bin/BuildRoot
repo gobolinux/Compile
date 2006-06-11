@@ -158,6 +158,8 @@ ln -nfs /System/Settings $root/etc
 ln -nfs /System/Links/Executables $root/bin
 ln -nfs /System/Links/Executables $root/sbin
 
+ln -nfs /System/Kernel/Modules $root/System/Links/Libraries/modules
+
 ln -nfs . $root/usr/X11R6
 ln -nfs . $root/usr/local
 ln -nfs /System/Links/Executables $root/usr/bin
