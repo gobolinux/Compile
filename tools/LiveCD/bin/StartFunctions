@@ -1,6 +1,5 @@
 #!/bin/sh
 
-export tmpfsdir=/TmpFS
 function msg() {
    echo -e "\033[36m""=>""\033[0m""\033[1;36m"" $1...""\033[0m"
 }
@@ -9,25 +8,10 @@ function msg_no_nl() {
    echo -e -n "\033[36m""=>""\033[0m""\033[1;36m"" $1""\033[0m"
 }
 
-function turn_temporary() {
-   if [ "$1" -a -d "$1" ]
-   then
-      orig="$1"
-      dest="$1"
-      [ "$2" -a -d "$2"  ] && orig=$2
-      
-      mkdir -p ${tmpfsdir}/"$dest"
-      cp -rpa "$orig"/* ${tmpfsdir}/"$dest" 2> /dev/null   
-      cp -rpa "$1"/.[0-9a-zA-Z]* ${tmpfsdir}/"$1" 2> /dev/null   
-      mount -o bind ${tmpfsdir}/"$dest" "$dest"
-   fi
-}
-
 function launch_dhcp() {
    echo "=> Starting DHCP client daemon"
    dhcpcd -t 5 2> /dev/null &
 }
-
 
 function skip_on_esc_simple() {
     [ "$1" ] && seconds=$1 || seconds=3

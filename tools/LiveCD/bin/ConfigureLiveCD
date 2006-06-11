@@ -1,15 +1,5 @@
 #!/bin/sh
 
-#
-# This script configures the enviroment to run the Live-CD.
-#
-
-# Changelog:
-# 
-# 13/05/2005 - [detsch]  - de_DE on .kde
-# 22/02/2005 - [lucasvr] - First version, splitted from the 'Start' script
-#
-
 source GoboPath
 source StartFunctions
 
