@@ -12,6 +12,7 @@ BinUtils
 Bison
 Bzip2
 CVS
+Cairo
 Cdparanoia-III
 CoreUtils
 Cpio
@@ -24,13 +25,15 @@ DosFSTools
 E2FSProgs
 Ed
 Eject
+EnhancedSkel
 Expat
 File
 FindUtils
 Flex
-GCC 4.0.2
+FreeType
+GCC
 GDB
-GLib 2.9.5
+GLib
 GPM
 Gawk
 Gettext
@@ -45,16 +48,31 @@ ID3Lib
 Indent
 InetUtils
 Ispell
+JACK
+JPEG
 LCMS
 Lame
 Less
+LibART_LGPL
 LibDRM
+LibExif
+LibID3Tag
 LibIDN
+LibMNG
+LibMad
+LibOGG
 LibPNG
+LibSamplerate
+LibSndfile
+LibStdC++ 3.4.3
+LibStdC++ 4.0.2
 LibTool
 LibUSB
+LibUngif
 LibVorbis
-Linux-Libc-Headers 2.6.14.3
+LibXML2
+LibXSLT
+Linux-Libc-Headers
 Lsof
 M4
 MC
@@ -71,6 +89,7 @@ PCIUtils
 PCRE
 Parted
 Patch
+Perl
 Pkgconfig
 Popt
 Procinfo
@@ -78,6 +97,7 @@ Procps
 ProgsReiserFS
 Psmisc
 Python
+RPM
 Readline
 ReiserFSProgs
 Runit
@@ -88,10 +108,12 @@ Sed
 Strace
 SysFSUtils
 Sysvinit
+TIFF
 Tar
 Texinfo
 TraceRoute
 Unzip
+Vim
 Wireless-Tools
 XFS-Utils
 ZLib

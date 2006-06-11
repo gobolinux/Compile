@@ -1,22 +1,28 @@
 ALSA-Utils
 Bash
 DHCPCD
+Esound
 Fontconfig
+GTK+
 Glibc
 HwData
 KBD
 LILO
 Man
-Module-Init-Tools 3.2.2
+Module-Init-Tools
 Netkit-Base
 OpenSSH
 OpenSSL
 PPP
+Pango
 Pcmcia-CS
 Pinfo
+RP-PPPoE
+Rsync
 Shadow
 Sudo
 Sysklogd
 Udev 089
 Util-Linux
 Wget
+WindowMaker
