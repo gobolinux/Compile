@@ -106,6 +106,7 @@ do
    then
       cd $cvsrepo
       cvs up
+      cd - &> /dev/null
    else
       if [ "$cvsuser" = "anonymous" ]
       then
