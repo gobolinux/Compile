@@ -177,7 +177,7 @@ then
       then
          echo "Creating squashfs compressed file $bn..."
          # mv $sumsfile.new $sumsfile
-         nice -20 mksquashfs "$@" "$out" -noappend
+         nice -20 mksquashfs "$@" "$out" -noappend -keep-as-directory
       else
          echo "Mksquashfs not needed for $bn."
       fi
