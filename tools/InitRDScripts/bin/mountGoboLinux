@@ -1,7 +1,6 @@
 #!/bin/sh
 
 cdrom=/Mount/CD-ROM
-squashfile=$cdrom/GoboLinux-files.squashfs
 
 # Try IDE CDROMs
 for d in /proc/ide/hd*
@@ -13,7 +12,7 @@ do
       device="/dev/$devname"
       mount -t iso9660 "$device" "$cdrom" 2> /dev/null
       # Check for squashfs
-      [ -f "$squashfile" ] && exit 0
+      ls $cdrom/*.squashfs &> /dev/null && exit 0
       umount "$cdrom"
    fi
 done
@@ -23,7 +22,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   [ -f "$squashfile" ] && exit 0
+   ls $cdrom/*.squashfs &> /dev/null && exit 0
    umount "$cdrom"
 done
 
@@ -41,7 +40,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   [ -f "$squashfile" ] && exit 0
+   ls $cdrom/*.squashfs &> /dev/null && exit 0
    umount "$cdrom"
 done
 
