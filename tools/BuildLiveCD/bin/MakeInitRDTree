@@ -53,11 +53,9 @@ mkdir -p $root/Mount/Pivot
 mkdir -p $root/Mount/TmpFS
 mkdir -p $root/Mount/SquashFS
 mkdir -p $root/Mount/SquashFS/Rest
-mkdir -p $root/Mount/SquashFS/Programs-A-E
-mkdir -p $root/Mount/SquashFS/Programs-F-J
-mkdir -p $root/Mount/SquashFS/Programs-K-O
-mkdir -p $root/Mount/SquashFS/Programs-P-T
-mkdir -p $root/Mount/SquashFS/Programs-U-Z
+for i in /Programs/BuildLiveCD/Current/Data/Packages-List-*; do
+   mkdir $root/Mount/SquashFS/`basename $i .squashfs`
+done
 mkdir -p $root/Mount/CD-ROM
 mkdir -p $root/Mount/UnionFS
 mkdir -p $root/Mount/UnionFS/Programs
@@ -113,7 +111,8 @@ cd $root/Programs
 
 for package in "${packages[@]}"
 do
-   tar xjvpf $archives/$package
+   echo "Installing $package inside InitRD..."
+   tar xjpf $archives/$package
 done
 
 ####################################################

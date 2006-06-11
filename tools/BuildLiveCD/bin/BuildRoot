@@ -1,12 +1,15 @@
 #!/bin/sh -e
 
 root="$1"
-packagedir="$2"
-packagelist="$3"
+shift
+packagedir="$1"
+shift
+packagelist="$1"
+packagelists="$@"
 
 if ! [ -d "$packagedir" -a -f "$packagelist" ]
 then
-   echo "Usage: BuildRoot <root> <packagedir> <packagelist>"
+   echo "Usage: BuildRoot <root> <packagedir> <packagelist1> [packagelist2] ..."
    [ -d "$packagedir" ] ||  echo "   $packagedir does not exist"
    [ -f "$packagelist" ] || echo "   $packagelist does not exist"
    exit 1
@@ -178,7 +181,7 @@ popd &> /dev/null
 
 # cp -r Recipes $root/Files/Compile
 # 
-cat $packagelist |while read line
+cat $packagelists |while read line
 do
    packagename=`echo $line |cut -d' ' -f1`
    packagever=`echo $line |cut -d' ' -f2`

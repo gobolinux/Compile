@@ -107,7 +107,7 @@ then
    cd $root
 
    echo "Building root..."
-   BuildRoot "Output/Layer1" "Archives/Packages" "/Programs/BuildLiveCD/Current/Data/Packages-List"
+   BuildRoot "Output/Layer1" "Archives/Packages" /Programs/BuildLiveCD/Current/Data/Packages-List-*
    [ "$?" = "0" ] || exit 1
 
    # Add few items to layer1
@@ -118,7 +118,8 @@ then
    cp -ar External/Linux-Kernel/* Output/Layer1
 
    # Clean CVS files from Layer1
-   find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
+   echo "Removing CVS files..."
+   #find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
    echo "=> Layer0 stage done"
 fi
 
@@ -150,7 +151,7 @@ then
       fi
       return 1
    }
-   
+
    function mksquashfs_on_demand() {
       out="$1"
       shift
@@ -158,16 +159,18 @@ then
       # sumsfile=Output/Checksums/$bn.sums
       echo "Checking if $bn needs updating..."
       find "$@" -newer "$out" 2> /dev/null > /tmp/newer.txt
-      diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
+      #diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
+      #FIXME: Assuming Glibc is not being changed
+      diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc" | wc -l`
       ld_so_cache_changed
-	if [ $diffs -ne 0 ]
-	then
+      if [ $diffs -ne 0 ]
+      then
          echo ==========
          echo Changes:
          echo ----------
          cat /tmp/newer.txt
          echo ==========
-	fi
+      fi
       if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
       #find "$@" | grep -v Devices | xargs -n 100 md5sum > $sumsfile.new 2> /dev/null
       #if ! diff -q $sumsfile $sumsfile.new
@@ -184,15 +187,13 @@ then
    # Final actions on Environment
    chroot Output/Environment /bin/ldconfig
    md5sum Output/Environment/Programs/Glibc/Settings/ld.so.cache > Output/ld.so.cache.sum
-   # compress the uncompressed files into a squashfs file
 
+   # compress the uncompressed files into squashfs files
    time mksquashfs_on_demand Output/ISO/GoboLinux-files.squashfs Output/Environment/Files
-   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-a-e.squashfs Output/Environment/Programs/[A-E]*
-   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-f-j.squashfs Output/Environment/Programs/[F-J]*
-   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-k-o.squashfs Output/Environment/Programs/[K-O]*
-   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-p-t.squashfs Output/Environment/Programs/[P-T]*
-   time mksquashfs_on_demand Output/ISO/GoboLinux-programs-u-z.squashfs Output/Environment/Programs/[U-Z]*
-   time mksquashfs_on_demand Output/ISO/GoboLinux-rest.squashfs `ls -d Output/Environment/* | grep -v Files | grep -v Programs`
+   for i in /Programs/BuildLiveCD/Current/Data/Packages-List-*; do 
+      time mksquashfs_on_demand Output/ISO/`basename $i`.squashfs `cat $i | cut -f 1 -d ' ' | sort -u | while read i; do echo Output/Environment/Programs/$i; done`
+   done
+   time mksquashfs_on_demand Output/ISO/GoboLinux-rest.squashfs `ls -d Output/Environment/* | grep -v Files | grep -v Programs | grep -v Users`
 
    umount Output/Environment
    rm -rf $tmp_mp
