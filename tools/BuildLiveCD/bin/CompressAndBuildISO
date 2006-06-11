@@ -157,7 +157,7 @@ then
       bn=`basename "$out"`
       # sumsfile=Output/Checksums/$bn.sums
       echo "Checking if $bn needs updating..."
-      find "$@" -type f -newer "$out" 2> /dev/null > /tmp/newer.txt
+      find "$@" -newer "$out" 2> /dev/null > /tmp/newer.txt
       diffs=`cat /tmp/newer.txt | grep -v "Output/Environment/Programs/Glibc/Settings/ld.so.cache" | wc -l`
       ld_so_cache_changed
 	if [ $diffs -ne 0 ]
