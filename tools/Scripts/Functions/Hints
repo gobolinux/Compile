@@ -1,0 +1,93 @@
+#!/bin/sh "Do not execute. Shebang line exists for syntax highlighting."
+
+
+# A file containing the code that parses hints files. This was mostly written
+# in ruby, because I'm too lazy to figure out how to do all this parsing in
+# sh.
+#
+# Author:: Dan
+# Date::   10 June 2006
+
+Import Log
+Import LogVerbose
+Import File
+
+# This version of Hints_For exists solely to be replaced by Load_Hints
+# The replacement version will be bigger, better, and actually do stuff.
+# For more specifics, consult HintsFileParser.rb
+function Hints_For() {
+   Die "No Hints file loaded"
+}
+
+
+# Behold: the Load_Hints function. Takes the specified Hints file and parses it.
+# The result of this parsing is a redefinition of the Hints_For function above,
+# which is then eval'd.
+#
+# This takes one parameter, a filename that is to be parsed into an actually-
+# useful Hints_For function. You can also pass it a --mandatory option if you
+# really want (just like Parse_Conf) although I can't imagine why you'd want to
+function Load_Hints() {
+   local file screwed parserPath mandatory missing_hints_logger
+
+   function ignore() {
+      local variable="I have to have something here to prevent a syntax error"
+   }
+
+   
+   missing_hints_logger="ignore"
+   if [ "$1" = '--mandatory' ]; then
+      mandatory=yes
+      missing_hints_logger="Log_Terse"
+      shift
+   fi
+   file="$1"
+   screwed='not yet'
+   parserPath="${scriptPath}/../Functions/HintsFileParser.rb"
+
+   # If Ruby doesn't exist, or if we can't read the hint parser, we're screwed.
+   if [ "`which ruby`" = '' ]; then
+      Log_Terse "Ruby is not installed, or it's not in your path."
+      screwed=yes
+   elif ! Is_File "$parserPath"; then
+      Log_Terse "Missing hint parser. Consider updating your Scripts version."
+      screwed=yes
+   elif ! Is_Readable "$parserPath"; then
+      Log_Terse "Permission denied reading the parser. Something is horribly wrong."
+      screwed=yes
+   fi
+
+   # ruby will be wanting an absolute path
+   parserPath="`readlink -f "$parserPath"`"
+
+   # If we can't read the file we're trying to read, don't bother trying.
+   if ! Is_File "$file"; then
+      $missing_hints_logger "$file does not exist"
+      unset file
+   elif ! Is_Readable "$file"; then
+      $missing_hints_logger "Insufficient privleges to read $file"
+      unset file
+   fi
+   
+   # If a hints file is mandatory, and we haven't got one, we're screwed.
+   if [ "$mandatory" = yes -a x"$file" = x ]; then
+      screwed=yes
+   fi
+
+   # If we're screwed, write a message to that effect, and exit.
+   if [ "$screwed" = yes ]; then
+      Log_Terse "Cannot parse hints file."
+      return 1
+   fi
+
+   # If we've gotten this far, but we don't have a file to parse, silently
+   # pass away.
+   [ "$file" ] || return 1
+
+   # At this point, we know ruby, the parser, and the file all exist, so let's
+   # actually call the beautiful bit of code that actually reads the hints file,
+   # then, since we know it's going to output some valid bash commands we're
+   # supposed to eval, eval whatever it outputs.
+   echo "$(ruby "${parserPath}" "$file" "${scriptName}")"
+   eval "$(ruby "${parserPath}" "$file" "${scriptName}")"
+}

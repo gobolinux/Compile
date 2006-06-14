@@ -87,3 +87,13 @@ function Get_Token() {
    done
    [ $3 -lt 0 ] && echo -n ${tokens[$(( $i+$3+1 ))]}
 }
+
+# writes each string passed to it, but with the last character removed.
+function Chop() {
+   echo -n "$(echo "$*" | sed -re "s/(.*)./\1/g")"
+}
+
+# Returns the arguments passed to it converted to lower case
+function Downcase() {
+   echo "$*" | tr '[:upper:]' '[:lower:]'
+}

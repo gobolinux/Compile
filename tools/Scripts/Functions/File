@@ -17,6 +17,8 @@ function Is_File() { [ -f "$1" ] ;}
 
 function Is_Process() { pidof "$1" &> /dev/null ;}
 
+function Is_Readable() { [ -e "$1" -a -r "$1" ] ;}
+
 function Is_Writable() { [ \( -e "$1" -a -w "$1" \) -o \( ! -e "$1" -a -w `dirname "$1"` \) ] ;}
 
 function Is_Link() { [ -L "$1" -a -e "$1" ] ;}

@@ -501,6 +501,7 @@ function Find_Conf() {
 
 # Parse the script's configuration
 function Parse_Conf() {
+   local mandatory=''
    if [ "$1" = "--mandatory" ]
    then
       mandatory=yes
@@ -524,14 +525,14 @@ function Bypass_Superuser() {
 }
 
 # Some simple define for sudo
-sudo_validate="sudo -v"
 sudo_exec="sudo -u #0"
+sudo_validate="sudo -v"
 
 # If we can't sudo, we shouldn't try .
 if [ $ROOTLESS_GOBOLINUX ]
 then
-   sudo_validate=""
    sudo_exec="Bypass_Superuser"
+   sudo_validate=""
 fi
 
 
@@ -548,7 +549,7 @@ function Verify_Superuser() {
          # Revalidate password for another 5 mins.
          $sudo_validate
          # Run with superuser's HOME.
-         exec sudo -u "#0" -H $0 "${savedOptions[@]}"
+         exec $sudo_exec -H $0 "${savedOptions[@]}"
       fi
    fi
 }

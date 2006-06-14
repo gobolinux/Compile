@@ -116,3 +116,18 @@ function Array_Contains() {
       return 1
    '
 }
+
+function Array_Intersect() {
+   local array1name="$1"
+   local array2name="$2"
+   local each
+   eval '
+      for each in ${'"$array1name"'[@]}
+      do
+         if Array_Contains "'"$array2name"'" "$each"; then
+            echo "$each"
+         fi
+      done
+      return 0
+  '
+}
