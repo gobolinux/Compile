@@ -94,8 +94,9 @@ fi
 fstab_file=$prefix/$goboSettings/fstab
 if [ ! -f $fstab_file ]
 then
-    echo "/dev/hda1 /             ext2   defaults 1 1" >  $fstab_file
+    echo "/dev/hda1 /             auto   defaults 1 1" >  $fstab_file
     echo "none      /proc         proc   defaults 0 0" >> $fstab_file
+    echo "none      /proc/bus/usb usbfs  defaults 0 0" >> $fstab_file
     echo "none      /sys          sysfs  defaults 0 0" >> $fstab_file
     echo "none      /dev/pts      devpts defaults 0 0" >> $fstab_file
     echo "none      /dev/shm      tmpfs  defaults 0 0" >> $fstab_file
