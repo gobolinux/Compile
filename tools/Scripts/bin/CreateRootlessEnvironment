@@ -135,7 +135,7 @@ then
 		ln -sfn /bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
 	elif [ -e "/usr/bin/install" ]
 	then
-		ln -sfn /bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
+		ln -sfn /usr/bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
 	else 
 		i=`which install`
 		g=`file "$i" | grep ELF`

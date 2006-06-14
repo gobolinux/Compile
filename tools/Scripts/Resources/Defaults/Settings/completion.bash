@@ -1,7 +1,7 @@
 #!/bin/sh
 #   bash_completion - some programmable completion functions for bash 2.05a
 #
-#   $Id: completion.bash,v 1.2 2006-06-02 14:05:59 drmoose Exp $
+#   $Id: completion.bash,v 1.3 2006-06-14 23:45:18 drmoose Exp $
 #
 #   Copyright (C) Ian Macdonald <ian@caliban.org>
 #
@@ -25,9 +25,9 @@
 
 # Alter the following to reflect the location of this file
 #
-[ -z "$BASH_COMPLETION" ] && declare -r BASH_COMPLETION=/etc/completion.bash
+[ -z "$BASH_COMPLETION" ] && declare -r BASH_COMPLETION="${goboPrefix}/System/Settings/completion.bash"
 [ -z "$BASH_COMPLETION_DIR" ] && \
-	declare -r BASH_COMPLETION_DIR=/etc/completion
+	declare -r BASH_COMPLETION_DIR="${goboPrefix}/System/Settings/completion"
 
 # Set a couple of useful vars
 #

@@ -6,7 +6,6 @@
 # This line has to come first
 export SHELL=/bin/bash
 
-source ${goboPrefix}/System/Settings/completion.bash
 
 shopt -s cdable_vars cdspell checkhash checkwinsize histappend histreedit histverify 
 
@@ -64,6 +63,7 @@ export    LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries:${LD_LIBRARY_PAT
 export     C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers:${C_INCLUDE_PATH}"
 export CPLUS_INCLUDE_PATH="${goboPrefix}/System/Links/Headers:${CPLUS_INCLUDE_PATH}"
 
+source ${goboPrefix}/System/Settings/completion.bash
 
 # java plugin netscape
 #export NPX_PLUGIN_PATH=/Programs/JDK/Current/jre/plugin/i386/ns4/
