@@ -2,7 +2,7 @@
 
 #####################################################################
 #
-# CreateRootlessEnvironment 1.0, almost stable
+# CreateRootlessEnvironment, almost stable
 # Andre Detsch, Renato Costa
 # 
 #####################################################################
@@ -174,7 +174,7 @@ then
 			ln -s `basename ${scripts}` Current
 		fi
 	else
-		version=2.2.1
+		version=2.3.1
 		scripts=Scripts--${version}--i686.tar.bz2
 		wget http://kundor.org/gobo/packages/official/${scripts} -O /tmp/${scripts}
 		cd ${goboPrefix}/Programs/
