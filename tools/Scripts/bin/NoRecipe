@@ -26,7 +26,7 @@ find /Programs/ -maxdepth 2 -mindepth 2 -name Current -printf '%P/%l\n' | \
     if [ -z "$newver" ]
     then
       unset found_recipe
-      [ "$use_web" ] && FindPackage $prog $ver && found_recipe=true
+      [ "$use_web" ] && FindPackage --type=recipe $prog $ver && found_recipe=true
       [ ! "$found_recipe" ] && echo "[R] $prog $ver not found"
     fi
   done
