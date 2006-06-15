@@ -205,7 +205,7 @@ fi
 skip_all=0
 pushd $subdir >& /dev/null
 
-for entry in `cat $dot_config | grep "=y" | grep PKG`
+for entry in `cat $dot_config | grep ^PKG_`
 do
     pkg_dir=`package_subdir $entry`
     [ ! -d "$pkg_dir" ] && { Log_Error "$pkg_dir not found"; continue; }
