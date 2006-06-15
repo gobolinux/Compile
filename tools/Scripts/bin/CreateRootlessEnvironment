@@ -97,22 +97,20 @@ mkdir -p "${goboPrefix}/Programs/Rootless/1.0/bin"
 cd "${goboPrefix}/Programs/Rootless/"
 ln -sfn "1.0" "Current"
 
-echo -n '
-#!/bin/sh (source)
+if [ "${goboPrefix}" = "${HOME}" ]
+then
+   rootlessPrefix='${HOME}'
+else
+   rootlessPrefix="${goboPrefix}"
+fi
+
+echo -n '#!/bin/sh (source)
 export ROOTLESS_GOBOLINUX=1
 alias SymlinkProgram="SymlinkProgram --relative"
 
-[ ! "$goboPrefix" ] && export goboPrefix=' > ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
+[ ! "$goboPrefix" ] && export goboPrefix='$rootlessPrefix'
 
-if [ "${goboPrefix}" = "${HOME}" ]
-then
-	echo '${HOME}' >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
-else
-	echo "${goboPrefix}" >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
-fi
-
-echo '
-if [ ${SHELL} = "/bin/zsh" ]
+if [ ${ZSH_NAME} = "zsh" ]
 then
    [ -e "${goboPrefix}/System/Settings/zshrc" ] && . "${goboPrefix}/System/Settings/zshrc"
    prompt lode cyan
@@ -247,11 +245,11 @@ done
 cd $pwd
 
 echo
-echo Done!
+echo "Done!"
 echo
-echo You can now restart your session in order to enjoy GoboLinux Rootless
+echo "You can now restart your session in order to enjoy GoboLinux Rootless"
 echo
-echo Commands recommended to be executed afterwards:
+echo "Commands recommended to be executed afterwards:"
 echo "  InstallPackage Atool"
 echo "  InstallPackage Compile"
 echo "  InstallPackage Mtail"
