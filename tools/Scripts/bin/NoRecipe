@@ -6,8 +6,15 @@ NoRecipe 1.0a - check for installed packages which need recipes
 
 EOF
 
+use_web=true
+if [ "$1" = "--no-web" ]
+then
+    unset use_web
+    shift
+fi
+
 if [ -n "$*" ] ; then
-  echo "Usage: $0"
+  echo "Usage: $0 [--no-web]"
   exit 127
 fi
 
@@ -16,8 +23,11 @@ find /Programs/ -maxdepth 2 -mindepth 2 -name Current -printf '%P/%l\n' | \
   tr '/' ' ' | \
   while read prog cur ver junk ; do
     newver=$(find "${compileRecipeDirs[@]}" -name $prog -exec ls '{}' ';' | sort -n | tail -n 1)
-    if [ -z "$newver" ] ; then
-      echo "[R] $prog $ver not found"
+    if [ -z "$newver" ]
+    then
+      unset found_recipe
+      [ "$use_web" ] && FindPackage $prog $ver && found_recipe=true
+      [ ! "$found_recipe" ] && echo "[R] $prog $ver not found"
     fi
   done
 
