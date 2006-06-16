@@ -87,7 +87,7 @@ function check_and_dl() {
 }
 
 # Tarballs
-echo "Downloading archives..."
+echo "=> Downloading archives..."
 arch=`uname -m`
 cat /Programs/BuildLiveCD/Current/Data/Packages-Devel-$arch | while read action dir url md5
 do
@@ -96,7 +96,7 @@ do
 done
 
 # LocalCVS
-echo "Updating local CVS copy..."
+echo "=> Updating local CVS copy..."
 cd $localcvs
 
 tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts InitRDScripts )
@@ -104,17 +104,19 @@ for cvsrepo in files `for x in ${tools[@]}; do echo tools/$x; done`
 do
    if [ -e $cvsrepo ]
    then
+      echo Updating $cvsrepo...
       cd $cvsrepo
-      cvs up
+      cvs -q up
       cd - &> /dev/null
    else
+      echo Getting $cvsrepo...
       if [ "$cvsuser" = "anonymous" ]
       then
-         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+         cvs -d -q :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
       else
          export CVS_RSH=ssh
          chown $localuser .
-         sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+         sudo -H -u $localuser cvs -d -q :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
       fi
    fi
 done
@@ -123,8 +125,8 @@ cd - &> /dev/null
 today=`date +%Y%m%d`
 
 # Packages
-echo "Fetching remote packages..."
-rsync --verbose --progress -r -L gobo.calica.com::gobolinux-packages/013-test/ $packages/
+echo "=> Fetching remote packages..."
+rsync --delete --verbose --progress --port=8730 -r -L rsync.gobolinux.org::livecd-packages/ $packages/
 
 # generate LiveCD_work/Layer2/System/Links/Environment/Cache
 if ! [ -e Master.conf ]
@@ -136,4 +138,4 @@ then
    fi
 fi
 
-echo "Done."
+echo "=> Done."
