@@ -79,4 +79,4 @@ then
 fi
 popd &> /dev/null
 
-$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root
+$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root 2>&1 | grep -v "/CVS/"
