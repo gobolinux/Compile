@@ -16,7 +16,7 @@ function download_packages() {
 	E2FSProgs--1.38--i686.tar.bz2
 	File--4.16--i686.tar.bz2
 	FindUtils--4.2.21--i686.tar.bz2
-	GCC--4.0.2--i686.tar.bz2
+	GCC--4.1.1--i686.tar.bz2
 	Gawk--3.1.4--i686.tar.bz2
 	Glibc--2.3.2--i686.tar.bz2
 	Grep--2.5.1a--i686.tar.bz2
@@ -34,7 +34,8 @@ function download_packages() {
 	Tar--1.15.1--i686.tar.bz2
 	Util-Linux--2.12r--i686.tar.bz2
 	ZLib--1.2.3--i686.tar.bz2
-	Linux--2.4.20--i686.tar.bz2
+#	Linux--2.4.20--i686.tar.bz2
+    Linux-Headers--2.6.16.20--i686.tar.bz2
         # Dependencies which should probably go away
         GPM--1.20.1--i686.tar.bz2
         Bison--2.1--i686.tar.bz2
