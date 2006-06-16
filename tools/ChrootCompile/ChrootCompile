@@ -126,6 +126,7 @@ fi
 # Which packages are required to run Compile
 #############################################################################
 base_dependencies=(
+    "Linux-Headers" # needed to bootstrap Glibc
     "Glibc"
     "Ncurses" # needed by Bash
     "Readline" # needed by Bash
@@ -149,7 +150,7 @@ base_dependencies=(
     "MkTemp" # needed by Scripts
     "Mtail" # needed by Scripts
     "BinUtils" # needed by GCC (as)
-    "Linux" # needed by GCC (include/linux)
+#   "Linux" # needed by GCC (include/linux)
 #   "Linux-Libc-Headers" # instead of Linux
     "GCC"
     "Sudo" # needed by Scripts
@@ -158,6 +159,9 @@ base_dependencies=(
     "E2FSProgs" # needed by Util-Linux (libblkid.so)
     "Util-Linux" # needed by Compile (mount)
     "DiffUtils" # needed by Compile (diff)
+    "Automake"  # needed by Recipes which call autogen.sh
+    "Autoconf"  # needed by Recipes which call autogen.sh
+    "M4"        # Automake dependency
     "Scripts"
     "Compile"
 )
@@ -166,9 +170,6 @@ cross_dependencies=
 if [ "$crossopts" ]
 then
     cross_dependencies=(
-        "Automake"  # needed by Recipes which call autogen.sh
-        "Autoconf"  # needed by Recipes which call autogen.sh
-        "M4"        # Automake dependency
         "Pkgconfig" # this package is a mess to be cross-compiled, keep it on the host platform
         "GLib"      # GLib build expect its gen-marshall executable to be in $PATH if cross-compiling
     )
