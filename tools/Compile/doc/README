@@ -181,7 +181,13 @@ docs=(<array of filenames>)
    Valid modes: all
    A list of filenames, relative to the program's sources root,
    of files to be copied to the program's doc/ dir (or doc/$app/ 
-   for meta-packages)
+   for meta-packages). Wildcards are supported but must be
+   single-quoted. Note that some default names such as README*,
+   AUTHORS and TODO are automatically fetched.
+   Example:
+   docs=(
+      'docs/*.html'
+   )
 
 dir=<directory>
 dirs=(<array of directories>)
@@ -283,9 +289,9 @@ symlink_options=(<array of options>)
 manifest=(<array of "file:dir">)
    Example:
    manifest=(
-      README-pt_BR:doc
-	  README-en_US:doc
-	  script.sh:bin
+      "some_script:bin"
+      "include/a_header.h:include"
+      "lib/libfoo.so:lib"
    )
    Valid modes: manifest
 
