@@ -281,6 +281,12 @@ symlink_options=(<array of options>)
    Valid modes: all
 
 manifest=(<array of "file:dir">)
+   Example:
+   manifest=(
+      README-pt_BR:doc
+	  README-en_US:doc
+	  script.sh:bin
+   )
    Valid modes: manifest
 
 without=(<array of submodules>)
