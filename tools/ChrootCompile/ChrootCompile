@@ -130,7 +130,7 @@ base_dependencies=(
     "Glibc"
     "Ncurses" # needed by Bash
     "Readline" # needed by Bash
-    "GPM" # needed by Bash (FIXME)
+#    "GPM" # needed by Bash (FIXME)
     "Bison" # needed at the compilation of some programs (FIXME)
     "Bash"
     "CoreUtils" # needed by Scripts (cp...)
