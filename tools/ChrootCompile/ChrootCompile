@@ -130,7 +130,6 @@ base_dependencies=(
     "Glibc"
     "Ncurses" # needed by Bash
     "Readline" # needed by Bash
-#    "Bison" # needed at the compilation of some programs (FIXME)
     "Bash"
     "CoreUtils" # needed by Scripts (cp...)
     "Sed" # needed by Scripts
@@ -156,6 +155,7 @@ base_dependencies=(
     "E2FSProgs" # needed by Util-Linux (libblkid.so)
     "Util-Linux" # needed by Compile (mount)
     "DiffUtils" # needed by Compile (diff)
+    "Texinfo" # needed by packages that generate info pages (makeinfo)
     "Scripts"
     "Compile"
 )
@@ -225,7 +225,7 @@ if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
    echo "Backing up old $root to $root-old-$date."
-   $sudo mv $root $root-old-$date
+   #$sudo mv $root $root-old-$date
 fi
 
 mkdir -p $root
@@ -589,7 +589,8 @@ function check_dependencies() {
 # check_dependencies
 
 echo "ChrootCompile: Will run Compile..."
-in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
+#in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
+in_chroot Compile --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
 
 #############################################################################
 #  After the compilation is done,
