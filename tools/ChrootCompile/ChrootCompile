@@ -424,6 +424,7 @@ EOF
 sudo_rm_if_e $root/System/Settings/group
 cat <<EOF > $root/System/Settings/group
 root:x:0:root
+tty:x:4:
 fibo:x:21:fibo
 EOF
 
