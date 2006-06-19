@@ -225,7 +225,7 @@ if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
    echo "Backing up old $root to $root-old-$date."
-   #$sudo mv $root $root-old-$date
+   $sudo mv $root $root-old-$date
 fi
 
 mkdir -p $root
@@ -589,8 +589,7 @@ function check_dependencies() {
 # check_dependencies
 
 echo "ChrootCompile: Will run Compile..."
-#in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
-in_chroot Compile --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
+in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
 
 #############################################################################
 #  After the compilation is done,
