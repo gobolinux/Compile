@@ -493,6 +493,10 @@ function fetch_included_recipes() {
 
 function fetch_archive_off_recipe() {
    (
+      if wget --help | grep -q no-check-certificate
+      then local wget="wget --no-check-certificate"
+      else local wget="wget"
+      fi
       unset is_meta
       unset include
       [ "$verbose" ] && echo "Fetching files for $1/Recipe..."
@@ -514,14 +518,14 @@ function fetch_archive_off_recipe() {
          if [ "$url" ]
          then
             file=`basename "$url"`
-            [ ! -e "$file" ] && { wget -c "$url" || die "Couldn't fetch $url" ;} || true
+            [ ! -e "$file" ] && { $wget -c "$url" || die "Couldn't fetch $url" ;} || true
          fi
          if [ "${urls[*]}" ]
          then
             for url in "${urls[@]}"
             do
                file=`basename "$url"`
-               [ ! -e "$file" ] && { wget -c "$url" || die "Couldn't fetch $url" ;} || true
+               [ ! -e "$file" ] && { $wget -c "$url" || die "Couldn't fetch $url" ;} || true
             done
          fi
       fi
