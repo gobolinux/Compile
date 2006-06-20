@@ -1,0 +1,7 @@
+#!/bin/sh
+
+rm -f  lib/*.a
+
+rm -Rf Shared
+rm -Rf doc
+rm -Rf include
