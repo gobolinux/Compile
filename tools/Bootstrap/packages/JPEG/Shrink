@@ -1,0 +1,8 @@
+#!/bin/sh
+
+rm -f  lib/*.a
+rm -f  lib/*.la
+
+rm -Rf bin
+rm -Rf include
+rm -Rf man
