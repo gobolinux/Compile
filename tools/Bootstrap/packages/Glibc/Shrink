@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# leave only binaries for ldd and ldconfig
+ls bin/  | grep -v ldd$      | xargs rm -f
+ls sbin/ | grep -v ldconfig$ | xargs rm -f
+
+rm -f  lib/*.o
+rm -f  lib/*.a
+rm -Rf lib/gconv
+rm -Rf lib/locale
+
+rm -Rf Shared
+rm -Rf include
+rm -Rf man
