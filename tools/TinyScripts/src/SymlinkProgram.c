@@ -278,7 +278,7 @@ main(int argc, char **argv)
     GET_OR_ASSIGN(goboTasks,       "goboTasks",       "/System/Links/Tasks");
 
 	/* set log file descriptors for LinkOrExpandAll */
-	setenv("debugFD",   "2", 1);
+	setenv("debugFD",   "9", 1); /* we don't want debug messages to appear */
 	setenv("verboseFD", "1", 1);
 	setenv("normalFD",  "1", 1);
 	setenv("terseFD",   "1", 1);
