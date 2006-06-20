@@ -1,0 +1,22 @@
+#!/bin/sh
+
+rm -Rf man
+rm -Rf include
+rm -Rf doc
+rm -f  lib/*.a
+			
+for i in tic toe tack tput infocmp captoinfo infotocap
+do
+	rm -f bin/$i
+done
+
+pushd Shared/terminfo
+for i in [^l]*
+do
+	rm -Rf $i
+done
+popd
+
+pushd Shared/terminfo/l
+ls | grep -v linux$ | xargs rm
+popd
