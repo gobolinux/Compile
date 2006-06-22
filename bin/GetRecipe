@@ -115,7 +115,11 @@ do
    if Is_URL "$rawrecipe"
    then
       Log_Normal "Downloading recipe from $rawrecipe"
-      wget -t 5 "$rawrecipe" -O - 2>&$verboseFD | $sudo tar xjvf - -C "$getRecipeRecipeDir" 2> /dev/null >&$verboseFD
+      if wget --help | grep -q no-check-certificate
+      then wget="wget --no-check-certificate"
+      else wget="wget"
+      fi
+      $wget -t 5 "$rawrecipe" -O - 2>&$verboseFD | $sudo tar xjvf - -C "$getRecipeRecipeDir" 2> /dev/null >&$verboseFD
       #wget $rawrecipe -O - | $sudo tar xjvf - -C "$getRecipeRecipeDir"
       if [ -d "$getRecipeRecipeDir/$app/$version" ]
       then
