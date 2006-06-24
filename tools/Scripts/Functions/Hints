@@ -43,7 +43,7 @@ function Load_Hints() {
    fi
    file="$1"
    screwed='not yet'
-   parserPath="${scriptPath}/../Functions/HintsFileParser.rb"
+   parserPath="${scriptPath}/../lib/ruby/site_ruby/1.8/gobo/HintsFileParser.rb"
 
    # If Ruby doesn't exist, or if we can't read the hint parser, we're screwed.
    if [ "`which ruby`" = '' ]; then

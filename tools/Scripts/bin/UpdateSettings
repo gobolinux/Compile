@@ -34,10 +34,11 @@ updateOrder=(
    auto_merge
    fail
 )
+mergeChecker="${goboScripts}/../lib/ruby/site_ruby/1.8/gobo/MergeSucceeded.rb"
+mergeFuzz=1
 
 Parse_Conf UpdateSettings.conf
-
-
+[ "$mergeChecker" = "disable" ] && unset mergeChecker
 
 ##################################################
 # Options
@@ -315,7 +316,7 @@ function update_one_file() {
          # returns nonzero if it fails.
          auto_merge|check_delete|check_create)
             if ! auto_merge "$num" "$difftype" "$cur" "$default"; then
-               Log_Terse "$instruction failed on $file"
+               [ "$?" = 1 ] && Log_Terse "$instruction failed on $file"
                continue
             fi
             ;;
@@ -370,18 +371,24 @@ function input_action()
       case $difftype in
       new*)
          show_changes
-         input_option "[V]iew/[U]se/[S]kip/[L]ist/[SA]Skip all "
+         input_option "[C]heck delete/[V]iew/[U]se/[S]kip/[L]ist/[SA]Skip all "
          case $REPLY in
-         v) action=vn ;;
-         l|vn|u|s|sa) action=$REPLY;;
+            c) auto_merge "$num" "$difftype" "$file" "$default" "user" 
+               action="$ACTION"
+               ;;
+            v) action=vn ;;
+            l|vn|u|s|sa) action=$REPLY;;
          esac
          ;;
       del*)
          show_changes
-         input_option "[V]iew/[D]elete/[S]kip/[L]ist/[SA]Skip all "
+         input_option "[C]heck create/[V]iew/[D]elete/[S]kip/[L]ist/[SA]Skip all"
          case $REPLY in
-         v) action=vc ;;
-         l|vc|d|s|sa) action=$REPLY;;
+            c) auto_merge "$num" "$difftype" "$file" "$default" "user" 
+               action="$ACTION"
+               ;;
+            v) action=vc ;;
+            l|vc|d|s|sa) action=$REPLY;;
          esac
          ;;
       mod*)
@@ -389,8 +396,11 @@ function input_action()
            diff -u "${cur}" "${default}" >&$questionFD
          fi
          show_changes
-         input_option "[V]iew/[U]se new/[S]kip/[L]ist/[M]erge and edit/[SA]Skip all "
+         input_option "[A]uto-merge/[V]iew/[U]se new/[S]kip/[L]ist/[M]erge and edit/[SA]Skip all "
          case $REPLY in
+            a) auto_merge "$num" "$difftype" "$file" "$default" "user" 
+               action="$ACTION"
+               ;;
             v) input_option "View new or current? [N]ew/[C]urrent " ;;
          esac
          case $REPLY in
@@ -409,10 +419,14 @@ function auto_merge() {
    local oldFile oldExists curExists defExists t fileToPatch
 
    # If we couldn't figure out which version was installed before, give up.
-   [ "$oldVersion" ] || return 1
+   if [ -z "$oldVersion" ]; then
+      [ "$action" = 'user' ] && Log_Error "Couldn't detect previous version"
+      return 1
+   fi
 
    oldFile="${oldVersion}/Resources/Defaults/${cur}"
    ACTION=''
+   mergeCheckerReportedFailure=''
 
    ! Exists "$oldFile" ; oldExists="$?"
    ! Exists "$cur"     ; curExists="$?"
@@ -420,7 +434,7 @@ function auto_merge() {
    
    case "${oldExists}${defExists}${curExists}" in
       001) ACTION=s ;; # If the user created a file, keep it there
-      010) return 1 ;; # New file? Defer to the next requested action
+      010) return 2 ;; # New file? Defer to the next requested action
       011) return 1 ;; # File exists everywhere but old defaults. Can't merge
       100) return 1 ;; # In theory, this one's impossible.
       101) # File that the new Defaults want us to delete
@@ -455,8 +469,17 @@ function auto_merge() {
                Quiet patch -lfso "${outpath}" "$whichFile"  < "${outpath}.d$t"
                if [ "$?" != 0 ] || Exists "${outpath}.rej"; then
                   rm -f "${outpath}.rej"
+               elif [ "$mergeChecker" ] && [ -x "$mergeChecker" ]; then
+                  "$mergeChecker" "$oldFile" "$cur" "$default" "$outpath" \
+                     "$mergeFuzz"
+                  if [ "$?" != 0 ]; then
+                     mergeCheckerReportedFailure=yes
+                  else
+                     ACTION=s # Yaay. We've finished this file!
+                     break
+                  fi
                else
-                  ACTION=s # Yaay. We've finished this file!
+                  ACTION=s
                   break
                fi
             done
@@ -475,7 +498,12 @@ function auto_merge() {
             fi
          done
 
-         [ "$ACTION" ] || return 1
+         if [ -z "$ACTION" ]; then 
+            if [ "$mergeCheckerReportedFailure" ]; then
+               Log_Terse "`basename "$mergeChecker"` reports failed merge"
+            fi
+            return 1
+         fi
          lastSuccessfulMerge="${cur}"
          ;;
    esac # yep
