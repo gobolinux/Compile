@@ -10,15 +10,15 @@ echo "Generating /System/Kernel/Devices"
 echo "Mounting GoboLinux Install CD..."
 /bin/mountGoboLinux 
 
-echo "Initializing GoboLinux squashfs..."
-
-# Preparing TmpFS RW Layer
+echo "Preparing TmpFS RW Layer..."
 mount -t tmpfs none /Mount/TmpFS
 mkdir /Mount/TmpFS/Programs
 
-# Mounting 'GoboLinux-rest.squashfs' (still harcoded name)
-mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs /Mount/SquashFS/Rest
-mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Rest=ro:/Mount/UnionFS=ro none /Mount/UnionFS
+echo "Initializing GoboLinux squashfs files..."
+# Mounting 'GoboLinux-{rest,files}.squashfs' (still harcoded names)
+mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs  /Mount/SquashFS/Rest
+mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
+mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Rest=ro:/Mount/SquashFS/Files=ro:/Mount/UnionFS=ro none /Mount/UnionFS
 
 # Mounting Packages*.squashfs files inside /Programs
 unionmountprograms="dirs=/Mount/TmpFS/Programs=rw"
@@ -26,26 +26,18 @@ for i in /Mount/CD-ROM/Packages*.squashfs; do
    mount -o loop,ro -t squashfs $i /Mount/SquashFS/`basename $i .squashfs`
    unionmountprograms=$unionmountprograms:/Mount/SquashFS/`basename $i .squashfs`=ro
 done
-
-echo unionmount $unionmountprograms
 mount -t unionfs -o $unionmountprograms none /Mount/UnionFS/Programs
-#mount -t unionfs -o dirs=/Mount/TmpFS/Programs=rw:/Mount/SquashFS/Programs-A-E=ro:/Mount/SquashFS/Programs-F-J=ro:/Mount/SquashFS/Programs-K-O=ro:/Mount/SquashFS/Programs-P-T=ro:/Mount/SquashFS/Programs-U-Z=ro none /Mount/UnionFS/Programs
-
-# Mounting 'GoboLinux-files.squashfs' (still harcoded name)
-# Has to be mounted after the root unionfs or else it will hide this.
-mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/UnionFS/Files
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices
 /bin/umount /System/Kernel/Objects
 # /bin/umount /System/Kernel/Status
 
+echo "Performing pivot_root..."
 cd /Mount/UnionFS
-
 /bin/pivot_root . Mount/.Pivot
+
+echo "Invoking init..."
 exec /sbin/init
 
-#/bin/chroot /Mount/SquashFS /Depot/LiveCDBootUp/Start
-
 echo "Done."
-
