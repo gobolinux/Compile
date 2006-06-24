@@ -53,13 +53,13 @@ mkdir -p $root/Mount/Pivot
 mkdir -p $root/Mount/TmpFS
 mkdir -p $root/Mount/SquashFS
 mkdir -p $root/Mount/SquashFS/Rest
+mkdir -p $root/Mount/SquashFS/Files
 for i in /Programs/BuildLiveCD/Current/Data/Packages-List-*; do
    mkdir $root/Mount/SquashFS/`basename $i .squashfs`
 done
 mkdir -p $root/Mount/CD-ROM
 mkdir -p $root/Mount/UnionFS
 mkdir -p $root/Mount/UnionFS/Programs
-mkdir -p $root/Mount/UnionFS/Files
 mkdir -p $root/Users
 mkdir -p $root/Users/gobo
 mkdir -p $root/System
