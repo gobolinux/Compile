@@ -95,6 +95,13 @@ function install_package() {
       cp -a "$dvariable" /System/Variable
       ln -s /System/Variable "$name/Variable"
    fi
+   
+   # Handling Unmanaged files (emulating InstallPackage)
+   if [ -d "$name/$version/Resources/Unmanaged/" ]
+   then
+      cp -fa $name/$version/Resources/Unmanaged/* ../ # warning: assuming we are under $root/Programs
+   fi
+   
    popd &> /dev/null
    
    symlink_program /Programs/$name/$version $root
@@ -188,7 +195,7 @@ do
    pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
    [ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
    [ ! "$pkg" ] && {
-      echo "Package $packagename could not be filled."
+      echo "*** Package $packagename could not be filled. ***"
       exit 1
    }
    install_package "$pkg" "$root"
