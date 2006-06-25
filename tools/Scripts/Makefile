@@ -19,7 +19,7 @@ debug: python
 python:
 	for f in $(PYTHON_LIBS); \
 	do libf=$(PYTHON_SITE)/$$f.py; \
-	   rm $$libf; ln -nfs ../../../bin/$$f $$libf; \
+	   rm -f $$libf; ln -nfs ../../../bin/$$f $$libf; \
 	done
 
 version_check:
