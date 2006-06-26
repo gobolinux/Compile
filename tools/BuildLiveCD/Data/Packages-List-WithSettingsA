@@ -1,7 +1,6 @@
 ALSA-Utils
 Bash
 DHCPCD
-Esound
 Fontconfig
 GTK+
 Glibc
@@ -22,7 +21,7 @@ Rsync
 Shadow
 Sudo
 Sysklogd
-Udev 089
+Udev
 Util-Linux
 Wget
 WindowMaker

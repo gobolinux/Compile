@@ -20,7 +20,6 @@ DB
 Device-Mapper
 Dialog
 DiffUtils
-DirectFB
 DosFSTools
 E2FSProgs
 Ed
@@ -54,7 +53,6 @@ LCMS
 Lame
 Less
 LibART_LGPL
-LibDRM
 LibExif
 LibID3Tag
 LibIDN
@@ -64,15 +62,13 @@ LibOGG
 LibPNG
 LibSamplerate
 LibSndfile
-LibStdC++ 3.4.3
-LibStdC++ 4.0.2
 LibTool
 LibUSB
 LibUngif
 LibVorbis
 LibXML2
 LibXSLT
-Linux-Libc-Headers
+Linux-Headers
 Lsof
 M4
 MC
@@ -97,12 +93,8 @@ Procps
 ProgsReiserFS
 Psmisc
 Python
-RPM
 Readline
 ReiserFSProgs
-Runit
-SDL
-SVGALib
 Sash
 Sed
 Strace
@@ -115,7 +107,6 @@ TraceRoute
 Unzip
 Vim
 Wireless-Tools
-XFS-Utils
 ZLib
 ZSH
 Zip
