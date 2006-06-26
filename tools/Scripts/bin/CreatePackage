@@ -124,15 +124,11 @@ Quiet rm -- "$package/.dependencies"
 Quiet rm -- "$package/$versionnumber/.dependencies"
 
 # Try to remove unneeded directories
-Quiet rmdir "$package/$versionnumber/bin"
-Quiet rmdir "$package/$versionnumber/sbin"
-Quiet rmdir "$package/$versionnumber/lib"
-Quiet rmdir "$package/$versionnumber/include"
-Quiet rmdir "$package/$versionnumber/man/man*"
-Quiet rmdir "$package/$versionnumber/man"
-Quiet rmdir "$package/$versionnumber/info"
-Quiet rmdir "$package/$versionnumber/share"
-Quiet rmdir "$package/$versionnumber/Shared"
+Quiet rmdir $package/$versionnumber/man/man*
+Quiet rmdir $package/$versionnumber/{bin,sbin,lib,include,man,info,share,Shared}
+Quiet rmdir $package/$versionnumber/Resources/Defaults/Settings
+Quiet rmdir $package/$versionnumber/Resources/Defaults
+Quiet rmdir $package/$versionnumber/Resources
 if [ ! -e "$package/$versionnumber/Shared" ]
 then
    Quiet rm -- "$package/$versionnumber/share"
