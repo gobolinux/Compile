@@ -60,11 +60,11 @@ def downloadFiles(files, force = False, hook = None, message = '') :
 	def doDownload(url, localfile, timeout = 10) :
 		has_wget = not os.system('wget --help &> /dev/null')
 		if has_wget :
-            p = os.popen('wget --help | grep "no-check-certificate"')
-            if p.readline() :
-                wget_cmd = 'wget --no-check-certificate'
-            else:
-                wget_cmd = 'wget'
+			p = os.popen('wget --help | grep "no-check-certificate"')
+			if p.readline() :
+				wget_cmd = 'wget --no-check-certificate'
+			else :
+				wget_cmd = 'wget'
 			cmd = '%s --timeout=%d --quiet %s -O %s && touch %s'%(wget_cmd, timeout, url, localfile, localfile)
 			os.popen(cmd)
 		else :
