@@ -29,7 +29,6 @@ Groff
 Grub
 Gzip
 Hdparm
-Hotplug
 InetUtils
 KBD
 Less
@@ -59,7 +58,6 @@ PCIUtils
 Python
 Readline
 ReiserFSProgs
-Runit
 Sash
 Scripts
 Sed
@@ -73,7 +71,5 @@ Texinfo
 Udev
 Util-Linux
 Wget
-XFS-Utils
 ZLib
 ZSH
-DHCPCD
