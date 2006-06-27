@@ -63,7 +63,6 @@ LibPNG
 LibSamplerate
 LibSndfile
 LibTool
-LibUSB
 LibUngif
 LibVorbis
 LibXML2
@@ -74,7 +73,7 @@ M4
 MC
 Make
 Man-Pages
-MesaLib
+Mesa
 MkTemp
 Mtail
 Nano
