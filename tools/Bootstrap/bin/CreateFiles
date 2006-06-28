@@ -100,6 +100,7 @@ then
     echo "none      /sys          sysfs  defaults 0 0" >> $fstab_file
     echo "none      /dev/pts      devpts defaults 0 0" >> $fstab_file
     echo "none      /dev/shm      tmpfs  defaults 0 0" >> $fstab_file
+    echo "none      /var/tmp      tmpfs  defaults 0 0" >> $fstab_file
 fi
 
 ld_so_conf_file=$prefix/$goboSettings/ld.so.conf
