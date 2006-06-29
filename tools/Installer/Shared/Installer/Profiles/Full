@@ -12,14 +12,10 @@ X86Info
 Gnuplot
 KDE-Base
 XTerm
-Samba
 Lesstif
 Listener
-OpenLdap
-Cyrus-Sasl
 Gimp-Print
 CUPS
-MDNSResponder
 Imake
 T1Lib
 Flac
@@ -92,7 +88,6 @@ LibPNG
 LibSamplerate
 LibSndfile
 LibTool
-LibUSB
 LibUngif
 LibVorbis
 LibXML2
@@ -103,7 +98,7 @@ M4
 MC
 Make
 Man-Pages
-MesaLib
+Mesa
 MkTemp
 Mtail
 Nano
