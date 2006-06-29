@@ -112,11 +112,11 @@ do
       echo Getting $cvsrepo...
       if [ "$cvsuser" = "anonymous" ]
       then
-         cvs -d -q :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts -q co $cvsrepo
       else
          export CVS_RSH=ssh
          chown $localuser .
-         sudo -H -u $localuser cvs -d -q :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts co $cvsrepo
+         sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts -q co $cvsrepo
       fi
    fi
 done
