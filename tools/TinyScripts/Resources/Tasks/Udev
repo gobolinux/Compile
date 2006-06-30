@@ -11,5 +11,6 @@ mkdir /System/Kernel/Devices/shm
 # since mdev doesn't handle sub-directories, create some symlinks here
 ln -s /System/Kernel/Devices /System/Kernel/Devices/snd
 ln -s /System/Kernel/Devices /System/Kernel/Devices/input
+ln -s /System/Kernel/Devices /System/Kernel/Devices/net
 
 echo /sbin/mdev > /System/Kernel/Status/sys/kernel/hotplug

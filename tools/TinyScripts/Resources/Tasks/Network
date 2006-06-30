@@ -12,7 +12,7 @@ case "$1" in
             if [ -z "$ipaddr" ]
             then
                 # launch dhcp daemon
-                [ -x /bin/dhcpcd ] && dhcpcd $i || udhcpc -b -q -i $i
+                [ -x /bin/dhcpcd ] && dhcpcd $i || udhcpc -b -q -i $i -s /System/Settings/udhcpc.script
             else
                 # launch interface by ifconfig
                 [ ! -z "$netmask" ] && netmask="netmask $netmask"
