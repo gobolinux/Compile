@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 #
 # Maps the usual /dev hard disk names to GRUB's format
@@ -28,7 +28,11 @@ partition_count=-1
 # find grub's disk
 for i in /dev/${disk_prefix}?
 do
-    ls ${i}[0-9] >& /dev/null && disk_count=$(( disk_count + 1 ))
+    if ls ${i}[0-9] 2> /dev/null > /dev/null
+    then
+        disk_count=$(( disk_count + 1 ))
+        [ "$i" = "/dev/$target_disk" ] && break
+    fi
 done
 
 # find grub's partition
