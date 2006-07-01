@@ -127,7 +127,7 @@ mkdir -p $root/System/Links/Shared
 mkdir -p $root/System/Links/Tasks
 mkdir -p $root/System/Settings
 mkdir -p $root/System/Variable
-mkdir -p $root/System/Variable/tmp; chmod +t $root/System/Variable/tmp 
+mkdir -p $root/System/Variable/tmp; chmod a+w $root/System/Variable/tmp; chmod +t $root/System/Variable/tmp;  
 mkdir -p $root/System/Variable/log
 mkdir -p $root/System/Variable/run
 mkdir -p $root/System/Kernel
