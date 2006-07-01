@@ -70,10 +70,7 @@ fi
 
 # additional things to check before releasing a LiveCD
 # cd /Programs/; time for i in *; do echo $i; mkdir $i/Current/Resources/; Dependencies $i > $i/Current/Resources/Dependencies; done
-# cd /Programs/; du --max-depth=1 > /Depot/Install/Wizard/Auxiliary/Programs_du.txt
-# cd /Programs/; \ls > /Depot/Install/Wizard/Profiles/Full
 # cd /Programs/; grep Warn */Current/Resources/Dependencies
-# cd /Depot/Install/Wizard/Profiles/; for i in `cat Typical`; do [ "`grep "$i" Full`" ] || echo $i; done
-# cd /Depot/Install/Wizard/Profiles/; for i in `cat Base`; do [ "`grep "$i" Full`" ] || echo $i; done
-# for i in *; do [ -d $i/Settings ] && { diff -r $i/Settings $i/Current/Resources/Defaults/Settings &> /dev/null  || echo $i; }; done
-
+# cd /Programs/; du --max-depth=1 > /Depot/Install/Wizard/Auxiliary/Programs_du.txt
+# for i in `cat /Programs/Installer/Current/Shared/Installer/Profiles/Typical`; do [ -d "/Programs/$i" ] || echo $i; done
+# for i in `cat /Programs/Installer/Current/Shared/Installer/Profiles/Base`;    do [ -d "/Programs/$i" ] || echo $i; done
