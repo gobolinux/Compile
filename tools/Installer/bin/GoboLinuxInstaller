@@ -12,7 +12,6 @@
 #
 #
 
-
 from wizard import *
 import sys, os, string, os.path
 from sys import *
@@ -44,8 +43,6 @@ try:
 		from qtwizard import *
 		Wizard = AbsQtWizard
 		Screen = AbsQtScreen
-		# seems to be finally fixed in python 2.3:
-		#sys.setappdefaultencoding('iso-8859-1')
 		#QToolTip.setWakeUpDelay(200)
 except:
 	mode = 'curses'
@@ -372,7 +369,6 @@ file.close()
 installer.addScreen(introduction)
 
 
-
 ##############################################################################
 ##############################################################################
 deviceSelection = Screen(tr('Target device selection'))
@@ -426,8 +422,7 @@ for profileName in ['Base', 'Typical', 'Full'] :
 def fillUpDependencies() :
 	allWithSizes,selectedWithSize = installer.getValue('Packages')
 	all = map(lambda x: x.split()[0], allWithSizes)
-	
-	
+
 	for basePackage in profiles['Base'] :
 		if not basePackage in selectedWithSize :
 			selectedWithSize.append(basePackage)
@@ -447,14 +442,10 @@ def fillUpDependencies() :
 				p = l[0].strip()
 				if p and not p.startswith('#') :
 					if not p in selected and p in all:
-						#print p, '>', package
 						selected.append(p)
 		except IOError:
 			pass
-			#print 'error: '+package
-		#	print 'pass'
-		#	print sys.exc_info()
-	#selected = selected[:-1]
+
 	newSelectedWithSize = map(getPackageWithsizeAndDescription, selected)
 	installer.setValue('Packages', (allWithSizes,newSelectedWithSize))
 	showSelectedSetSize()
@@ -649,7 +640,6 @@ file=open(shared+'Language/%s/Conclusion'%lang)
 lastScreen.addMultiLineEdit('',tr('Done'),file.read(), tr('Continuing from here will perform all the indicated actions.'))
 file.close()
 
-
 installer.addScreen(lastScreen)
 
 
@@ -693,7 +683,6 @@ try :
 	destMountPoint = '/Mount/GoboLinux/'
 
 	def log(s) :
-		#s  = "\033[36m"+s+"\033[0m"
 		s  = "\033[36m"+'=> '+s+"\033[0m"
 		if logger :
 			logger.append(s)
@@ -733,7 +722,6 @@ try :
 		formatPartition(installer.getValue('RootPartition')[1].split()[0], installer.getValue('PartitionType')[1])
 
 	
-	
 	##############################################################################
 	##############################################################################
 	#[OK]: Mount partition
@@ -768,7 +756,6 @@ try :
 	createProfileFile(map(lambda x: x.split()[0], installer.getValue('Packages')[1]))
 
 	
-	
 	##############################################################################
 	##############################################################################
 	#[OK]: Call ProfileInstall
@@ -796,8 +783,7 @@ try :
 			safeWriteToFile(destMountPoint+'/Programs/LILO/Settings/lilo.conf', lilo_conf, logger)
 	except :
 		log('Error creating lilo.conf file')
-	
-	
+
 	
 	##############################################################################
 	##############################################################################
@@ -807,8 +793,7 @@ try :
 	import GenGrubMenu
 	selectedWithSize = installer.getValue('Packages')[1]
 	selected = map(lambda x: x.split()[0], selectedWithSize)
-	
-	
+
 	menu_lst = GenGrubMenu.generateGrubMenuFile(installer.getValue('RootPartition')[1].split()[0], installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
 	safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', menu_lst, logger)
 	
@@ -828,7 +813,6 @@ try :
 		log(tr('Installing GRUB in %s...')%installer.getValue('BootloaderTarget')[1].split()[0])
 		installGrub(installer.getValue('BootloaderTarget')[1].split()[0], installer.getValue('RootPartition')[1].split()[0])
 
-		
 		
 	##############################################################################
 	# [OK]: criar o Options 
@@ -941,7 +925,6 @@ lo_Netmask=255.0.0.0
 
 	generateOptionsFile()
 
-
 	
 	##############################################################################
 	##############################################################################
@@ -1016,7 +999,6 @@ lo_Netmask=255.0.0.0
 		goboLine = string.join(goboLineList,':')
 
 		shadowLines[index] = goboLine
-		#print shadowLines
 		o = string.join(shadowLines,'\n')
 		safeWriteToFile(destMountPoint+'/System/Settings/shadow', o, logger)
 		
@@ -1031,12 +1013,10 @@ lo_Netmask=255.0.0.0
 		salt = 'LE'
 
 
-
 	##############################################################################
 	##############################################################################
 	# [OK]: criar usuários com chroot adduser -> eventualmente copiar o super-skel
 	log(tr('Creating user accounts...'))
-	#nota: usar o AddUser atualizado em 11/11/2003
 	for login in addedUsers.keys() :
 		log(tr('Creating account for user %s...')%login)
 		cmd = 'chroot %s AddUser'%destMountPoint
@@ -1121,18 +1101,16 @@ lo_Netmask=255.0.0.0
 	##############################################################################
 	##############################################################################
 	# [OK]: Unmounting mount point
-        cmd = 'umount /Mount/GoboLinux/System/Kernel/Status'
-        safeRun(cmd, 'Unbinding /System/Kernel/Status', 0, logger)
-        
-        cmd = 'umount /Mount/GoboLinux/System/Kernel/Devices'
-	safeRun(cmd, 'Unbinding /System/Kernel/Devices', 0, logger)
+	cmd = 'umount /Mount/GoboLinux/System/Kernel/Status'
+	safeRun(cmd, 'Unbinding /System/Kernel/Status', 0, logger)
 
+	cmd = 'umount /Mount/GoboLinux/System/Kernel/Devices'
+	safeRun(cmd, 'Unbinding /System/Kernel/Devices', 0, logger)
 
 	log(tr('Unmounting selected root partition %s...')%installer.getValue('RootPartition')[1])
 	safeRun('umount '+destMountPoint)
 
 
-	
 	##############################################################################
 	##############################################################################
 	# debug	
@@ -1141,8 +1119,7 @@ lo_Netmask=255.0.0.0
 	#	cmd = 'du -h /Programs --max-depth=1'
 	#	doRun(cmd, 'ProfileGen', 1, logger)
 	
-	
-	
+
 	##############################################################################
 	##############################################################################
 	# [OK]: Done msg
@@ -1156,9 +1133,6 @@ lo_Netmask=255.0.0.0
 	if logger :
 		logger.enableOk()
 
-	#if mode == 'qt' :
-	#	installer.app.exec_loop()
-	
 except Exception, inst : 
 	x = '\033[1;31mGoboLinux installation failed.'+'\n'+'Check /tmp/GoboLinuxInstall.log.\033[0m'
 	y = 'Error: '+str(inst)
@@ -1168,6 +1142,4 @@ except Exception, inst :
 		logger.append(x)
 		logger.append(y)
 		logger.enableOk()
-	#if mode == 'qt' :
-	#	installer.app.exec_loop()
 
