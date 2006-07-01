@@ -128,7 +128,6 @@ today=`date +%Y%m%d`
 echo "=> Fetching remote packages..."
 rsync --delete --verbose --progress --port=8730 -r -L rsync.gobolinux.org::livecd-packages/ $packages/
 
-# generate LiveCD_work/Layer2/System/Links/Environment/Cache
 if ! [ -e Master.conf ]
 then
    masterconf=/System/Settings/BuildLiveCD/Master.conf 

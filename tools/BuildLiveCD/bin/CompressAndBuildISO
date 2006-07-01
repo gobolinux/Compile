@@ -5,7 +5,7 @@ kernel_version=`sed -n 's,.*--\(.*\)--kernel.*,\1,p' /Programs/BuildLiveCD/Curre
 if [ "$1" = "--help" ]
 then
    echo "$0 [<start_stage> [<end_stage>]]"
-   echo "   where stage can be: layer1, squashfs, initrd, iso"
+   echo "   where stage can be: rolayer, squashfs, initrd, iso"
    echo " "
    echo "   for more information, see http://gobolinux.org/?page=livecd"
    echo " "
@@ -13,24 +13,24 @@ then
 fi
 
 # Stages:
-STAGE_LAYER0=0; STAGE_SQUASHFS=1; STAGE_INITRD=2; STAGE_ISO=3
+STAGE_ROLAYER=0; STAGE_SQUASHFS=1; STAGE_INITRD=2; STAGE_ISO=3
 
 if [ "$1" ]
 then
    case "$1" in
-   "layer0")   start_at=$STAGE_LAYER0;;
+   "rolayer")  start_at=$STAGE_ROLAYER;;
    "squashfs") start_at=$STAGE_SQUASHFS;;
    "initrd")   start_at=$STAGE_INITRD;;
    "iso")      start_at=$STAGE_ISO;;
    esac
 else
-   [ -d "Output/Layer1" ] && start_at=$STAGE_SQUASHFS || start_at=$STAGE_LAYER0
+   [ -d "Output/ROLayer" ] && start_at=$STAGE_SQUASHFS || start_at=$STAGE_ROLAYER
 fi
  
 if [ "$2" ]
 then
    case $2 in
-   "layer0")   stop_at=$STAGE_LAYER0;;
+   "rolayer")  stop_at=$STAGE_ROLAYER;;
    "squashfs") stop_at=$STAGE_SQUASHFS;;
    "initrd")   stop_at=$STAGE_INITRD;;
    "iso")      stop_at=$STAGE_ISO;;
@@ -81,9 +81,9 @@ then
    exit 1
 fi 
 
-if [ "$start_at" -le "$STAGE_LAYER0" ] && [ "$stop_at" -ge "$STAGE_LAYER0" ]
+if [ "$start_at" -le "$STAGE_ROLAYER" ] && [ "$stop_at" -ge "$STAGE_ROLAYER" ]
 then
-   echo "=> Layer0 stage started"
+   echo "=> ROLayer stage started"
    
    cd $packages
    for package in ${tools[@]} 
@@ -107,20 +107,19 @@ then
    cd $root
 
    echo "Building root..."
-   BuildRoot "Output/Layer1" "Archives/Packages" /Programs/BuildLiveCD/Current/Data/Packages-List-*
-   [ "$?" = "0" ] || exit 1
+   BuildRoot "Output/ROLayer" "Archives/Packages" /Programs/BuildLiveCD/Current/Data/Packages-List-* || exit 1
 
-   # Add few items to layer1
-   mkdir -p Output/Layer1/Files
-   cp -ar LocalCVS/files/* Output/Layer1/Files
-   cp -ar External/Files-Fonts/* Output/Layer1/Files
-   mkdir -p Output/Layer1/Files/Documentation
-   cp -ar External/Linux-Kernel/* Output/Layer1
+   # Add few items to rolayer
+   mkdir -p Output/ROLayer/Files
+   cp -ar LocalCVS/files/* Output/ROLayer/Files
+   cp -ar External/Files-Fonts/* Output/ROLayer/Files
+   mkdir -p Output/ROLayer/Files/Documentation
+   cp -ar External/Linux-Kernel/* Output/ROLayer
 
-   # Clean CVS files from Layer1
+   # Clean CVS files from ROLayer
    echo "Removing CVS files..."
-   #find Output/Layer1 -name CVS | grep -v Programs/CVS | xargs rm -rf
-   echo "=> Layer0 stage done"
+   #find Output/ROLayer -name CVS | grep -v Programs/CVS | xargs rm -rf
+   echo "=> ROLayer stage done"
 fi
 
 mkdir -p Output/ISO
