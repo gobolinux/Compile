@@ -28,4 +28,8 @@ case "$1" in
         done
         [ "$Gateway" ] && route del default gw $Gateway dev $GatewayInterface 2> /dev/null
         ;;
+    [rR]estart)
+        $0 stop
+        $0 start
+        ;;
 esac
