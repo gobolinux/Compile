@@ -1,8 +1,17 @@
-* gobohide doesn't work: root is unionfs, which is apparently unsupported by gobohide at this point
-* something wrong with the launch of init
-	* no Ctrl-C in livecd
-	* no multiple virtual consoles launched
-	(after exiting the first terminal, init seems to launch the other consoles.)
-* compile usb-storage as a builtin?
-* /Glibc with ld.so.cache
-* xpm should be stored in Grub recipe
+* LiveCD :
+ * gobohide doesn't work: root is unionfs, which is apparently unsupported by gobohide at this point
+ * something wrong with the launch of init
+   * no Ctrl-C in livecd
+   * no multiple virtual consoles launched (after exiting the first terminal, init seems to launch the other consoles.)
+
+* Installed system:
+  * ]ping
+    ping: unknown protocol icmp.
+    can't init ping: No such file or directory
+  * Coldplug + Udev: Modules are not being auto-loaded
+  * Scripts zsh autocompletions not active
+  
+* General:
+ * compile usb-storage as a builtin?
+ * xpm should be stored in Grub recipe
+ * EnhancedSkel needs to be updated
