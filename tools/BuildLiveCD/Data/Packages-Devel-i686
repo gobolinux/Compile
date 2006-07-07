@@ -1,4 +1,4 @@
-unpack External/Linux-Kernel  http://rsync.gobolinux.org/livecd-devel/Linux--2.6.16.20-Gobo--kernel-i686.tar.bz2 9351132b52e5e4e66deb0e486d86b340
+unpack External/Linux-Kernel  http://rsync.gobolinux.org/livecd-devel/Linux--2.6.17.3-Gobo--kernel-i686.tar.bz2  5ae286ebfdcb0b5882a0cd1808f52e29
 unpack External/Files-Fonts   http://rsync.gobolinux.org/livecd-devel/Files-Fonts.tar.bz2                        374747070d2585c905e24c0f5d30f029
 unpack External/CD-Bootloader http://rsync.gobolinux.org/livecd-devel/CD-Bootloader-i686.tar.bz2                 141c0438c45dcdbee307178d88db93a6
 fetch  Archives/InitRD        http://rsync.gobolinux.org/initrd-devel/BusyBox-InitRD--20060202-SVN--i686.tar.bz2 46ca30ec4834771b771ea7cdb0d56e51
