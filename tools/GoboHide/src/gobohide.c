@@ -270,7 +270,7 @@ main (int argc, char **argv)
 {
 	int c;
 	int a = -1, purge = 0;
-	char *dir;
+	char *dir = NULL;
 
 
 	/* Only the superuser is allowed to execute this */
