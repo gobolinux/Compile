@@ -1,4 +1,4 @@
-MYCFLAGS = -O2 -Wall
+MYCFLAGS = -O2 -Wall -I../include
 
 all: gobohide
 
