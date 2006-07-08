@@ -13,4 +13,4 @@ ln -s /System/Kernel/Devices /System/Kernel/Devices/snd
 ln -s /System/Kernel/Devices /System/Kernel/Devices/input
 ln -s /System/Kernel/Devices /System/Kernel/Devices/net
 
-echo /bin/mdev_wrapper > /System/Kernel/Status/sys/kernel/hotplug
+echo /bin/mdev > /System/Kernel/Status/sys/kernel/hotplug
