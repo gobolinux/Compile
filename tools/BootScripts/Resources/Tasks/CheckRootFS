@@ -28,8 +28,8 @@ fi
 mount -n -o remount,ro / || HaltSystem "Cannot check root file system."
 
 if [ -e /forcefsck ]
-then force="-f"
-else force=""
+then fsckOptions="-f"
+else fsckOptions=""
 fi
 
 fsck $fsckOptions -p -C -T /
