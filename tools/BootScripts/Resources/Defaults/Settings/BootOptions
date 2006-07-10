@@ -1,6 +1,3 @@
-
-HostName=NewMachine
-
 #BootTheme=AppleII
 #BootTheme=CheckList
 #BootTheme=Hat
@@ -43,20 +40,3 @@ MouseDevice=/dev/psaux
 #   "example_module1"
 #   "example_module2 parameter1=value parameter2=value"
 #)
-
-#Gateway=192.168.2.1
-#GatewayInterface=eth0
-
-NetworkInterfacesOnBoot=(
-   "lo"
-#   "eth0"
-)
-
-#eth0_IP=192.168.2.13
-#eth0_Netmask=255.255.255.0
-#eth0_BootProto=Static # this is the default if none is specified
-#eth0_BootProto=DHCP
-#eth0_Broadcast=192.168.2.255
-
-lo_IP=127.0.0.1
-lo_Netmask=255.0.0.0
