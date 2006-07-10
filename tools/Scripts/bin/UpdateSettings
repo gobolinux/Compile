@@ -23,7 +23,7 @@ Import Hints
 ##################################################
 # Default Configuration
 ##################################################
-defaultMode='interactive'
+defaultMode='quick'
 versionCheckingMethod='mtime'
 hintsEnabled='no'
 unset hintsAllowed
