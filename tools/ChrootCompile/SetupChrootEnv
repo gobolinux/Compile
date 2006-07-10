@@ -3,7 +3,6 @@
 function download_packages() {
    mkdir -p Bootstrap
    rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::chrootcompile-packages/ Bootstrap/
-   popd
 }
 
 function update_tools() {
