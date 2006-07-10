@@ -114,7 +114,7 @@ then
    do
       echo "Rebuilding tools..." 
       # we build the tools again to ensure they are prepared to the LiveCD environment
-      [ -e $root/$package/$today/Makefile ] && { chroot $root { make clean; make all; } } > /dev/null
+      [ -e $root/$package/$today/Makefile ] && { chroot $root make clean; chroot $root make all; } > /dev/null
    done
 
    # Add few items to rolayer
