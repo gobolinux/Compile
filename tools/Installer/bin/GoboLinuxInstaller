@@ -820,7 +820,6 @@ try :
 
 	def generateOptionsFile() :
 		comments = {}
-		comments['HostName']  = '#Hostname=NewMachine'
 		comments['BootTheme'] = '#BootTheme=AppleII\n#BootTheme=CheckList\n#BootTheme=Hat\n#BootTheme=LPP\n#BootTheme=Progress\n#BootTheme=Quotes\n#BootTheme=ScanDisk\n#BootTheme=Slack\n#BootTheme=SplitScreen'
 		comments['ClockMode'] = '#ClockMode=GMT\n#ClockMode=LocalTime'
 
@@ -845,29 +844,17 @@ try :
 #   "example_module2 parameter1=value parameter2=value"
 #)
 """
-		comments['Gateway']         = '#Gateway=192.168.2.1'
-		comments['GatewayInterface'] = '#GatewayInterface=eth0'
-		comments['NetworkInterfaces'] = """
-lo_IP=127.0.0.1
-lo_Netmask=255.0.0.0
-"""
 
 		o = ''
-
-		#o += comments['HostName'] + '\n'
-		if (installer.getValue('HostName')) :
-			o += 'HostName' + '=' + installer.getValue('HostName') + '\n'		
 		
 		# clockmode is a special case...
-		o += '\n'
 		o += comments['ClockMode'] + '\n'
 		if (installer.getValue('ClockMode')) :
 			if installer.getValue('ClockMode') == 'GMT' :
-				o += 'ClockMode=GMT' + '\n'
+				o += 'ClockMode=GMT' + '\n\n'
 			else : 
-				o += 'ClockMode=LocalTime' + '\n'
+				o += 'ClockMode=LocalTime' + '\n\n'
 
-		o += '\n'
 		o += comments['BootTheme'] + '\n'
 		if (installer.getValue('BootTheme')) :
 			o += 'BootTheme' + '=' + str(installer.getValue('BootTheme')[1]) + '\n'
@@ -876,44 +863,44 @@ lo_Netmask=255.0.0.0
 		o += comments['KeymapLayout'] + '\n'
 		if (installer.getValue('KeymapLayout')) :
 			o += 'KeymapLayout' + '=' + str(installer.getValue('KeymapLayout')[1])+'.map' + '\n'
-		
 		o += '\n'
+
 		mouseLines = MouseInfo.getMouseOptions('BootOptions')
 		o += mouseLines
-		
 		o += 'ConsoleFont=/Files/Fonts/Console/lode-lat1u-16.psf.gz' + '\n'
-		
 		o += comments['Modules']
-		
-		o += '\n'
-		o += comments['Gateway'] + '\n'
-		if (installer.getValue('Gateway')) :
-			o += 'Gateway' + '=' + installer.getValue('Gateway') + '\n'
-		
-		o += comments['GatewayInterface'] + '\n'
-		if (installer.getValue('GatewayInterface')) :
-			o += 'GatewayInterface' + '=' + str(installer.getValue('GatewayInterface')[1]) + '\n'
-		
 			
-		o += '\n'
+		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/BootOptions', o, logger)
+
+	def generateNetworkFile() :
+		comments = {}
+		comments['HostName']  = '#Hostname=NewMachine'
+		comments['Gateway']         = '#Gateway=192.168.2.1'
+		comments['GatewayInterface'] = '#GatewayInterface=eth0'
+		comments['NetworkInterfaces'] = """
+lo_IP=127.0.0.1
+lo_Netmask=255.0.0.0
+"""
+		o = ''
+		if (installer.getValue('HostName')) :
+			o += 'HostName' + '=' + installer.getValue('HostName') + '\n\n'
+		else :
+			o += comments['HostName'] + '\n\n'
+		
 		o += 'NetworkInterfacesOnBoot=('+'\n'+'   lo'+'\n'
 		for interface in interfaces :
 			if installer.getValue('Automatic'+interface) :
 				o += '   '+interface + '\n'
-		o += ')'
+		o += ')\n'
 		
-		o +='\n'
 		o += comments['NetworkInterfaces']
-		
 		for interface in interfaces :
-	
 			if installer.getValue('BootProto'+interface) :
 				o += interface+'_'+'BootProto=DHCP'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n'
 			else :
 				o += '#'+interface+'_'+'BootProto=Static'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n'
 	
 			fieldsT = [ 'IP', 'Netmask', 'Broadcast' ] 
-	
 			for field in fieldsT :
 				if installer.isEnabled(field+interface) :
 					if (installer.getValue(field+interface)) :
@@ -921,9 +908,21 @@ lo_Netmask=255.0.0.0
 					else :
 						o += "#"+interface+'_'+field+'='
 	
-		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/BootOptions', o, logger)
+		o += '\n'
+		if (installer.getValue('Gateway')) :
+			o += 'Gateway' + '=' + installer.getValue('Gateway') + '\n'
+		else :
+			o += comments['Gateway'] + '\n'
+		
+		if (installer.getValue('GatewayInterface')) :
+			o += 'GatewayInterface' + '=' + str(installer.getValue('GatewayInterface')[1]) + '\n'
+		else :
+			o += comments['GatewayInterface'] + '\n'
+		
+		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/NetworkOptions', o, logger)
 
 	generateOptionsFile()
+	generateNetworkFile()
 
 	
 	##############################################################################
