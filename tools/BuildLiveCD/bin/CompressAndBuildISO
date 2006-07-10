@@ -64,7 +64,8 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
-tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts )
+datadir="/Program/BuildLiveCD/Current/Data" 
+tools=`cat $datadir/Packages-List-GoboLinuxTools`
 today=`date +%Y%m%d`
 arch=`uname -m`
 
@@ -86,7 +87,7 @@ then
    echo "=> ROLayer stage started"
    
    cd $packages
-   for package in ${tools[@]} 
+   for package in $tools 
    do
       echo "Packing $package CVS snapshot..."
       tarball=$package--$today--$arch.tar.bz2
@@ -94,12 +95,12 @@ then
       mkdir -p $package/$today
       cp -a $localcvs/tools/$package/* $package/$today
       cd $package/$today
-      [ -e Makefile ] && make > /dev/null
+      # we need to build here in order to create the files which are going to be linked inside BuildRoot
+      [ -e Makefile ] && make > /dev/null 
       find -type d -name CVS | xargs rm -rf 
       cd ..
       ln -nfs $today Current
       cd ..
-   
       rm -f $tarball
       tar cjpf $tarball $package
       rm -rf $package
@@ -107,13 +108,20 @@ then
    cd $root
 
    echo "Building root..."
-   BuildRoot "Output/ROLayer" "Archives/Packages" /Programs/BuildLiveCD/Current/Data/Packages-List-* || exit 1
+   BuildRoot "Output/ROLayer" "Archives/Packages" $datadir/Packages-List-* || exit 1
+
+   for package in $tools 
+   do
+      echo "Rebuilding tools..." 
+      # we build the tools again to ensure they are prepared to the LiveCD environment
+      [ -e $root/$package/$today/Makefile ] && { chroot $root { make clean; make all; } } > /dev/null
+   done
 
    # Add few items to rolayer
    mkdir -p Output/ROLayer/Files
    cp -ar LocalCVS/files/* Output/ROLayer/Files
    cp -ar External/Files-Fonts/* Output/ROLayer/Files
-   mkdir -p Output/ROLayer/Files/Documentation
+   #mkdir -p Output/ROLayer/Files/Documentation
    cp -ar External/Linux-Kernel/* Output/ROLayer
 
    # Clean CVS files from ROLayer
@@ -189,7 +197,7 @@ then
 
    # compress the uncompressed files into squashfs files
    time mksquashfs_on_demand Output/ISO/GoboLinux-files.squashfs Output/Environment/Files
-   for i in /Programs/BuildLiveCD/Current/Data/Packages-List-*; do 
+   for i in $datadir/Packages-List-*; do 
       time mksquashfs_on_demand Output/ISO/`basename $i`.squashfs `cat $i | cut -f 1 -d ' ' | sort -u | while read i; do echo Output/Environment/Programs/$i; done`
    done
    time mksquashfs_on_demand Output/ISO/GoboLinux-rest.squashfs `ls -d Output/Environment/* | grep -v Files | grep -v Programs | grep -v Users`

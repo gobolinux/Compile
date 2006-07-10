@@ -29,6 +29,10 @@ then
 else
    cvsuser=anonymous
 fi
+
+datadir="/Program/BuildLiveCD/Current/Data"
+tools=`cat $datadir/Packages-List-GoboLinuxTools`
+
 root=$PWD
 localcvs=$PWD/LocalCVS/
 packages=$PWD/Archives/Packages
@@ -89,7 +93,7 @@ function check_and_dl() {
 # Tarballs
 echo "=> Downloading archives..."
 arch=`uname -m`
-cat /Programs/BuildLiveCD/Current/Data/Packages-Devel-$arch | while read action dir url md5
+cat $datadir/Packages-Devel-$arch | while read action dir url md5
 do
    echo $url 
    check_and_dl $action $dir $url $md5
@@ -99,8 +103,7 @@ done
 echo "=> Updating local CVS copy..."
 cd $localcvs
 
-tools=( AbsTK BootScripts Compile ConfigTools GoboHide Installer Listener LiveCD Manager Scripts InitRDScripts )
-for cvsrepo in files `for x in ${tools[@]}; do echo tools/$x; done`
+for cvsrepo in files `for x in $tools; do echo tools/$x; done`
 do
    if [ -e $cvsrepo ]
    then
