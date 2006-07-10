@@ -229,7 +229,6 @@ then
    cd $root
    
    MakeInitRDTree
-   cp External/Linux-Kernel/System/Kernel/Modules/$kernel_version/kernel/drivers/usb/storage/usb-storage.ko $initrd_dir/System/Kernel/Modules/
    cp External/Linux-Kernel/System/Kernel/Boot/kernel-$kernel_version Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
    echo "=> InitRD stage done"
