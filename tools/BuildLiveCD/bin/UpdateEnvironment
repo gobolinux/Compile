@@ -30,7 +30,7 @@ else
    cvsuser=anonymous
 fi
 
-datadir="/Program/BuildLiveCD/Current/Data"
+datadir="/Programs/BuildLiveCD/Current/Data"
 tools=`cat $datadir/Packages-List-GoboLinuxTools`
 
 root=$PWD
