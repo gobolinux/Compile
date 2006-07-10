@@ -556,7 +556,7 @@ function Verify_Superuser() {
 
 # Respawn the script with normal permissions.
 function Release_Superuser() {
-   if [ $SUDO_USER ] && [ "$UID" = "0" ]
+   if [ -n $SUDO_USER -a $SUDO_USER != $USER ] && [ "$UID" = "0" ]
    then
       Log_Verbose "Running as $SUDO_USER..."
       # Revalidate password for another 5 mins.
