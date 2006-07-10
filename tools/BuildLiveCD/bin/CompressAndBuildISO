@@ -64,7 +64,7 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
-datadir="/Program/BuildLiveCD/Current/Data" 
+datadir="/Programs/BuildLiveCD/Current/Data" 
 tools=`cat $datadir/Packages-List-GoboLinuxTools`
 today=`date +%Y%m%d`
 arch=`uname -m`
