@@ -28,7 +28,7 @@ do
    pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
    #[ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
    [ ! "$pkg" ] && {
-      echo "*** Package $packagename $packagevercould not be filled. ***"
+      echo "*** Package $packagename $packagever could not be filled. ***"
       exit 1
    }
 done
