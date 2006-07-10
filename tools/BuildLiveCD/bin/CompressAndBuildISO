@@ -118,7 +118,7 @@ then
 
    # Clean CVS files from ROLayer
    echo "Removing CVS files..."
-   #find Output/ROLayer -name CVS | grep -v Programs/CVS | xargs rm -rf
+   find Output/ROLayer/Files -type d -name CVS | xargs rm -rf
    echo "=> ROLayer stage done"
 fi
 
