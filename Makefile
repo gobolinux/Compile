@@ -7,6 +7,8 @@ PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 
+default:
+
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
 
