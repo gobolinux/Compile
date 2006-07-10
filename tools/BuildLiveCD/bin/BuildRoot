@@ -26,9 +26,9 @@ do
    packagename=`echo $line |cut -d' ' -f1`
    packagever=`echo $line |cut -d' ' -f2`
    pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
-   [ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
+   #[ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
    [ ! "$pkg" ] && {
-      echo "*** Package $packagename could not be filled. ***"
+      echo "*** Package $packagename $packagevercould not be filled. ***"
       exit 1
    }
 done
@@ -206,9 +206,9 @@ do
    packagename=`echo $line |cut -d' ' -f1`
    packagever=`echo $line |cut -d' ' -f2`
    pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
-   [ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
+   #[ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
    [ ! "$pkg" ] && {
-      echo "*** Package $packagename could not be filled. ***"
+      echo "*** Package $packagename $packagever could not be filled. ***"
       exit 1
    }
    install_package "$pkg" "$root"
