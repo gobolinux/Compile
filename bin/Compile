@@ -142,7 +142,7 @@ function do_symlink() {
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2"
    else
-      if [ ! "$compileMetaRecipe" ]
+      if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
       then UpdateSettings "$1" "$2"
       fi
       SymlinkProgram $safeopts $symlinkopts "$1" "$2" || Die "Linking step failed."
