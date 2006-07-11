@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+datadir="/Programs/BuildLiveCD/Current/Data"
+
 root="$1"
 shift
 packagedir="$1"
@@ -24,14 +26,11 @@ fi
 
 function get_package_name() {
    packagename=`echo $1 | awk {'print $1'}`
-   case "$packagename" in
-      AbsTK|BootScripts|Compile|ConfigTools|GoboHide|Installer|LiveCD|Manager|Scripts)
-         packagever=`date +%Y%m%d`
-         ;;
-      *)
-         packagever=`echo $1 | awk {'print $2'}`
-         ;;
-   esac
+
+   if grep -q "$packagename" "$datadir/Packages-List-GoboLinuxTools"
+   then packagever=`date +%Y%m%d`
+   else packagever=`echo $1 | awk {'print $2'}`
+   fi
 
    pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null`
    [ $? != 0 ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
