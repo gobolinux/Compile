@@ -1,0 +1,171 @@
+#
+# Automatically generated make config: don't edit
+#
+
+#
+# Build options
+#
+HAVE_DOT_CONFIG=y
+# CROSS_NONE is not set
+CROSS_ARM=y
+# CROSS_SH4 is not set
+ARM_SIRIUSTAR=y
+# ARM_GP32 is not set
+TARGET_EMBEDDED=y
+# TARGET_DESKTOP is not set
+NETWORK_DISABLED=y
+# NETWORK_DHCP is not set
+# NETWORK_STATIC is not set
+
+#
+# 
+#
+KERNEL_HEADERS_VERSION="2.6.16.18"
+NEW_HOSTNAME="Polaris"
+SUPER_USER_NAME="gobo"
+
+#
+# Base system
+#
+PKG_GLIBC=y
+# PKG_UCLIBC is not set
+# PKG_MODULE_INIT_TOOLS is not set
+PKG_BUSYBOX=y
+PKG_LIBGCC=y
+PKG_ZLIB=y
+# PKG_GPM is not set
+PKG_GOBOHIDE=y
+PKG_LISTENER=y
+# PKG_UDEV is not set
+
+#
+# 
+#
+# PKG_NCURSES is not set
+# PKG_BASH is not set
+
+#
+# Development
+#
+PKG_LIBTOOL=y
+# PKG_STRACE is not set
+
+#
+# Fonts and XML parsers
+#
+PKG_EXPAT=y
+PKG_LIBXML2=y
+PKG_FREETYPE=y
+PKG_FONTCONFIG=y
+
+#
+# Audio
+#
+PKG_ALSA_LIB=y
+PKG_LIBMAD=y
+PKG_LIBOGG=y
+PKG_LIBVORBIS=y
+
+#
+# Networking
+#
+PKG_OPENSSL=y
+PKG_OPENSSH=y
+# PKG_LINKS is not set
+
+#
+# X servers
+#
+PKG_XORG=y
+# PKG_NANO_X is not set
+
+#
+# Video and graphics
+#
+PKG_JPEG=y
+PKG_LIBPNG=y
+PKG_LIBUNGIF=y
+# PKG_LINUX_FUSION is not set
+# PKG_DIRECTFB is not set
+PKG_TIFF=y
+# PKG_SDL is not set
+# PKG_IMLIB is not set
+
+#
+# GTK+ suite
+#
+PKG_GETTEXT=y
+PKG_GLIB=y
+PKG_CAIRO=y
+PKG_ATK=y
+PKG_PANGO=y
+PKG_GTK=y
+# PKG_DBUS is not set
+
+#
+# Misc
+#
+# PKG_STARTUP_NOTIFICATION is not set
+# PKG_MTD_UTILS is not set
+# PKG_LIBUSB is not set
+# PKG_LIRC is not set
+# PKG_REISERFSPROGS is not set
+# PKG_SHARED_MIME_INFO is not set
+
+#
+# 
+#
+# PKG_A2PS is not set
+
+#
+# 
+#
+PKG_MOWITZ=y
+PKG_LIBART_LGPL=y
+PKG_LIBOIL=y
+
+#
+# Desktop
+#
+
+#
+# Window Managers
+#
+PKG_XFCE=y
+# PKG_ICEWM is not set
+
+#
+# Applications
+#
+PKG_RXVT=y
+PKG_SIAG=y
+PKG_SWFDEC=y
+
+#
+# Shrink Options
+#
+SHRINK_HEADERS=y
+SHRINK_STATIC_LIBS=y
+SHRINK_LIBTOOL=y
+SHRINK_PKGCONFIG=y
+SHRINK_DOCS=y
+SHRINK_DEFAULT_SETTINGS=y
+SHRINK_LOCALES=y
+SHRINK_M4_MACROS=y
+
+#
+# Native language support
+#
+NLS_ISO8859_1=y
+# NLS_ISO8859_2 is not set
+# NLS_ISO8859_3 is not set
+# NLS_ISO8859_4 is not set
+# NLS_ISO8859_5 is not set
+# NLS_ISO8859_6 is not set
+# NLS_ISO8859_7 is not set
+# NLS_ISO8859_9 is not set
+# NLS_ISO8859_13 is not set
+# NLS_ISO8859_14 is not set
+NLS_ISO8859_15=y
+# NLS_KOI8_R is not set
+# NLS_JISX0201 is not set
