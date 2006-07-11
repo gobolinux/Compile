@@ -1,2 +1,3 @@
 config PKG_FFMPEG_MOTION
 	bool "FFmpeg-Motion"
+    depends on PKG_MOTION
