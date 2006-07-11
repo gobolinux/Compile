@@ -253,9 +253,3 @@ cat <<EOF > $root/System/Settings/shells
 /bin/sh
 /bin/ash
 EOF
-
-####################################################
-# Hack?
-####################################################
-
-cp $archives/usb-storage.ko $root/System/Kernel/Modules
