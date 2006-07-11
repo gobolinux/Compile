@@ -1,0 +1,2 @@
+config PKG_OPENVPN
+    bool "OpenVPN"

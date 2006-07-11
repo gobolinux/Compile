@@ -1,0 +1,2 @@
+config PKG_FFMPEG_MOTION
+	bool "FFmpeg-Motion"
