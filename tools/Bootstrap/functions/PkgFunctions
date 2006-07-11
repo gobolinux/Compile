@@ -56,10 +56,6 @@ function cvs_make_install() {
     popd >& /dev/null
 }
 
-function BusyBox_hook() {
-    echo 1.1.2
-}
-
 function DirectFB_hook() {
     [ ! "$cross_compiling" ] && return
     [ "$cross_kernel_arch" = "sh" ] && echo "CVS"
