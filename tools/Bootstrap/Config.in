@@ -218,6 +218,7 @@ menu "Networking"
 #############################################
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
+source "packages/OpenVPN/Config.in"
 source "packages/Links/Config.in"
 endmenu
 
@@ -239,6 +240,7 @@ source "packages/DirectFB/Config.in"
 source "packages/TIFF/Config.in"
 source "packages/SDL/Config.in"
 source "packages/IMLib/Config.in"
+source "packages/FFmpeg-Motion/Config.in"
 endmenu
 
 #############################################
@@ -268,6 +270,9 @@ comment ""
 source "packages/Mowitz/Config.in"
 source "packages/LibART_LGPL/Config.in"
 source "packages/LibOIL/Config.in"
+comment ""
+source "packages/Gnokii/Config.in"
+source "packages/Motion/Config.in"
 endmenu    
 
 #############################################
@@ -289,6 +294,16 @@ endmenu
 menu "Shrink Options"
 #############################################
 depends on TARGET_EMBEDDED
+config SHRINK_ALL
+    bool "Remove and shrink as much as possible"
+    select SHRINK_HEADERS
+    select SHRINK_STATIC_LIBS
+    select SHRINK_LIBTOOL
+    select SHRINK_PKGCONFIG
+    select SHRINK_DOCS
+    select SHRINK_LOCALES
+    select SHRINK_M4_MACROS
+
 config SHRINK_HEADERS
 	bool "Remove headers"
     
