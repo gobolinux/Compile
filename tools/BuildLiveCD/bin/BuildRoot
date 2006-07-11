@@ -21,16 +21,32 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
-cat $packagelists | while read line
-do
-   packagename=`echo $line |cut -d' ' -f1`
-   packagever=`echo $line |cut -d' ' -f2`
-   pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
-   #[ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
-   [ ! "$pkg" ] && {
+
+function get_package_name() {
+   packagename=`echo $1 | awk {'print $1'}`
+   case "$packagename" in
+      AbsTK|BootScripts|Compile|ConfigTools|GoboHide|Installer|LiveCD|Manager|Scripts)
+         packagever=`date +%Y%m%d`
+         ;;
+      *)
+         packagever=`echo $1 | awk {'print $2'}`
+         ;;
+   esac
+
+   pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null`
+   [ $? != 0 ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
+   if [ ! "$pkg" ]
+   then
       echo "*** Package $packagename $packagever could not be filled. ***"
       exit 1
-   }
+   fi
+}
+
+
+cat $packagelists | while read line
+do
+   # just ensure that required packages are found
+   get_package_name $line
 done
 
 
@@ -203,14 +219,7 @@ popd &> /dev/null
 # 
 cat $packagelists |while read line
 do
-   packagename=`echo $line |cut -d' ' -f1`
-   packagever=`echo $line |cut -d' ' -f2`
-   pkg=`ls $packagedir/${packagename}--${packagever}* 2> /dev/null || true`
-   #[ ! "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null | tail -n 1` # Need better version compare code
-   [ ! "$pkg" ] && {
-      echo "*** Package $packagename $packagever could not be filled. ***"
-      exit 1
-   }
+   pkg=`get_package_name $line`
    install_package "$pkg" "$root"
 done
 
