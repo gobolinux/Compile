@@ -202,7 +202,7 @@ source "packages/Expat/Config.in"
 source "packages/LibXML2/Config.in"
 source "packages/FreeType/Config.in"
 source "packages/Fontconfig/Config.in"
-endmenu # Fonts and XML parsers
+endmenu
 
 #############################################
 menu "Audio"
@@ -218,6 +218,7 @@ menu "Networking"
 #############################################
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
+source "packages/LZO/Config.in"
 source "packages/OpenVPN/Config.in"
 source "packages/Links/Config.in"
 endmenu

@@ -1,0 +1,3 @@
+config PKG_LZO
+    bool "LZO"
+	default y if PKG_OPENVPN
