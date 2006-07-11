@@ -2,7 +2,8 @@ CC = gcc
 DESTDIR = /usr
 SYSCONFDIR = /etc
 DEVDIR = /dev
-CFLAGS  = -I. -DSYSCONFDIR=\"$(SYSCONFDIR)\" -DDEVDIR=\"$(DEVDIR)\" -Wall
+KERNDIR = /usr/src/linux
+CFLAGS  = -I. -I$(KERNDIR)/include -DSYSCONFDIR=\"$(SYSCONFDIR)\" -DDEVDIR=\"$(DEVDIR)\" -Wall -DDEBUG=1 -g
 LDFLAGS = -lpthread
 
 all: listener

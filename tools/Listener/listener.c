@@ -21,6 +21,7 @@
  *
  *
  * Changelog
+ *    11/07/2006  lucasvr   Included initial support for recursive rules.
  *    15/08/2005  lucasvr   Included support for variables on listener.conf;
  *                          Allowing the user to specify the config file;
  *                          Recognizing multiple declarations of the same target.
@@ -31,6 +32,7 @@
  */
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -42,6 +44,7 @@
 #include <dirent.h>
 #include <limits.h>
 #include <regex.h>
+#include <ftw.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -51,17 +54,13 @@
 #define _GNU_SOURCE
 #include <getopt.h>
 #include "inotify.h"
+#include "inotify-syscalls.h"
 
 #ifndef SYSCONFDIR
 #define SYSCONFDIR      "/System/Settings"
 #endif
 
-#ifndef DEVDIR
-#define DEVDIR          "/System/Kernel/Devices"
-#endif
-
 #define LISTENER_RULES  SYSCONFDIR"/listener.conf"
-#define INOTIFY_DEVNAME DEVDIR"/inotify"
 #define EMPTY_MASK      IN_ONESHOT
 
 #define FILTER_DIRS(m)  S_ISDIR(m)
@@ -77,6 +76,7 @@ struct directory_info {
 	int mask;			/* CLOSE_WRITE, MOVED_TO, MOVED_FROM or DELETE */
 	char exec_cmd[LINE_MAX];	/* shell command to spawn when triggered */
 	regex_t regex;			/* regular expression used to filter {file,dir} names */
+	char recursive;			/* recursive flag */
 
 	int wd;				/* this pathname's watch file descriptor */
 	int filter;			/* while reading the directory, only look at this kind of entries */
@@ -102,6 +102,67 @@ suicide(int signum)
 	exit(EXIT_SUCCESS);
 }
 
+char *
+get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
+{
+	int i=0, j=0, skip=0;
+	char line[LINE_MAX], work_line[LINE_MAX];
+	char *entry_ptr, *ptr;
+
+	if (! cmd || ! strlen(cmd)) {
+		*skip_bytes = 0;
+		return NULL;
+	}
+
+	memset(line, 0, sizeof(line));
+	memset(work_line, 0, sizeof(work_line));
+
+	while (isblank(*cmd)) {
+		cmd++;
+		skip++;
+	}
+	while (*cmd && ! isblank(*cmd)) {
+		line[i++] = *(cmd++);
+		skip++;
+	}
+	*skip_bytes = skip;
+
+	if ((entry_ptr = strstr(line, "$ENTRY_RELATIVE"))) {
+		int wi = 0;
+		for (ptr=line; ptr != entry_ptr; ptr++)
+			work_line[wi++] = (*ptr)++;
+
+		for (j=0; j<strlen(info->offending_name); ++j)
+			work_line[wi++] = info->offending_name[j];
+		
+		/* skip '$ENTRY_RELATIVE' and copy the remaining data */
+		for (ptr+=15; *ptr; ptr++)
+			work_line[wi++] = (*ptr)++;
+
+		return strdup(work_line);
+
+	} else if ((entry_ptr = strstr(line, "$ENTRY"))) {
+		int wi = 0;
+		for (ptr=line; ptr != entry_ptr; ptr++)
+			work_line[wi++] = (*ptr)++;
+
+		for (j=0; j<strlen(pathname); ++j)
+			work_line[wi++] = pathname[j];
+		
+		work_line[wi++] = '/';
+
+		for (j=0; j<strlen(info->offending_name); ++j)
+			work_line[wi++] = info->offending_name[j];
+		
+		/* skip '$ENTRY' and copy the remaining data */
+		for (ptr+=6; *ptr; ptr++)
+			work_line[wi++] = (*ptr)++;
+
+		return strdup(work_line);
+	}
+	return strdup(line);
+}
+
 void *
 perform_action(void *thread_info)
 {
@@ -115,43 +176,28 @@ perform_action(void *thread_info)
 	
 	pid = fork();
 	if (pid == 0) {
-		char *argument, **exec_array, *cmd = dir_info[i]->exec_cmd;
+		char **exec_array, *cmd = dir_info[i]->exec_cmd;
                 char exec_cmd[LINE_MAX];
-		int exec_cmd_len = 0;
+		int len = strlen(cmd);
+		int skipped = 0;
 
                 memset(exec_cmd, 0, sizeof(exec_cmd));
-		while (*cmd) {
-			int token_len;
-			char *cmd_end;
+		while (2) {
+			int skip_bytes = 0;
+			char *token = get_token(cmd, &skip_bytes, dir_info[i]->pathname, info);
+			if (! token)
+				break;
 
-			while (isblank(*cmd))
-				cmd++;
-			cmd_end = cmd;
-
-			while (!(isblank(*cmd_end) || *cmd_end == '\0'))
-				cmd_end++;
-
-			token_len = cmd_end - cmd + 1;
-                        if (! strncmp(cmd, "$ENTRY", 6)) {
-			        argument = strdup(pathname);
-                                cmd += 6;
-                        } else {
-			        argument = (char *) malloc(token_len);
-			        strncpy(argument, cmd, token_len);
-			        argument[token_len - 1] = '\0';
-			        cmd += token_len;
-                        }
-
-                        exec_cmd_len += strlen(argument) + 1;
-                        if (exec_cmd_len > sizeof(exec_cmd)) {
-                                fprintf(stderr, "Error: SPAWN command too large to fit on buffer\n");
-                                suicide(-1);
-                        }
-                        strcat(exec_cmd, argument);
+			cmd += skip_bytes;
+			skipped += skip_bytes;
+			
+                        strcat(exec_cmd, token);
                         strcat(exec_cmd, " ");
-                        free(argument);
+			free(token);
+
+			if (skipped >= len)
+				break;
 		}
-                exec_cmd[strlen(exec_cmd)-1] = '\0';
                 exec_array = (char **) malloc(4 * sizeof(char *));
                 exec_array[0] = "/bin/sh";
                 exec_array[1] = "-c";
@@ -208,6 +254,10 @@ mask_name(int mask)
 			return "moved to";
 		case IN_CLOSE_WRITE:
 			return "close write";
+		case IN_CREATE:
+			return "create";
+		case IN_MODIFY:
+			return "modify";
 		case IN_DELETE:
 			return "delete";
 		default:
@@ -230,7 +280,7 @@ treat_events(struct inotify_event *ev)
         while (dir_info[i] != NULL) {
                 i = dir_info_index(start_index, ev->wd);
                 if (i < 0) {
-                        /* Couldn't find watch descriptor, hence this is not a valid event */
+                        /* Couldn't find watch descriptor, so this is not a valid event */
                         break;
                 }
 
@@ -262,7 +312,7 @@ treat_events(struct inotify_event *ev)
                 snprintf(stat_pathname, sizeof(stat_pathname), "%s/%s", dir_info[i]->pathname, offending_name);
                 ret = stat(stat_pathname, &status);
                 if (ret < 0 && dir_info[i]->depends_on_entry) {
-                        fprintf(stderr, "stat %s: %s\n", offending_name, strerror(errno));
+                        fprintf(stderr, "stat %s: %s\n", stat_pathname, strerror(errno));
                         continue;
                 }
                 if (FILTER_DIRS(dir_info[i]->filter) && 
@@ -306,34 +356,65 @@ listen_for_events(void)
 	}
 }
 
+/* TODO: monitor_index vs dirinfo_index */
+static int monitor_index;
+//static int dirinfo_index;
+static uint32_t dirinfo_mask;
+
+int
+walk_tree(const char *file, const struct stat *sb, int flag)
+{
+	if (flag == FTW_D) {
+//		int i = dirinfo_index;
+
+		/* is a subdirectory */
+		dir_info[monitor_index]->wd = inotify_add_watch(inotify_fd, file, dirinfo_mask);
+		fprintf(stdout, "[recursive] Monitoring %s on watch %d\n", file, monitor_index);
+		monitor_index++;
+	}
+	return 0;
+}
+
+static int num_subdirs = 1;
+
+int
+count_subdirs(const char *file, const struct stat *sb, int flag)
+{
+	if (flag == FTW_D) {
+		/* is a subdirectory */
+		printf("-> %s\n", file);
+		num_subdirs++;
+	}
+	return 0;
+}
+
 int
 monitor_directory(int i)
 {
-	struct inotify_watch_request req;
-        int current_mask, j;
+	int j;
+        uint32_t mask, current_mask;
 
         /* 
          * Check for the existing entries if this directory is already being listened.
          * If that's true, then we must append a new mask instead of replacing the
          * current one.
          */
-        current_mask = 0;
-        for (j = 0; j < i; ++j) {
+        for (current_mask = 0, j = 0; j < i; ++j) {
                 if (! strcmp(dir_info[i]->pathname, dir_info[j]->pathname))
                         current_mask |= dir_info[j]->mask;
         }
 	
-	req.mask = dir_info[i]->mask | current_mask;
-	req.fd = open(dir_info[i]->pathname, O_RDONLY);
-	if (req.fd < 0) {
-		fprintf(stderr, "open %s: %s\n", dir_info[i]->pathname, strerror(errno));
-		return -1;
+	mask = dir_info[i]->mask | current_mask;
+	dir_info[i]->wd = inotify_add_watch(inotify_fd, dir_info[i]->pathname, mask);
+
+	if (dir_info[i]->recursive) {
+		//dirinfo_index = i;
+		dirinfo_mask = mask;
+		ftw(dir_info[i]->pathname, walk_tree, 1024);
+	} else {
+		monitor_index++;
+		fprintf(stdout, "Monitoring %s\n", dir_info[i]->pathname);
 	}
-
-	dir_info[i]->wd = ioctl(inotify_fd, INOTIFY_WATCH, &req);
-	close(req.fd);
-
-	fprintf(stdout, "Monitoring %s\n", dir_info[i]->pathname);
         return 0;
 }
 
@@ -348,6 +429,10 @@ parse_masks(char *masks, int rule)
 		ret |= IN_MOVED_TO;
 	if ((strstr(masks, "DELETE")))
 		ret |= IN_DELETE;
+	if ((strstr(masks, "CREATE")))
+		ret |= IN_CREATE;
+	if ((strstr(masks, "MODIFY")))
+		ret |= IN_MODIFY;
 
 	return ret;
 }
@@ -450,7 +535,7 @@ get_rule_for(char *entry, FILE *fp)
 int
 assign_rules(char *config_file)
 {
-	int i, n, ret;
+	int i, n, subdirs, ret;
 	FILE *fp;
 	char *token, regex_rule[LINE_MAX];
 	
@@ -461,9 +546,10 @@ assign_rules(char *config_file)
 	}
 
 	/* read how many rules we have */
-	n = 0;
+	n = subdirs = 0;
 	while (! feof(fp)) {
 		char buf[LINE_MAX];
+		char pathname[LINE_MAX];
 
 		memset(buf, 0, sizeof(buf));
 		fgets(buf, sizeof(buf), fp);
@@ -471,6 +557,22 @@ assign_rules(char *config_file)
 			continue;
 		else if (buf[0] == '{')
 			n++;
+		else if (strstr(buf, "TARGET")) {
+			char *token = strtok(buf, " \t");
+			token = strtok(NULL, " \t");
+			token = strtok(NULL, " \t");
+			if (! token) {
+				fprintf(stderr, "Error: one or more TARGET entries don't have a value assigned to\n");
+				return -1;
+			}
+			token[strlen(token)-1] = '\0';
+			sprintf(pathname, token);
+			
+		} else if (strstr(buf, "RECURSIVE") && strstr(buf, "YES")) {
+			ftw(pathname, count_subdirs, 1024);
+			subdirs += num_subdirs;
+			num_subdirs = 0;
+		}
 	}
 
 	/* there's no rules at all */
@@ -479,14 +581,19 @@ assign_rules(char *config_file)
 	
 	rewind(fp);
 
-	dir_info = (struct directory_info **) calloc(n+1, sizeof(struct directory_info *));
+	dir_info = (struct directory_info **) calloc(n+1+num_subdirs, sizeof(struct directory_info *));
 	if (! dir_info) {
 		perror("calloc");
 		return -ENOMEM;
 	}
+	
+	printf("dir_info alocado com %d neguinhos\n", n+1+num_subdirs);
 		
 	/* register the pathname */
-	for (i = 0; i < n; ++i) {
+	for (monitor_index = 0; monitor_index < n+num_subdirs; /* do not increment */) {
+		/* monitor_index is incremented inside monitor_directory() */
+		i = monitor_index;
+
 		/* expects to find the '{' character */
 		if ((expect_rule_start(fp)) < 0) {
 			fprintf(stderr, "Error: could not find the rule start marker '{'\n");
@@ -565,10 +672,28 @@ assign_rules(char *config_file)
 			fprintf(stderr, "Regex error \"%s\": %s\n", regex_rule, err_msg);
 			return -1;
 		}
+
+		/* get the recursive flag */
+		token = get_rule_for("RECURSIVE", fp);
+		if (! token) {
+			fprintf(stderr, "Error on rule #%d: missing RECURSIVE entry\n", i+1);
+			return -1;
+		}
+
+		if (! strcasecmp(token, "NO"))
+			dir_info[i]->recursive = 0;
+		else if (! strcasecmp(token, "YES"))
+			dir_info[i]->recursive = 1;
+		else {
+			fprintf(stderr, "Error on rule #%d: invalid RECURSIVE option %s\n", i+1, token);
+                        free(token);
+			return -1;
+		}
+                free(token);
 		
 		/* expects to find the '}' character */
 		if ((expect_rule_end(fp)) < 0) {
-			fprintf(stderr, "Error: could not find the rule start marker '{'\n");
+			fprintf(stderr, "Error: could not find the rule end marker '}'\n");
 			return -1;
 		}
 
@@ -622,9 +747,9 @@ main(int argc, char **argv)
         }
         
 	/* opens the inotify device */
-	inotify_fd = open(INOTIFY_DEVNAME, O_RDONLY);
+	inotify_fd = inotify_init();
 	if (inotify_fd < 0) {
-		fprintf(stderr, "fopen %s: %s\n", INOTIFY_DEVNAME, strerror(errno));
+		perror("inotify_init");
 		exit(EXIT_FAILURE);
 	}
 
@@ -647,3 +772,4 @@ main(int argc, char **argv)
 	exit(EXIT_SUCCESS);
 }
 
+/* vim:set ts=4 sts=0 sw=4: */
