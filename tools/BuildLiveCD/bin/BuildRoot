@@ -32,9 +32,9 @@ function get_package_name() {
    else packagever=`echo $1 | awk {'print $2'}`
    fi
 
-   pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null`
-   [ $? != 0 ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
-   if [ ! "$pkg" ]
+   pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null || true`
+   [ -z "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
+   if [ -z "$pkg" ]
    then
       echo "*** Package $packagename $packagever could not be filled. ***"
       exit 1
@@ -47,7 +47,7 @@ function get_package_name() {
 cat $packagelists | while read line
 do
    # just ensure that required packages are found
-   get_package_name $line
+   get_package_name "$line"
 done
 
 
