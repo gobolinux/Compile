@@ -39,6 +39,8 @@ function get_package_name() {
       echo "*** Package $packagename $packagever could not be filled. ***"
       exit 1
    fi
+
+   echo "$pkg"
 }
 
 
