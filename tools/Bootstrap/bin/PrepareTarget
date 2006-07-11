@@ -126,6 +126,11 @@ then
 
     pushd $dirname/Current/lib >& /dev/null
     cp -a $gcclibdir/libgcc* .
+    for i in *
+    do
+        # get rid of eventual directories copied together
+        [ -d $i ] && rm -Rf $i
+    done
     popd >&/dev/null
 
     SymlinkProgram $symlink_options LibGCC >& /dev/null
