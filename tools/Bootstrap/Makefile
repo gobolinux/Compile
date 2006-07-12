@@ -67,6 +67,8 @@ help:
 	@echo 'Other generic targets:'
 	@echo '  all         - Build all targets marked with [*]'
 	@echo ''
+	@echo '  shrink      - Performs a cleanup on the generated tree'
+	@echo ''
 	@echo '  make V=0|1  - Quiet or verbose build (default)'
 	@echo ''
 	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
@@ -82,6 +84,9 @@ deps:
 	@cd bin && ./MakeDeps ../.config
 
 dep: deps
+
+shrink:
+	@cd bin; ./Shrink
 
 world: $(TARGETS)
 	@cd bin; ./BootStrap start                || { echo "argh!"; ./BootStrap stop; exit 1; }
@@ -113,8 +118,10 @@ clean: $(TARGETS_CLEAN)
 
 distclean: clean
 
-else # ifeq ($(strip $(HAVE_DOT_CONFIG)),y)
+else # ifneq ($(strip $(HAVE_DOT_CONFIG)),y)
 
+shrink:
+	@echo "Please run make menuconfig first"
 
 all:
 	@echo "Please run make menuconfig first"
