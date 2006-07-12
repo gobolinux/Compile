@@ -174,7 +174,6 @@ mkdir -p $root/Files/Compile/Archives
 mkdir -p $root/Files/Compile/Sources
 mkdir -p $root/Files/Compile/Store
 mkdir -p $root/Depot
-mkdir -p $root/TmpFS
 mkdir -p $root/Mount
 mkdir -p $root/Mount/.Pivot
 mkdir -p $root/Mount/CD-ROM
