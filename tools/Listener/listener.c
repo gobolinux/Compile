@@ -67,20 +67,20 @@
 #define FILTER_FILES(m) S_ISREG(m)
 
 struct thread_info {
-	int di_index;			/* the struct directory_info's index */
+	int di_index;					/* the struct directory_info's index */
 	char offending_name[PATH_MAX];	/* the file/directory entry we're dealing with */
 };
 
 struct directory_info {
 	char pathname[PATH_MAX];	/* the pathname being listened */
-	int mask;			/* CLOSE_WRITE, MOVED_TO, MOVED_FROM or DELETE */
+	int mask;					/* CLOSE_WRITE, MOVED_TO, MOVED_FROM or DELETE */
 	char exec_cmd[LINE_MAX];	/* shell command to spawn when triggered */
-	regex_t regex;			/* regular expression used to filter {file,dir} names */
-	char recursive;			/* recursive flag */
+	regex_t regex;				/* regular expression used to filter {file,dir} names */
+	char recursive;				/* recursive flag */
 
-	int wd;				/* this pathname's watch file descriptor */
-	int filter;			/* while reading the directory, only look at this kind of entries */
-        int depends_on_entry;           /* tells if exec_cmd depends on $ENTRY being still valid to perform its action */
+	int wd;						/* this pathname's watch file descriptor */
+	int filter;					/* while reading the directory, only look at this kind of entries */
+	int depends_on_entry;		/* tells if exec_cmd depends on $ENTRY being still valid to perform its action */
 };
 
 static struct directory_info **dir_info;
@@ -91,7 +91,7 @@ void
 suicide(int signum)
 {
 	int i;
-	
+
 	for (i = 0; dir_info[i] != NULL; ++i) {
 		regfree(&dir_info[i]->regex);
 		free(dir_info[i]);
@@ -134,7 +134,7 @@ get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 
 		for (j=0; j<strlen(info->offending_name); ++j)
 			work_line[wi++] = info->offending_name[j];
-		
+
 		/* skip '$ENTRY_RELATIVE' and copy the remaining data */
 		for (ptr+=15; *ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
@@ -148,12 +148,12 @@ get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 
 		for (j=0; j<strlen(pathname); ++j)
 			work_line[wi++] = pathname[j];
-		
+
 		work_line[wi++] = '/';
 
 		for (j=0; j<strlen(info->offending_name); ++j)
 			work_line[wi++] = info->offending_name[j];
-		
+
 		/* skip '$ENTRY' and copy the remaining data */
 		for (ptr+=6; *ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
@@ -173,15 +173,15 @@ perform_action(void *thread_info)
 
 	snprintf(pathname, sizeof(pathname), "%s/%s", dir_info[i]->pathname, info->offending_name);
 	free(info);
-	
+
 	pid = fork();
 	if (pid == 0) {
 		char **exec_array, *cmd = dir_info[i]->exec_cmd;
-                char exec_cmd[LINE_MAX];
+		char exec_cmd[LINE_MAX];
 		int len = strlen(cmd);
 		int skipped = 0;
 
-                memset(exec_cmd, 0, sizeof(exec_cmd));
+		memset(exec_cmd, 0, sizeof(exec_cmd));
 		while (2) {
 			int skip_bytes = 0;
 			char *token = get_token(cmd, &skip_bytes, dir_info[i]->pathname, info);
@@ -190,18 +190,18 @@ perform_action(void *thread_info)
 
 			cmd += skip_bytes;
 			skipped += skip_bytes;
-			
-                        strcat(exec_cmd, token);
-                        strcat(exec_cmd, " ");
+
+			strcat(exec_cmd, token);
+			strcat(exec_cmd, " ");
 			free(token);
 
 			if (skipped >= len)
 				break;
 		}
-                exec_array = (char **) malloc(4 * sizeof(char *));
-                exec_array[0] = "/bin/sh";
-                exec_array[1] = "-c";
-                exec_array[2] = strdup(exec_cmd);
+		exec_array = (char **) malloc(4 * sizeof(char *));
+		exec_array[0] = "/bin/sh";
+		exec_array[1] = "-c";
+		exec_array[2] = strdup(exec_cmd);
 		exec_array[3] = NULL;
 #ifdef DEBUG	
 		for (i = 0; exec_array[i] != NULL; ++i)
@@ -211,10 +211,10 @@ perform_action(void *thread_info)
 
 	} else if (pid > 0) {
 		waitpid(pid, NULL, WUNTRACED);
-        } else {
+	} else {
 		perror("fork");
-        }
-	
+	}
+
 	pthread_exit(NULL);
 }
 
@@ -222,7 +222,7 @@ int
 dir_info_index(int index_start, int wd)
 {
 	int i;
-	
+
 	for (i = index_start; dir_info[i] != NULL; ++i)
 		if (dir_info[i]->wd == wd)
 			return i;
@@ -268,70 +268,70 @@ mask_name(int mask)
 void
 treat_events(struct inotify_event *ev)
 {
-        pthread_t tid;
+	pthread_t tid;
 	regmatch_t match;
-        int i, ret, start_index;
-        struct thread_info *info;
-        struct stat status;
-        char stat_pathname[PATH_MAX], offending_name[PATH_MAX];
+	int i, ret, start_index;
+	struct thread_info *info;
+	struct stat status;
+	char stat_pathname[PATH_MAX], offending_name[PATH_MAX];
 
-        start_index = i = 0;
-        
-        while (dir_info[i] != NULL) {
-                i = dir_info_index(start_index, ev->wd);
-                if (i < 0) {
-                        /* Couldn't find watch descriptor, so this is not a valid event */
-                        break;
-                }
+	start_index = i = 0;
 
-                /* update start_index so that the next search starts on the next entry */
-                start_index = i+1;
+	while (dir_info[i] != NULL) {
+		i = dir_info_index(start_index, ev->wd);
+		if (i < 0) {
+			/* Couldn't find watch descriptor, so this is not a valid event */
+			break;
+		}
 
-                if (ev->len > PATH_MAX)
-                        ev->len = PATH_MAX;
+		/* update start_index so that the next search starts on the next entry */
+		start_index = i+1;
 
-                /* 
-                 * firstly, check against the watch mask, since a given entry can be
-                 * watched twice or even more times
-                 */
-                if (! (dir_info[i]->mask & ev->mask)) {
-                        /* no match, ignore this event for this descriptor */
-                        continue;
-                }
-                
-                /* verify against regex if we want to handle this event or not */
-                memset(offending_name, 0, sizeof(offending_name));
-                snprintf(offending_name, ev->len, "%s", ev->name);
-                ret = regexec(&dir_info[i]->regex, offending_name, 1, &match, 0);
-                if (ret != 0) {
-                        /* no match, ignore this event for this descriptor */
-                        continue;
-                }
+		if (ev->len > PATH_MAX)
+			ev->len = PATH_MAX;
 
-                /* filter the entry by its type */
-                snprintf(stat_pathname, sizeof(stat_pathname), "%s/%s", dir_info[i]->pathname, offending_name);
-                ret = stat(stat_pathname, &status);
-                if (ret < 0 && dir_info[i]->depends_on_entry) {
-                        fprintf(stderr, "stat %s: %s\n", stat_pathname, strerror(errno));
-                        continue;
-                }
-                if (FILTER_DIRS(dir_info[i]->filter) && 
-                                (dir_info[i]->depends_on_entry && (! S_ISDIR(status.st_mode))))
-                        continue;
-                if (FILTER_FILES(dir_info[i]->filter) && 
-                                (dir_info[i]->depends_on_entry && (! S_ISREG(status.st_mode))))
-                        continue;
+		/* 
+		 * firstly, check against the watch mask, since a given entry can be
+		 * watched twice or even more times
+		 */
+		if (! (dir_info[i]->mask & ev->mask)) {
+			/* no match, ignore this event for this descriptor */
+			continue;
+		}
+
+		/* verify against regex if we want to handle this event or not */
+		memset(offending_name, 0, sizeof(offending_name));
+		snprintf(offending_name, ev->len, "%s", ev->name);
+		ret = regexec(&dir_info[i]->regex, offending_name, 1, &match, 0);
+		if (ret != 0) {
+			/* no match, ignore this event for this descriptor */
+			continue;
+		}
+
+		/* filter the entry by its type */
+		snprintf(stat_pathname, sizeof(stat_pathname), "%s/%s", dir_info[i]->pathname, offending_name);
+		ret = stat(stat_pathname, &status);
+		if (ret < 0 && dir_info[i]->depends_on_entry) {
+			fprintf(stderr, "stat %s: %s\n", stat_pathname, strerror(errno));
+			continue;
+		}
+		if (FILTER_DIRS(dir_info[i]->filter) && 
+				(dir_info[i]->depends_on_entry && (! S_ISDIR(status.st_mode))))
+			continue;
+		if (FILTER_FILES(dir_info[i]->filter) && 
+				(dir_info[i]->depends_on_entry && (! S_ISREG(status.st_mode))))
+			continue;
 #ifdef DEBUG	
-                printf("-> event on    %s\n", dir_info[i]->pathname);
-                printf("-> filename:   %s\n", offending_name);
-                printf("-> event mask: %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
+		printf("-> event on    %s\n", dir_info[i]->pathname);
+		printf("-> filename:   %s\n", offending_name);
+		printf("-> event mask: %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
 #endif
-                /* launches a thread to deal with the event */
-                info = (struct thread_info *) malloc(sizeof(struct thread_info));
-                info->di_index = i;
-                snprintf(info->offending_name, sizeof(info->offending_name), "%s", offending_name);
-                pthread_create(&tid, NULL, perform_action, (void *) info);
-        }
+		/* launches a thread to deal with the event */
+		info = (struct thread_info *) malloc(sizeof(struct thread_info));
+		info->di_index = i;
+		snprintf(info->offending_name, sizeof(info->offending_name), "%s", offending_name);
+		pthread_create(&tid, NULL, perform_action, (void *) info);
+	}
 }
 
 void
@@ -340,7 +340,7 @@ listen_for_events(void)
 	struct inotify_event event[128];
 	size_t n;
 	int evnum;
-	
+
 	while (2) {
 		select_on_inotify();
 		n = read(inotify_fd, event, sizeof(event));
@@ -352,7 +352,7 @@ listen_for_events(void)
 		}
 
 		for (evnum = 0; evnum < n/sizeof(struct inotify_event); ++evnum)
-                        treat_events(&event[evnum]);
+			treat_events(&event[evnum]);
 	}
 }
 
@@ -392,18 +392,18 @@ int
 monitor_directory(int i)
 {
 	int j;
-        uint32_t mask, current_mask;
+	uint32_t mask, current_mask;
 
-        /* 
-         * Check for the existing entries if this directory is already being listened.
-         * If that's true, then we must append a new mask instead of replacing the
-         * current one.
-         */
-        for (current_mask = 0, j = 0; j < i; ++j) {
-                if (! strcmp(dir_info[i]->pathname, dir_info[j]->pathname))
-                        current_mask |= dir_info[j]->mask;
-        }
-	
+	/* 
+	 * Check for the existing entries if this directory is already being listened.
+	 * If that's true, then we must append a new mask instead of replacing the
+	 * current one.
+	 */
+	for (current_mask = 0, j = 0; j < i; ++j) {
+		if (! strcmp(dir_info[i]->pathname, dir_info[j]->pathname))
+			current_mask |= dir_info[j]->mask;
+	}
+
 	mask = dir_info[i]->mask | current_mask;
 	dir_info[i]->wd = inotify_add_watch(inotify_fd, dir_info[i]->pathname, mask);
 
@@ -415,14 +415,14 @@ monitor_directory(int i)
 		monitor_index++;
 		fprintf(stdout, "Monitoring %s\n", dir_info[i]->pathname);
 	}
-        return 0;
+	return 0;
 }
 
 int
 parse_masks(char *masks, int rule)
 {
 	int ret = EMPTY_MASK;
-	
+
 	if ((strstr(masks, "CLOSE_WRITE")))
 		ret |= IN_CLOSE_WRITE;
 	if ((strstr(masks, "MOVED_TO")))
@@ -442,7 +442,7 @@ expect_rule_start(FILE *fp)
 {
 	char *token;
 	char buf[LINE_MAX];
-	
+
 	while (! feof (fp)) {
 		memset(buf, 0, sizeof(buf));
 		fgets(buf, sizeof(buf), fp);
@@ -452,7 +452,7 @@ expect_rule_start(FILE *fp)
 		token = strtok(buf, " \t\n");
 		if (token == NULL)
 			continue;
-		
+
 		if (token[strlen(token)-1] == '\n')
 			token[strlen(token)-1] = '\0';
 
@@ -470,17 +470,17 @@ expect_rule_end(FILE *fp)
 {
 	char *token;
 	char buf[LINE_MAX];
-	
+
 	while (! feof (fp)) {
 		memset(buf, 0, sizeof(buf));
 		fgets(buf, sizeof(buf), fp);
 		if ((buf == NULL) || (buf[0] == '#') || ((strlen(buf)) == 0))
 			continue;
-		
+
 		token = strtok(buf, " \t\n");
 		if (token == NULL)
 			continue;
-		
+
 		if (token[strlen(token)-1] == '\n')
 			token[strlen(token)-1] = '\0';
 
@@ -498,7 +498,7 @@ get_rule_for(char *entry, FILE *fp)
 {
 	char *token = NULL;
 	char buf[LINE_MAX];
-	
+
 	while (! feof (fp)) {
 		memset(buf, 0, sizeof(buf));
 		fgets(buf, sizeof(buf), fp);
@@ -513,11 +513,11 @@ get_rule_for(char *entry, FILE *fp)
 	/* check for ENTRY match */
 	if (! strstr (buf, entry))
 		return NULL;
-	
+
 	token = strtok(buf, "=");
 	if (! token)
 		return NULL;
-	
+
 	/* get the RULE associated with ENTRY */
 	token = token + strlen(token) + 1;
 	while (*token == '\t' || *token == ' ')
@@ -525,7 +525,7 @@ get_rule_for(char *entry, FILE *fp)
 
 	if (! token)
 		return NULL;
-		
+
 	if (token[strlen(token)-1] == '\n')
 		token[strlen(token)-1] = '\0';
 
@@ -538,7 +538,7 @@ assign_rules(char *config_file)
 	int i, n, subdirs, ret;
 	FILE *fp;
 	char *token, regex_rule[LINE_MAX];
-	
+
 	fp = fopen(config_file, "r");
 	if (! fp) {
 		fprintf(stderr, "fopen %s: %s\n", config_file, strerror(errno));
@@ -567,7 +567,7 @@ assign_rules(char *config_file)
 			}
 			token[strlen(token)-1] = '\0';
 			sprintf(pathname, token);
-			
+
 		} else if (strstr(buf, "RECURSIVE") && strstr(buf, "YES")) {
 			ftw(pathname, count_subdirs, 1024);
 			subdirs += num_subdirs;
@@ -578,7 +578,7 @@ assign_rules(char *config_file)
 	/* there's no rules at all */
 	if (n == 0)
 		return 0;
-	
+
 	rewind(fp);
 
 	dir_info = (struct directory_info **) calloc(n+1+num_subdirs, sizeof(struct directory_info *));
@@ -586,9 +586,9 @@ assign_rules(char *config_file)
 		perror("calloc");
 		return -ENOMEM;
 	}
-	
+
 	printf("dir_info alocado com %d neguinhos\n", n+1+num_subdirs);
-		
+
 	/* register the pathname */
 	for (monitor_index = 0; monitor_index < n+num_subdirs; /* do not increment */) {
 		/* monitor_index is incremented inside monitor_directory() */
@@ -609,7 +609,7 @@ assign_rules(char *config_file)
 
 		dir_info[i] = (struct directory_info *) calloc(1, sizeof(struct directory_info));
 		snprintf(dir_info[i]->pathname, sizeof(dir_info[i]->pathname), token);
-                free(token);
+		free(token);
 
 		/* register the masks */
 		token = get_rule_for("WATCHES", fp);
@@ -623,7 +623,7 @@ assign_rules(char *config_file)
 			fprintf(stderr, "Error on rule #%d: invalid WATCH %s\n", i+1, token);
 			return -1;
 		}
-                free(token);
+		free(token);
 
 		/* get the exec command */
 		token = get_rule_for("SPAWN", fp);
@@ -633,9 +633,9 @@ assign_rules(char *config_file)
 		}
 		snprintf(dir_info[i]->exec_cmd, sizeof(dir_info[i]->exec_cmd), token);
 
-                /* if there's $ENTRY on the SPAWN command, this rule expects it to exist */
-                dir_info[i]->depends_on_entry = (strstr(token, "$ENTRY") == NULL ? 0 : 1);
-                free(token);
+		/* if there's $ENTRY on the SPAWN command, this rule expects it to exist */
+		dir_info[i]->depends_on_entry = (strstr(token, "$ENTRY") == NULL ? 0 : 1);
+		free(token);
 
 		/* get the filters */
 		token = get_rule_for("LOOKAT", fp);
@@ -650,11 +650,11 @@ assign_rules(char *config_file)
 			dir_info[i]->filter = S_IFREG;
 		else {
 			fprintf(stderr, "Error on rule #%d: invalid LOOKAT option %s\n", i+1, token);
-                        free(token);
+			free(token);
 			return -1;
 		}
-                free(token);
-		
+		free(token);
+
 		/* get the regex rule */
 		token = get_rule_for("ACCEPT_REGEX", fp);
 		if (! token) {
@@ -663,8 +663,8 @@ assign_rules(char *config_file)
 		}
 
 		snprintf(regex_rule, sizeof(regex_rule), "%s", token);
-                free(token);
-                
+		free(token);
+
 		ret = regcomp(&dir_info[i]->regex, regex_rule, REG_EXTENDED);
 		if (ret != 0) {
 			char err_msg[256];
@@ -686,11 +686,11 @@ assign_rules(char *config_file)
 			dir_info[i]->recursive = 1;
 		else {
 			fprintf(stderr, "Error on rule #%d: invalid RECURSIVE option %s\n", i+1, token);
-                        free(token);
+			free(token);
 			return -1;
 		}
-                free(token);
-		
+		free(token);
+
 		/* expects to find the '}' character */
 		if ((expect_rule_end(fp)) < 0) {
 			fprintf(stderr, "Error: could not find the rule end marker '}'\n");
@@ -699,8 +699,8 @@ assign_rules(char *config_file)
 
 		/* create the monitor rules */
 		ret = monitor_directory(i);
-                if (ret < 0)
-                        return ret;
+		if (ret < 0)
+			return ret;
 	}
 
 	fclose(fp);
@@ -710,42 +710,42 @@ assign_rules(char *config_file)
 void
 show_usage(char *program_name)
 {
-        fprintf(stderr, "Usage: %s [options]\n\nAvailable options are:\n"
-                "--config, -c <file>    Use config file as specified in <file>\n"
-                "--help, -h             This help\n", program_name);
+	fprintf(stderr, "Usage: %s [options]\n\nAvailable options are:\n"
+			"--config, -c <file>    Use config file as specified in <file>\n"
+			"--help, -h             This help\n", program_name);
 }
 
 static char short_opts[] = "c:h";
 static struct option long_options[] = {
-    {"config", required_argument, NULL, 'c'},
-    {"help",         no_argument, NULL, 'h'},
-    {0, 0, 0, 0}
+	{"config", required_argument, NULL, 'c'},
+	{"help",         no_argument, NULL, 'h'},
+	{0, 0, 0, 0}
 };
 
 int
 main(int argc, char **argv)
 {
 	int ret, c, index;
-        char *config_file = NULL;
+	char *config_file = NULL;
 
-        /* check for arguments */
-        while ((c = getopt_long(argc, argv, short_opts, long_options, &index)) != -1) {
-                switch (c) {
-                        case 0:
-                        case '?':
-                                return 1;
-                        case 'h':
-                                show_usage(argv[0]);
-                                return 0;
-                        case 'c':
-                                config_file = strdup(optarg);
-                                break;
-                        default:
+	/* check for arguments */
+	while ((c = getopt_long(argc, argv, short_opts, long_options, &index)) != -1) {
+		switch (c) {
+			case 0:
+			case '?':
+				return 1;
+			case 'h':
+				show_usage(argv[0]);
+				return 0;
+			case 'c':
+				config_file = strdup(optarg);
+				break;
+			default:
 				printf ("invalid option %d\n", c);
 				show_usage (argv[0]);
-                }
-        }
-        
+		}
+	}
+
 	/* opens the inotify device */
 	inotify_fd = inotify_init();
 	if (inotify_fd < 0) {
@@ -753,21 +753,21 @@ main(int argc, char **argv)
 		exit(EXIT_FAILURE);
 	}
 
-        if (! config_file)
-                config_file = strdup(LISTENER_RULES);
-        
+	if (! config_file)
+		config_file = strdup(LISTENER_RULES);
+
 	/* read rules from listener.rules */
 	ret = assign_rules(config_file);
 	if (ret < 0) {
-                free(config_file);
+		free(config_file);
 		exit(EXIT_FAILURE);
-        }
-	
-        free(config_file);
+	}
+
+	free(config_file);
 
 	/* install a signal handler to clean up memory */
 	signal(SIGINT, suicide);
-	
+
 	listen_for_events();
 	exit(EXIT_SUCCESS);
 }
