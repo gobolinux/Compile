@@ -38,6 +38,12 @@
 #define FILTER_DIRS(m)  S_ISDIR(m)
 #define FILTER_FILES(m) S_ISREG(m)
 
+#ifdef DEBUG
+#define dprintf(x...) printf(x)
+#else
+#define dprintf(x...) do { } while(0);
+#endif
+
 struct thread_info {
 	int di_index;					/* the struct directory_info's index */
 	char offending_name[PATH_MAX];	/* the file/directory entry we're dealing with */
@@ -54,5 +60,7 @@ struct directory_info {
 	int filter;					/* while reading the directory, only look at this kind of entries */
 	int depends_on_entry;		/* tells if exec_cmd depends on $ENTRY being still valid to perform its action */
 };
+
+int monitor_directory(int i, struct directory_info **di);
 
 #endif /* LISTENER_H */

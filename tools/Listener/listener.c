@@ -199,11 +199,11 @@ treat_events(struct inotify_event *ev)
 		if (FILTER_FILES(dir_info[i]->filter) && 
 				(dir_info[i]->depends_on_entry && (! S_ISREG(status.st_mode))))
 			continue;
-#ifdef DEBUG	
-		printf("-> event on    %s\n", dir_info[i]->pathname);
-		printf("-> filename:   %s\n", offending_name);
-		printf("-> event mask: %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
-#endif
+
+		dprintf("-> event on    %s\n", dir_info[i]->pathname);
+		dprintf("-> filename:   %s\n", offending_name);
+		dprintf("-> event mask: %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
+
 		/* launches a thread to deal with the event */
 		info = (struct thread_info *) malloc(sizeof(struct thread_info));
 		info->di_index = i;
@@ -317,7 +317,7 @@ main(int argc, char **argv)
 				config_file = strdup(optarg);
 				break;
 			default:
-				printf ("invalid option %d\n", c);
+				printf("invalid option %d\n", c);
 				show_usage (argv[0]);
 		}
 	}

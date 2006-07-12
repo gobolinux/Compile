@@ -204,7 +204,7 @@ count_subdirs(const char *file, const struct stat *sb, int flag)
 {
 	if (flag == FTW_D) {
 		/* is a subdirectory */
-		printf("-> %s\n", file);
+		dprintf("-> %s\n", file);
 		num_subdirs++;
 	}
 	return 0;
@@ -266,14 +266,13 @@ assign_rules(char *config_file, int *retval)
 		return NULL;
 	}
 
+	dprintf("total subdirs = %d, allocating %d entries\n", subdirs, n+1+subdirs);
 	dir_info = (struct directory_info **) calloc(n+1+subdirs, sizeof(struct directory_info *));
 	if (! dir_info) {
 		perror("calloc");
 		return NULL;
 	}
 
-	printf("total subdirs = %d\n", subdirs);
-	printf("dir_info alocado com %d neguinhos\n", n+1+subdirs);
 	rewind(fp);
 	
 	/* register the pathname */
@@ -283,7 +282,7 @@ assign_rules(char *config_file, int *retval)
 
 		/* expects to find the '{' character */
 		if ((expect_rule_start(fp)) < 0) {
-			fprintf(stderr, "Error: could not find the rule start marker '{'\n");
+			fprintf(stderr, "Error: could not find the rule's start marker '{'\n");
 			return NULL;
 		}
 
@@ -380,7 +379,7 @@ assign_rules(char *config_file, int *retval)
 
 		/* expects to find the '}' character */
 		if ((expect_rule_end(fp)) < 0) {
-			fprintf(stderr, "Error: could not find the rule end marker '}'\n");
+			fprintf(stderr, "Error: could not find the rule's end marker '}'\n");
 			return NULL;
 		}
 
