@@ -15,8 +15,8 @@ install: listener listener.conf
 clean:
 	-rm -f *.o *~ listener
 
-listener: listener.o
-	$(CC) listener.o -o listener $(LDFLAGS)
+listener: listener.o rules.o
+	$(CC) listener.o rules.o -o listener $(LDFLAGS)
 
-listener.o: listener.c
-	$(CC) -c listener.c $(CFLAGS)
+%.o: %.c
+	$(CC) -c $< $(CFLAGS)
