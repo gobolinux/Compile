@@ -254,7 +254,7 @@ walk_tree(const char *file, const struct stat *sb, int flag)
 }
 
 int
-monitor_directory(int i)
+monitor_directory(int i, struct directory_info **di)
 {
 	int j;
 	uint32_t mask, current_mask;
@@ -265,20 +265,20 @@ monitor_directory(int i)
 	 * current one.
 	 */
 	for (current_mask = 0, j = 0; j < i; ++j) {
-		if (! strcmp(dir_info[i]->pathname, dir_info[j]->pathname))
-			current_mask |= dir_info[j]->mask;
+		if (! strcmp(di[i]->pathname, di[j]->pathname))
+			current_mask |= di[j]->mask;
 	}
 
-	mask = dir_info[i]->mask | current_mask;
-	dir_info[i]->wd = inotify_add_watch(inotify_fd, dir_info[i]->pathname, mask);
+	mask = di[i]->mask | current_mask;
+	di[i]->wd = inotify_add_watch(inotify_fd, di[i]->pathname, mask);
 
-	if (dir_info[i]->recursive) {
+	if (di[i]->recursive) {
 		//dirinfo_index = i;
 		dirinfo_mask = mask;
-		ftw(dir_info[i]->pathname, walk_tree, 1024);
+		ftw(di[i]->pathname, walk_tree, 1024);
 	} else {
 		monitor_index++;
-		fprintf(stdout, "Monitoring %s\n", dir_info[i]->pathname);
+		fprintf(stdout, "Monitoring %s\n", di[i]->pathname);
 	}
 	return 0;
 }

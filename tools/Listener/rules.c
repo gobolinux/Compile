@@ -266,18 +266,18 @@ assign_rules(char *config_file, int *retval)
 		return NULL;
 	}
 
-	rewind(fp);
-
-	dir_info = (struct directory_info **) calloc(n+1+num_subdirs, sizeof(struct directory_info *));
+	dir_info = (struct directory_info **) calloc(n+1+subdirs, sizeof(struct directory_info *));
 	if (! dir_info) {
 		perror("calloc");
 		return NULL;
 	}
 
-	printf("dir_info alocado com %d neguinhos\n", n+1+num_subdirs);
+	printf("total subdirs = %d\n", subdirs);
+	printf("dir_info alocado com %d neguinhos\n", n+1+subdirs);
+	rewind(fp);
 	
 	/* register the pathname */
-	for (monitor_index = 0; monitor_index < n+num_subdirs; /* do not increment */) {
+	for (monitor_index = 0; monitor_index < n+subdirs; /* do not increment */) {
 		/* monitor_index is incremented inside monitor_directory() */
 		i = monitor_index;
 
@@ -385,7 +385,7 @@ assign_rules(char *config_file, int *retval)
 		}
 
 		/* create the monitor rules */
-		ret = monitor_directory(i);
+		ret = monitor_directory(i, dir_info);
 		if (ret < 0) {
 			return NULL;
 		}
