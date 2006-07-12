@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TOPDIR=..
+TOPDIR="$PWD/.."
 
 source GoboPath
 source ScriptFunctions
@@ -16,42 +16,210 @@ else
     prefix="$cross_prefix_dir"
 fi
 
-if [ "$SHRINK_HEADERS" = "y" ]
+
+#
+# Creates a backup of the working tree before cleaning it up
+#
+backup_dir=`basename $prefix`
+backup_file="${backup_dir}-Backup-Full.tar.gz"
+root_dir=`readlink -f $prefix/..`
+
+if [ ! -f $root_dir/$backup_file ]
 then
-    echo "Removing headers..."
+    Log_Normal "Making a backup of the bootstrapped tree..."
+    pushd $root_dir > /dev/null
+    tar czpf $backup_file $backup_dir || exit 1
+    popd > /dev/null
+    Log_Normal "Backup created and stored at $root_dir/$backup_file"
+else
+    Log_Normal "Backup found at $root_dir/$backup_file, will not create another"
 fi
 
-if [ "$SHRINK_STATIC_LIBS" ]
+
+#
+# Performs cleanup on individual packages
+#
+for i in $prefix/$goboPrograms/*
+do
+    Log_Terse "Shrinking package `basename $i`"
+    pushd $i/Current > /dev/null || exit 1
+    
+    if [ "$SHRINK_ALL" ]
+    then
+        Log_Normal "Removing as much data as possible..."
+        package=`basename $i`
+        [ -f $TOPDIR/packages/$package/Shrink ] && $TOPDIR/packages/$package/Shrink
+    fi
+
+    if [ "$SHRINK_HEADERS" = "y" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing headers..."
+        find include -type f -name "*.h" 2> /dev/null | xargs rm -f 2> /dev/null
+        find include -type d 2> /dev/null | xargs rmdir 2> /dev/null
+        rmdir include 2> /dev/null
+    fi
+
+    if [ "$SHRINK_STATIC_LIBS" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing static libraries..."
+        find lib -type f -name "*.a" 2> /dev/null | xargs rm -f 2> /dev/null
+        find lib -type d 2> /dev/null | xargs rmdir 2> /dev/null
+        rmdir lib 2> /dev/null
+    fi
+
+    if [ "$SHRINK_LIBTOOL" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing libtool related files..."
+        find lib -type f -name "*.la" 2> /dev/null | xargs rm -f 2> /dev/null
+        find lib -type d 2> /dev/null | xargs rmdir 2> /dev/null
+        rmdir lib 2> /dev/null
+    fi
+
+    if [ "$SHRINK_PKGCONFIG" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing pkgconfig related files..."
+        rm -Rf lib/pkgconfig 2> /dev/null
+        rmdir lib 2> /dev/null
+    fi
+
+    if [ "$SHRINK_DOCS" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing documentation..."
+        rm -Rf Shared/doc doc Shared/man man Shared/info info 2> /dev/null
+        rmdir Shared 2> /dev/null
+    fi
+
+    if [ "$SHRINK_LOCALES" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing internationalization data..."
+        rm -Rf Shared/locale lib/locale 2> /dev/null
+        rmdir Shared 2> /dev/null
+        rmdir lib    2> /dev/null
+    fi
+
+    if [ "$SHRINK_M4_MACROS" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Removing aclocal macros..."
+        rm -Rf Shared/aclocal lib/aclocal 2> /dev/null
+        rmdir Shared 2> /dev/null
+        rmdir lib    2> /dev/null
+    fi
+    
+    if [ "$SHRINK_DEFAULT_SETTINGS" ]
+    then
+        Log_Normal "Removing backup of the default settings..."
+    fi
+    
+    if [ "$SHRINK_STRIP_ALL" ]
+    then
+        [ ! "$SHRINK_ALL" ] && Log_Normal "Stripping executables and libraries..."
+        [ -z "$STRIP" ] && STRIP="strip"
+        $STRIP --strip-all bin/* sbin/* lib/* 2> /dev/null
+    fi
+
+    popd > /dev/null
+    Log_Terse "Done."
+done
+
+
+#
+# Performs cleanup on installed fonts
+#
+function remove_fonts() {
+    pushd $prefix/Files/Fonts > /dev/null
+    for i in `find . -name "*.dir"`
+    do
+        pushd `dirname $i` > /dev/null
+        for i in "$@"
+        do
+            ls $i
+        done
+        popd > /dev/null
+    done
+    popd > /dev/null
+}
+
+if [ ! "$NLS_ISO8859_1" ]
 then
-    echo "Removing static libraries..."
+    Log_Normal "Removing ISO8859-1 fonts..."
+    remove_fonts "*8859-1.*"
 fi
 
-if [ "$SHRINK_LIBTOOL" ]
+if [ ! "$NLS_ISO8859_2" ]
 then
-    echo "Removing libtool related files..."
+    Log_Normal "Removing ISO8859-2 fonts..."
+    remove_fonts "*8859-2.*"
 fi
 
-if [ "$SHRINK_PKGCONFIG" ]
+if [ ! "$NLS_ISO8859_3" ]
 then
-    echo "Removing pkgconfig related files..."
+    Log_Normal "Removing ISO8859-3 fonts..."
+    remove_fonts "*8859-3.*"
 fi
 
-if [ "$SHRINK_DOCS" ]
+if [ ! "$NLS_ISO8859_4" ]
 then
-    echo "Removing documentation..."
+    Log_Normal "Removing ISO8859-4 fonts..."
+    remove_fonts "*8859-4.*"
 fi
 
-if [ "$SHRINK_DEFAULT_SETTINGS" ]
+if [ ! "$NLS_ISO8859_5" ]
 then
-    echo "Removing backup of the default settings..."
+    Log_Normal "Removing ISO8859-5 fonts..."
+    remove_fonts "*8859-5.*"
 fi
 
-if [ "$SHRINK_LOCALES" ]
+if [ ! "$NLS_ISO8859_6" ]
 then
-    echo "Removing internatioalization data..."
+    Log_Normal "Removing ISO8859-6 fonts..."
+    remove_fonts "*8859-6.*"
 fi
 
-if [ "$SHRINK_M4_MACROS" ]
+if [ ! "$NLS_ISO8859_7" ]
 then
-    echo "Removing aclocal macros..."
+    Log_Normal "Removing ISO8859-7 fonts..."
+    remove_fonts "*8859-7.*"
 fi
+
+if [ ! "$NLS_ISO8859_9" ]
+then
+    Log_Normal "Removing ISO8859-9 fonts..."
+    remove_fonts "*8859-9.*"
+fi
+
+if [ ! "$NLS_ISO8859_13" ]
+then
+    Log_Normal "Removing ISO8859-13 fonts..."
+    remove_fonts "*8859-13.*"
+fi
+
+if [ ! "$NLS_ISO8859_14" ]
+then
+    Log_Normal "Removing ISO8859-14 fonts..."
+    remove_fonts "*8859-14.*"
+fi
+
+if [ ! "$NLS_ISO8859_15" ]
+then
+    Log_Normal "Removing ISO8859-15 fonts..."
+    remove_fonts "*8859-15.*"
+fi
+
+if [ ! "$NLS_KOI8_R" ]
+then
+    Log_Normal "Removing KOI8-R fonts..."
+    remove_fonts "*KOI8*" "koi*"
+fi
+
+if [ ! "$NLS_JISX0201" ]
+then
+    Log_Normal "Removing JISX0201 fonts..."
+    remove_fonts "jisx*" "*JISX*"
+fi
+
+
+#
+# Remove broken links
+#
+Log_Normal "Removing broken links..."
+find $prefix | RemoveBroken

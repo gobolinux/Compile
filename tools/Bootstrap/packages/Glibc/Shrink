@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # leave only binaries for ldd and ldconfig
-ls bin/  | grep -v ldd$      | xargs rm -f
-ls sbin/ | grep -v ldconfig$ | xargs rm -f
+ls bin/  | grep -v ldd$      | while read i; do rm -f bin/$i; done
+ls sbin/ | grep -v ldconfig$ | while read i; do rm -f sbin/$i; done
 
 rm -f  lib/*.o
 rm -f  lib/*.a

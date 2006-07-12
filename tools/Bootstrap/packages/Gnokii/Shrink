@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# leave only binaries for gnokii
+rm -Rf sbin
+ls bin/ | grep -v gnokii$ | while read i; do rm -f bin/$i; done
+
+# remove documentation
+rm -Rf Shared
