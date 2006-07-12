@@ -10,7 +10,6 @@ export LANG=en_US
 ######################################
 msg "Starting Udev"
 /System/Links/Tasks/Udev
-/System/Links/Tasks/Coldplug
 
 ######################################
 # change console font
