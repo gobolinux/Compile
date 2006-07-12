@@ -304,6 +304,7 @@ config SHRINK_ALL
     select SHRINK_DOCS
     select SHRINK_LOCALES
     select SHRINK_M4_MACROS
+    select SHRINK_STRIP_ALL
 
 config SHRINK_HEADERS
 	bool "Remove headers"
@@ -328,6 +329,9 @@ config SHRINK_LOCALES
     
 config SHRINK_M4_MACROS
 	bool "Remove aclocal macros"  
+
+config SHRINK_STRIP_ALL
+	bool "Strip executables and libraries"
 
 menu "Native language support"
 config NLS_ISO8859_1
