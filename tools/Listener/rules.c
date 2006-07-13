@@ -68,11 +68,11 @@ get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 
 		for (j=0; j<strlen(pathname); ++j)
 			work_line[wi++] = pathname[j];
-
 		work_line[wi++] = '/';
 
 		for (j=0; j<strlen(info->offending_name); ++j)
 			work_line[wi++] = info->offending_name[j];
+		work_line[wi] = 0;
 
 		/* skip '$ENTRY' and copy the remaining data */
 		for (ptr+=6; *ptr; ptr++)

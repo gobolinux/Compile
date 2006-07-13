@@ -50,7 +50,6 @@ perform_action(void *thread_info)
 	int i = info->di_index;
 
 	snprintf(pathname, sizeof(pathname), "%s/%s", dir_info[i]->pathname, info->offending_name);
-	free(info);
 
 	pid = fork();
 	if (pid == 0) {
@@ -76,12 +75,13 @@ perform_action(void *thread_info)
 			if (skipped >= len)
 				break;
 		}
+		free(info);
 		exec_array = (char **) malloc(4 * sizeof(char *));
 		exec_array[0] = "/bin/sh";
 		exec_array[1] = "-c";
 		exec_array[2] = strdup(exec_cmd);
 		exec_array[3] = NULL;
-#ifdef DEBUG	
+#ifdef DEBUG
 		for (i = 0; exec_array[i] != NULL; ++i)
 			fprintf(stderr, "token: '%s'\n", exec_array[i]);
 #endif
@@ -174,6 +174,7 @@ treat_events(struct inotify_event *ev)
 		 */
 		if (! (dir_info[i]->mask & ev->mask)) {
 			/* no match, ignore this event for this descriptor */
+			dprintf("event doesn't come from watch descriptor %d\n", i);
 			continue;
 		}
 
@@ -183,6 +184,7 @@ treat_events(struct inotify_event *ev)
 		ret = regexec(&dir_info[i]->regex, offending_name, 1, &match, 0);
 		if (ret != 0) {
 			/* no match, ignore this event for this descriptor */
+			dprintf("event from watch descriptor %d, but regex doesn't match\n", i);
 			continue;
 		}
 
@@ -194,15 +196,21 @@ treat_events(struct inotify_event *ev)
 			continue;
 		}
 		if (FILTER_DIRS(dir_info[i]->filter) && 
-				(dir_info[i]->depends_on_entry && (! S_ISDIR(status.st_mode))))
+				(dir_info[i]->depends_on_entry && (! S_ISDIR(status.st_mode)))) {
+			dprintf("watch descriptor %d listens for DIRS rules, which is not the case here\n", i);
 			continue;
+		}
+		
 		if (FILTER_FILES(dir_info[i]->filter) && 
-				(dir_info[i]->depends_on_entry && (! S_ISREG(status.st_mode))))
+				(dir_info[i]->depends_on_entry && (! S_ISREG(status.st_mode)))) {
+			dprintf("watch descriptor %d listens for FILES rules, which is not the case here\n", i);
 			continue;
+		}
 
-		dprintf("-> event on    %s\n", dir_info[i]->pathname);
-		dprintf("-> filename:   %s\n", offending_name);
-		dprintf("-> event mask: %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
+		dprintf("-> event on watch descriptor %d\n", i);
+		dprintf("-> event on dir %s\n", dir_info[i]->pathname);
+		dprintf("-> filename:    %s\n", offending_name);
+		dprintf("-> event mask:  %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
 
 		/* launches a thread to deal with the event */
 		info = (struct thread_info *) malloc(sizeof(struct thread_info));
@@ -215,13 +223,13 @@ treat_events(struct inotify_event *ev)
 void
 listen_for_events(void)
 {
-	struct inotify_event event[128];
 	size_t n;
 	int evnum;
+	char buf[1024 * (sizeof(struct inotify_event) + 16)];
 
 	while (2) {
 		select_on_inotify();
-		n = read(inotify_fd, event, sizeof(event));
+		n = read(inotify_fd, buf, sizeof(buf));
 		if (n < 0) {
 			perror("read");
 			break;
@@ -229,8 +237,12 @@ listen_for_events(void)
 			continue;
 		}
 
-		for (evnum = 0; evnum < n/sizeof(struct inotify_event); ++evnum)
-			treat_events(&event[evnum]);
+		evnum = 0;
+		while (evnum < n) {
+			struct inotify_event *event = (struct inotify_event *) &buf[evnum];
+			treat_events(event);
+			evnum += sizeof(struct inotify_event) + event->len;
+		}
 	}
 }
 
