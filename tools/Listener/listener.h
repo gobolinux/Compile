@@ -33,7 +33,7 @@
 #endif
 
 #define LISTENER_RULES  SYSCONFDIR"/listener.conf"
-#define EMPTY_MASK      IN_ONESHOT
+#define EMPTY_MASK      0
 
 #define FILTER_DIRS(m)  S_ISDIR(m)
 #define FILTER_FILES(m) S_ISREG(m)
