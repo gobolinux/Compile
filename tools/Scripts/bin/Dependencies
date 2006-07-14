@@ -28,7 +28,7 @@ Add_Option_Boolean "a" "all" "inspect all files, not only those in 'bin', 'sbin'
 Add_Option_Boolean "m" "missing-only" "Display missing dependencies only. (check mode only)"
 Add_Option_Boolean "H" "higher-or-missing-only" "Display missing dependencies or higher versions only. (check mode only)"
 Add_Option_Boolean "l" "list" "List dependency file, if any (generate if not present)."
-Add_Option_Boolean "d" "dependencies-file" "Do not look at parses the passed file."
+Add_Option_Boolean "d" "dependencies-file" "Check for the dependencies listed in the given file."
 Add_Option_Entry   "e" "execute" "Execute the command on each missing/higher. (check mode only)" ""
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Entry   "p" "programs" "<dir> to check dependencies against."
@@ -81,6 +81,17 @@ function path2programs() {
            -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";' \
            -e '$_ =~ m@([# ]+.*)@ && print "$1 $2 $3 $4\n";'
 }
+
+# a blacklist for packages we don't want to process.
+blacklistfile="`Find_Conf "Dependencies.blacklist"`"
+blacklist=("do_not_match")
+if [ "$blacklistfile" ]
+then
+   for app in `cat "$blacklistfile"`
+   do blacklist=("${blacklist[@]}" "$app ")
+   done
+fi
+
 
 ### --file: Check one file only #########################################################
 
@@ -215,6 +226,12 @@ then
       then
          version="CVS"
       fi
+      echo $program | FilterLines -n "${blacklist[@]}" > /dev/null
+      if [ $? = 0 ]
+      then
+         Log_Normal "Dependency $program is in blacklist, skipping."
+         continue
+      fi
       iprogram=`GuessProgramCase $program $version`
       if [ ! -d "$goboPrograms/$iprogram" ] # program not found
       then
@@ -284,15 +301,6 @@ then
    writer="$sudo_exec tee $prefix/$deps_file"
 else
    writer="cat"
-fi
-
-blacklistfile="`Find_Conf "Dependencies.blacklist"`"
-blacklist=("do_not_match")
-if [ "$blacklistfile" ]
-then
-   for app in `cat "$blacklistfile"`
-   do blacklist=("${blacklist[@]}" "^$app ")
-   done
 fi
 
 if [ "$prefix" ]
