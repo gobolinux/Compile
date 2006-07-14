@@ -178,7 +178,7 @@ get_rule_for(char *entry, FILE *fp)
 }
 
 int
-parse_masks(char *masks, int rule)
+parse_masks(char *masks)
 {
 	int ret = EMPTY_MASK;
 
@@ -196,28 +196,13 @@ parse_masks(char *masks, int rule)
 	return ret;
 }
 
-static int num_subdirs = 1;
-
-int
-count_subdirs(const char *file, const struct stat *sb, int flag)
-{
-	if (flag == FTW_D) {
-		/* is a subdirectory */
-		dprintf("-> %s\n", file);
-		num_subdirs++;
-	}
-	return 0;
-}
-
-extern int monitor_index;
-
-struct directory_info **
+struct directory_info *
 assign_rules(char *config_file, int *retval)
 {
-	int i, n, subdirs, ret;
+	int i, n, ret;
 	FILE *fp;
-	char *token, regex_rule[LINE_MAX];
-	struct directory_info **dir_info;
+	char *token;
+	struct directory_info *dir_info, *di;
 
 
 	/* we didn't have success on the operation yet */
@@ -230,7 +215,7 @@ assign_rules(char *config_file, int *retval)
 	}
 
 	/* read how many rules we have */
-	n = subdirs = 0;
+	n = 0;
 	while (! feof(fp)) {
 		char buf[LINE_MAX];
 		char pathname[LINE_MAX];
@@ -251,11 +236,6 @@ assign_rules(char *config_file, int *retval)
 			}
 			token[strlen(token)-1] = '\0';
 			sprintf(pathname, token);
-
-		} else if (strstr(buf, "RECURSIVE") && strstr(buf, "YES")) {
-			ftw(pathname, count_subdirs, 1024);
-			subdirs += num_subdirs;
-			num_subdirs = 0;
 		}
 	}
 
@@ -265,20 +245,21 @@ assign_rules(char *config_file, int *retval)
 		return NULL;
 	}
 
-	dprintf("total subdirs = %d, allocating %d entries\n", subdirs, n+1+subdirs);
-	dir_info = (struct directory_info **) calloc(n+1+subdirs, sizeof(struct directory_info *));
+	/* this is the linked list's first element */
+	dir_info = (struct directory_info *) calloc(1, sizeof(struct directory_info));
 	if (! dir_info) {
 		perror("calloc");
 		return NULL;
 	}
 
+	/* and we work always on this pointer */
+	di = dir_info;
+
 	rewind(fp);
 	
 	/* register the pathname */
-	for (monitor_index = 0; monitor_index < n+subdirs; /* do not increment */) {
-		/* monitor_index is incremented inside monitor_directory() */
-		i = monitor_index;
-
+	for (i = 0; i < n; ++i) {
+		
 		/* expects to find the '{' character */
 		if ((expect_rule_start(fp)) < 0) {
 			fprintf(stderr, "Error: could not find the rule's start marker '{'\n");
@@ -292,8 +273,19 @@ assign_rules(char *config_file, int *retval)
 			return NULL;
 		}
 
-		dir_info[i] = (struct directory_info *) calloc(1, sizeof(struct directory_info));
-		snprintf(dir_info[i]->pathname, sizeof(dir_info[i]->pathname), token);
+		if (i > 0) {
+			struct directory_info *old = di;
+			
+			/* di is no more a pointer to dir_info */
+			di = (struct directory_info *) calloc(1, sizeof(struct directory_info));
+			if (! dir_info) {
+				perror("calloc");
+				return NULL;
+			}
+			
+			old->next = di;
+		}
+		snprintf(di->pathname, sizeof(di->pathname), token);
 		free(token);
 
 		/* register the masks */
@@ -303,8 +295,8 @@ assign_rules(char *config_file, int *retval)
 			return NULL;
 		}
 
-		dir_info[i]->mask = parse_masks(token, i+1);
-		if (dir_info[i]->mask == EMPTY_MASK) {
+		di->mask = parse_masks(token);
+		if (di->mask == EMPTY_MASK) {
 			fprintf(stderr, "Error on rule #%d: invalid WATCH %s\n", i+1, token);
 			return NULL;
 		}
@@ -316,10 +308,10 @@ assign_rules(char *config_file, int *retval)
 			fprintf(stderr, "Error on rule #%d: missing SPAWN command\n", i+1);
 			return NULL;
 		}
-		snprintf(dir_info[i]->exec_cmd, sizeof(dir_info[i]->exec_cmd), token);
+		snprintf(di->exec_cmd, sizeof(di->exec_cmd), token);
 
 		/* if there's $ENTRY on the SPAWN command, this rule expects it to exist */
-		dir_info[i]->depends_on_entry = (strstr(token, "$ENTRY") == NULL ? 0 : 1);
+		di->depends_on_entry = (strstr(token, "$ENTRY") == NULL ? 0 : 1);
 		free(token);
 
 		/* get the filters */
@@ -330,9 +322,9 @@ assign_rules(char *config_file, int *retval)
 		}
 
 		if (! strcasecmp(token, "DIRS"))
-			dir_info[i]->filter = S_IFDIR;
+			di->filter = S_IFDIR;
 		else if (! strcasecmp(token, "FILES"))
-			dir_info[i]->filter = S_IFREG;
+			di->filter = S_IFREG;
 		else {
 			fprintf(stderr, "Error on rule #%d: invalid LOOKAT option %s\n", i+1, token);
 			free(token);
@@ -347,14 +339,14 @@ assign_rules(char *config_file, int *retval)
 			return NULL;
 		}
 
-		snprintf(regex_rule, sizeof(regex_rule), "%s", token);
+		snprintf(di->regex_rule, sizeof(di->regex_rule), "%s", token);
 		free(token);
 
-		ret = regcomp(&dir_info[i]->regex, regex_rule, REG_EXTENDED);
+		ret = regcomp(&di->regex, di->regex_rule, REG_EXTENDED);
 		if (ret != 0) {
 			char err_msg[256];
-			regerror(ret, &dir_info[i]->regex, err_msg, sizeof(err_msg) - 1);
-			fprintf(stderr, "Regex error \"%s\": %s\n", regex_rule, err_msg);
+			regerror(ret, &di->regex, err_msg, sizeof(err_msg) - 1);
+			fprintf(stderr, "Regex error \"%s\": %s\n", di->regex_rule, err_msg);
 			return NULL;
 		}
 
@@ -366,9 +358,9 @@ assign_rules(char *config_file, int *retval)
 		}
 
 		if (! strcasecmp(token, "NO"))
-			dir_info[i]->recursive = 0;
+			di->recursive = 0;
 		else if (! strcasecmp(token, "YES"))
-			dir_info[i]->recursive = 1;
+			di->recursive = 1;
 		else {
 			fprintf(stderr, "Error on rule #%d: invalid RECURSIVE option %s\n", i+1, token);
 			free(token);
@@ -383,10 +375,9 @@ assign_rules(char *config_file, int *retval)
 		}
 
 		/* create the monitor rules */
-		ret = monitor_directory(i, dir_info);
-		if (ret < 0) {
+		ret = monitor_directory(i, di);
+		if (ret < 0)
 			return NULL;
-		}
 	}
 
 	*retval = 0;
