@@ -88,7 +88,7 @@ blacklist=("do_not_match")
 if [ "$blacklistfile" ]
 then
    for app in `cat "$blacklistfile"`
-   do blacklist=("${blacklist[@]}" "$app ")
+   do blacklist=("${blacklist[@]}" "^$app ")
    done
 fi
 
@@ -218,19 +218,13 @@ then
    [ -f "$dependenciesfile" ] || Die "Dependencies file for $package version $version not found."
    result=0
 
-   for i in `grep -v "^#" "$dependenciesfile" | grep -v "^\\*" | grep -v "^$" | tr -- " \n" "@ "`
+   for i in `cat "$dependenciesfile" | grep -v "^#" | grep -v "^\\*" | grep -v "^$" | FilterLines -n "${blacklist[@]}" | tr -- " \n" "@ "`
    do
       program=`echo "$i" | cut -d"@" -f1`
       version=`echo "$i" | cut -d"@" -f2`
       if Ends_With "CVS" "$version"
       then
          version="CVS"
-      fi
-      echo $program | FilterLines -n "${blacklist[@]}" > /dev/null
-      if [ $? = 0 ]
-      then
-         Log_Normal "Dependency $program is in blacklist, skipping."
-         continue
       fi
       iprogram=`GuessProgramCase $program $version`
       if [ ! -d "$goboPrograms/$iprogram" ] # program not found
