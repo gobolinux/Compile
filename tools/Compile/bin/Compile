@@ -498,7 +498,7 @@ if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    dep="$recipedir/Resources/Dependencies"
    Boolean no-build && batch="--batch"
-   [ -f "$dep" ] && Dependencies $batch -d -c -h -e "$0 $compileoptions" "$dep"
+   [ -f "$dep" ] && Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep"
 fi
 
 ##################################################
