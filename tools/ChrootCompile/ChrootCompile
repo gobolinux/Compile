@@ -390,13 +390,37 @@ function guess_and_load_dependency() {
    done
 }
 
-for dep in `{
+deps=`{
    echo "${base_dependencies[*]} " "${cross_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
    [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
 } | sort -u`
+
+needsprocessing="yes" 
+while [ $needsprocessing = "yes" ]
 do
-   load_dependency "$dep"
+   needsprocessing="no"
+   for dep in $deps
+   do
+      [ -d $root/$goboPrograms/$dep ] && continue
+      echo Installing $dep...
+      load_dependency "$dep"
+
+      # if just loaded dependency has a Dependencies file...
+      if [ -e $root/$goboPrograms/$dep/Current/Resources/Dependencies ]
+      then
+         # for each program at dependencies list (no version handling)...
+         for i in `cat $root/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
+         do
+            # if the program is not already at dependencies list, append it and force extra recursion
+            if [ ! "`echo $deps | grep -w  $i`" -a "$i" != '#' ]
+            then
+               deps="$deps $i"
+               needsprocessing="yes"
+            fi
+         done
+      fi
+   done
 done
 
 #############################################################################
