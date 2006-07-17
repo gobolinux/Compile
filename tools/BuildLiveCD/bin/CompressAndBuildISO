@@ -110,9 +110,9 @@ then
    echo "Building root..."
    BuildRoot "Output/ROLayer" "Archives/Packages" $datadir/Packages-List-* || exit 1
 
+   echo "Rebuilding tools..." 
    for package in $tools 
    do
-      echo "Rebuilding tools..." 
       # we build the tools again to ensure they are prepared to the LiveCD environment
       [ -e $root/$package/$today/Makefile ] && { chroot $root make clean; chroot $root make all; } > /dev/null
    done
