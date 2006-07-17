@@ -31,7 +31,7 @@ else
 fi
 
 datadir="/Programs/BuildLiveCD/Current/Data"
-tools=`cat $datadir/Packages-List-GoboLinuxTools`
+tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts" 
 
 root=$PWD
 localcvs=$PWD/LocalCVS/
