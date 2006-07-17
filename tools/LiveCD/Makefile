@@ -15,7 +15,7 @@ language:
 	for file in ConfigureLiveCD KeymapDialog; \
 	do cat bin/$$file | sed "s/tr \(.*\)/tr\(\1\)/g" > $(LANG_TEMP_DIR)/$$file; \
 	done
-	cd $(LANG_TEMP_DIR)/../; pylupdate LiveCD.pro
+	cd $(LANG_TEMP_DIR)/../; pylupdate LiveCD.pro 2> /dev/null
 	rm -f $(LANG_TEMP_DIR)/*
 	rmdir $(LANG_TEMP_DIR)
 
