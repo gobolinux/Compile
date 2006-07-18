@@ -330,8 +330,20 @@ config SHRINK_LOCALES
 config SHRINK_M4_MACROS
 	bool "Remove aclocal macros"  
 
+choice
+	prompt "Removal of symbols"
+    default SHRINK_STRIP_ALL
+
 config SHRINK_STRIP_ALL
-	bool "Strip executables and libraries"
+	bool "All symbols from executables and libraries"
+
+config SHRINK_STRIP_UNNEEDED
+	bool "All symbols not needed by relocations"
+
+config SHRINK_STRIP_IGNORE
+	bool "Don't strip anything"
+
+endchoice
 
 menu "Native language support"
 config NLS_ISO8859_1

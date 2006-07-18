@@ -110,11 +110,20 @@ do
         Log_Normal "Removing backup of the default settings..."
     fi
     
+    unset STRIP_OPT
+    
     if [ "$SHRINK_STRIP_ALL" ]
+    then STRIP_OPT="--strip-all"
+    fi
+    if [ "$SHRINK_STRIP_UNNEEDED" ]
+    then STRIP_OPT="--strip-unneeded"
+    fi
+    
+    if [ "$STRIP_OPT" ]
     then
         [ ! "$SHRINK_ALL" ] && Log_Normal "Stripping executables and libraries..."
         [ -z "$STRIP" ] && STRIP="strip"
-        $STRIP --strip-all bin/* sbin/* lib/* 2> /dev/null
+        $STRIP $STRIP_OPT bin/* sbin/* lib/* 2> /dev/null
     fi
 
     popd > /dev/null
