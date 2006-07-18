@@ -65,11 +65,11 @@ useradd -c "`Entry comment`" -d "$homedir" -m $skel -s "`Entry shell`" $password
 Log_Verbose "Setting \"${goboUsers}/$name\" permissions..."
 chmod 0700 "${goboUsers}/$name"
 Log_Verbose "Editing information for $name..."
-Is_Entry "full-name" || {
+Is_Entry "full-name" && chfn -f "`Entry full-name`" "$name" || {
    Log_Terse "Enter $name's real full name (ex. John Doe)"
    read -p "]"
    chfn -f "$REPLY" "$name"
-} && chfn -f "`Entry full-name`" "$name"
+}
 Is_Entry "room-number" && chfn -r "`Entry room-number`" "$name"
 Is_Entry "work-phone" && chfn -w "`Entry work-phone`" "$name"
 Is_Entry "home-phone" && chfn -h "`Entry home-phone`" "$name"
