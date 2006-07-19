@@ -131,3 +131,12 @@ then
 [ -x /bin/xterm ] && exec xterm
 EOF
 fi
+
+#
+# GoboLinux version
+#
+version_file=$prefix/$goboSettings/GoboLinuxVersion
+if [ ! -e $xinitrc_file ]
+then
+    echo "GoboLinux from Scratch - `date +%Y-%m-%d`" > $version_file
+fi
