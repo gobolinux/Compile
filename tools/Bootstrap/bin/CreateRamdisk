@@ -1,0 +1,73 @@
+#!/bin/sh
+
+#
+# Creates a ramdisk and populates it with the contents of a given directory.
+#
+# Written by Lucas C. Villa Real <lucasvr@gobolinux.org>
+#
+
+source ScriptFunctions
+
+TOP_DIR=..
+dir_name="$1"
+mount_point="/Mount/Loop"
+loop_dev="/dev/loop6"
+
+img_name="ramdisk_img"
+img_size="$2"
+img_partition_offset=0
+
+
+function remove_loop_devices() {
+    #
+    # Sometimes 'mount -o loop' behaves strange and doesn't call 'losetup -d'
+    # at umount time. This function ensures that the loops are destroyed if
+    # they're not being used.
+    #
+    for i in /dev/loop*
+    do
+        losetup -d $i 2> /dev/null
+    done
+}
+
+function create_ramdisk() {
+    Log_Normal "Creating the ramdisk image..."
+    dd if=/dev/zero of=$img_name bs=1k count=$(( img_size * 1024 ))
+}
+
+function format_ramdisk() {
+    Log_Normal "Formatting the ramdisk..."
+    mkfs.ext3 -Fjm0 $img_name
+}
+
+function populate_ramdisk() {
+    Log_Normal "Populating the ramdisk with contents from $dir_name..."
+    
+    remove_loop_devices
+    losetup $loop_dev $img_name || exit 1
+    mount $loop_dev $mount_point
+    
+    # copy the contents from the given directory to the ramdisk
+    (cd $dir_name && tar cf - .) | (cd $mount_point && tar xpf -)
+
+    umount $mount_point
+    remove_loop_devices
+
+    Log_Normal "Compressing the image file..."
+    gzip $img_name
+}
+
+if [ "$2" = "" -o ! -d "$dir_name" ]
+then
+    echo "Syntax: $0 <directory> <size in MBs>"
+    exit 1
+fi
+    
+# just ensure that our mount point exists
+mkdir -p $mount_point
+
+create_ramdisk
+format_ramdisk
+populate_ramdisk
+
+Log_Normal "Done."
