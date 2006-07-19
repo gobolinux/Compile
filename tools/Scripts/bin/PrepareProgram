@@ -77,7 +77,12 @@ remove_symlink() {
 
 programname="$1"
 [ "$1" ] || Die "Missing argument."
-Dir_Set Case && programname=`GuessProgramCase "$1"`
+Dir_Set Case && {
+   # Respect capitalization passed, if any.
+   if [ "$programname" = `echo "$programname" | tr '[:upper:]' '[:lower:]'` ]
+   then programname=`GuessProgramCase "$1"`
+   fi
+}
 shift
 if [ "$1" -a "$1" != "--" ]
 then
