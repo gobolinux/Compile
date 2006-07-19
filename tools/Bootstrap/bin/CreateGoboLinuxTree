@@ -13,31 +13,32 @@ source GoboPath
 #
 
 function create_tree() {
-    mkdir -p "$1"/"$goboMount"
-    mkdir -p "$1"/"$goboPrograms"
+    mkdir -p "$1/$goboPrograms"
+    mkdir -p "$1/$goboMount"
+    [ "$arch_conf" = "ARM" -o "$arch_conf" = "SH4" ] && mkdir -p "$1/$goboMount/JFFS2"
 
-    mkdir -p "$1"/"$goboLinks/Tasks"
-    mkdir -p "$1"/"$goboEnvironment"
-    mkdir -p "$1"/"$goboExecutables"
-    mkdir -p "$1"/"$goboDaemons"
-    mkdir -p "$1"/"$goboLibraries"
-    mkdir -p "$1"/"$goboHeaders"
-    mkdir -p "$1"/"$goboManuals"/{info,man1,man2,man3,man4,man5,man6,man7,man8}
-    mkdir -p "$1"/"$goboShared"
-    mkdir -p "$1"/"$goboKernel"/{Objects,Modules}
+    mkdir -p "$1/$goboLinks/Tasks"
+    mkdir -p "$1/$goboEnvironment"
+    mkdir -p "$1/$goboExecutables"
+    mkdir -p "$1/$goboDaemons"
+    mkdir -p "$1/$goboLibraries"
+    mkdir -p "$1/$goboHeaders"
+    mkdir -p "$1/$goboManuals"/{info,man1,man2,man3,man4,man5,man6,man7,man8}
+    mkdir -p "$1/$goboShared"
+    mkdir -p "$1/$goboKernel"/{Objects,Modules}
 
-    mkdir -p "$1"/"$goboVariable"/{cache,empty,ftp,lib,lock,log,mail,run,spool,tmp} 
-    mkdir -p "$1"/"$goboTemp"
+    mkdir -p "$1/$goboVariable"/{cache,empty,ftp,lib,lock,log,mail,run,spool,tmp} 
+    mkdir -p "$1/$goboTemp"
 
-    mkdir -p "$1"/"$goboSettings"/BootScripts
-    mkdir -p "$1"/"$goboBoot"
-    mkdir -p "$1"/"$goboDevices"
-    mkdir -p "$1"/"$goboStatus"
+    mkdir -p "$1/$goboSettings/BootScripts"
+    mkdir -p "$1/$goboBoot"
+    mkdir -p "$1/$goboDevices"
+    mkdir -p "$1/$goboStatus"
 
-    mkdir -p "$1"/"$goboUsers"/"$2"/.Settings
-    mkdir -p "$1"/Depot
-    mkdir -p "$1"/Files/{Documentation,Fonts,Manager,Plugins}
-    mkdir -p "$1"/Files/Compile/{Archives,LocalRecipes,Recipes,Sources,Store}
+    mkdir -p "$1/$goboUsers/$2/.Settings"
+    mkdir -p "$1/Depot"
+    mkdir -p "$1/Files"/{Documentation,Fonts,Manager,Plugins}
+    mkdir -p "$1/Files/Compile"/{Archives,LocalRecipes,Recipes,Sources,Store}
 
     ln -s "$goboDevices" "$1"/dev
     ln -s "$goboStatus" "$1"/proc
@@ -88,7 +89,7 @@ function create_tree() {
 
     # make a symlink ($PWD/System/SH4 -> ..)
     ln -s .. `echo "$1" | cut -d"/" -f2-`
-
+    
     popd >& /dev/null
 }
 
