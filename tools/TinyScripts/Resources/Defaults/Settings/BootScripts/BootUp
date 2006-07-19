@@ -10,6 +10,7 @@ echo "Generating the issue file...";       GenIssue start
 echo "Hiding the legacy tree...";          GoboHide start
 echo "Loading kernel modules...";          LoadModules start
 echo "Loading network settings...";        Network start
+echo "Configuring hostname...";            Hostname start
 echo "Loading syslogd and klogd...";       syslogd; klogd
 # echo "Configuring swap space...";          Swap start
 # echo "Loading mouse driver...";            Mouse start
