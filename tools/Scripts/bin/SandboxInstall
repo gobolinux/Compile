@@ -61,13 +61,14 @@ fi
 package="`basename "$1" /`"
 package="`GuessProgramCase "$1"`"
 packageDir=`Get_Dir runtime "$package" ''`
-installPackageDir=`Get_Dir install "$package" ''`
-current="$packageDir/Current"
-version=$(basename $(readlink -f $current))
 
 if ! Is_Directory "$packageDir"
 then Die "Directory $packageDir does not exist."
 fi
+
+installPackageDir=`Get_Dir install "$package" ''`
+current="$packageDir/Current"
+version=$(basename $(readlink -f $current))
 
 shift
 if [ "$1" = "--" ]
