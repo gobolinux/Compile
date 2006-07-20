@@ -197,7 +197,7 @@ else
    als -q "$file" >> "$file_contents"
 
    # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
-   bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/.*,,'`
+   bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/[^/]*$,,'`
    if [ -n "$bdir" -a "$bdir" != "$bname" ]
    then
       echo "dir='$bdir'" >> "$recipedir/Recipe"
