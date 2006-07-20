@@ -2,9 +2,17 @@
 
 TOP_DIR=..
 source $TOP_DIR/.config
+source GoboPath
+
+if [ $# != 2 ]
+then
+    echo "Syntax: $0 <prefix> <super_user_name>"
+    exit 1
+fi
 
 prefix="$1"
 super_user="$2"
+
 
 #
 # Users database files
@@ -141,7 +149,7 @@ fi
 # GoboLinux version
 #
 version_file=$prefix/$goboSettings/GoboLinuxVersion
-if [ ! -e $xinitrc_file ]
+if [ ! -e $version_file ]
 then
     echo "GoboLinux from Scratch - `date +%Y-%m-%d`" > $version_file
 fi
