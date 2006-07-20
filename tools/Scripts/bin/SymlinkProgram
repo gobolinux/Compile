@@ -222,7 +222,7 @@ then
          fi	
       fi
       )
-      Quiet ldconfig &
+      Quiet ldconfig -f $goboSettings/ld.so.conf -C $goboSettings/ld.so.cache &
     }
 fi
 
