@@ -85,6 +85,7 @@ if [ ! -f $environment_check_file ]
 then
     echo "# TODO: do this once"                  >> $environment_check_file
     echo "update-mime-database $goboShared/mime" >> $environment_check_file
+    echo "fc-cache"                              >> $environment_check_file
     chmod +x $environment_check_file
 fi
 
@@ -103,12 +104,17 @@ then
     echo "none      /var/tmp      tmpfs  defaults 0 0" >> $fstab_file
 fi
 
+ld_so_cache_file=$prefix/$goboSettings/ld.so.cache
 ld_so_conf_file=$prefix/$goboSettings/ld.so.conf
 if [ ! -a $ld_so_conf_file ]
 then
     if [ "$PKG_GLIBC" = "y" ]
-    then ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.conf $ld_so_conf_file
-    else echo "/System/Links/Libraries" > $ld_so_conf_file
+    then
+        touch   $prefix/$goboPrograms/Glibc/Settings/ld.so.cache
+        ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.cache $ld_so_cache_file
+        ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.conf  $ld_so_conf_file
+    else
+        echo "$prefix/$goboLibraries" > $ld_so_conf_file
     fi
 fi
 
