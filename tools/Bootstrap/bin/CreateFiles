@@ -110,7 +110,6 @@ if [ ! -a $ld_so_conf_file ]
 then
     if [ "$PKG_GLIBC" = "y" ]
     then
-        touch   $prefix/$goboPrograms/Glibc/Settings/ld.so.cache
         ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.cache $ld_so_cache_file
         ln -nfs $prefix/$goboPrograms/Glibc/Settings/ld.so.conf  $ld_so_conf_file
     else
