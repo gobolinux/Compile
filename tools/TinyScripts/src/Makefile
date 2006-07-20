@@ -11,7 +11,7 @@ all: SymlinkProgram.o LinkOrExpandAll.o List.o RemoveBroken.o
 	$(CC) $(LDFLAGS) SymlinkProgram.o LinkOrExpandAll.o -o SymlinkProgram
 	$(CC) $(LDFLAGS) List.o -o List
 	$(CC) $(LDFLAGS) RemoveBroken.o -o RemoveBroken
-	mv $(TARGETS) ../bin
+	mv $(TARGETS) ../bin && chmod +x ../bin/*
 	ln -s List ../bin/l
 
 clean:
