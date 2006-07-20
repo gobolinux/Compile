@@ -12,10 +12,11 @@ all: SymlinkProgram.o LinkOrExpandAll.o List.o RemoveBroken.o
 	$(CC) $(LDFLAGS) List.o -o List
 	$(CC) $(LDFLAGS) RemoveBroken.o -o RemoveBroken
 	mv $(TARGETS) ../bin
+	ln -s List ../bin/l
 
 clean:
 	rm -Rf *.o *~ tools/ LinkOrExpandAll.c  List.c  List.h
-	cd ../bin; rm -f $(TARGETS)
+	cd ../bin; rm -f $(TARGETS) l
 
 LinkOrExpandAll.o: LinkOrExpandAll.c
 	@GrepReplace "int main(" "int link_or_expand_all_main(" LinkOrExpandAll.c
