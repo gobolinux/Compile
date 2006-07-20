@@ -126,10 +126,10 @@ then
          Log_Question "$sameprogramrecipe"
          [ ${sameprogramrecipe:0:1} = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
-	 then
-	    NewVersion "$packagename" "$versionnumber" "$1"
-	    exit 0
-	 fi
+         then
+            NewVersion "$packagename" "$versionnumber" "$1"
+            exit 0
+         fi
       fi
    fi
 fi
@@ -171,12 +171,27 @@ else
    echo "url=\"$url\"" >> "$recipedir/Recipe"
 
    Quiet pushd "$compileArchivesDir"
-   file="$PWD/$(basename "$1")"
+   basefile="$(basename "$1")"
+   file="$PWD/$basefile"
    if ! Boolean "no-fetch"
    then
-      $wget --passive-ftp -c "$1" || \
-      $wget --passive-ftp "$1" || \
-      $wget "$1" || {
+      if Starts_With "http" "$1"
+      then
+         file_headers=`mktemp`
+         $wget --spider --server-response "$1" 2> $file_headers
+         filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//'`
+         if [ -n "$filename" -a "$filename" != "$basefile" ]
+         then
+            basefile="$filename"
+            file="$PWD/$basefile"
+            echo "file=\"$basefile\"" >> "$recipedir/Recipe"
+         fi
+         rm $file_headers
+      fi
+
+      $wget -O "$basefile" --passive-ftp -c "$1" || \
+      $wget -O "$basefile" --passive-ftp "$1" || \
+      $wget -O "$basefile" "$1" || {
          Log_Error "Couldn't fetch file, URL may be invalid."
          exit 1
       }
