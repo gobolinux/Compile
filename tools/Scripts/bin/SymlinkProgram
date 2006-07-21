@@ -323,7 +323,12 @@ fi
 
 if ! Boolean "no-environment"
 then
-   envfile="$current/Resources/Environment"
+   if Boolean "relative"
+   then
+      envfile="../../../$goboPrograms/$package/$version/Resources/Environment"
+   else
+      envfile="$current/Resources/Environment"
+   fi
    if [ -e "$envfile" ]
    then
       Log_Normal "Symlinking environment..."
