@@ -25,3 +25,9 @@ rm -f Current
 ln -s "$version" Current
 
 SymlinkProgram "$program"
+
+if [ -d "$goboPrograms/$program/Current/lib" ]
+then
+    echo "Running ldconfig..."
+    ldconfig
+fi
