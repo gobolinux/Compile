@@ -49,7 +49,7 @@ then
 fi
 
 resolv_conf_file=$prefix/$goboSettings/resolv.conf
-if [ ! -f $resolv_conf_file -a "$NETWORK_DHCP" != "y" ]
+if [ ! -f $resolv_conf_file -a ! -z "$NETWORK_NAMESERVER" ]
 then
     echo "nameserver $NETWORK_NAMESERVER" >> $resolv_conf_file
 elif [ ! -f $resolv_conf_file ]
@@ -57,23 +57,22 @@ then
     touch $resolv_conf_file
 fi
 
+# NetworkSettings will exist by default, so we always overwrite its contents.
 network_task_file=$prefix/$goboSettings/NetworkSettings
-if [ ! -f $network_task_file ]
+if [ "$NETWORK_STATIC" = "y" ]
 then
-    if [ "$NETWORK_STATIC" = "y" ]
-    then
-        NetworkInterfacesOnBoot="lo eth0"
-        GatewayInterface="eth0"
-    elif [ "$NETWORK_DHCP" = "y" ]
-    then
-        NetworkInterfacesOnBoot="lo eth0"
-        GatewayInterface=
-    else # NETWORK_DISABLED
-        NetworkInterfacesOnBoot="lo"
-        GatewayInterface=
-    fi
+    NetworkInterfacesOnBoot="lo eth0"
+    GatewayInterface="eth0"
+elif [ "$NETWORK_DHCP" = "y" ]
+then
+    NetworkInterfacesOnBoot="lo eth0"
+    GatewayInterface=
+else # NETWORK_DISABLED
+    NetworkInterfacesOnBoot="lo"
+    GatewayInterface=
+fi
     
-    cat << EOF > $network_task_file
+cat << EOF > $network_task_file
 NetworkInterfacesOnBoot="$NetworkInterfacesOnBoot"
 
 lo_IP=127.0.0.1
@@ -86,16 +85,6 @@ eth0_Netmask=$NETWORK_NETMASK
 Gateway=$NETWORK_DEFAULT_GATEWAY
 GatewayInterface=$GatewayInterface
 EOF
-fi
-
-environment_check_file=$prefix/$goboTasks/EnvironmentCheck
-if [ ! -f $environment_check_file ]
-then
-    echo "# TODO: do this once"                  >> $environment_check_file
-    echo "update-mime-database $goboShared/mime" >> $environment_check_file
-    echo "fc-cache"                              >> $environment_check_file
-    chmod +x $environment_check_file
-fi
 
 #
 # Initialization
@@ -152,4 +141,17 @@ version_file=$prefix/$goboSettings/GoboLinuxVersion
 if [ ! -e $version_file ]
 then
     echo "GoboLinux from Scratch - `date +%Y-%m-%d`" > $version_file
+fi
+
+
+#
+# Tasks that should be run at boot time
+#
+environment_check_file=$prefix/$goboTasks/EnvironmentCheck
+if [ ! -f $environment_check_file ]
+then
+    echo "# TODO: do this once"                  >> $environment_check_file
+    echo "update-mime-database $goboShared/mime" >> $environment_check_file
+    echo "fc-cache"                              >> $environment_check_file
+    chmod +x $environment_check_file
 fi
