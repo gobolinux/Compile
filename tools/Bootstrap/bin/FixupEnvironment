@@ -53,3 +53,9 @@ then
     SymlinkProgram -c overwrite TinyScripts
     popd >& /dev/null
 fi
+
+#
+# Create some system files
+#
+CreateFiles $prefix $SUPER_USER_NAME
+

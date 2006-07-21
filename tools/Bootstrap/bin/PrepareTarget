@@ -59,11 +59,6 @@ fi
 mount -o bind $goboDevices $prefix/$goboDevices
 
 #
-# Create some system files
-#
-CreateFiles $prefix $SUPER_USER_NAME
-
-#
 # Install the Scripts package
 #
 dirname="$prefix/$goboPrograms/Scripts"
