@@ -9,13 +9,21 @@
 source ScriptFunctions
 
 TOP_DIR=..
-dir_name="$1"
 mount_point="/Mount/Loop"
 loop_dev="/dev/loop6"
 
 img_name="ramdisk_img"
-img_size="$2"
 img_partition_offset=0
+
+
+if [ "$2" = "" ]
+then
+    echo "Syntax: make ramdisk DIR=<directory> SIZE=<size in MBs>"
+    exit 1
+fi
+
+dir_name="`echo $1 | cut -d= -f2-`"
+img_size="`echo $2 | cut -d= -f2-`"
 
 
 function remove_loop_devices() {
@@ -57,12 +65,6 @@ function populate_ramdisk() {
     gzip $img_name
 }
 
-if [ "$2" = "" -o ! -d "$dir_name" ]
-then
-    echo "Syntax: $0 <directory> <size in MBs>"
-    exit 1
-fi
-    
 # just ensure that our mount point exists
 mkdir -p $mount_point
 

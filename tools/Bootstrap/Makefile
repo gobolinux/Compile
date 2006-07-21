@@ -64,6 +64,10 @@ help:
 	@echo 'Configuration targets:'
 	@echo '  menuconfig  - Update current config utilising a menu based program'
 	@echo ''
+	@echo 'Creating virtual disks:'
+	@echo '  ramdisk     - Creates an image from the filesystem for usage as a ramdisk'
+	@echo ''
+	@echo ''
 	@echo 'Other generic targets:'
 	@echo '  all         - Build all targets marked with [*]'
 	@echo ''
@@ -87,6 +91,9 @@ dep: deps
 
 shrink:
 	@cd bin; ./Shrink
+
+ramdisk:
+	@bin/CreateRamdisk $(DIR) $(SIZE)
 
 world: $(TARGETS)
 	@cd bin; ./BootStrap start                || { echo "argh!"; ./BootStrap stop; exit 1; }
