@@ -7,7 +7,8 @@ all:
 	gcc $(MYCFLAGS) -o usleep usleep.c
 	gcc $(MYCFLAGS) -o LinkOrExpandAll LinkOrExpandAll.c -std=c99
 	gcc $(MYCFLAGS) -o List List.c
-	mv SuperUserName IsExecutable usleep LinkOrExpandAll List ../bin/ 
+	mv SuperUserName IsExecutable usleep LinkOrExpandAll List ../bin/
+	chmod a+x ../bin/*
 
 debug: MYCFLAGS = -g -DDEBUG
 debug: all
