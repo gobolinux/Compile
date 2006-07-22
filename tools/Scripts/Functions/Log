@@ -141,8 +141,18 @@ function Progress_End() {
 # Prints an error message and exits
 function Die() {
    [[ "$@" != "" ]] && Log_Error "$@"
-#   Log_Error "$@"
    exit 1
+}
+
+# Error constants
+export errorNotFound=2
+
+# Prints an error message and exits with a given code
+function Die_With() {
+   status=$1
+   shift
+   [[ "$@" != "" ]] && Log_Error "$@"
+   exit $status
 }
 
 # Prints a message and exits successfully

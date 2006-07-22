@@ -33,6 +33,7 @@ Add_Option_Entry   "e" "execute" "Execute the command on each missing/higher. (c
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Entry   "p" "programs" "<dir> to check dependencies against."
 Add_Option_Boolean "w" "write" "Write dependencies to $deps_file."
+Add_Option_Boolean "k" "keep-going" "Don't quit immediately if any executed program fails. (check+execute mode only)"
 
 Parse_Options "$@"
 shift $parsedArguments
@@ -216,7 +217,6 @@ then
    ! [ "$check_programs" = "" ] && export goboPrograms="$check_programs"
 
    [ -f "$dependenciesfile" ] || Die "Dependencies file for $package version $version not found."
-   result=0
 
    for i in `cat "$dependenciesfile" | grep -v "^#" | grep -v "^\\*" | grep -v "^$" | FilterLines -n "${blacklist[@]}" | tr -- " \n" "@ "`
    do
@@ -236,7 +236,6 @@ then
             Log_Normal "Dependency $program is not installed, but compatible package $compatible_package is"
             continue
          fi
-         result=1
          if [ "$installall" ]
          then
             Log_Terse "Dependency $program $version is not installed."
@@ -264,7 +263,6 @@ then
                      Log_Normal "Dependency $program is installed, but version differs (required $version, yours is $yourversion)"
                   fi
                else # an older version is installed
-                  result=1
                   if [ "$execute" -a ! "$skipall" -a ! "$installall" ] 
                   then
                      Log_Question "Dependency $program is installed, but required version is higher ($version, yours is $yourversion)"
@@ -280,9 +278,19 @@ then
    done
    for p in "${programs_to_install[@]}"
    do
-       $execute $p || $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/`
+       $execute $p
+       case "$?" in
+       0) ;;
+       $errorNotFound)
+          $execute `echo $p | sed s/'\(.*\)\ .*'/'\1'/` || {
+             Boolean "keep-going" || exit 1
+          }
+          ;;
+       *) Boolean "keep-going" || exit 1
+          ;;
+       esac # splendidly ridiculous, but useful as always
    done
-   exit $result
+   exit 0
 fi
 
 ### default: Generate a dependency report ###############################################

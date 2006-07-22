@@ -98,7 +98,7 @@ then
             Log_Normal "Found package for $1 $2: ${found}"
             InstallPackage ${noinstall} ${keep} ${batch} "${found}"
          else
-            Die "Package for $1 $2 not found."
+            Die_With $errorNotFound "Package for $1 $2 not found."
          fi
       else
          found=`FindPackage $noweb $pkgType $1`
@@ -107,7 +107,7 @@ then
             Ask_Continue "Installing ${found}"
             InstallPackage ${noinstall} ${keep} ${batch} "${found}"
          else
-            Die "Package for $1 not found."
+            Die_With $errorNotFound "Package for $1 not found."
          fi
       fi
       exit 0
@@ -310,7 +310,7 @@ SymlinkProgram "$packagename" "$packageversion"
 
 if ! Boolean "no-dependencies"
 then
-   Dependencies -c -H ${batch} -e "$0 $keep" "$packagename" "$packageversion"
+   Dependencies --check --keep-going --higher-or-missing-only ${batch} --execute "$0 $keep" "$packagename" "$packageversion"
 fi
 
 Log_Verbose "Done."
