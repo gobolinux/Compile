@@ -45,6 +45,7 @@ shift $parsedArguments
 
 Boolean "lazy" && Set_Boolean "no-web"
 Boolean "no-web" && noweb="--no-web"
+Boolean "batch" && batch="--batch"
 
 if Is_Entry "configure-options"
 then userconfigureoptions=(`Entry "configure-options"`)
@@ -58,8 +59,6 @@ fi
 
 make="${compileMakeCommand:-ColorMake}"
 chown="${compileChownCommand:-chown}"
-
-Boolean "batch" && batch="--batch"
 
 # Options to be propagated in sub-calls to Compile
 unset compileoptions
@@ -109,7 +108,9 @@ function do_symlink() {
       unset allowleftovers
       [ "${unmanaged_files[*]}" ] && allowleftovers=--allow-leftovers
 
-      SandboxInstall $allowleftovers ${sandboxopts[@]} -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || Die "Installation step failed."
+      SandboxInstall $allowleftovers ${sandboxopts[@]} -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+
+      install_extras
 
       if [ "${unmanaged_files[*]}" ]
       then
@@ -219,6 +220,18 @@ function wrapup() {
    cleanup
 }
 
+function wrap_fail() {
+   # Rollback left-over stuff when compilation fails.
+   if [ -e "$target" ]
+   then
+      PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
+      Quiet rmdir -p "$target"
+      Quiet rmdir -p "$settings_target"
+      Quiet rmdir -p "$variable_target"
+   fi
+   Die "$1"
+}
+
 function cleanup() {
    if [ -d "$installprefix-Compile-old" ]
    then
@@ -259,6 +272,13 @@ function in_host() {
 function config_is_autoconf() {
    [ "$configure" ] || configure="./configure"
    grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
+}
+
+build_tree_if() {
+   if [ "$@" ]
+   then
+      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   fi
 }
 
 ##################################################
@@ -320,7 +340,7 @@ else
             String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
          }
       }
-   } || Die "Could not find recipe for $app $version"
+   } || Die_With $errorNotFound "Could not find recipe for $app $version"
    #Log_Normal "Found recipe for $app $version at $rawrecipe"
    Log_Normal "Found recipe for $app $version"
 fi
@@ -383,9 +403,27 @@ else
    archrecipe=$bakedrecipedir/$arch/Recipe
 fi
 
-
 ##################################################
 # Check dependencies
+##################################################
+
+app=`Get_Token "$bakedrecipedir" "/" "-2"`
+version=`Get_Token "$bakedrecipedir" "/" "-1"`
+
+recipedir="$bakedrecipedir"
+reciperesources="$recipedir/Resources"
+
+if ! Boolean "no-dependencies" && ! Boolean "no-build"
+then
+   dep="$recipedir/Resources/Dependencies"
+   if [ -f "$dep" ]
+   then
+      Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep" || Die "Failed while processing dependencies."
+   fi
+fi
+
+##################################################
+# Dependency variables
 ##################################################
 
 dependencies_file=$bakedrecipedir/Resources/Dependencies
@@ -394,10 +432,13 @@ then
    for dep in `cat "$dependencies_file" | tr ' ' ':' `
    do
       dep_name="${dep%:*}"
-      guess_dep_name=`GuessProgramCase "${dep_name}" 2> /dev/null`
+      dep_vers=${dep#*:}
+      # GuessProgramCase prefers the name used by the given version,
+      # but will give us any available if the version is not found.
+      # I'm counting on this behavior here.
+      guess_dep_name=`GuessProgramCase "$dep_name" "$dep_vers" 2> /dev/null`
       [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
       lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
-      dep_vers=${dep#*:}
       dep_path=`Get_Dir runtime $dep_name Current`
       real_dep_path=`readlink -f "$dep_path"`
       if [ "$real_dep_path" ]
@@ -413,13 +454,6 @@ then
       eval 'export '$lowercase_name'_variable_path='$dep_settings_path
    done
 fi
-
-app=`Get_Token "$bakedrecipedir" "/" "-2"`
-version=`Get_Token "$bakedrecipedir" "/" "-1"`
-
-recipedir="$bakedrecipedir"
-reciperesources="$recipedir/Resources"
-recipedaemons="$recipedir/Daemons"
 
 ##################################################
 # Set name and version (used in Meta-recipes)
@@ -443,6 +477,13 @@ export target=`Get_Dir runtime $appname $versionnumber`
 export settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 export installprefix="$target"
+
+if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "$keep"
+then
+   if ! Ask "$target already exists. Continue?"
+   then exit 0
+   fi
+fi
 
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
@@ -488,17 +529,6 @@ then
 "Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
       fi
    fi
-fi
-
-##################################################
-# Check dependencies
-##################################################
-
-if ! Boolean "no-dependencies" && ! Boolean "no-build"
-then
-   dep="$recipedir/Resources/Dependencies"
-   Boolean no-build && batch="--batch"
-   [ -f "$dep" ] && Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep"
 fi
 
 ##################################################
@@ -809,10 +839,7 @@ then
       configure="${dir}/$configure"
       sandbox_options="--add-allowed ${dir} $sandbox_options"
    fi
-
-   [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-   }
+   build_tree_if "$create_dirs_first" = "yes"
    is_function_set pre_build && pre_build
    if ! Boolean "lazy"
    then
@@ -832,19 +859,16 @@ then
             --configure $configure
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || Die "Preparation step failed."
+         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || wrap_fail "Preparation step failed."
       )
    fi
-   $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build process failed."
+   $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
    Boolean "no-install" && exit
-   [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-   }
-   install_extras
+   build_tree_if "$create_dirs_first" != "yes"
    is_function_set pre_install && pre_install
    if ! [ "$do_install" = "no" ]
-   then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    is_function_set post_install && post_install
    wrapup
@@ -882,7 +906,7 @@ if [ "$is_python" = "yes" ]
 then
    Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
-   PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+   build_tree_if "true"
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
    mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
@@ -896,7 +920,7 @@ then
       [ "$build_target" ] || build_target="build"
       build_python_options $build_target
       is_function_set pre_build && pre_build
-      python $build_script $build_target ${opts[*]}
+      python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
    fi
    Boolean "no-install" && exit
    is_function_set pre_install && pre_install
@@ -906,9 +930,9 @@ then
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       sandboxopts=$(merge_array "sandbox_options")
-      SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || Die "Installation step failed."
+      SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
-   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    is_function_set post_install && post_install
    wrapup
 fi
@@ -935,25 +959,20 @@ then
    fi
    if [ -e ./Build.PL ]
    then
+      build_tree_if "$create_dirs_first" = "yes"
       # New Build.PL system
-      [ "$create_dirs_first" = "yes" ] && {
-         PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-      }
       if ! [ "$do_build" = "no" ]
       then
          is_function_set pre_build && pre_build
          perl ./Build.PL
-         ./Build --install_base $target $build_target
+         ./Build --install_base $target $build_target || wrap_fail "Build failed."
       fi
       Boolean "no-install" && exit
-      [ ! "$create_dirs_first" = "yes" ] && {
-         PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-      }
-      install_extras
+      build_tree_if "$create_dirs_first" != "yes"
       is_function_set pre_install && pre_install
       if ! [ "$do_install" = "no" ]
       then
-         ./Build --install_base $target $install_target
+         ./Build --install_base $target $install_target || wrap_fail "Installation failed."
       fi
       if [ -d $target/script ]
       then
@@ -965,7 +984,7 @@ then
       Quiet mkdir -p perl5
       Quiet mv * perl5
       Quiet popd
-      do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+      do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Linking failed."
       is_function_set post_install && post_install
       wrapup
    else
@@ -979,23 +998,18 @@ fi
 
 if [ "$is_makefile" = "yes" ]
 then
-   [ "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-   }
+   build_tree_if "$create_dirs_first" = "yes"
    if ! [ "$do_build" = "no" ]
    then
       is_function_set pre_build && pre_build
-      $make $build_target "${buildmerged[@]}" -f $makefile || Die "Build failed."
+      $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build failed."
    fi
    Boolean "no-install" && exit
-   [ ! "$create_dirs_first" = "yes" ] && {
-      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-   }
-   install_extras
+   build_tree_if "$create_dirs_first" != "yes"
    is_function_set pre_install && pre_install
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    is_function_set post_install && post_install
    wrapup
@@ -1014,10 +1028,9 @@ then
       "LIBEXECDIR=$target/libexec"
       "INCDIR=$target/include"
    )
-   $make -f "$makefile" $imakevars $build_target || Die "Build failed."
+   $make -f "$makefile" $imakevars $build_target || wrap_fail "Build failed."
    Boolean "no-install" && exit
-   PrepareProgram -t $batch "$appname" "$versionnumber"
-   install_extras
+   build_tree_if "true"
    is_function_set pre_install && pre_install
    imakevars=(
       "BINDIR=$installprefix/bin"
@@ -1030,7 +1043,7 @@ then
    )
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber"
-   else do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    is_function_set post_install && post_install
    wrapup
@@ -1048,15 +1061,14 @@ then
          "PREFIX=$target"
       )
    fi
-   PrepareProgram -t $batch "$appname" "$versionnumber"
+   build_tree_if "true"
    is_function_set pre_build && pre_build
-   $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || Die "Build failed."
+   $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
    Boolean "no-install" && exit
-   install_extras
    is_function_set pre_install && pre_install
    if [ ! "$do_install" = "no" ]
    then
-      $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || Die "Installation failed."
+      $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber"
    is_function_set post_install && post_install
@@ -1069,9 +1081,8 @@ fi
 
 if [ "$is_manifest" = "yes" ]
 then
-   PrepareProgram -t $batch "$appname" "$versionnumber"
+   build_tree_if "true"
    is_function_set pre_install && pre_install
-   install_extras
    for i in "${manifest[@]}"
    do
       src=`echo $i | cut -d: -f1`
@@ -1083,7 +1094,7 @@ then
       else cp -R "$src" "$fulldst"
       fi
    done
-   do_symlink --no-make "$appname" "$versionnumber" || Die "Installation failed."
+   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    is_function_set post_install && post_install
    wrapup
 fi
