@@ -1,17 +1,11 @@
 #!/bin/sh
 
-for conf in ./Master.conf /System/Settings/BuildLiveCD/Master.conf fail
-do
-   if [ "$conf" = "fail" ]
-   then
-      echo "Could not find Master.conf."
-      exit 1
-   elif [ -e $conf ]
-   then
-      source $conf
-      break
-   fi
-done
+if [ ! -d "Output/ROLayer" ]
+then
+   echo "Error: Output/ROLayer doesn't exist."
+   echo "Please run CompressAndBuildISO prior before trying to ChrootEnvironment"
+   exit 1
+fi
 
 if [ "$UID" != "0" ]
 then
@@ -19,54 +13,48 @@ then
     exec sudo -u "#0" $0 $*
 fi
 
+echo "Unionfs mounting layers."
+
+chroot_layers=(
+   "Output/RWLayer=rw"
+   "Output/ROLayer=ro"
+)
+unionfs_dirs=`echo "${chroot_layers[@]}" | tr " " ":"`
 mp="Output/Environment"
-if [ -d "$mp" ]
-then
-   echo "Unionfs mounting layers."
-   unionfs_dirs=`echo "${chroot_layers[@]}" | tr " " ":"`
-   mkdir -p RWLayer
-   echo mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
-   mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp} || { echo Error mounting Output/Environment; exit 1; }
-   
-   mkdir -p Output/Chroot_Mount_CD-ROM/{Programs_Local,Depot_Local,Users_Local,Packages}
+mkdir -p Output/RWLayer
+mkdir -p $mp
 
-   # Convenience access to directories from the host environment
-   echo "Binding ${mp}/Mount/CD-ROM ..."
-   mount -o bind Output/Chroot_Mount_CD-ROM ${mp}/Mount/CD-ROM
-   mount -o bind /Programs                  ${mp}/Mount/CD-ROM/Programs_Local
-   mount -o bind /Depot                     ${mp}/Mount/CD-ROM/Depot_Local
-   mount -o bind /Users                     ${mp}/Mount/CD-ROM/Users_Local
-   mount -o bind Archives/Packages          ${mp}/Mount/CD-ROM/Packages
+echo mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp}
+mount -t unionfs -o "dirs=${unionfs_dirs}" none ${mp} || { echo Error mounting Output/Environment; exit 1; }
 
-   echo "        ${mp}/System/Kernel/Devices ..."
-   mount -o bind /System/Kernel/Devices ${mp}/System/Kernel/Devices
-   echo "        ${mp}/System/Kernel/Status ..."
-   mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
+# Convenience access to directories from the host environment
+mkdir -p Output/Chroot_Mount_CD-ROM
+echo "Binding ${mp}/Mount/CD-ROM ..."
+mount -o bind Output/Chroot_Mount_CD-ROM ${mp}/Mount/CD-ROM
+echo "        ${mp}/System/Kernel/Devices ..."
+mount -o bind /System/Kernel/Devices ${mp}/System/Kernel/Devices
+echo "        ${mp}/System/Kernel/Status ..."
+mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
 
-   echo "Chrooting into ${mp} "
-   chroot ${mp}
+echo "Chrooting into ${mp} "
+chroot ${mp}
+sync
 
-   sync
+#####################################################################
 
-   #####################################################################
+echo "Cleaning up /tmp..."
+rm -fr -- ${mp}/tmp/*
 
-   echo "Cleaning up /tmp..."
-   rm -fr -- ${mp}/tmp/*
+echo "Unmounting:"
+mp_path=`readlink -f ${mp}`
+cat /proc/mounts | tac | cut -d' ' -f2 | grep $mp_path | while read dir
+do
+   echo "  ${dir}"
+   umount "${dir}"
+done
 
-   echo "Unmounting:"
-   mp_path=`readlink -f ${mp}`
-   cat /proc/mounts | tac | cut -d' ' -f2 |grep $mp_path | \
-   while read dir
-   do
-      echo "  ${dir}"
-      umount "${dir}"
-   done
-
-   rmdir --ignore-fail-on-non-empty -p Output/Chroot_Mount_CD-ROM/{Programs_Local,Depot_Local,Users_Local,Packages}
-
-else
-   echo "Error: $mp doesn't exist."
-fi
+rmdir ${mp}
+rmdir --ignore-fail-on-non-empty -p Output/Chroot_Mount_CD-ROM
 
 # additional things to check before releasing a LiveCD
 # cd /Programs/; time for i in *; do echo $i; mkdir $i/Current/Resources/; Dependencies $i > $i/Current/Resources/Dependencies; done

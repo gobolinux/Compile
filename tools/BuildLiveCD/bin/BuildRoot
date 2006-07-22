@@ -31,7 +31,6 @@ function get_package_name() {
    then packagever=`date +%Y%m%d`
    else packagever=`echo $1 | awk {'print $2'}`
    fi
-
    pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null || true`
    [ -z "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
    if [ -z "$pkg" ]
@@ -47,7 +46,7 @@ function get_package_name() {
 cat $packagelists | while read line
 do
    # just ensure that required packages are found
-   get_package_name "$line"
+   get_package_name "$line" > /dev/null
 done
 
 
@@ -99,8 +98,17 @@ function symlink_program() {
    do_link ${full_path}/Shared ${gobolinks}/Shared
 
    [ -f "${root}${full_path}/Resources/Environment" ] && \
-   ln -nfs ${full_path}/Resources/Environment ${root}${gobolinks}/Environment/${name}--${version}
+   ln -nfs ../../../Programs/${name}/${version}/Resources/Environment ${root}${gobolinks}/Environment/${name}--${version}
    ln -nfs $version ${root}$(dirname ${full_path})/Current
+}
+
+function program_md5() {
+   #
+   # BIG FAT WARNING:
+   # Assuming we have only one version per program
+   #
+   name="$1"
+   cat "${root}"/../Checksums/$name--* 2> /dev/null | tail -1 || echo "0000"
 }
 
 function install_package() {
@@ -112,8 +120,31 @@ function install_package() {
    version=${base#*--}
    version=${version%%--*}
    
-   echo "Installing $name $version..."
+   #
+   # BIG FAT WARNING:
+   # Assuming we have only one version per program
+   #
+   packagemd5=`md5sum $package`
+   if [ -d "$root/Programs/$name" ]
+   then 
+      if [ "`program_md5 $name`" =  "$packagemd5" ]
+      then
+         echo "Keeping $name $version..."
+
+         # just keep package: md5 matches last installation
+         return
+      else
+         echo "Removing existing $name..."
+
+         # cleanup old md5 file
+         rm -f "${root}"/../Checksums/$name--*
+         # remove the installed package: $package was updated 
+         rm -rf "$root/Programs/$name"
+      fi
+   fi
+   echo "$packagemd5" > "${root}"/../Checksums/$name--$version
    
+   echo "Installing $name $version..."
    pushd "$root/Programs" &> /dev/null
    tar xjpf "$package"
 
@@ -137,10 +168,6 @@ function install_package() {
    symlink_program /Programs/$name/$version $root
 
 }
-
-echo "BuildRoot: Cleaning up $root if any..."
-
-rm -rf $root
 
 echo "BuildRoot: Building root $root..."
 
@@ -208,36 +235,34 @@ ln -nfs /System/Links/Manuals $root/usr/man
 ln -nfs /System/Links/Executables $root/usr/sbin
 ln -nfs /System/Links/Shared $root/usr/share
 
-mknod -m0666 $root/System/Kernel/Devices/null c 1 3
-mknod -m0600 $root/System/Kernel/Devices/console c 5 1
+[ -e $root/System/Kernel/Devices/null ] || mknod -m0666 $root/System/Kernel/Devices/null c 1 3
+[ -e $root/System/Kernel/Devices/null ] || mknod -m0600 $root/System/Kernel/Devices/console c 5 1
 
 pushd $root/System/Settings &> /dev/null
+# MakeSystemSettings overwrites existing files
 MakeSystemSettings
 popd &> /dev/null
 
-# cp -r Recipes $root/Files/Compile
-# 
-cat $packagelists |while read line
+mkdir -p "${root}"/../Checksums/
+
+for packagelist in ${packagelists[@]}
 do
-   pkg=`get_package_name $line`
-   install_package "$pkg" "$root"
+   echo "Installing packages from $packagelist"
+   cat $packagelist | while read line
+   do
+      pkg=`get_package_name $line`
+      install_package "$pkg" "$root"
+   done
 done
 
 [ -f "${root}/System/Links/Environment/Cache}" ] && rm ${root}/System/Links/Environment/Cache
 for link in ${root}/System/Links/Environment/*--*
 do
-   file=`readlink $link`
-   cat ${root}${file} >>${root}/System/Links/Environment/Cache
+   cat ${link} >>${root}/System/Links/Environment/Cache
 done
 
-function rm_if_e() {
-   if [ -e "$1" ]
-   then
-      echo "BuildRoot: removing $1..."
-      rm -f "$1"
-   else
-      return 0
-   fi
-}
+# SymlinkProgram --relative is not perfect yet, but, ideally, we should call the following command
+#echo "Checking for broken links at ${root}/System/Links/"
+#find ${root}/System/Links/ | RemoveBroken
 
 exit 0

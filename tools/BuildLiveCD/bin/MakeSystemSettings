@@ -1,20 +1,20 @@
 #!/bin/sh
 
 function write_file() {
-   if ! [ -e "$1" ]
-   then
+#    if ! [ -e "$1" ]
+#    then
       cat > "$1"
-   else
-      mv "$1" "$1.old"
-      cat > "$1"
-      if diff "$1" "$1.old"
-      then
-         rm "$1"
-         mv "$1.old" "$1"
-      else
-         rm "$1.old"
-      fi
-   fi
+#    else
+#       mv "$1" "$1.old"
+#       cat > "$1"
+#       if diff "$1" "$1.old"
+#       then
+#          rm "$1"
+#          mv "$1.old" "$1"
+#       else
+#          rm "$1.old"
+#       fi
+#    fi
 }
 
 write_file GoboLinuxVersion <<EOF

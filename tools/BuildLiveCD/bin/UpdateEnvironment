@@ -18,45 +18,24 @@ then
    exit 0
 fi
 
-
-if [ "$1" ]
-then
-   cvsuser="$1"
-   if [ "$2" ]
-   then localuser="$2"
-   else localuser="$1"
-   fi
-else
-   cvsuser=anonymous
-fi
-
-datadir="/Programs/BuildLiveCD/Current/Data"
-tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts" 
-
 root=$PWD
-localcvs=$PWD/LocalCVS/
-packages=$PWD/Archives/Packages
-externalarchives=$PWD/Archives/Ext
-external=$PWD/External
+datadir="/Programs/BuildLiveCD/Current/Data"
 
-mkdir -p Archives/{Ext,InitRD,Packages}
-mkdir -p RWLayer
-mkdir -p $localcvs
+#############################################################################
+# Tarballs ("Archives")
+#############################################################################
+echo "=> Downloading archives..."
 
 function get_md5() {
    md5sum "$1" 2>/dev/null | awk '{print $1}'
 }
 
 function check_and_dl() {
-   action="$1"
-   dir="$2"
-   url="$3"
-   md5="$4"
+   dir="$1"
+   url="$2"
+   md5="$3"
    urlbn=`basename $url`
-   if [ "$action" = "unpack" ]
-   then downloadtarget="$externalarchives"
-   else downloadtarget="$root/$dir"
-   fi
+   downloadtarget="$root/$dir"
    localfile="$downloadtarget/$urlbn"
    localmd5=`get_md5 "$localfile"`
    if ! [ "$localmd5" = "$md5" ]
@@ -72,36 +51,38 @@ function check_and_dl() {
          echo "Press Enter to continue or Ctrl+C to abort."
          read
       fi
-      if [ "$action" = "unpack" ] 
-      then
-         cd $root
-         rm -rf "$dir"
-      fi
-   fi
-
-   if [ "$action" = "unpack" ] && ! [ -e "$root/$dir" ]
-   then
-      cd $root
-      mkdir -p "$dir"
-      case "${url##*.}" in
-      gz|tgz) sudo tar xzf $localfile -C "$dir";;
-      bz2)    sudo tar xjf $localfile -C "$dir";;
-      esac
    fi
 }
 
-# Tarballs
-echo "=> Downloading archives..."
-arch=`uname -m`
-cat $datadir/Packages-Devel-$arch | while read action dir url md5
+arch=i686
+cat $datadir/Packages-Devel-$arch | while read dir url md5
 do
-   echo $url 
-   check_and_dl $action $dir $url $md5
+   echo $url
+   mkdir -p $dir
+   check_and_dl $dir $url $md5
 done
 
+
+#############################################################################
 # LocalCVS
+#############################################################################
 echo "=> Updating local CVS copy..."
-cd $localcvs
+
+if [ "$1" ]
+then
+   cvsuser="$1"
+   if [ "$2" ]
+   then localuser="$2"
+   else localuser="$1"
+   fi
+else
+   cvsuser=anonymous
+fi
+
+mkdir -p $root/LocalCVS/
+cd $root/LocalCVS/
+
+tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts" 
 
 for cvsrepo in files `for x in $tools; do echo tools/$x; done`
 do
@@ -123,21 +104,13 @@ do
       fi
    fi
 done
-cd - &> /dev/null
 
-today=`date +%Y%m%d`
-
+#############################################################################
 # Packages
+#############################################################################
 echo "=> Fetching remote packages..."
-rsync --delete --verbose --progress --port=8730 -r -L rsync.gobolinux.org::livecd-packages/ $packages/
-
-if ! [ -e Master.conf ]
-then
-   masterconf=/System/Settings/BuildLiveCD/Master.conf 
-   if [ -e $masterconf ]
-   then cp $masterconf .
-   else echo "Reminder: copy Master.conf to this directory."
-   fi
-fi
+mkdir -p "$root/Archives/Packages"
+cd "$root"
+rsync --delete --verbose --progress --port=8730 -r -L rsync.gobolinux.org::livecd-packages/ Archives/Packages/
 
 echo "=> Done."
