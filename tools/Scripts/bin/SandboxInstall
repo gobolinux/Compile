@@ -156,7 +156,7 @@ then
    Log_Normal "Postprocessing Sandbox"
    Quiet pushd $sandbox_rw
    rm -f Programs/Glibc/Settings/ld.so.cache
-   rm -f System/Variable/tmp/.* 2> /dev/null
+   rm -rf System/Variable/tmp/{*,.*} &> /dev/null
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
    Quiet popd
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
