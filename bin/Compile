@@ -415,11 +415,16 @@ reciperesources="$recipedir/Resources"
 
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
-   dep="$recipedir/Resources/Dependencies"
-   if [ -f "$dep" ]
-   then
-      Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep" || Die "Failed while processing dependencies."
-   fi
+   CheckDependencies --types=recipe --mode=missing $noweb   "$app" "$version" "recipe" "$recipedir"  | \
+   while read d_program d_version d_type d_url; 
+   do
+      Compile $d_url
+   done
+   #dep="$recipedir/Resources/Dependencies"
+   #if [ -f "$dep" ]
+   #then
+   #   Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep" || Die "Failed while processing dependencies."
+   #fi
 fi
 
 ##################################################
