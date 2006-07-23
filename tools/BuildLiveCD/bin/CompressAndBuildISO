@@ -114,9 +114,17 @@ then
 
    echo "Coping /Files from LocalCVS..."
    # Add few items to rolayer
-   rm -rf Output/ROLayer/Files/{Documents,Descriptions,Wallpapers}
-   mkdir -p Output/ROLayer/Files
-   cp -a LocalCVS/files/* Output/ROLayer/Files
+   for directory in Documentation Descriptions Wallpapers
+   do
+      if ! diff --recursive --exclude=CVS "LocalCVS/files/$directory" "Output/ROLayer/Files/$directory" &> /dev/null
+      then
+         echo "Updating Files/$directory"
+         rm -rf "Output/ROLayer/Files/$directory"
+         cp -a "LocalCVS/files/$directory" "Output/ROLayer/Files"
+      else
+         echo "Keeping Files/$directory"
+      fi
+   done
 
    # /Files/Fonts
    ffontsmd5=`md5sum Archives/Ext/Files-Fonts.tar.bz2`
@@ -178,7 +186,7 @@ then
    echo "Unionfs mounting layers."
    tmp_mp=`mktemp -d /tmp/finalize_layer-XXXXX`
    unionfs_dirs="dirs=${tmp_mp}=rw:${unionfs_dirs}"
-   echo mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
+   #echo mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
    mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment || { echo Error mounting Output/Environment; exit 1; }
 
    mkdir -p Output/Checksums
