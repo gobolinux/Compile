@@ -415,10 +415,11 @@ reciperesources="$recipedir/Resources"
 
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
-   CheckDependencies --types=recipe --mode=missing $noweb   "$app" "$version" "recipe" "$recipedir"  | \
+   Log_Normal "Checking dependencies..."
+   CheckDependencies --types=recipe --mode=missing $noweb --quiet-progress  "$app" "$version" "recipe" "$recipedir" | \
    while read d_program d_version d_type d_url; 
    do
-      Compile $d_url
+      Compile $d_url || exit $?
    done
    #dep="$recipedir/Resources/Dependencies"
    #if [ -f "$dep" ]
