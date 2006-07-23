@@ -545,8 +545,7 @@ Examples of usage:
 				for r,m in zip(rr,mm):
 					pp,vv,tt,uu=m
 					print pp, vv, tt, uu
-			else :
-				sys.exit(1)		
+			sys.exit(0)		
 	except KeyboardInterrupt :
 		sys.exit(1)
 
