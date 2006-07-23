@@ -67,10 +67,16 @@ exit 0
 ### Normal mode ###############################################################
 
 function all() {
-if [ -L share -a $(dirname $(dirname $PWD)) = "$goboPrograms" ]
-then ls -d -- * .[A-Za-z0-9]* 2> /dev/null | grep -v "^.svn$" | grep -v "^share$"
-else ls -d -- * .[A-Za-z0-9]* 2> /dev/null | grep -v "^.svn$" 
-fi
+   if [ -L share -a $(dirname $(dirname $PWD)) = "$goboPrograms" ]
+   then ls -d -- * .[A-Za-z0-9]* 2> /dev/null | grep -v "^.svn$" | grep -v "^share$"
+   else ls -d -- * .[A-Za-z0-9]* 2> /dev/null | grep -v "^.svn$" 
+   fi
+}
+
+esc=`echo -e '\033'`
+
+function highlight() {
+   sed 's/^\([^:]*\):\([^:]*:\)/'$esc[1m'\1 \2'$esc[0m'/'
 }
 
 nobins=-I
@@ -80,6 +86,6 @@ pattern="$1"
 shift
 Has_Uppercase "$pattern" || insensitive=-i
 if [ "$*" ]
-then grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@"
-else grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" `all` | grep -v ".svn/"
+then grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@" | highlight
+else grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" `all` | grep -v ".svn/" | highlight
 fi
