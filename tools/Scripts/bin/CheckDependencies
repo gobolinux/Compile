@@ -234,7 +234,7 @@ export scriptName=CheckDependencies
 echo >&2
 Log_Terse "%s"
 Log_Terse "%s %s %s %s."
-echo "$REPLY"'''%(reason,(global_allways_do=='y' and 'Installing' or 'Skipping'),p,v,t))		
+'''%(reason,(global_allways_do=='y' and 'Installing' or 'Skipping'),p,v,t))		
 		if global_allways_do == 'y' :
 			return True
 		else :
