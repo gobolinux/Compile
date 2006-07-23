@@ -416,11 +416,19 @@ reciperesources="$recipedir/Resources"
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    Log_Normal "Checking dependencies..."
-   CheckDependencies --types=recipe --mode=missing $noweb --quiet-progress  "$app" "$version" "recipe" "$recipedir" | \
-   while read d_program d_version d_type d_url; 
+   selecteddeps=`mktemp $goboTemp/Compile.XXXXXXXX`
+   CheckDependencies --types=recipe --mode=missing \
+     $noweb --quiet-progress  "$app" "$version" \
+     "recipe" "$recipedir" > $selecteddeps || Die "Aborted."
+   cat $selecteddeps | while read d_program d_version d_type d_url; 
    do
-      Compile $d_url || exit $?
+      Compile $d_url || {
+         ret=$?
+         rm $selecteddeps
+         exit $ret
+      }
    done
+   rm $selecteddeps
    #dep="$recipedir/Resources/Dependencies"
    #if [ -f "$dep" ]
    #then
