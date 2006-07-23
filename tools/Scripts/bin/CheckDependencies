@@ -214,15 +214,28 @@ global_allways_do=None
 def ask_if_install(match) :
 	p,v,t,u=match
 	global global_allways_do
+	
+	installed = FindPackage(p,types=['installed'])
+	if installed :
+		reason = p + " is installed, but version "+installed[0][1]+" does not match given dependency."
+	else :
+		reason = p + " is not installed."
+	
+	if t == 'recipe' :
+		action = "Compile"
+	else :
+		action = "Install"
+	
 	if global_allways_do :
 		os.system('''
 . ScriptFunctions
 Import Log
 export scriptName=CheckDependencies
 echo >&2
+Log_Terse "%s"
 Log_Terse "%s %s %s %s."
-echo "$REPLY"'''%((global_allways_do=='i' and 'Installing' or 'Skipping'),p,v,t))		
-		if global_allways_do == 'i' :
+echo "$REPLY"'''%(reason,(global_allways_do=='y' and 'Installing' or 'Skipping'),p,v,t))		
+		if global_allways_do == 'y' :
 			return True
 		else :
 			return False
@@ -233,13 +246,14 @@ echo "$REPLY"'''%((global_allways_do=='i' and 'Installing' or 'Skipping'),p,v,t)
 Import Log
 export scriptName=CheckDependencies
 echo >&2
-Ask_Option "Install %s %s %s or skip this dependency? [I]nstall/[S]kip/[IA]Install All/[SA]Skip All"
-echo "$REPLY"'''%(p,v,t))
-		r = f.read()[8:].strip().lower()
+Log_Question "%s"
+Ask_Option "%s %s %s %s or skip this dependency? [Y]es/[N]o/[NA]No to All/[YA]Yes to All"
+echo "$REPLY"'''%(reason,action,p,v,t))
+		r = f.read()[16:].strip().lower()
 		f.close()
 		if r :
-			if r[0] in ['i' ,'s'] :
-				install = (r[0] == 'i')
+			if r[0] in ['y' ,'n'] :
+				install = (r[0] == 'y')
 				if len(r) >= 2 and r[1] == 'a' :
 					global_allways_do = r[0]
 				return install
@@ -419,82 +433,87 @@ def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=Non
 CheckDependencies=get_all_dependencies_and_matches_for
 
 if __name__ == '__main__' :
-	import sys
-	import getopt, os
-
 	try :
-		if not sys.argv[1:] :
-			sys.argv[1:] = [ '--help' ]
-		opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'help'])
-	except getopt.GetoptError, detail :
-		print sys.argv[0].split('/')[-1]+': '+str(detail)
-		sys.exit(1)
-		
-	validTypes = ['installed', 'local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
-	types =  None
-	mode = 'missing'
-	recursive = True
-	noWeb = False
-	add_self='if_required'
+		import sys
+		import getopt, os
 	
-	for o, a in opts :
-		if o in ['--types','--type', '-t'] :
-			types = a.split(',')
-			for i in range(len(types)) :
-				if len (types[i]) == 1 :
-					for t in validTypes :
-						if types[i][0] == t[0] :
-							types[i] = t
-							break
-			if 'all' in types :
-				types = validTypes[:-1] # don't include 'all'
-		elif o in ['--mode','-m'] :
-			mode = a
-		elif o in ['--no-recursive','-R'] :
-			recursive = False
-		elif o in ['--add-self','-s'] :
-			add_self=a
-		elif o in ['--no-web', '-W'] :
-			noWeb = True
-		elif o in ['--help', '-h'] :
-			print """
+		try :
+			if not sys.argv[1:] :
+				sys.argv[1:] = [ '--help' ]
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'quiet-progress', 'help'])
+		except getopt.GetoptError, detail :
+			print sys.argv[0].split('/')[-1]+': '+str(detail)
+			sys.exit(1)
+			
+		validTypes = ['installed', 'local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+		types =  None
+		mode = 'missing'
+		recursive = True
+		noWeb = False
+		add_self='if_required'
+		progress_hook=consoleProgressHook
+		for o, a in opts :
+			if o in ['--types','--type', '-t'] :
+				types = a.split(',')
+				for i in range(len(types)) :
+					if len (types[i]) == 1 :
+						for t in validTypes :
+							if types[i][0] == t[0] :
+								types[i] = t
+								break
+				if 'all' in types :
+					types = validTypes[:-1] # don't include 'all'
+			elif o in ['--mode','-m'] :
+				mode = a
+			elif o in ['--no-recursive','-R'] :
+				recursive = False
+			elif o in ['--quiet-progress'] :
+				progress_hook=None
+			elif o in ['--add-self','-s'] :
+				add_self=a
+			elif o in ['--no-web', '-W'] :
+				noWeb = True
+			elif o in ['--help', '-h'] :
+				print """
 CheckDependencies
  Check dependencies. No decent help yet.
- 
+
 Options:
  -t [t1,t2,...]
  --types=[t1,t2,...]  Sets what kind of packages repositories that can be 
                       searched to match the dependencies. 
-					  Default list is set at Settings/Scripts/FindPackage.conf
- 
- -s  
+                      Default list is set at Settings/Scripts/FindPackage.conf
+
+ -s
  --add-self=          Tell if the program passed as parameter should be 
                       returned too.
-                      
-					  Can be set to:
-					   never       - do not return the passed program
-					   allways     - return the passed program
-					   if_required - return the passed program iff type or 
-					                 version from the program was not passed 
-									 as paramater (default)
+
+                      Can be set to:
+                         never       - do not return the passed program
+                         allways     - return the passed program
+                         if_required - return the passed program iff type or 
+                                       version from the program was not passed 
+                                       as paramater (default)
 
  -i
  -install-optional=   Install optional dependencies? 'always', 'never', 'ask'
                       (by now, all depencies are considered optional)
 
  -m, --mode=          Can be set to:
-			           missing  - report matches only for missing packages
-					   updating - report all packages (dependencies from the
-					              passed program) that can be updated
-					   all      - report matches for all dependencies, even 
-					              it they are already installed
-					   list     - only list the dependencies, without printing
-					              matches
- 
+                         missing  - report matches only for missing packages
+                         updating - report all packages (dependencies from the
+                                    passed program) that can be updated
+                         all      - report matches for all dependencies, even 
+                                    it they are already installed
+                         list     - only list the dependencies, without printing
+                                    matches
+
  -W, --no-web         Do not access the internet.
- 
- -R 
+
+ -R
  --no-recursive       Only the direct dependencies are considered
+
+ --quiet-progress     Do not show progress indicator
 
 Examples of usage:
  CheckDependencies kde-libs 3.5.0
@@ -502,31 +521,32 @@ Examples of usage:
  CheckDependencies -t official_package,recipe kde-libs 3.5.0 recipe 
  CheckDependencies -t official_package,recipe kde-libs 3.5.0 recipe 
  """
-			sys.exit(0)
-	
-	#does_x_depend_on_y((sys.argv[1],sys.argv[2],sys.argv[3],None), sys.argv[4]) 
-	
-	if len(args) >= 1 : p = args[0]
-	else :              sys.exit(1)
-	
-	if len(args) >= 2 : v = args[1]
-	else :              v = None
-	
-	if len(args) >= 3 : t = args[2]
-	else :              t = None
-	
-	if len(args) >= 4 : u = args[3]
-	else :              u = None
-	
-	if mode == 'list' :
-		print ListDependencies(p,v,t,u,recursive=recursive,hook=consoleProgressHook,noWeb=noWeb)
-	else :
-		rr, mm = get_all_dependencies_and_matches_for(p, v, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=consoleProgressHook, add_self=add_self, ask_hook=ask_if_install)
-		if rr :
-			for r,m in zip(rr,mm):
-				pp,vv,tt,uu=m
-				print pp, vv, tt, uu
+				sys.exit(0)
+		
+		#does_x_depend_on_y((sys.argv[1],sys.argv[2],sys.argv[3],None), sys.argv[4]) 
+		
+		if len(args) >= 1 : p = args[0]
+		else :              sys.exit(1)
+		
+		if len(args) >= 2 : v = args[1]
+		else :              v = None
+		
+		if len(args) >= 3 : t = args[2]
+		else :              t = None
+		
+		if len(args) >= 4 : u = args[3]
+		else :              u = None
+		
+		if mode == 'list' :
+			print ListDependencies(p,v,t,u,recursive=recursive,hook=progress_hook,noWeb=noWeb)
 		else :
-			sys.exit(1)		
-
+			rr, mm = get_all_dependencies_and_matches_for(p, v, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install)
+			if rr :
+				for r,m in zip(rr,mm):
+					pp,vv,tt,uu=m
+					print pp, vv, tt, uu
+			else :
+				sys.exit(1)		
+	except KeyboardInterrupt :
+		sys.exit(1)
 
