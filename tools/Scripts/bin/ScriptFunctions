@@ -8,9 +8,9 @@
 export PATH=$PATH:$goboExecutables
 
 export scriptName=`basename $0`
-export scriptPath=$(dirname $(readlink -f $0))
+export scriptPath=$(dirname $(readlink -f $0) 2> /dev/null)
 #export scriptVersion=$(basename $(dirname $(readlink -f $(readlink -f $0)/..)))
-export scriptVersion=$(basename $(readlink -f $(dirname $(readlink -f $0))/..))
+export scriptVersion=$(basename $(readlink -f $scriptPath/..))
 
 # Find_Conf is not available yet
 bootOptions="${goboSettings}/BootScripts/Options"
