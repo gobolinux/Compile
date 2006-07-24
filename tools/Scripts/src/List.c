@@ -876,7 +876,10 @@ main(int argc, char **argv)
 
 	    while (optind < argc) {
 			if ((stat(argv[optind], &entry_status)) < 0) {
-				fprintf(stderr, "%s: %s\n", argv[optind], strerror(errno));
+				if ((lstat(argv[optind], &entry_status)) == 0)
+					list_entries(argv[optind], &total_local, &counter_local, &hidden_local);
+				else
+					fprintf(stderr, "%s: %s\n", argv[optind], strerror(errno));
 				optind++;
 				continue;
 			} else if (! got_statfs){
