@@ -416,7 +416,7 @@ reciperesources="$recipedir/Resources"
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    Log_Normal "Checking dependencies..."
-   selecteddeps=`mktemp $goboTemp/Compile.XXXXXXXX`
+   selecteddeps=`Temporary_File`
    CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress  "$app" "$version" \
      "recipe" "$recipedir" > $selecteddeps || Die "Aborted."
