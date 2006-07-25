@@ -153,6 +153,7 @@ function chroot_compile() {
     fi
     
     export goboCrossCompiling=yes
+    UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $pkg_name $pkg_version
     unset goboCrossCompiling
     Parse_Conf Directories.conf
