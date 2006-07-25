@@ -231,4 +231,4 @@ fi
 # Remove broken links
 #
 Log_Normal "Removing broken links..."
-find $prefix | RemoveBroken
+find $prefix | RemoveBroken >& /dev/null
