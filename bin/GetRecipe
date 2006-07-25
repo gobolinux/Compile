@@ -4,6 +4,7 @@
 # Imports
 ##################################################
 
+unset goboCrossCompiling goboPrefix
 . ScriptFunctions
 Import OptionParser
 Import File
@@ -24,19 +25,20 @@ scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #"recipe or an uncompressed one] is received, and the recipe is placed in" \
 #"$getRecipeRecipeDir"
 #Add_Option_Boolean "C" "nocvs" "Do not find CVS based recipes (TODO)"
+
 Parse_Options "$@"
 shift $parsedArguments
-
-if Is_Writable "$getRecipeRecipeDir" || [ "$compileDisableSudo" = "yes" ]
-then sudo=
-else sudo="sudo -u #0"
-fi
 
 ##################################################
 # Prepare Environment
 ##################################################
 
 assert_dir "$getRecipeRecipeDir"
+
+if Is_Writable "$getRecipeRecipeDir" || [ "$compileDisableSudo" = "yes" ]
+then sudo=
+else sudo="sudo -u #0"
+fi
 
 if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;} && ! [ -f "$1" ]
 then
