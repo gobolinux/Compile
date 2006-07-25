@@ -68,9 +68,10 @@ then
 	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-	Log_Normal "Installing a temporary Scripts package..."
-	ln -nsf $goboPrograms/Scripts $prefix/$goboPrograms
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+#	Log_Normal "Installing a temporary Scripts package..."
+#	ln -nsf $goboPrograms/Scripts $prefix/$goboPrograms
+#	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+	ln -nsf $goboSettings/Scripts $prefix/$goboSettings/Scripts
 fi
 
 #
@@ -83,9 +84,10 @@ then
 	cp -a $goboPrograms/Compile $prefix/$goboPrograms
 	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-	Log_Normal "Installing a temporary Compile package..."
-	ln -nsf $goboPrograms/Compile $prefix/$goboPrograms
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+#	Log_Normal "Installing a temporary Compile package..."
+#	ln -nsf $goboPrograms/Compile $prefix/$goboPrograms
+#	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+	ln -nsf $goboSettings/Compile $prefix/$goboSettings/Compile
 fi
 
 #
