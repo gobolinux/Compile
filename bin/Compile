@@ -358,7 +358,7 @@ recipe=$bakedrecipedir/Recipe
 ##################################################
 
 unset STRIP
-Is_Entry "cross-compile" && export goboCrossCompiling=yes
+Is_Entry "cross-compile" && export goboCrossCompiling=yes cross_compiling=yes
 
 if [ "$goboCrossCompiling" = "yes" ]
 then
@@ -372,9 +372,6 @@ then
    source ${crossConfFile}
    source GoboPath
    Parse_Conf Directories.conf
-
-   # Keep cross-compile flags so that Meta-Recipes follow cross compilation rules
-   crossmeta="--cross-compile $arch_conf"
    
    # Extra arguments to be passed to 'make' and 'make install'
    cross_make_variables=(
@@ -393,9 +390,7 @@ then
    mkdir -p $compileSourcesDir
 
    export CC HOSTCC LD
-   export cross_compiling=yes
 else
-   cross_flags=""
    cross_make_variables=""
 
    arch=`Get_Architecture`
