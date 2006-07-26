@@ -7,17 +7,10 @@
   own copy of them, taken from the CVS. Need to figure out a clean way to handle
   this.
 
-# probably fixed:
-- conflicts on Scripts and TinyScripts binaries at Symlink time
-- ldconfig: Can't open configuration file /System/ARM/Programs/Glibc/Settings/ld.so.conf:
-            No such file or directory
-
-
 # still open / needs more attention:
 - populate /Files/Fonts
 - ln -s /Files/Fonts /System/ARM/Programs/Xorg/7.0/lib/X11/fonts
 - 'Compile RXVT' doesn't install librxvt.so.1
-- 'Compile XFCE' -> where are the settings going to?
 
 
 # X.org problems:
