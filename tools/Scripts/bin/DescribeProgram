@@ -11,10 +11,20 @@
 from GetAvailable      import getGoboVariable
 from PythonUtils import *
 
+global_describeprogram_conf = 'Scripts/DescribeProgram.conf'
+
+def format_text(mode, category, text) :
+	if mode == 'terminal' :
+		return '\033[32m' + '[' + category + ']' + "\033[0m" + '\n' + text.strip() + '\n'+'\n'
+	elif mode == 'ascii' :
+		return '[' + category + ']' + '\n' + text.strip() + '\n'+'\n'
+	elif mode == 'html' :
+		return '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
+
 def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', updateall = False, noweb = False, categories = ['Summary', 'Description', 'License', 'Homepage']) :
 	import os
 	goboPrograms = getGoboVariable('goboPrograms')
-	
+	global global_describeprogram_conf
 	
 	rawDescription = ''
 	if not updateall and os.access(goboPrograms+'/'+p, os.R_OK) :
@@ -28,7 +38,6 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 			rawDescription = f.read().strip()
 			f.close()
 	
-	
 	if not rawDescription and not updateall and v:
 		recipesLocalDirs = getCompileOptions()[0]
 		for directory in recipesLocalDirs :
@@ -41,15 +50,14 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 
 	# insert subdirs too
 	if not descriptionsPaths :
-		descriptionsPaths = getGoboVariable('descriptionsLocalPath', 'Manager/DescribeProgram.conf', True)
+		descriptionsPaths = getGoboVariable('descriptionsLocalPath', global_describeprogram_conf, True)
 		if not descriptionsPaths :
 		    return ''
-	
 	
 	if updateall :
 		localpath = descriptionsPaths[0]
 		import string
-		urls = getGoboVariable('descriptionsSources', 'Manager/DescribeProgram.conf', True)
+		urls = getGoboVariable('descriptionsSources', global_describeprogram_conf, True)
 		for j in range(len(urls)) :
 			url = string.join(urls[j].split('/')[:-1], '/') + '/'+ "AllDescriptions.tar.bz2"
 			ret = os.system('wget '+url+' -O /tmp/AllDescriptions.tar.bz2')
@@ -88,7 +96,7 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 		import GetAvailable
 		
 		try :
-			urls = getGoboVariable('descriptionsSources', 'Manager/DescribeProgram.conf', True)
+			urls = getGoboVariable('descriptionsSources', global_describeprogram_conf, True)
 			for j in range(len(urls)) :
 				if '.' in urls[j].split('/')[-1] :
 					extension = '.' + urls[j].split('/')[-1].split('.')[-1]
@@ -171,11 +179,7 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 		bakedDescription = ''
 		category = 'Description'
 		text = h.getUntilEnd()
-		if mode == 'terminal' :
-			bakedDescription = bakedDescription + '\033[32m' + '[' + category + ']' + "\033[0m" + '\n'
-			bakedDescription = bakedDescription + text.strip() + '\n'+'\n'
-		elif mode == 'html' :
-			bakedDescription = bakedDescription + '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
+		bakedDescription += format_text(mode, category, text)
 
 	while True :
 		if h.contains('[') :
@@ -189,11 +193,7 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 				doBreak = True
 				
 			if not categories or category in categories :
-				if mode == 'terminal' :
-					bakedDescription = bakedDescription + '\033[32m' + '[' + category + ']' + "\033[0m" + '\n'
-					bakedDescription = bakedDescription + text.strip() + '\n'+'\n'
-				elif mode == 'html' :
-					bakedDescription = bakedDescription + '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
+				bakedDescription += format_text(mode, category, text)
 				
 			if doBreak :
 				break
@@ -207,16 +207,19 @@ if __name__ == '__main__' :
 	import getopt, os
 	
 	try : 
-		opts, args = getopt.getopt(sys.argv[1:], 'aWh', ['update-all', 'no-web', 'help'])
+		opts, args = getopt.getopt(sys.argv[1:], 'm:aWh', ['mode=', 'update-all', 'no-web', 'help'])
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
 	
+	mode = 'terminal'
 	updateall = False
 	noWeb = False
 	for o, a in opts :
 		if o in ['-a', '--update-all'] :
 			updateall = True
+		elif o in ['-m', '--mode'] :
+			mode = a
 		elif o in ['--no-web', '-W'] :
 			noWeb = True
 		elif o in [ '--help', '-h' ] :
@@ -228,6 +231,8 @@ DescribeProgram
  
  -a, --update-all     downloads all descriptions available at the servers and 
                       cache them locally
+ 
+ -m, --mode=<mode>    Output mode: html, terminal or ascii.
 
  -W, --no-web         do not try to download remote descriptions if they are not
                       locally available
@@ -249,5 +254,5 @@ Examples of usage:
 	else :
 		sys.exit(1)
 	
-	ret = DescribeProgram(p, v, [], 'terminal', updateall, noWeb)
+	ret = DescribeProgram(p, v, [], mode, updateall, noWeb)
 	print ret
