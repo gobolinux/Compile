@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# there's no need to use cross-prefixed dirs here, as we already have
+# the variable '$prefix' being received as this script's first argument.
+unset goboCrossCompiling
+
 TOP_DIR=..
 source $TOP_DIR/.config
 source GoboPath
@@ -30,7 +34,7 @@ fi
 passwd_file=$prefix/$goboSettings/passwd
 if [ ! -f $passwd_file ]
 then
-    echo "$super_user::0:0:$super_user:/Users/$super_user:/bin/sh" >> $passwd_file
+    echo "$super_user::0:0:$super_user:$goboUsers/$super_user:/bin/sh" >> $passwd_file
 fi
 
 shadow_file=$prefix/$goboSettings/shadow
@@ -150,8 +154,38 @@ fi
 environment_check_file=$prefix/$goboTasks/EnvironmentCheck
 if [ ! -f $environment_check_file ]
 then
-    echo "# TODO: do this once"                  >> $environment_check_file
-    echo "update-mime-database $goboShared/mime" >> $environment_check_file
-    echo "fc-cache"                              >> $environment_check_file
+    cat << EOF > $environment_check_file
+#!/bin/sh
+
+#
+# This task must be run only once, after the first boot
+#
+
+# Ensures that we have a fresh ld.so.cache
+if [ -d $goboPrograms/Glibc ]
+then ldconfig
+fi
+
+# Updates the database for Shared-Mime-INFO
+if [ -d $goboPrograms/Shared-Mime-INFO ]
+then update-mime-database $goboShared/mime
+fi
+
+# Creates an index of FreeType font files
+if [ -d $goboPrograms/Fontconfig ]
+then fc-cache
+fi
+
+# Creates public and private keys
+if [ -d $goboPrograms/OpenSSH ]
+then
+    ssh-keygen -t dsa
+    ssh-keygen -t rsa
+    ssh-keygen -t rsa1
+    cp $goboUsers/$super_user/.ssh/id_dsa   $goboPrograms/OpenSSH/Settings/ssh/ssh_host_dsa_key
+    cp $goboUsers/$super_user/.ssh/id_rsa   $goboPrograms/OpenSSH/Settings/ssh/ssh_host_rsa_key
+    cp $goboUsers/$super_user/.ssh/identity $goboPrograms/OpenSSH/Settings/ssh/ssh_host_key
+fi
+EOF
     chmod +x $environment_check_file
 fi
