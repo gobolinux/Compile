@@ -33,8 +33,6 @@ shift
 if [ -x "$task" ]
 then
    export GraphicBoot=no
-   source ${goboSettings}/BootOptions
-   source ${goboSettings}/NetworkOptions 2> /dev/null
    "$task" "stop" "$@"
    if [ "$?" -eq 0 ]
    then Log_Normal "$taskname: Returned code 0 => OK."

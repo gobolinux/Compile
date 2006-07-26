@@ -13,7 +13,6 @@ BootScriptsDir=/Programs/BootScripts/Current/
 source ${goboSettings}/BootOptions
 source ${BootScriptsDir}/Functions/BootScripts
 source ${goboEnvironment}/Cache
-source ${goboSettings}/NetworkOptions 2> /dev/null
 
 ### Variables ###
 
