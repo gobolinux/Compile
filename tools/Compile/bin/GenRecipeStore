@@ -17,17 +17,20 @@ scriptDescription='Generate "packed recipes", ready for submission.'
 scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
 scriptNotes="This script will take all recipes in $genRecipeRecipeDir and "\
 "pack them as Foo--1.0--recipe.tar.bz2 files at $genRecipeStoreDir."
+Add_Option_Boolean "L" "no-lint" "Do not verify recipes (not recommended)."
+Add_Option_Boolean "W" "no-web" "Offline operation when running RecipeLint (avoid if possible)."
 scriptUsage=""
 Parse_Options "$@"
 shift $parsedArguments
 
 Parse_Conf Compile.conf
 
-
-if Is_Writable "$genRecipeStoreDir"
-then sudo=
-else sudo="sudo -u #0"
+if Boolean "no-web"
+then noweb=--no-web
+else noweb=
 fi
+
+Verify_Superuser "$genRecipeStoreDir"
 
 ##################################################
 # Helper functions
@@ -46,25 +49,64 @@ assert_dir "$genRecipeRecipeDir"
 # Operation
 ##################################################
 
-lsfile="$genRecipeStoreDir/RecipeList"
-$sudo echo -n >"$lsfile"
-for name in "$genRecipeRecipeDir/"*
-do
-    name=`basename "$name"`
-    for version in "$genRecipeRecipeDir/$name/"*
-    do
-        if [ -L "$version" ]
-        then
-            continue
-        fi
-        version=`basename "$version"`
-        archive="$name--$version--recipe.tar.bz2"
-        $sudo echo $archive >>"$lsfile"
-        Log_Verbose "Package: $archive"
-        cd "$genRecipeRecipeDir"
-        Exists "$name/$version/Recipe" && Quiet tar cjvf "$genRecipeStoreDir/$name--$version--recipe.tar.bz2" "$name/$version" \
-        && touch "$genRecipeStoreDir/$name--$version--recipe.tar.bz2" --reference="$name/$version/Recipe"
-    done
-done
+pack_recipe() {
+   name="$1"
+   version="$2"
+   archive="$name--$version--recipe.tar.bz2"
+   Log_Verbose "Package: $archive"
+   cd "$genRecipeRecipeDir"
+   tarball="$genRecipeStoreDir/$name--$version--recipe.tar.bz2"
 
-exit;
+   create_tarball() {
+      recipe="$name/$version/Recipe"
+      resources="$name/$version/Resources"
+      description="$resources/Description"
+      Exists "$recipe" || return 1
+      if ! Exists "$description"
+      then
+         Quiet mkdir "$resources"
+         DescribeProgram --mode=ascii "$name" > "$description" || {
+            rm "$description"
+            Quiet rmdir "$resources"
+         }
+      fi
+      Quiet tar cjvf "$tarball" "$name/$version" || return 1
+      touch "$tarball" --reference="$name/$version/Recipe"
+      return 0
+   }
+
+   if create_tarball
+   then
+      Boolean "no-lint" || RecipeLint $noweb "$tarball"
+      Log_Normal "Packed $tarball"
+   else
+      Log_Error "Failed packing $tarball"
+   fi
+}
+
+pack_all_versions() {
+   for version in "$genRecipeRecipeDir/$1/"*
+   do
+      [ -L "$version" ] && continue
+      pack_recipe "$1" `basename "$version"`
+   done
+}
+
+if [ "$1" ]
+then
+   name=`ls "$genRecipeRecipeDir" | grep -i "^$1$"`
+   if [ "$2" ]
+   then pack_recipe "$name" "$2"
+   else pack_all_versions "$name"
+   fi
+else
+   export lsfile="$genRecipeStoreDir/RecipeList"
+   for name in "$genRecipeRecipeDir/"*
+   do
+       name=`basename "$name"`
+       pack_all_versions "$name"
+   done
+   cd "$genRecipeStoreDir"
+   ls *--recipe.tar.bz2 >"$lsfile"
+fi
+
