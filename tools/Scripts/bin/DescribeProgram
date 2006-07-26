@@ -255,4 +255,6 @@ Examples of usage:
 		sys.exit(1)
 	
 	ret = DescribeProgram(p, v, [], mode, updateall, noWeb)
+	if ret == '':
+		sys.exit(1)
 	print ret
