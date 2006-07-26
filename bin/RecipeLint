@@ -11,7 +11,8 @@ scriptCredits="(C)2005-2006 Hisham Muhammad, released under the GNU GPL."
 scriptUsage="<recipe-file>"
 scriptExample="Foo--1.0--recipe.tar.bz2"
 Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use cache)."
-Add_Option_Boolean "D" "quick-and-dirty" "never download files."
+Add_Option_Boolean "D" "quick-and-dirty" "cut some corners (don't download files, etc; not recommended)."
+Add_Option_Boolean "W" "no-web" "fully offline operation (not recommended)."
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -19,6 +20,11 @@ shift $parsedArguments
    echo -e "\033[41;33;1mFATAL ERROR: could not load initial configuration.\033[0m"
    exit 1
 }
+
+if Boolean "no-web"
+then noweb=--no-web
+else noweb=
+fi
 
 lintdir=`mktemp -d`
 
@@ -72,7 +78,7 @@ recipetar=$(readlink -f "$1")
 [ "$recipetar" ] || recipetar="$1"
 recipename=$(basename "$recipetar")
 
-report=$PWD/$(basename $recipetar .tar.bz2).report.txt
+report=$goboTemp/$(basename $recipetar .tar.bz2).report.txt
 touch "$report" &> /dev/null
 [ -w "$report" ] || {
    echo "No write permission for report file '$report'."
@@ -330,15 +336,25 @@ cat Recipe | perl -e '
 }
 
 test_urls() {
+   function use_cached_file() {
+      if [ -e "$compileArchivesDir/$file" ]
+      then
+         msg "Using cached file $file from $compileArchivesDir..."
+         spider=--spider
+         cp "$compileArchivesDir/$file" .
+      fi
+   }
+   
    function get_file() {
+      if Boolean "no-web"
+      then
+         use_cached_file
+         return
+      fi
+      
       if ! Boolean "thorough"
       then
-         if [ -e "$compileArchivesDir/$file" ]
-         then
-            msg "Using cached file $file from $compileArchivesDir..."
-            spider=--spider
-            cp "$compileArchivesDir/$file" .
-         fi
+         use_cached_file
       fi
       if [ "$spider" ]
       then msg "Checking URL..."
@@ -453,7 +469,7 @@ test_recipe() {
          }
          Boolean "quick-and-dirty" && continue
          msg "Checking availability of sub-recipe $iname $version..."
-         FindPackage --type recipe "$iname" "$iversion" &> /dev/null || {
+         FindPackage $noweb --type recipe "$iname" "$iversion" &> /dev/null || {
             ERROR "Required recipe $iname $iversion not found in repository."
          }
       done
@@ -470,7 +486,7 @@ test_recipe() {
    if [ "$compile_version" ]
    then
       echo "$compile_version" | grep -q "CVS" && {
-         ERROR "Recipe references CVS version."
+         ERROR "Recipe references CVS version of Compile."
       }
    else
       WARN "Recipe has no compile_version declaration."
@@ -605,9 +621,9 @@ test_resources() {
          depname="${line%@*}"
          depversion="${line#*@}"
          echo "Checking for dependency $depname $depversion..."
-         if ! FindPackage --types=recipe $depname $depversion &> /dev/null
+         if ! FindPackage $noweb --types=recipe $depname $depversion &> /dev/null
          then
-            if FindPackage --types=official_package $depname $depversion &> /dev/null
+            if FindPackage $noweb --types=official_package $depname $depversion &> /dev/null
             then WARN "$depname $depversion available only as a package."
             else ERROR "Dependency $depname $depversion not available."
             fi
