@@ -1,8 +1,10 @@
 #!/bin/sh
 
-source /System/Settings/BootOptions
+source GoboPath
+source ${goboSettings}/BootOptions
+source ${goboSettings}/NetworkOptions 2> /dev/null
 
-
+#
 # Bring up or down all network interfaces listed 
 # in the NetworkInterfacesOnBoot array.
 # This is normally called on system boot and shutdown.
