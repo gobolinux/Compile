@@ -24,7 +24,6 @@ function StaticNetworkInterface() {
          [ -z "$networkNetmask" ]   && networkNetmask=255.255.255.0
          [ -n "$networkBroadcast" ] && broadcastcmd="broadcast $networkBroadcast"
          ifconfig $interface $networkIP netmask $networkNetmask $broadcastcmd
-         ifconfig $interface $networkIP netmask $networkNetmask $broadcastcmd
          if [ -n "$Gateway" -a "$GatewayInterface" = "$interface" ]
          then route add default gateway $Gateway metric 1 dev $GatewayInterface
          fi
