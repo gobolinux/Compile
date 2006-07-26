@@ -236,14 +236,14 @@ export scriptName=CheckDependencies
 echo >&2
 Log_Terse "%s"
 Log_Terse "%s %s %s %s."
-'''%(reason,(global_always_do=='y' and 'Installing' or 'Skipping'),p,v,t))		
-		if global_always_do == 'y' :
+'''%(reason,(global_always_do=='install/compile' and 'Installing' or 'Skipping'),p,v,t))		
+		if global_always_do == 'install/compile' :
 			return True
 		else :
 			return False
 		
 	while True :
-		yes = action[0]
+		yes = action[0].lower()
 		f = os.popen('''
 . ScriptFunctions
 Import Log
@@ -258,7 +258,10 @@ echo "$REPLY"'''%(reason,action,t,p,v,yes,action,yes,action))
 			if r[0] in [yes ,'s'] :
 				install = (r[0] == yes)
 				if len(r) >= 2 and r[1] == 'a' :
-					global_always_do = r[0]
+					if r[0] == yes :
+						global_always_do = 'install/compile'
+					else :
+						global_always_do = 'skip'
 				return install
 	return True
 	
