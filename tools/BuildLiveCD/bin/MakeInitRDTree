@@ -48,7 +48,6 @@ mkdir -p $root/Mount/HD0
 mkdir -p $root/Mount/HD1
 mkdir -p $root/Mount/HD2
 mkdir -p $root/Mount/Floppy
-mkdir -p $root/Mount/Pivot # is this needed?
 mkdir -p $root/Mount/TmpFS
 mkdir -p $root/Mount/SquashFS
 mkdir -p $root/Mount/SquashFS/Rest
