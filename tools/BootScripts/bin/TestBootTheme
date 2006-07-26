@@ -43,6 +43,7 @@ fi
 
 
 source "${goboSettings}/BootOptions"
+source "${goboSettings}/NetworkOptions" 2> /dev/null
 source "$BootScriptsDir/Functions/BootScripts"
 source "$themefile"
 
