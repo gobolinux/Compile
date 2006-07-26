@@ -29,8 +29,8 @@ old_format_c = re.compile(old_format)
 global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True) 
 global_wget_timeout = getGoboVariable('timeout', 'Scripts/GetAvailable.conf')
 global_dependencies_cache_dir = os.path.expanduser(getGoboVariable('goboUserSettings')+'/dependencies_cache/')
-global_depedencies_blacklist=[ 'glibc' ] # lower case, please.
-global_depedencies_blacklist += [ i.lower() for i in getGoboVariable('','Scripts/Dependencies.blacklist') ]
+global_dependencies_blacklist=[ 'glibc' ] # lower case, please.
+global_dependencies_blacklist += [ i.lower() for i in getGoboVariable('','Scripts/Dependencies.blacklist') ]
 
 if not os.access(global_dependencies_cache_dir, os.R_OK) :
 	os.makedirs(global_dependencies_cache_dir)
@@ -276,7 +276,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	#print "Entering",p,v
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
-	global global_depedencies_blacklist
+	global global_dependencies_blacklist
 	
 	if all_matches == None :
 		global_available_packages_cache = {}
@@ -324,7 +324,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		#       tuple with None in the place of type
 		if not match in all_matches :
 			all_matches.append(match) # we append before, to avoid asking twice for a package that is meant to be skipped
-			if (match[0].lower() in global_depedencies_blacklist) :
+			if (match[0].lower() in global_dependencies_blacklist) :
 				continue # blacklisted
 			# Ask here!
 			if mode != 'all' and (install_optional == 'never' or install_optional == 'ask' and ask_hook and not ask_hook(match)) :
