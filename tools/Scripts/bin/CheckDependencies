@@ -243,19 +243,20 @@ Log_Terse "%s %s %s %s."
 			return False
 		
 	while True :
+		yes = action[0]
 		f = os.popen('''
 . ScriptFunctions
 Import Log
 export scriptName=CheckDependencies
 echo >&2
 Log_Question "%s"
-Ask_Option "%s %s %s %s or skip this dependency? [Y]es/[N]o/[NA]No to All/[YA]Yes to All"
-echo "$REPLY"'''%(reason,action,p,v,t))
+Ask_Option "%s %s for %s %s or skip this dependency? [%s]%s/[S]Skip/[%sA]%s All/[SA]Skip All"
+echo "$REPLY"'''%(reason,action,t,p,v,yes,action,yes,action))
 		r = f.read()[16:].strip().lower()
 		f.close()
 		if r :
-			if r[0] in ['y' ,'n'] :
-				install = (r[0] == 'y')
+			if r[0] in [yes ,'s'] :
+				install = (r[0] == yes)
 				if len(r) >= 2 and r[1] == 'a' :
 					global_always_do = r[0]
 				return install
