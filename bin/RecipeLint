@@ -337,7 +337,7 @@ cat Recipe | perl -e '
 
 test_urls() {
    function use_cached_file() {
-      if [ -e "$compileArchivesDir/$file" ]
+      if [ "$cached" = "yes" ]
       then
          msg "Using cached file $file from $compileArchivesDir..."
          spider=--spider
@@ -381,8 +381,10 @@ test_urls() {
 
       Boolean "quick-and-dirty" && continue
 
-      unset cached
-      [ -e "$compileArchivesDir/$file" ] && cached=yes
+      if [ -e "$compileArchivesDir/$file" ]
+      then cached=yes
+      else cached=
+      fi
       
       if [ ! "$cached" ] && [ "$file_size" ] && [ "$file_size" -gt 5000000 ] && ! Boolean "thorough" 
       then
