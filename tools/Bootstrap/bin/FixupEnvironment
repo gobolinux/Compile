@@ -52,6 +52,9 @@ then
     UpdateSettings TinyScripts "$version"
     SymlinkProgram -c overwrite TinyScripts
     popd >& /dev/null
+elif [ -d "$dirname" ]
+then
+    SymlinkProgram -c overwrite TinyScripts
 fi
 
 #
