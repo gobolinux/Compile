@@ -381,7 +381,10 @@ test_urls() {
 
       Boolean "quick-and-dirty" && continue
 
-      if [ "$file_size" ] && [ "$file_size" -gt 5000000 ] && ! Boolean "thorough" 
+      unset cached
+      [ -e "$compileArchivesDir/$file" ] && cached=yes
+      
+      if [ ! "$cached" ] && [ "$file_size" ] && [ "$file_size" -gt 5000000 ] && ! Boolean "thorough" 
       then
          WARN "File is big, will not download (to force, run with --thorough)."
          full_check=no
