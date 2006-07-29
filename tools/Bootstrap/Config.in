@@ -305,30 +305,83 @@ config SHRINK_ALL
     select SHRINK_LOCALES
     select SHRINK_M4_MACROS
     select SHRINK_STRIP_ALL
+	---help---
+	  Removes headers, static libs, libtool, pkgconfig, locales and M4
+	  data. Also removes documentation, strips all libraries and
+	  executables found on each package, and performs an additional
+	  cleanup based on per-package scripts found in the subdirectories
+	  inside 'packages/'.
+	  
+	  Please note that this action isn't taken automatically. In order
+	  to effectivelly shrink the filesystem, you must type 'make shrink'
+	  in the command line, which will still make a backup of the generated
+	  filesystem prior to removing its contents.
 
 config SHRINK_HEADERS
 	bool "Remove headers"
+	---help---
+	  Removes headers found on each package, needed only at compile time. To
+	  perform the removal, you still must type 'make shrink' in the command
+	  line, which will make a backup of the generated filesystem prior to
+	  removing its contents.
     
 config SHRINK_STATIC_LIBS
 	bool "Remove static libraries"
+	---help---
+	  Removes static libs found on each package, needed only at compile time
+	  by some programs. To perform the removal, you still must type 'make shrink'
+	  in the command line, which will make a backup of the generated filesystem
+	  prior to removing its contents.
     
 config SHRINK_LIBTOOL
 	bool "Remove libtool related files"
+	---help---
+	  Removes libtool files found on each package, used at compile time by
+	  some programs. To perform the removal, you still must type 'make shrink'
+	  in the command line, which will make a backup of the generated filesystem
+	  prior to removing its contents.
     
 config SHRINK_PKGCONFIG
 	bool "Remove pkgconfig related files"
+	---help---
+	  Removes pkgconfig files found on each package, used at compile time by
+	  some programs. To perform the removal, you still must type 'make shrink'
+	  in the command line, which will make a backup of the generated filesystem
+	  prior to removing its contents.
     
 config SHRINK_DOCS
 	bool "Remove documentation"
+	---help---
+	  Removes documentation (man, info, docs) found on each package. To perform
+	  the removal, you still must type 'make shrink' in the command line, which
+	  will make a backup of the generated filesystem prior to removing its
+	  contents.
     
 config SHRINK_DEFAULT_SETTINGS
 	bool "Remove backup of the default settings"
+	---help---
+	  Removes backup of the default settings for each package. Please note that
+	  this is not recommended, as these files usually take only a few bytes and
+	  are very helpful on recovering from problems on settings files. To perform
+	  the removal, you still must type 'make shrink' in the command line, which
+	  will make a backup of the generated filesystem prior to removing its
+	  contents.
     
 config SHRINK_LOCALES
 	bool "Remove internationalization files"
+	---help---
+	  Removes i18n data, used by programs to display messages in other languages.
+	  than english. To perform the removal, you still must type 'make shrink' in
+	  the command line, which will make a backup of the generated filesystem prior
+	  to removing its contents.
     
 config SHRINK_M4_MACROS
 	bool "Remove aclocal macros"  
+	---help---
+	  Removes aclocal macros, used at compile time by some programs. To perform
+	  the removal, you still must type 'make shrink' in the command line, which
+	  will make a backup of the generated filesystem prior to removing its
+	  contents.
 
 choice
 	prompt "Removal of symbols"
@@ -336,12 +389,26 @@ choice
 
 config SHRINK_STRIP_ALL
 	bool "All symbols from executables and libraries"
+	---help---
+	  Removes all symbols which aren't strictly necessary to get the program
+	  running. This will make it impossible to use the libraries for linkage,
+	  and will also remove relocation information on them. To perform the
+	  removal, you still must type 'make shrink' in the command line, which
+	  will make a backup of the generated filesystem prior to removing its
+	  contents.
 
 config SHRINK_STRIP_UNNEEDED
 	bool "All symbols not needed by relocations"
+	---help---
+	  Removes symbols from files, keeping only symbols used by relocations.
+	  To perform the removal, you still must type 'make shrink' in the
+	  command line, which will make a backup of the generated filesystem
+	  prior to removing its contents.
 
 config SHRINK_STRIP_IGNORE
 	bool "Don't strip anything"
+	---help---
+	  Let the files stay fat with all symbols they already have.
 
 endchoice
 
