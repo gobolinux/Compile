@@ -62,7 +62,8 @@ def get_rules_for(p, v, t, u=None, noWeb=False) :
 				if last_rule :
 					last_rule['option'] = rule
 					last_rule = rule
-			toReturn.append(rule)
+			if rule :
+				toReturn.append(rule)
 		f.close()
 		return toReturn	
 	return []
@@ -142,20 +143,20 @@ def interpret_dependency_line(line) :
 	m = new_format_c.match(line)
 	if m :
 		return {'program'    : m.group(1),
-				'loincluded' : m.group(2) == '[',
-				'lover'      : m.group(3),
-				'hiver'      : m.group(4),
-				'hiincluded' : m.group(5) == ']',
-				'optional'   : True }
+		        'loincluded' : m.group(2) == '[',
+		        'lover'      : m.group(3),
+		        'hiver'      : m.group(4),
+		        'hiincluded' : m.group(5) == ']',
+		        'optional'   : True }
 	else :
 		m = old_format_c.match(line)
 		if m :
 			return {'program'    : m.group(1),
-					'lover'      : m.group(2),
-					'loincluded' : True,
-					'hiver'      : '',
-					'hiincluded' : False,
-				    'optional'   : True }
+			        'lover'      : m.group(2),
+			        'loincluded' : True,
+			        'hiver'      : '',
+			        'hiincluded' : False,
+			        'optional'   : True }
 		else :
 			raise Exception("Parse error")
 
