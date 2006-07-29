@@ -21,10 +21,8 @@ s_version='([0-9a-z._\-]*)'
 new_format = s_name+s_blank+s_open+s_blank+s_version+s_blank+','+s_blank+s_version+s_blank+s_close+s_blank
 new_format_c = re.compile(new_format)
 
-#old_format = s_name+s_blank+'(.*)'+'(.*)'+s_version+'(.*)'
 old_format = s_name+s_blank+s_version
 old_format_c = re.compile(old_format)
-##
 
 global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True) 
 global_wget_timeout = getGoboVariable('timeout', 'Scripts/GetAvailable.conf')
@@ -46,7 +44,6 @@ for i in ['recipe', 'official_package', 'contrib_package', 'local_package'] :
 
 # Notice that type may be required since dependencies(recipe(p)) != dependencies(package(p))
 def get_rules_for(p, v, t, u=None, noWeb=False) :
-	#print p,v,t,u
 	depfiles = find_dependencies_files(p, v, t, u, noWeb=False)
 	toReturn = []
 	for depfile in depfiles :
@@ -132,7 +129,7 @@ def find_dependencies_files(p, v, t, u=None, noWeb=False):
 
 	sys.stderr.write('Dependencies for %s %s %s %s not found\n'%(p,v,t,u))
 	return []
-	  
+
 def interpret_dependency_line(line) :
 	line = line.split('#')[0].strip()
 	if not line :
@@ -221,28 +218,34 @@ def ask_if_install(match) :
 		reason = p + " is installed, but version "+installed[0][1]+" does not match given dependency."
 	else :
 		reason = p + " is not installed."
-	
-	if t == 'recipe' :
-		action = "Compile"
-	else :
-		action = "Install"
-	
+
 	if global_always_do :
+		if global_always_do=='install/compile' :
+			if t == 'recipe' :
+				action = "Compiled"
+			else :
+				action = "Installed"
+		else :
+			action = 'Skipped'
 		os.system('''
 . ScriptFunctions
 Import Log
 export scriptName=CheckDependencies
 echo >&2
 Log_Terse "%s"
-Log_Terse "%s %s %s %s."
-'''%(reason,(global_always_do=='install/compile' and 'Installing' or 'Skipping'),p,v,t))		
+Log_Terse "%s %s (%s) will be %s."
+'''%(reason,p,v,t,action))
 		if global_always_do == 'install/compile' :
 			return True
 		else :
 			return False
 		
 	while True :
-		yes = action[0].lower()
+		if t == 'recipe' :
+			action = "Compile"
+		else :
+			action = "Install"
+		yes = action[0]
 		f = os.popen('''
 . ScriptFunctions
 Import Log
@@ -254,10 +257,10 @@ echo "$REPLY"'''%(reason,action,t,p,v,yes,action,yes,action))
 		r = f.read()[16:].strip().lower()
 		f.close()
 		if r :
-			if r[0] in [yes ,'s'] :
-				install = (r[0] == yes)
+			if r[0] in [yes.lower() ,'s'] :
+				install = (r[0] == yes.lower())
 				if len(r) >= 2 and r[1] == 'a' :
-					if r[0] == yes :
+					if r[0] == yes.lower() :
 						global_always_do = 'install/compile'
 					else :
 						global_always_do = 'skip'
@@ -268,11 +271,12 @@ echo "$REPLY"'''%(reason,action,t,p,v,yes,action,yes,action))
 # Hi-level Functions
 #############################################################################
 
+#
 # Recursivelly identifies the dependencies for a given package / recipe as long as a 'solution' for each one
+#
 def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
 	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None):
-	#print "Entering",p,v
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
 	global global_dependencies_blacklist
@@ -319,15 +323,18 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		if mode == 'updating' and find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb)[2] == 'installed' :
 			continue
 		
-		# Note: if no package is found, find_matching_package returns a 
+		# Note: if no package is found, find_matching_package returns a
 		#       tuple with None in the place of type
 		if not match in all_matches :
 			all_matches.append(match) # we append before, to avoid asking twice for a package that is meant to be skipped
 			if (match[0].lower() in global_dependencies_blacklist) :
 				continue # blacklisted
-			# Ask here!
-			if mode != 'all' and (install_optional == 'never' or install_optional == 'ask' and ask_hook and not ask_hook(match)) :
-				continue
+
+			if mode != 'all' :
+				# Asking here!
+				if install_optional == 'never' or (install_optional == 'ask' and ask_hook and not ask_hook(match)) :
+					continue
+			
 			pp, vv, tt, uu = match
 			if tt and recursive :
 				rr, mm = get_all_dependencies_and_matches_for(pp, vv, tt, uu, acceptable_types, mode, recursive, hook=hook, all_matches=all_matches, ask_hook=ask_hook, install_optional=install_optional, noWeb=noWeb)
@@ -353,7 +360,9 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 			
 	return ordered_rules, ordered_matches
 
-
+#
+# This function is used when mode == 'list'
+#
 def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=False, report_updating=False, recursive=True, hook=None, noWeb=False) :
 	if not types :
 		types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
@@ -409,7 +418,10 @@ def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=F
 		return s
 	else :
 		return rules
-	
+
+#
+# This function is used only in Manager at this time
+#
 def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=None, noWeb=False) :
 	px, vx, tx, ux = x
 	if all_programs == None :
@@ -530,8 +542,6 @@ Examples of usage:
  CheckDependencies -t official_package,recipe kde-libs 3.5.0 recipe 
  """
 				sys.exit(0)
-		
-		#does_x_depend_on_y((sys.argv[1],sys.argv[2],sys.argv[3],None), sys.argv[4]) 
 		
 		if len(args) >= 1 : p = args[0]
 		else :              sys.exit(1)
