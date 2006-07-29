@@ -48,13 +48,11 @@ for i in ['recipe', 'official_package', 'contrib_package', 'local_package'] :
 def get_rules_for(p, v, t, u=None, noWeb=False) :
 	#print p,v,t,u
 	depfiles = find_dependencies_files(p, v, t, u, noWeb=False)
+	toReturn = []
 	for depfile in depfiles :
 		if depfile and os.access(depfile, os.R_OK) :
 			f = open(depfile)
-			i=0
-			toReturn = []
 			for line in f.readlines() :
-				i += 1
 				options=line.split("|")
 				last_rule = None
 				for o in options :
@@ -65,8 +63,7 @@ def get_rules_for(p, v, t, u=None, noWeb=False) :
 				if rule :
 					toReturn.append(rule)
 			f.close()
-		return toReturn
-	return []
+	return toReturn
 
 
 global_not_found_cache=[]
@@ -104,8 +101,9 @@ def find_dependencies_files(p, v, t, u=None, noWeb=False):
 		# searches local recipes first
 		compileRecipeDirs, getRecipeStores = getCompileOptions()
 		for compileRecipeDir in compileRecipeDirs :
-			if os.access(compileRecipeDir+'/'+p+'/'+v+'/Resources/Dependencies', os.R_OK) :
-				return [ compileRecipeDir+'/'+p+'/'+v+'/Resources/Dependencies' ]
+			recipedir=compileRecipeDir+'/'+p+'/'+v+'/'
+			if os.access(recipedir+'Recipe', os.R_OK) :
+				return [ recipedir+'/Resources/Dependencies', recipedir+'/Resources/BuildDependencies' ]
 	
 	if t in [ 'official_package', 'contrib_package', 'recipe' ] :
 		cachedep = global_dependencies_cache_dir+'/'+t+'/'+ name
@@ -130,7 +128,7 @@ def find_dependencies_files(p, v, t, u=None, noWeb=False):
 		s = f.read().strip()
 		ret = f.close()
 		if s:
-			return [ s+'/Resources/Dependencies' ]
+			return [ s+'/Resources/Dependencies', s+'/Resources/BuildDependencies' ]
 
 	sys.stderr.write('Dependencies for %s %s %s %s not found\n'%(p,v,t,u))
 	return []
