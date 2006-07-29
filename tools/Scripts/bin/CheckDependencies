@@ -53,7 +53,7 @@ def get_rules_for(p, v, t, u=None, noWeb=False) :
 				options=line.split("|")
 				last_rule = None
 				for o in options :
-					rule = interpret_dependency_line(o) # todo: add exception handling
+					rule = interpret_dependency_line(o,t) # todo: add exception handling
 					if last_rule :
 						last_rule['option'] = rule
 						last_rule = rule
@@ -130,30 +130,33 @@ def find_dependencies_files(p, v, t, u=None, noWeb=False):
 	sys.stderr.write('Dependencies for %s %s %s %s not found\n'%(p,v,t,u))
 	return []
 
-def interpret_dependency_line(line) :
+def interpret_dependency_line(line, t=None) :
 	line = line.split('#')[0].strip()
 	if not line :
 		return
-	
+
 	m = new_format_c.match(line)
 	if m :
-		return {'program'    : m.group(1),
-		        'loincluded' : m.group(2) == '[',
-		        'lover'      : m.group(3),
-		        'hiver'      : m.group(4),
-		        'hiincluded' : m.group(5) == ']',
-		        'optional'   : True }
+		ret = {'program'    : m.group(1),
+		       'loincluded' : m.group(2) == '[',
+		       'lover'      : m.group(3),
+		       'hiver'      : m.group(4),
+		       'hiincluded' : m.group(5) == ']',
+		       'optional'   : True }
 	else :
 		m = old_format_c.match(line)
 		if m :
-			return {'program'    : m.group(1),
-			        'lover'      : m.group(2),
-			        'loincluded' : True,
-			        'hiver'      : '',
-			        'hiincluded' : False,
-			        'optional'   : True }
+			ret = {'program'    : m.group(1),
+			       'lover'      : m.group(2),
+			       'loincluded' : True,
+			       'hiver'      : '',
+			       'hiincluded' : False,
+			       'optional'   : True }
+			if t == 'recipe' :
+				ret['lover'] = ''
 		else :
 			raise Exception("Parse error")
+	return ret
 
 #############################################################################
 # Function that interpret the semantic of the rule, 
