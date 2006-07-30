@@ -64,7 +64,7 @@ then
 fi
 
 unset localrepository
-if [ "$1" == "--local-repository" ]
+if [ "$1" == "--local-repository" -o "$1" == "-l" ]
 then
     localrepository=yes
     shift
