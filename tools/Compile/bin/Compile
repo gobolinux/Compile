@@ -79,6 +79,7 @@ PrepareProgram --help | grep -q no-default-options || Die "Please update your Sc
 
 Import Compile
 
+# Doing more that symlinks here. Maybe 'do_install_and_symlink' would be a better name. --detsch
 function do_symlink() {
    local nomake=no
    local forcelink=no
@@ -190,8 +191,16 @@ function wrapup() {
       Install_Unmanaged_Files "$target/Resources/UnmanagedFiles" "$target/Resources/Unmanaged"
    fi
 
+   Log_Normal "Generating build information package..."
+   GenBuildInformation "$appname" "$versionnumber" > "$target/Resources/BuildInformation"
+
+   # TODO: Dependencies file of binary package is currently being copied from Recipe at install_extras
+   #       We sould addapt this dependency file, since dependencies for a binary package are usually
+   #       more 'strict' than those for recipes.
+
    if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
    then
+      Log_Normal "Generating signature for package..."
       SignProgram "$appname" "$versionnumber"
    fi
 
@@ -201,13 +210,14 @@ function wrapup() {
    # Generated recipes (located at $genRecipeRecipeDir) 
    if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
+      cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation"
+      
       if [ ! -f "$recipedeps" ]
       then
-         Log_Normal "Generating dependencies list for recipe..."
-         Dependencies $appname > "$recipedeps"
+         cp "$target/Resources/BuildInformation" "$recipedeps"
          cat "$recipedeps"
       fi
-       
+      
       Log_Normal "Packing recipe directory..."
       tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
       Log_Normal "Recipe packed in $genRecipeStoreDir/$app--$version--recipe.tar.bz2"
@@ -425,11 +435,6 @@ then
       }
    done
    rm $selecteddeps
-   #dep="$recipedir/Resources/Dependencies"
-   #if [ -f "$dep" ]
-   #then
-   #   Dependencies $batch -d -c -H -e "$0 $compileoptions" "$dep" || Die "Failed while processing dependencies."
-   #fi
 fi
 
 ##################################################
