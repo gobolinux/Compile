@@ -2,7 +2,7 @@
 
 function download_packages() {
    mkdir -p Bootstrap
-   rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::chrootcompile-packages/ Bootstrap/
+   rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$1/ Bootstrap/
 }
 
 function update_tools() {
@@ -30,6 +30,7 @@ function configure_tools() {
        echo "chrootcompileCompileConf=$PWD/Compile.conf"
        echo "goboPrograms=/Programs"
     } > ChrootCompile.conf
+    [ -e /System/Setting/gobo ] && echo "chrootcompileMode=gobo" >> ChrootCompile.conf
     cp tools/Compile/Resources/Defaults/Settings/Compile/Compile.conf .
 }
 
@@ -41,7 +42,14 @@ then
     cvsopts="-Q"
 fi
 
-download_packages
+bootstraprepository="chrootcompile-packages"
+if [ "$1" = "--complete" -o "$1" = "-c" ]
+then
+   bootstraprepository="livecd-packages"
+fi
+
+
+download_packages "$bootstraprepository"
 update_tools
 configure_tools
 
