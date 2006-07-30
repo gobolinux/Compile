@@ -606,6 +606,9 @@ test_recipe() {
    grep -q "\$target/../Variable" Recipe && {
       WARN "Recipe uses old \$target/../Variable idiom. Use \$variable_target."
    }
+   grep "wget" Recipe | grep -q -v "url=\|urls=" && {
+      ERROR "Recipe performs wget explicitly. Use the urls= array instead."
+   }
 }
 
 [ "$test_recipe" = "yes" ] && test_recipe
