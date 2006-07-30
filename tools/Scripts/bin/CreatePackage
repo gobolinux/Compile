@@ -81,7 +81,7 @@ then
    resources="$package/$versionnumber/Resources"
    Make_Directory "$resources"
    if ! [ -e "$resources/Dependencies" ]
-   then Dependencies "$package" "$versionnumber" > "$resources/Dependencies"
+   then GenBuildInformation "$package" "$versionnumber" > "$resources/Dependencies"
    fi
 fi
 
