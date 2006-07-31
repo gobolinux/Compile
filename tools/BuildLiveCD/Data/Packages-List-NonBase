@@ -48,7 +48,6 @@ LibXML2
 LibXSLT
 Lsof
 Mesa
-PCRE
 Parted
 Pkgconfig
 Popt
@@ -89,3 +88,10 @@ Subversion
 LibStdC++
 KDE-Graphics
 TeTeX
+Perl-XML-Parser
+LibRSVG
+Gimp
+MPlayer
+QtParted
+KDE-I18n-pt_BR
+KDE-I18n-de

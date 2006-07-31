@@ -49,6 +49,7 @@ OpenSSL
 Patch
 Perl
 Pinfo
+PCRE
 Procinfo
 Procps
 Psmisc
