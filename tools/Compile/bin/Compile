@@ -79,7 +79,7 @@ PrepareProgram --help | grep -q no-default-options || Die "Please update your Sc
 
 Import Compile
 
-# Doing more that symlinks here. Maybe 'do_install_and_symlink' would be a better name. --detsch
+# Doing more than symlinks here. Maybe 'do_install_and_symlink' would be a better name. --detsch
 function do_symlink() {
    local nomake=no
    local forcelink=no
