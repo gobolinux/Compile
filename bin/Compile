@@ -191,16 +191,16 @@ function wrapup() {
       Install_Unmanaged_Files "$target/Resources/UnmanagedFiles" "$target/Resources/Unmanaged"
    fi
 
-   Log_Normal "Generating build information package..."
+   Log_Normal "Generating package's build information..."
    GenBuildInformation "$appname" "$versionnumber" > "$target/Resources/BuildInformation"
 
    # TODO: Dependencies file of binary package is currently being copied from Recipe at install_extras
-   #       We sould addapt this dependency file, since dependencies for a binary package are usually
+   #       We sould adapt this dependency file, since dependencies for a binary package are usually
    #       more 'strict' than those for recipes.
 
    if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
    then
-      Log_Normal "Generating signature for package..."
+      Log_Normal "Generating package's signature..."
       SignProgram "$appname" "$versionnumber"
    fi
 
