@@ -298,7 +298,7 @@ then
 
    MakeInitRDTree
    echo "Extracting isolinux/kernel from Archives/Ext/Linux--${kernel_version}--kernel-i686.tar.bz2"
-   tar xfj Archives/Ext/Linux--${kernel_version}--kernel-i686.tar.bz2  System/Kernel/Boot/kernel-${kernel_version} -O > Output/ISO/isolinux/kernel
+   tar xfj Archives/Ext/Linux--${kernel_version}--kernel-i686.tar.bz2 -O System/Kernel/Boot/kernel-${kernel_version}  > Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
    echo "=> InitRD stage done"
 fi
