@@ -49,7 +49,7 @@ fi
 #############################################################################
 # '--repack' option: (to be used only on GoboLinux systems)
 #############################################################################
-if [ "$1" == "--repack" -o "$1" == "--just-repack" ]
+if [ "$1" == "--repack" -o "$1" == "--just-repack" -o "$1" == "-r" -o "$1" == "-j" ]
 then
    cd Bootstrap || exit 1
    for i in Compile Scripts
@@ -59,7 +59,7 @@ then
       CreatePackage --no-verify --no-sign $i
    done
    cd -
-   [ "$1" == "--just-repack" ] && exit 0
+   [ "$1" == "--just-repack" -o "$1" == "-j" ] && exit 0
    shift
 fi
 
@@ -74,7 +74,7 @@ unset crossopts
 unset crossrepodir
 unset crossprefixdir
 unset crosstoolchaindir
-if [ "$1" == "--cross-compile" ]
+if [ "$1" == "--cross-compile" -o "$1" == "-X" ]
 then
     [ "$2" = "" ] && die "Expected architecture as a parameter."
     crossopts="--cross-compile $2"
@@ -104,7 +104,7 @@ else
 fi
 
 unset verbose
-if [ "$1" == "--verbose" ]
+if [ "$1" == "--verbose" -o "$1" == "-v" ]
 then
     verbose="$1"
     shift
@@ -115,10 +115,11 @@ then
     echo "Usage: $0 [options] <recipe dir>"
     echo " "
     echo "Available options are:"
-    echo "   --repack:               run CreatePackage after compilation (GoboLinux only)"
-    echo "   --local-repository:     use the repository at /Files/Compile (GoboLinux only)"
-    echo "   --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
-    echo "   --verbose:              verbose output"
+    echo "  -r, --repack:               repacks GoboLinux scripts taken from CVS (GoboLinux only)"
+    echo "  -j, --just-repack:          repacks scripts and exit (GoboLinux only)"
+    echo "  -l, --local-repository:     use the repository at /Files/Compile (GoboLinux only)"
+    echo "  -X, --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
+    echo "  -v, --verbose:              verbose output"
     exit 0
 fi
 
