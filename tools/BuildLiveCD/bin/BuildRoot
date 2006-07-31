@@ -221,7 +221,7 @@ create_dir $root/Programs
 create_dir $root/usr
 
 function create_link() {
-   [ -e "$1" ] || ln -nfs "$1" "$2"
+   [ -e "$2" ] || ln -nfs "$1" "$2"
    true
 }
 
