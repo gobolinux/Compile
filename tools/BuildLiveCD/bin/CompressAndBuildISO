@@ -51,7 +51,8 @@ arch=i686
 today=`date +%Y%m%d`
 localcvs=$root/LocalCVS
 packages=$root/Archives/Packages
-
+datadir="/Programs/BuildLiveCD/Current/Data" 
+   
 #############################################################################
 # ROLayer
 #############################################################################
@@ -66,7 +67,6 @@ then
       exit 1
    fi
 
-   datadir="/Programs/BuildLiveCD/Current/Data" 
    tools=`cat $datadir/Packages-List-GoboLinuxTools`
 
    toolswhichneedmake=""
