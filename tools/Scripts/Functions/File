@@ -113,6 +113,7 @@ function Line_Match() {
 
 #calica 09/11/2005 Move GPG_gobo_keyring to Functions/File
 GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
    Parameters "$@" program prefix hash_file
@@ -147,18 +148,17 @@ function Sign_File() {
 
 function Check_FileSig() {
    Parameters "$@" file sig
-
+   echo "$file $sig"
    /bin/gpgv ${GPG_opts} "$sig" "$file"
 }
 
 function Check_FileHash() {
 ### python check_filehashes CHANGELOG
 # 10/10/2004 - [calica] First version
-   Parameters "$@" prefix file
+   Parameters "$@" program prefix hash_file
    local rtn
-   
    Quiet pushd $prefix
-   find * -type f | grep -v "$file" | $sudo_exec python -c """
+   $sudo_exec ListProgramFiles --files "$program" | grep -v "$hash_file" | $sudo_exec python -c """
 import re, os, string, os.path, sys
 
 hashfile='$file'

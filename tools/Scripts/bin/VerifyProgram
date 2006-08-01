@@ -79,7 +79,7 @@ then
    if Exists "${FileHash_sig}" && ! Boolean "no-signature"
    then
       Boolean "quiet" || Log_Normal "Verifying signature..."
-      $quiet Check_FileSig "${FileHash_loc}" "${FileHash_sig}" 
+      $quiet Check_FileSig "${FileHash_loc}" "${FileHash_sig}"
       if Failed
       then
          Boolean "quiet" || Log_Error "Signature check failed: $rtn"
@@ -99,7 +99,7 @@ fi
 if Exists "${FileHash_loc}"
 then
    Boolean "quiet" || Log_Normal "Verifying FileHash..."
-   output=`Check_FileHash "$prefix" "Resources/FileHash"`
+   output=`Check_FileHash "$package" "$prefix" "Resources/FileHash"`
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"

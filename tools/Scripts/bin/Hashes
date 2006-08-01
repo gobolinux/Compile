@@ -1,10 +1,10 @@
 #!/bin/sh
 
 source ScriptFunctions
-Import File
 Import GoboLinux
 Import Log
 Import OptionParser
+Import File
 Import Process
 Import String
 
@@ -27,16 +27,17 @@ shift $parsedArguments
 ### Utility functions #################################################################
 FileHash_loc="Resources/FileHash"
 FileHash_sig="${FileHash_loc}.sig"
-GPG_gobo_keyring="/System/Settings/Scripts/gpg/pubring.gpg"
-GPG_opts="--keyring ${GPG_gobo_keyring}"
-
-GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
 if Is_Entry_Set "local-user" 
 then
    localuser=`Entry "local-user"`
    GPG_opts="${GPG_opts} -u $localuser"
+fi
+
+if Exists "$HOME/.gnupg/pubring.gpg"
+then
+   GPG_opts="${GPG_opts} --keyring $HOME/.gnupg/pubring.gpg"
 fi
 
 if Is_Entry_Set "keyring"
@@ -64,50 +65,10 @@ cd "$prefix"
 
 ### --generate: create Resources/FileHash################################################
 
-function gen_filehashes() {
-  mkdir -p "Resources"
-  find * -type f | grep -v "Resources/FileHash" | xargs sha1sum >"Resources/FileHash"
-}
-
-function check_filehashes() {
-### python check_filehashes CHANGELOG
-# 10/10/2004 - [calica] First version
-   Parameters "$@" file
-   
-python -c """
-import re, os, string, os.path, sys
-
-hashfile='Resources/FileHash'
-
-file_checksums={}
-errors=0
-
-hashes = file(hashfile, 'r')
-for line in hashes:
-   fields = re.split('\s+', line)
-   file_checksums[fields[1]]=fields[0]
-   
-# Walk file tree
-for line in sys.stdin:
-   line = line.rstrip()
-   try:
-      good_sum = file_checksums[line]
-      test_sum = re.split('\s+', os.popen('sha1sum %s'%line).read().rstrip())[0]
-      if good_sum != test_sum:
-         print line, 'has been modified!'
-         errors+=1
-   except:
-      print line, 'not found in hashfile'
-      errors+=1
-
-sys.exit(errors)
-
-"""
-}
 
 if Boolean "generate"
 then
-   gen_filehashes
+   Gen_FileHash "$package" "$prefix" "$FileHash_loc"
    exit 0
 fi
 
@@ -118,7 +79,7 @@ then
    if ! Exists "Resources/FileHash"
    then
       # Generate FileHash
-      gen_filehashes
+      Gen_FileHash "$package" "$prefix" "$FileHash_loc"
    fi
    cat "$prefix/Resources/FileHash"
    exit 0
@@ -128,7 +89,7 @@ fi
 
 if Boolean "sign"
 then
-   gen_filehashes
+   Gen_FileHash "$package" "$prefix" "$FileHash_loc"
 
    gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee "${FileHash_sig}"
    
@@ -142,7 +103,7 @@ then
    result=0
    if Exists "${FileHash_sig}"
    then
-      Quiet gpg ${GPG_opts} --verify "${FileHash_sig}" "${FileHash_loc}"
+      Quiet Check_FileSig "${FileHash_loc}" "${FileHash_sig}" 
       rtn=$?
       if [ $rtn -eq "0" ]
       then
@@ -153,8 +114,7 @@ then
          exit $result
       fi
    fi
-   output=`find * -type f | grep -v "Resources/FileHash" | check_filehashes`
-#   sha1sum --check "Resources/FileHash"
+   output=`Check_FileHash "$package" "$prefix" "$FileHash_loc"`
    rtn=$?
    if [ $rtn -eq "0" ]
    then
