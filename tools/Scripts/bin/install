@@ -20,6 +20,11 @@ then
       elif [ "${inOptions[i]:0:2}" = "-o" -o "${inOptions[i]:0:2}" = "-g" ]
       then
          : # skip this
+      elif [ "${inOptions[i]:0:1}" = "-" -a "$goboCrossCompiling" ]
+      then
+         # ignore strip options if cross-compiling
+         outOptions[o]=`echo "${inOptions[i]}" | sed 's,s,,g' | sed 's,--strip,,g'`
+         o=$[o+1]
       else
          outOptions[o]="${inOptions[i]}"
          o=$[o+1]
@@ -31,6 +36,10 @@ else
       if [ "${inOptions[i]}" = "root" ]
       then
          outOptions[i]="0"
+      elif [ "${inOptions[i]:0:1}" = "-" -a "$goboCrossCompiling" ]
+      then
+         # ignore strip options if cross-compiling
+         outOptions[i]=`echo "${inOptions[i]}" | sed 's,s,,g' | sed 's,--strip,,g'`
       else
          outOptions[i]="${inOptions[i]}"
       fi
