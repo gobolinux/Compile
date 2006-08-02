@@ -182,6 +182,8 @@ function install_extras() {
 
 function wrapup() {
 
+   Quiet mkdir -p $target/Resources
+
    if [ "${unmanaged_files[*]}" ]
    then
       rm -f -- $target/Resources/UnmanagedFiles
@@ -285,11 +287,22 @@ function config_is_autoconf() {
    grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
 }
 
-build_tree_if() {
+function build_tree_if() {
    if [ "$@" ]
    then
       PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    fi
+}
+
+function mark_export() {
+   export variablestoexport="$variablestoexport $*"
+}
+
+function export_marked() {
+   for var in $variablestoexport
+   do
+      export $var
+   done
 }
 
 ##################################################
@@ -325,7 +338,7 @@ else
 fi
 
 ##################################################
-# Find, Get and source Recipe
+# Find and Get Recipe
 ##################################################
 
 #unset directrecipe
@@ -464,9 +477,10 @@ then
       fi
       dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
       dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
-      eval 'export '$lowercase_name'_path='$dep_path
-      eval 'export '$lowercase_name'_settings_path='$dep_settings_path
-      eval 'export '$lowercase_name'_variable_path='$dep_settings_path
+      eval $lowercase_name'_path='$dep_path
+      eval $lowercase_name'_settings_path='$dep_settings_path
+      eval $lowercase_name'_variable_path='$dep_settings_path
+      mark_export ${lowercase_name}_path ${lowercase_name}_settings_path ${lowercase_name}_variable_path
    done
 fi
 
@@ -489,9 +503,10 @@ then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
 target=`Get_Dir runtime $appname $versionnumber`
-export settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
-export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
-export installprefix="$target"
+settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
+installprefix="$target"
+mark_export target settings_target variable_target
 
 if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "$keep"
 then
@@ -499,6 +514,10 @@ then
    then exit 0
    fi
 fi
+
+##################################################
+# Source recipe
+##################################################
 
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
@@ -793,7 +812,10 @@ then
    do
       Log_Verbose "Converting patch $i..."
       temppatch=`Temporary_File`
-      ApplyVariables -i Compile "$i" > $temppatch
+      (
+         export_marked
+         ApplyVariables -i Compile "$i" > $temppatch
+      )
       Log_Verbose "Applying patch $temppatch..."
       patch -Np1 -i $temppatch
       # rm $temppatch
