@@ -163,7 +163,7 @@ function check_dir() {
          ;;
       Resources)
          ;;
-      *.patch)
+      *.patch|*.patch.in)
          echo "$file" | egrep -q "^[0-9]+" || {
             [ `ls $2/*.patch | wc -l` -gt 1 ] && {
                ERROR "Patch file $file is not numbered; unreliable patching order."
@@ -195,7 +195,7 @@ msg "Checking recipe contents..."
    FATAL "No Recipe file."
 }
 msg "Performing basic syntax validation..."
-bash -n Recipe || {
+bash -n ./Recipe || {
    FATAL "Recipe does not parse as valid shell script."
 }
 test_recipe=yes
@@ -242,6 +242,7 @@ cat Recipe | perl -e '
       cvs_options => "string",
       cvs_checkout_options => "string",
       cvs_rsh => "string",
+      parent_recipe => "string"
    );
    sub check_array_name {
       my ($name, $num) = @_;
@@ -284,13 +285,27 @@ cat Recipe | perl -e '
          } else {
             # TODO: check array contents
          }
+      } elsif ($want_bracket) {
+         $want_bracket = 0;
+         if (/^[[:blank:]]*\{[[:blank:]]*$/) {
+            $in_shell = 1;
+         } else {
+            print "Error at line ".$n.": expected a {\n";
+            print;
+            exit 1;
+         }
       } else {
          if (/^#.*$/) {
          } elsif (/^[[:blank:]]*$/) {
          } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*$/) {
-               print "Error at line ".$n.": please use { in the same line:\n";
+            $fn_name = $1;
+            if ($functions{$fn_name} == 1) {
+               print "Error at line ".$n.": function redefinition:\n";
                print;
                exit 1;
+            }
+            $functions{%fn_name} = 1;
+            $want_bracket = 1;
          } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*\{/) {
             $fn_name = $1;
             if ($functions{$fn_name} == 1) {
@@ -490,7 +505,7 @@ test_recipe() {
    }
    if [ "$compile_version" ]
    then
-      echo "$compile_version" | grep -q "CVS" && {
+      echo "$compile_version" | grep -qi "CVS" && {
          ERROR "Recipe references CVS version of Compile."
       }
    else
