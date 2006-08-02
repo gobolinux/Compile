@@ -242,7 +242,6 @@ cat Recipe | perl -e '
       cvs_options => "string",
       cvs_checkout_options => "string",
       cvs_rsh => "string",
-      parent_recipe => "string"
    );
    sub check_array_name {
       my ($name, $num) = @_;
