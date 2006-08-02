@@ -464,9 +464,9 @@ then
       fi
       dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
       dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
-      eval ''$lowercase_name'_path='$dep_path
-      eval ''$lowercase_name'_settings_path='$dep_settings_path
-      eval ''$lowercase_name'_variable_path='$dep_settings_path
+      eval 'export '$lowercase_name'_path='$dep_path
+      eval 'export '$lowercase_name'_settings_path='$dep_settings_path
+      eval 'export '$lowercase_name'_variable_path='$dep_settings_path
    done
 fi
 
@@ -489,9 +489,9 @@ then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
 target=`Get_Dir runtime $appname $versionnumber`
-settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
-variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
-installprefix="$target"
+export settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+export variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
+export installprefix="$target"
 
 if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "$keep"
 then
