@@ -73,6 +73,7 @@ fi
 unset crossopts
 unset crossrepodir
 unset crossprefixdir
+unset crosskerneldir
 unset crosstoolchaindir
 if [ "$1" == "--cross-compile" -o "$1" == "-X" ]
 then
@@ -82,9 +83,11 @@ then
 
     [ ! -f $crossconf ] && die "$crossconf: file not found."
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
+    eval `cat $crossconf | grep "cross_kernel_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_toolchain_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_uname_m=" | sed 's/"//g'`
     crossprefixdir=$cross_prefix_dir
+    crosskerneldir=$cross_kernel_dir
     crosstoolchaindir=$cross_toolchain_dir
     crossrepodir="$crossprefixdir/$goboPrograms"
     arch=$cross_uname_m
@@ -208,7 +211,7 @@ function unmount_dir() {
 
 function cleanup() {
    unset LANG LC_ALL
-   for point in $root/Files/Compile/Archives $root/Files/Compile $crossprefixdir $crosstoolchaindir
+   for point in $root/Files/Compile/Archives $root/Files/Compile $crossprefixdir $crosstoolchaindir $crosskerneldir
    do
       unmount_dir $point
    done
@@ -285,8 +288,15 @@ chmod 777 $root/System/Variable/tmp # Fibo also wants to write temp files
 #############################################################################
 if [ "$localrepository" ]
 then
-    [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile at $root/Files/Compile"
+    [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile inside $root"
     $sudo mount --bind /Files/Compile $root/Files/Compile
+
+    if [ ! -z "$crosskerneldir" ]
+    then
+        [ "$verbose" ] && echo "ChrootCompile: bind-mounting $crosskerneldir inside $root"
+        mkdir -p $root/$crosskerneldir
+        $sudo mount --bind $crosskerneldir $root/$crosskerneldir
+    fi
 fi
 
 if [ -d Recipes ]
