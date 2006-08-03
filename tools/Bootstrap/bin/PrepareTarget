@@ -19,7 +19,7 @@ trap cleanup TERM INT STOP HUP
 #
 # Ensure that dependencies are installed
 #
-InstallDependencies
+InstallDependencies || exit 1
 
 if [ "$CROSS_NONE" = "y" ]
 then 

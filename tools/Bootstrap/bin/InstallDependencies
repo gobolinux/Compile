@@ -15,18 +15,26 @@ if [ ! -d "$dirname" ]
 then
     Log_Normal "Fetching ChrootCompile from the CVS..."
     mkdir -p "$TOP_DIR/downloads"
-    pushd "$TOP_DIR/downloads"
+    pushd "$TOP_DIR/downloads" >& /dev/null
     cvs_checkout ChrootCompile tools/ChrootCompile
     popd >& /dev/null
 fi
 
 dirname="$TOP_DIR/chroot/tools/ChrootCompile"
-if [ ! -d "$dirname" ]
+got_glibc=`ls $TOP_DIR/chroot/Bootstrap/Glibc--* 2> /dev/null`
+if [ ! -d "$dirname" -o ! "$got_glibc" ]
 then
     mkdir -p "$TOP_DIR/chroot"
-    pushd "$TOP_DIR/chroot"
+    pushd "$TOP_DIR/chroot" >& /dev/null
     ../downloads/ChrootCompile/SetupChrootEnv
     popd >& /dev/null
+
+    got_glibc=`ls $TOP_DIR/chroot/Bootstrap/Glibc--* 2> /dev/null`
+    if [ ! "$got_glibc" ]
+    then
+        Log_Error "Could not get files from rsync"
+        exit 1
+    fi
 fi
 
 #
