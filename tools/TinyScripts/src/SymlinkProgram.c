@@ -58,6 +58,8 @@ static struct option long_options[] = {
 static char *goboPrograms;
 static char *goboExecutables;
 static char *goboLibraries;
+static char *goboHeaders;
+static char *goboManuals;
 static char *goboSettings;
 static char *goboShared;
 static char *goboEnvironment;
@@ -174,50 +176,112 @@ do_link(char *to, char *from)
 }
 
 void
+do_exec(char *cmd)
+{
+    int pid = fork();
+    
+    if (pid == 0)
+        execl(cmd, cmd, NULL);
+    else if (pid > 0)
+        waitpid(pid, NULL, WUNTRACED);
+    else
+        perror("fork");
+}
+
+void
 symlink_program(char *name, char *version)
 {
+    int printed = 0;
     char dirname[PATH_MAX];
 
 	/* TODO: 
 	 * - symlink Variable
 	 * - symlink wrappers
-	 * - symlink info and man
 	 * - Shared needs special treatment, doesn't it?
-	 * - run ldconfig and FixLibtoolLa
+	 * - run FixLibtoolLa
 	 * - rebuild environment cache
 	 * - remove unused directories
 	 * - remove broken links
 	 */
 	
-    print_msg("Symlinking global settings...\n");
     snprintf(dirname, sizeof(dirname), "%s/%s/Settings", goboPrograms, name);
-    do_link(goboSettings, dirname);
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking global settings...\n");
+        do_link(goboSettings, dirname);
+    }
 
-    print_msg("Symlinking tasks...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/Resources/Tasks", goboPrograms, name, version);
-    do_link(goboTasks, dirname);
+#define set_dir(buf, subdir) \
+    snprintf(buf, sizeof(buf), "%s/%s/%s/%s", goboPrograms, name, version, subdir)
 
-    print_msg("Symlinking libraries...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/lib", goboPrograms, name, version);
-    do_link(goboLibraries, dirname);
+    set_dir(dirname, "Resources/Tasks");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking tasks...\n");
+        do_link(goboTasks, dirname);
+    }
 
-    print_msg("Symlinking headers...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/include", goboPrograms, name, version);
-    do_link(goboShared, dirname);
-	
-    print_msg("Symlinking shared...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/Shared", goboPrograms, name, version);
-    do_link(goboShared, dirname);
+    set_dir(dirname, "lib");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking libraries...\n");
+        do_link(goboLibraries, dirname);
+        
+        print_msg("Updating library database (ldconfig)...\n");
+        do_exec("ldconfig");
+    }
+
+    set_dir(dirname, "include");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking headers...\n");
+        do_link(goboHeaders, dirname);
+    }
     
-	print_msg("Symlinking executables...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/bin", goboPrograms, name, version);
-    do_link(goboExecutables, dirname);
-	snprintf(dirname, sizeof(dirname), "%s/%s/%s/sbin", goboPrograms, name, version);
-    do_link(goboExecutables, dirname);
+    set_dir(dirname, "info");
+    if (dir_exists(dirname)) {
+        char to[PATH_MAX];
+        
+        print_msg("Symlinking info...\n");
+        sprintf(to, "%s/info", goboManuals);
+        do_link(to, dirname);
+    }
+    
+    set_dir(dirname, "man");
+    if (dir_exists(dirname)) {
+        int i;
+        char to[PATH_MAX];
+        char from[PATH_MAX];
+        
+        print_msg("Symlinking manuals...\n");
+        for (i=0; i<9; ++i) {
+            sprintf(from, "%s/man%d", dirname, i);
+            sprintf(to, "%s/man/man%d", goboManuals, i);
+            do_link(to, from);
+        }
+    }
+	
+    set_dir(dirname, "Shared");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking shared...\n");
+        do_link(goboShared, dirname);
+    }
+    
+    set_dir(dirname, "bin");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking executables...\n");
+        do_link(goboExecutables, dirname);
+        printed = 1;
+    }
+    
+    set_dir(dirname, "sbin");
+    if (dir_exists(dirname)) {
+        if (! printed)
+            print_msg("Symlinking executables...\n");
+        do_link(goboExecutables, dirname);
+    }
 
-    print_msg("Symlinking environment...\n");
-    snprintf(dirname, sizeof(dirname), "%s/%s/%s/Environment", goboPrograms, name, version);
-    do_link(goboEnvironment, dirname);
+    set_dir(dirname, "Environment");
+    if (dir_exists(dirname)) {
+        print_msg("Symlinking environment...\n");
+        do_link(goboEnvironment, dirname);
+    }
 }
 
 void
@@ -272,6 +336,8 @@ main(int argc, char **argv)
     GET_OR_ASSIGN(goboPrograms,    "goboPrograms",    "/Programs");
     GET_OR_ASSIGN(goboExecutables, "goboExecutables", "/System/Links/Executables");
     GET_OR_ASSIGN(goboLibraries,   "goboLibraries",   "/System/Links/Libraries");
+    GET_OR_ASSIGN(goboHeaders,     "goboHeaders",     "/System/Links/Headers");
+    GET_OR_ASSIGN(goboManuals,     "goboManuals",     "/System/Links/Manuals");
     GET_OR_ASSIGN(goboSettings,    "goboSettings",    "/System/Settings");
     GET_OR_ASSIGN(goboShared,      "goboShared",      "/System/Links/Shared");
     GET_OR_ASSIGN(goboEnvironment, "goboEnvironment", "/System/Links/Environment");
