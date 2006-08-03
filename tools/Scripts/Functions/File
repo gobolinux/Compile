@@ -148,7 +148,6 @@ function Sign_File() {
 
 function Check_FileSig() {
    Parameters "$@" file sig
-   echo "$file $sig"
    /bin/gpgv ${GPG_opts} "$sig" "$file"
 }
 
