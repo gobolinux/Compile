@@ -44,8 +44,8 @@ function make_headers() {
                 exit 1
                 ;;
         esac
-	else
-		kernelArch="$cross_kernel_arch"
+    else
+        kernelArch="$cross_kernel_arch"
     fi
 
     pushd "$TOP_DIR/bin" >& /dev/null
@@ -152,11 +152,10 @@ function chroot_compile() {
     #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
-    export goboCrossCompiling=yes
+    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
     UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $pkg_name $pkg_version
-    unset goboCrossCompiling
-    Parse_Conf Directories.conf
+    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling && Parse_Conf Directories.conf
     
     popd >& /dev/null
 }
@@ -188,7 +187,7 @@ if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
-	export arch_conf=`get_chosen_arch`
+    export arch_conf=`get_chosen_arch`
 
     # this is the same as evaluating the line 'export cross_prefix_dir=...'
     `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`
