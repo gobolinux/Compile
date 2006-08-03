@@ -434,4 +434,6 @@ int main(int argc, char** argv) {
    char msg[1024];
    snprintf(msg, 1023, "Processed %d file%s.", count, count == 1 ? "" : "s");
    Log_Normal(msg);
+
+   return 0;
 }
