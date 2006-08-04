@@ -22,14 +22,14 @@ function cleanup() {
 
 trap cleanup TERM INT STOP HUP
 
-if [ "$NATIVE_COMPILING" != "y" ]
-then 
-    export arch_conf=`get_chosen_arch`
-    source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
-    prefix="$cross_prefix_dir"
-
-    export goboCrossCompiling=yes
+if [ "$NATIVE_COMPILING" = "y" ]
+then export arch_conf="Native"
+else export arch_conf=`get_chosen_arch`
 fi
+
+source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
+prefix="$cross_prefix_dir"
+export goboCrossCompiling=yes
 
 echo
 

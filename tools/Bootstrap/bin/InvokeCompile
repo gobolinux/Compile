@@ -52,10 +52,10 @@ function make_headers() {
     ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $kernelArch $dirname
     popd >& /dev/null
 
-    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
+    export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling goboPrefix
-    [ "$NATIVE_COMPILING" != "y" ] && Parse_Conf Directories.conf
+    unset goboCrossCompiling goboPrefix
+    Parse_Conf Directories.conf
 }
 
 function download_headers() {
@@ -96,10 +96,10 @@ function download_headers() {
     popd >& /dev/null
      
     # symlink it
-    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
+    export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling goboPrefix
-    [ "$NATIVE_COMPILING" != "y" ] && Parse_Conf Directories.conf
+    unset goboCrossCompiling goboPrefix
+    Parse_Conf Directories.conf
 }
 
 function download_meta() {
@@ -138,24 +138,25 @@ function chroot_compile() {
 
     # check if needs to download meta recipes
     download_meta $local_recipe
+    
+    common_options="--local-repository $cross_options"
 
     echo
-    Log_Normal "Running 'ChrootCompile --local-repository $cross_options $local_recipe'"
+    Log_Normal "Running 'ChrootCompile $common_options $local_recipe'"
     echo
     
     pushd "$TOP_DIR/chroot" >& /dev/null
     
-    common_options="--local-repository $cross_options"
     if [ "$verbose_build" = "1" ]
     then ChrootCompile $common_options --verbose $local_recipe || exit 1
     else ChrootCompile $common_options $local_recipe || exit 1
     #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
-    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
+    export goboCrossCompiling=yes
     UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $pkg_name $pkg_version
-    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling && Parse_Conf Directories.conf
+    unset goboCrossCompiling && Parse_Conf Directories.conf
     
     popd >& /dev/null
 }
@@ -184,28 +185,26 @@ else Log_Terse "Verbose build disabled"
 fi
 
 if [ "$NATIVE_COMPILING" = "y" ]
-then 
-    prefix="$INSTALL_PREFIX"
-    export uname_m=`uname -m`
-else
-    export arch_conf=`get_chosen_arch`
-
-    # this is the same as evaluating the line 'export cross_prefix_dir=...'
-    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_kernel_arch=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_kernel_version=" | sed 's/\"//g'`
-    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_uname_m=" | sed 's/\"//g'`
-    prefix=$cross_prefix_dir
-
-    cross_options="--cross-compile $arch_conf"
-    symlink_options="-c overwrite"
-
-    export uname_m="$cross_uname_m"
-    export cross_compiling=yes
+then export arch_conf="Native"
+else export arch_conf=`get_chosen_arch`
 fi
 
-skip_all=0
+# this is the same as evaluating the line 'export cross_prefix_dir=...'
+`cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_prefix_dir=" | sed 's/\"//g'`
+`cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_kernel_arch=" | sed 's/\"//g'`
+`cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_kernel_version=" | sed 's/\"//g'`
+`cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_uname_m=" | sed 's/\"//g'`
+
+prefix=$cross_prefix_dir
+cross_options="--cross-compile $arch_conf"
+symlink_options="-c overwrite"
+
+export uname_m="$cross_uname_m"
+export cross_compiling=yes
+
+
 pushd $subdir >& /dev/null
+skip_all=0
 
 for entry in `cat $dot_config | grep ^PKG_`
 do

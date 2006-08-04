@@ -21,20 +21,20 @@ trap cleanup TERM INT STOP HUP
 #
 InstallDependencies || exit 1
 
-if [ "$NATIVE_COMPILING" = "y" ]
-then 
-	prefix="$INSTALL_PREFIX"
-	kernelVersion="$KERNEL_VERSION"
-else
-	export arch_conf=`get_chosen_arch`
-	source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
-	prefix="$cross_prefix_dir"
-	kernelVersion="$cross_kernel_version"
-	symlink_options="-c overwrite"
 
-	# needs to be propagated to Scripts
-	export goboCrossCompiling=yes
+if [ "$NATIVE_COMPILING" = "y" ]
+then export arch_conf="Native"
+else export arch_conf=`get_chosen_arch`
 fi
+    
+source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
+prefix="$cross_prefix_dir"
+kernelVersion="$cross_kernel_version"
+symlink_options="-c overwrite"
+
+# needs to be propagated to Scripts
+export goboCrossCompiling=yes
+
 
 #
 # Create the basic GoboLinux structure
@@ -44,6 +44,7 @@ then
     Log_Normal "Creating the GoboLinux tree..."
     CreateGoboLinuxTree $prefix $SUPER_USER_NAME || exit 1
 fi
+
 
 #
 # Since we have $goboDevices bind-mounted, unmount it and mount it afterwards
@@ -58,21 +59,20 @@ fi
 
 mount -o bind $goboDevices $prefix/$goboDevices
 
+
 #
 # Install the Scripts package
 #
 dirname="$prefix/$goboPrograms/Scripts"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
 then
-	Log_Normal "Installing the Scripts package..."
-	cp -a $goboPrograms/Scripts $prefix/$goboPrograms
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+    Log_Normal "Installing the Scripts package..."
+    cp -a $goboPrograms/Scripts $prefix/$goboPrograms
+    RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-#	Log_Normal "Installing a temporary Scripts package..."
-#	ln -nsf $goboPrograms/Scripts $prefix/$goboPrograms
-#	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
-	ln -nsf $goboSettings/Scripts $prefix/$goboSettings/Scripts
+    ln -nsf $goboSettings/Scripts $prefix/$goboSettings/Scripts
 fi
+
 
 #
 # Install the Compile package
@@ -80,15 +80,13 @@ fi
 dirname="$prefix/$goboPrograms/Compile"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
 then
-	Log_Normal "Installing the Compile package..."
-	cp -a $goboPrograms/Compile $prefix/$goboPrograms
-	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
+    Log_Normal "Installing the Compile package..."
+    cp -a $goboPrograms/Compile $prefix/$goboPrograms
+    RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
 else
-#	Log_Normal "Installing a temporary Compile package..."
-#	ln -nsf $goboPrograms/Compile $prefix/$goboPrograms
-#	RescueSymlinkProgram `readlink -f $dirname/Current` $prefix/$goboLinks >& /dev/null
-	ln -nsf $goboSettings/Compile $prefix/$goboSettings/Compile
+    ln -nsf $goboSettings/Compile $prefix/$goboSettings/Compile
 fi
+
 
 #
 # Install the BootScripts package
@@ -96,10 +94,11 @@ fi
 dirname="$prefix/$goboPrograms/BootScripts"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
 then
-	Log_Normal "Installing the BootScripts package..."
-	cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
-	SymlinkProgram $symlink_options BootScripts >& /dev/null
+    Log_Normal "Installing the BootScripts package..."
+    cp -a $goboPrograms/BootScripts $prefix/$goboPrograms
+    SymlinkProgram $symlink_options BootScripts >& /dev/null
 fi
+
 
 #
 # Create a LibGCC package just to satisfy packages with 
@@ -108,16 +107,10 @@ fi
 dirname="$prefix/$goboPrograms/LibGCC"
 if [ "$PKG_LIBGCC" = "y" -a ! -d "$dirname" ]
 then
-	Log_Normal "Creating the LibGCC package..."
-	if [ "$NATIVE_COMPILING" = "y" ]
-	then
-		version=`gcc --version | head -n 1 | awk {'print $3'}`
-		gcclibdir=$goboPrograms/GCC/Current/lib
-	else
-		version=`$CC --version | head -n 1 | awk {'print $3'}`
-		gcclibdir=$cross_gcc_libdir
-	fi
-	
+    Log_Normal "Creating the LibGCC package..."
+    version=`$CC --version | head -n 1 | awk {'print $3'}`
+    gcclibdir=$cross_gcc_libdir
+
     mkdir -p $dirname/$version/lib
     ln -sf $version $dirname/Current
 

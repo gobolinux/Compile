@@ -8,13 +8,12 @@ source $TOPDIR/.config
 source $TOPDIR/functions/Platforms
 
 if [ "$NATIVE_COMPILING" = "y" ]
-then 
-    prefix="$INSTALL_PREFIX"
-else
-    export arch_conf=`get_chosen_arch`
-    source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
-    prefix="$cross_prefix_dir"
+then export arch_conf="Native"
+else export arch_conf=`get_chosen_arch`
 fi
+
+source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
+prefix="$cross_prefix_dir"
 
 
 #
