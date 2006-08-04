@@ -49,7 +49,7 @@ function make_headers() {
     fi
 
     pushd "$TOP_DIR/bin" >& /dev/null
-    ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $cross_kernel_arch $dirname
+    ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $kernelArch $dirname
     popd >& /dev/null
 
     [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
@@ -68,7 +68,7 @@ function download_headers() {
         case `uname -m` in
             i386|i486|i586|i686)
                 repository="http://gobo.calica.com/packages/official"
-                cross_uname_m=i686
+                uname_m=i686
                 ;;
             *)
                 Log_Error "Please add your architecture to this file!"
@@ -76,23 +76,23 @@ function download_headers() {
                 ;;
         esac
     else
-        repository="http://gobo.calica.com/packages/$cross_uname_m"
+        repository="http://gobo.calica.com/packages/$uname_m"
     fi
     
     # download the headers package
     download_dir="`readlink -f $TOP_DIR/downloads`"
     pushd $download_dir >& /dev/null
-    wget -c $repository/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2
+    wget -c $repository/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2
     if [ $? != 0 ]
     then
-        Log_Error "Could not download $repository/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2"
+        Log_Error "Could not download $repository/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2"
         exit 1
     fi
     popd >& /dev/null
      
     # uncompress it
     pushd "$prefix/$goboPrograms" >& /dev/null
-    tar jxvf $download_dir/Linux-Libc-Headers--2.6.12--$cross_uname_m.tar.bz2
+    tar jxvf $download_dir/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2
     popd >& /dev/null
      
     # symlink it
@@ -105,7 +105,7 @@ function download_headers() {
 function download_meta() {
     unset is_meta
     unset include
-    arch=`Get_Architecture $cross_uname_m`
+    arch=`Get_Architecture $uname_m`
 
     source $1/Recipe
     [ -f $1/$arch/Recipe ] && source $1/$arch/Recipe
@@ -186,6 +186,7 @@ fi
 if [ "$CROSS_NONE" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
+    export uname_m=`uname -m`
 else
     export arch_conf=`get_chosen_arch`
 
@@ -199,6 +200,7 @@ else
     cross_options="--cross-compile $arch_conf"
     symlink_options="-c overwrite"
 
+    export uname_m="$cross_uname_m"
     export cross_compiling=yes
 fi
 
@@ -248,8 +250,9 @@ do
 
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
-    [ "$pkg_name" = "Glibc" ] && download_headers
-    # [ "$pkg_name" = "Glibc" ] && make_headers
+    if [ "$pkg_name" = "Glibc" ]
+    then [ "$CROSS_NONE" = "y" ] && make_headers || download_headers
+    fi
 done
 
 popd >& /dev/null

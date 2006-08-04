@@ -22,11 +22,8 @@ function cleanup() {
 
 trap cleanup TERM INT STOP HUP
 
-if [ "$CROSS_NONE" = "y" ]
+if [ "$CROSS_NONE" != "y" ]
 then 
-    # nothing to do
-    exit 0
-else
     export arch_conf=`get_chosen_arch`
     source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
     prefix="$cross_prefix_dir"
