@@ -1,6 +1,5 @@
 #!/bin/sh (source)
 
-unset goboCrossCompiling
 . GoboPath
 
 #not sure why we add "." to PATH. causes problems with busybox.
@@ -28,7 +27,8 @@ function Import() {
       eval "Imported$1=$1"
       for try in "${scriptPath}/$1.import" \
                  "${scriptPath}/../Functions/$1" \
-                 "${goboScripts}/../Functions/$1"
+                 "${goboScripts}/../Functions/$1" \
+                 "/Programs/Scripts/Current/Functions/$1"
       do
          if [ -e "$try" ]
          then
