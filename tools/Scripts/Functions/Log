@@ -156,8 +156,7 @@ function Die_With() {
 }
 
 # Prints a message and exits successfully
-function PassAway() {
+function Pass_Away() {
    [[ "$@" != "" ]] && Log_Error "$@"
-#   Log_Error "$@"
    exit 0
 }

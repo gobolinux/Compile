@@ -1,5 +1,6 @@
 #!/bin/sh (source)
 
+unset goboCrossCompiling
 . GoboPath
 
 #not sure why we add "." to PATH. causes problems with busybox.
@@ -35,16 +36,8 @@ function Import() {
             return
          fi
       done
-      Die "Missing import: $1"
-   fi
-}
-
-function Assertion_Function() {
-   local message="$1"
-   shift
-   if ! eval $*
-   then
-      Die "Assertion failed: $message"
+      echo "Missing import: $1"
+      exit 1
    fi
 }
 
@@ -63,18 +56,6 @@ function Parameters() {
    do
       eval ${entries[$[middle+i]]}'="'"${entries[$i]}"'"'
    done
-}
-
-# Prints an error message and exits (signaling error)
-function Die() {
-   Log_Error "$@"
-   exit 1
-}
-
-# Prints a message and exits successfully
-function Pass_Away() {
-   Log_Error "$@"
-   exit 0
 }
 
 Import Log
