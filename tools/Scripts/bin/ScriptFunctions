@@ -47,7 +47,7 @@ function Import() {
 # Variables according to the given names will be created.
 function Parameters() {
    shopt -s expand_aliases
-   $assert "Invalid number of parameters" "(( $# % 2 == 0 ))"
+   # (( $# % 2 == 0 )) || { echo "Invalid number of parameters"; exit 1; }
    shopt -u expand_aliases
    local entries middle i
    entries=("$@")

@@ -3,7 +3,6 @@
 # The magic line above is given only to enable syntax highlighting.
 
 export logMode="Normal"
-export assert=':'
 export logLevel=${logLevelNormal}
 
 #keeping streams due to compatibility
