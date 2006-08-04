@@ -7,7 +7,7 @@ source ScriptFunctions
 source $TOPDIR/.config
 source $TOPDIR/functions/Platforms
 
-if [ "$CROSS_NONE" = "y" ]
+if [ "$NATIVE_COMPILING" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else
@@ -25,7 +25,7 @@ case "$1" in
     [sS]top)
         umount $prefix/$goboStatus 2> /dev/null     && echo "Unmounted binded proc filesystem"
         umount $prefix/$goboDevices 2> /dev/null    && echo "Unmounted binded dev filesystem"
-        [ "$CROSS_NONE" != "y" ] && rm -Rf $TOPDIR/chroot/Area-*
+        [ "$NATIVE_COMPILING" != "y" ] && rm -Rf $TOPDIR/chroot/Area-*
         ;;
 esac
 

@@ -7,7 +7,7 @@ source ScriptFunctions
 source $TOPDIR/.config
 source $TOPDIR/functions/Platforms
 
-if [ "$CROSS_NONE" = "y" ]
+if [ "$NATIVE_COMPILING" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
 else

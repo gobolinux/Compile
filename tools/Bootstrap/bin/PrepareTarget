@@ -21,7 +21,7 @@ trap cleanup TERM INT STOP HUP
 #
 InstallDependencies || exit 1
 
-if [ "$CROSS_NONE" = "y" ]
+if [ "$NATIVE_COMPILING" = "y" ]
 then 
 	prefix="$INSTALL_PREFIX"
 	kernelVersion="$KERNEL_VERSION"
@@ -109,7 +109,7 @@ dirname="$prefix/$goboPrograms/LibGCC"
 if [ "$PKG_LIBGCC" = "y" -a ! -d "$dirname" ]
 then
 	Log_Normal "Creating the LibGCC package..."
-	if [ "$CROSS_NONE" = "y" ]
+	if [ "$NATIVE_COMPILING" = "y" ]
 	then
 		version=`gcc --version | head -n 1 | awk {'print $3'}`
 		gcclibdir=$goboPrograms/GCC/Current/lib

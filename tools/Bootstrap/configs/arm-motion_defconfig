@@ -6,7 +6,7 @@
 # Build options
 #
 HAVE_DOT_CONFIG=y
-# CROSS_NONE is not set
+# NATIVE_COMPILING is not set
 CROSS_ARM=y
 # CROSS_SH4 is not set
 ARM_SIRIUSTAR=y

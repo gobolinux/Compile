@@ -33,7 +33,7 @@ function make_headers() {
     [ -d "$dirname" ] && return
 	
     Log_Normal "Creating the Libc Headers package..."
-    if [ "$CROSS_NONE" = "y" ]
+    if [ "$NATIVE_COMPILING" = "y" ]
     then
         case `uname -m` in
             i386|i486|i586|i686)
@@ -52,10 +52,10 @@ function make_headers() {
     ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $kernelArch $dirname
     popd >& /dev/null
 
-    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
+    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling goboPrefix
-    [ "$CROSS_NONE" != "y" ] && Parse_Conf Directories.conf
+    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling goboPrefix
+    [ "$NATIVE_COMPILING" != "y" ] && Parse_Conf Directories.conf
 }
 
 function download_headers() {
@@ -63,7 +63,7 @@ function download_headers() {
     [ -d "$dirname" ] && return
 	
     Log_Normal "Downloading the Libc Headers package..."
-    if [ "$CROSS_NONE" = "y" ]
+    if [ "$NATIVE_COMPILING" = "y" ]
     then
         case `uname -m` in
             i386|i486|i586|i686)
@@ -96,10 +96,10 @@ function download_headers() {
     popd >& /dev/null
      
     # symlink it
-    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
+    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Libc-Headers
-    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling goboPrefix
-    [ "$CROSS_NONE" != "y" ] && Parse_Conf Directories.conf
+    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling goboPrefix
+    [ "$NATIVE_COMPILING" != "y" ] && Parse_Conf Directories.conf
 }
 
 function download_meta() {
@@ -152,10 +152,10 @@ function chroot_compile() {
     #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
-    [ "$CROSS_NONE" != "y" ] && export goboCrossCompiling=yes
+    [ "$NATIVE_COMPILING" != "y" ] && export goboCrossCompiling=yes
     UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $pkg_name $pkg_version
-    [ "$CROSS_NONE" != "y" ] && unset goboCrossCompiling && Parse_Conf Directories.conf
+    [ "$NATIVE_COMPILING" != "y" ] && unset goboCrossCompiling && Parse_Conf Directories.conf
     
     popd >& /dev/null
 }
@@ -183,7 +183,7 @@ then Log_Terse "Verbose build enabled"
 else Log_Terse "Verbose build disabled"
 fi
 
-if [ "$CROSS_NONE" = "y" ]
+if [ "$NATIVE_COMPILING" = "y" ]
 then 
     prefix="$INSTALL_PREFIX"
     export uname_m=`uname -m`
@@ -251,7 +251,7 @@ do
     # And here is the final trick: if we have just compiled Glibc, create the
     # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
     if [ "$pkg_name" = "Glibc" ]
-    then [ "$CROSS_NONE" = "y" ] && make_headers || download_headers
+    then [ "$NATIVE_COMPILING" = "y" ] && make_headers || download_headers
     fi
 done
 

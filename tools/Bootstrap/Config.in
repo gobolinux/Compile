@@ -14,9 +14,9 @@ config HAVE_DOT_CONFIG
 
 choice
 	prompt "Cross-Compiling"
-	default CROSS_NONE
+	default NATIVE_COMPILING
 
-config CROSS_NONE
+config NATIVE_COMPILING
 	prompt "Native compiling"
 	bool
 	---help---
@@ -131,14 +131,14 @@ comment ""
 config INSTALL_PREFIX
 	string "Install prefix"
 	default "/Mount/GoboLinux"
-	depends on CROSS_NONE
+	depends on NATIVE_COMPILING
 	---help---
 	  Directory where the filesystem will get installed.
 
 config KERNEL_DIR
 	string "Kernel directory"
 	default "/System/Kernel/Modules/Current/build"
-	depends on CROSS_NONE
+	depends on NATIVE_COMPILING
 	---help---
 	  Directory where the kernel sources are stored.
 
