@@ -20,35 +20,35 @@ function package_subdir() {
 
 function cvs_checkout() {
     if [ ! -d "$1" ]
-	then
-		cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co -d "$1" "$2"
-	else
-		pushd "$1" >& /dev/null
-		cvs update
-		popd >& /dev/null
-	fi
+    then
+        cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co -d "$1" "$2"
+    else
+        pushd "$1" >& /dev/null
+        cvs update
+        popd >& /dev/null
+    fi
 }
 
 function cvs_make_install() {
-	module="$1"
-	app_dir="$2"
-	version_dir="$3"
+    module="$1"
+    app_dir="$2"
+    version_dir="$3"
     shift 3
 	
     mkdir -p "$app_dir/$version_dir"
 
     [ "$cross_compiling" ] && source "$goboSettings/Compile/Cross-$arch_conf.conf"
     
-	pushd "$module" >& /dev/null
+    pushd "$module" >& /dev/null
     make CC=$CC "$@" || exit 1
-	make CC=$CC install PREFIX="$app_dir/$version_dir" "$@" || exit 1
-	cp -a * "$app_dir/$version_dir"
-	popd >& /dev/null
+    make CC=$CC install PREFIX="$app_dir/$version_dir" "$@" || exit 1
+    cp -a * "$app_dir/$version_dir"
+    popd >& /dev/null
 
-	pushd "$app_dir" >& /dev/null
-	rm -f Current
-	ln -s "$version_dir" Current
-	popd >& /dev/null
+    pushd "$app_dir" >& /dev/null
+    rm -f Current
+    ln -s "$version_dir" Current
+    popd >& /dev/null
     
     pushd "$app_dir/Current" >& /dev/null
     find . -name CVS | xargs rm -Rf 2> /dev/null
