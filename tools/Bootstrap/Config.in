@@ -128,20 +128,6 @@ config NETWORK_NAMESERVER
 
 comment ""
 
-config INSTALL_PREFIX
-	string "Install prefix"
-	default "/Mount/GoboLinux"
-	depends on NATIVE_COMPILING
-	---help---
-	  Directory where the filesystem will get installed.
-
-config KERNEL_DIR
-	string "Kernel directory"
-	default "/System/Kernel/Modules/Current/build"
-	depends on NATIVE_COMPILING
-	---help---
-	  Directory where the kernel sources are stored.
-
 config KERNEL_HEADERS_VERSION
 	string "Kernel version for Linux-Libc-Headers package"
 	default "2.6.16.18"
@@ -167,6 +153,14 @@ menu "Base system"
 choice
     prompt "Libc implementation"
     default PKG_GLIBC
+
+config NO_LIBC
+    bool "Do not compile a libc package"
+    ---help---
+      Only choose this if you already have a binary package of a libc
+      implementation, or if you're going to create a small distribution
+      based on static packages from your toochain's libc.
+
 source "packages/Glibc/Config.in"
 source "packages/UClibc/Config.in"
 endchoice
