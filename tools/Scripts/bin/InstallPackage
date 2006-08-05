@@ -287,6 +287,8 @@ Quiet cd -
 
 if [ "$packagename" = "Scripts" ]
 then
+    cd "${goboPrograms}/$packagename/Current/src"
+				make --silent
     cd "${goboPrograms}/$packagename/Current/bin"
     PATH=$PWD:$PATH ./SymlinkProgram Scripts
     Quiet cd -
