@@ -101,7 +101,8 @@ then
 fi
 
 # do not copy version-specific values
-sed "${switchurls};s:$oldversion:$newversion:g" Recipe.old | grep -v "file_md5" | grep -v "file_size" | grep -v "# Recipe for version" >> Recipe
+leave_rows="/file_md5/d;/file_size/d;/# Recipe for version/d"
+sed "${switchurls};s:$oldversion:$newversion:g;$leave_rows" Recipe.old >> Recipe
 
 rm Recipe.old
 
