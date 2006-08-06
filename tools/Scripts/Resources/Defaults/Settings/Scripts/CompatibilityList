@@ -8,4 +8,6 @@ Xorg: XFree86
 XFree86: Xorg
 DB: BerkeleyDB
 BerkeleyDB: DB
-
+Sendmail: Qmail Postfix
+Qmail: Sendmail Postfix
+Postfix: Qmail Sendmail
