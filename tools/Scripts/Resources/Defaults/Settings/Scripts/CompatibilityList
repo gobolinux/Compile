@@ -6,4 +6,6 @@ MesaLib: Mesa Nvidia
 Nvidia: Mesa Xorg XFree86
 Xorg: XFree86
 XFree86: Xorg
+DB: BerkeleyDB
+BerkeleyDB: DB
 
