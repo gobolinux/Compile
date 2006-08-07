@@ -234,6 +234,7 @@ function wrapup() {
    fi
    
    cleanup
+   check_direct_dependencies
 }
 
 function wrap_fail() {
@@ -257,7 +258,19 @@ function cleanup() {
       fi
       [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
    fi
-   exit 0
+}
+
+function check_direct_dependencies() {
+   local fullversion="$2"
+   if [ -d ${goboShared}/Compile/Recompile/${appname} -o -L ${goboShared}/Compile/Recompile/${appname} ]
+   then
+      for i in ${goboShared}/Compile/Recompile/${appname}/*
+      do
+         depapp=`basename $i`
+	 [ Boolean "batch" ] || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
+	 Compile $batch $lazy $noweb $depapp
+      done
+   fi
 }
 
 function combine_arrays() {
@@ -913,8 +926,9 @@ then
    then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
@@ -976,8 +990,9 @@ then
       SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
@@ -1028,8 +1043,9 @@ then
       Quiet mv * perl5
       Quiet popd
       do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Linking failed."
-      is_function_set post_install && post_install
       wrapup
+      is_function_set post_install && post_install
+      exit 0
    else
       # Old Makefile.PL system 
       perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
@@ -1054,8 +1070,9 @@ then
    then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
@@ -1088,8 +1105,9 @@ then
    then do_symlink "$appname" "$versionnumber"
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
@@ -1114,8 +1132,9 @@ then
       $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber"
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
@@ -1138,8 +1157,9 @@ then
       fi
    done
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   is_function_set post_install && post_install
    wrapup
+   is_function_set post_install && post_install
+   exit 0
 fi
 
 ##################################################
