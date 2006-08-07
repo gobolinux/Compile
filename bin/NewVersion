@@ -85,7 +85,6 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 
 [ -e "Recipe" ] || Die "Recipe file not found."
 
-# TODO: Support for arch-specific Recipe
 mv Recipe Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
@@ -105,6 +104,15 @@ leave_rows="/file_md5/d;/file_size/d;/# Recipe for version/d"
 sed "${switchurls};s:$oldversion:$newversion:g;$leave_rows" Recipe.old >> Recipe
 
 rm Recipe.old
+
+# Support for arch-specific Recipe
+for arch in $compileSupportedArchitectures
+do
+   if [ -f $newrecipedir/$arch/Recipe ]
+			then
+						sed -i "s:$oldversion:$newversion:g;$leave_rows" $arch/Recipe
+			fi
+done
 
 # TODO: support for arch-specific recipe
 . Recipe
@@ -134,4 +142,12 @@ fi
 Log_Normal "Recipe template for $packagename $newversion created"
 Log_Normal "Printing result ($newrecipedir/Recipe):"
 cat "$newrecipedir/Recipe"
+for arch in $compileSupportedArchitectures
+do
+   if [ -f $newrecipedir/$arch/Recipe ]
+			then
+			   Log_Normal "Printing recipe for $arch architecture:"
+						cat "$newrecipedir/$arch/Recipe"
+			fi
+done
 Log_Normal "Done"
