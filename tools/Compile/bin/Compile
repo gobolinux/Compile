@@ -14,6 +14,7 @@ Import GoboLinux
 Import Array
 Import Directories
 Import PostInstall
+Import Versions
 
 ##################################################
 # Options and configuration
@@ -221,6 +222,8 @@ function wrapup() {
       fi
       
       Log_Normal "Packing recipe directory..."
+						# remove any backup file before packing
+						find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
       tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
       Log_Normal "Recipe packed in $genRecipeStoreDir/$app--$version--recipe.tar.bz2"
 
@@ -375,7 +378,6 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 recipe=$bakedrecipedir/Recipe
-
 
 ##################################################
 # Check if we are cross-compiling
@@ -614,11 +616,15 @@ then
    then
       dir="$cvs_module"
    fi
-elif [ "$svn_module" ]
+elif [ "$svn" ]
 then
     if ! [ "$dir" ]
     then
-        dir="$svn_module"
+				    if ! [ "$svn_module" ]
+								then
+            svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/`"
+								fi
+								dir="$svn_module"
     fi
 fi
 
