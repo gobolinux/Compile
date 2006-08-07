@@ -222,8 +222,8 @@ function wrapup() {
       fi
       
       Log_Normal "Packing recipe directory..."
-						# remove any backup file before packing
-						find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
+      # remove any backup file before packing
+      find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
       tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
       Log_Normal "Recipe packed in $genRecipeStoreDir/$app--$version--recipe.tar.bz2"
 
@@ -618,14 +618,14 @@ then
    fi
 elif [ "$svn" ]
 then
-    if ! [ "$dir" ]
-    then
-				    if ! [ "$svn_module" ]
-								then
-            svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/`"
-								fi
-								dir="$svn_module"
-    fi
+   if ! [ "$dir" ]
+   then
+      if ! [ "$svn_module" ]
+      then
+         svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/`"
+      fi
+      dir="$svn_module"
+   fi
 fi
 
 if [ "$dir" ]
