@@ -109,9 +109,9 @@ rm Recipe.old
 for arch in $compileSupportedArchitectures
 do
    if [ -f $newrecipedir/$arch/Recipe ]
-			then
-						sed -i "s:$oldversion:$newversion:g;$leave_rows" $arch/Recipe
-			fi
+   then
+      sed -i "s:$oldversion:$newversion:g;$leave_rows" $arch/Recipe
+   fi
 done
 
 # TODO: support for arch-specific recipe
@@ -119,7 +119,7 @@ done
 
 if [ "$newurl" ]
 then
-	url="$newurl"
+   url="$newurl"
 fi
 
 if Starts_With "http:" $url
@@ -145,9 +145,9 @@ cat "$newrecipedir/Recipe"
 for arch in $compileSupportedArchitectures
 do
    if [ -f $newrecipedir/$arch/Recipe ]
-			then
-			   Log_Normal "Printing recipe for $arch architecture:"
-						cat "$newrecipedir/$arch/Recipe"
-			fi
+   then
+      Log_Normal "Printing recipe for $arch architecture:"
+      cat "$newrecipedir/$arch/Recipe"
+   fi
 done
 Log_Normal "Done"
