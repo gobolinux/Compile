@@ -635,7 +635,7 @@ then
    then
       if ! [ "$svn_module" ]
       then
-         svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/`"
+         svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/'`"
       fi
       dir="$svn_module"
    fi
