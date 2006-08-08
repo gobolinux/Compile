@@ -11,9 +11,12 @@ elif [ -x /usr/bin/make ]
 then makecmd=/usr/bin/make
 fi
 
-if [ "$1" = "menuconfig" ]
-then exec $makecmd "$@"
-fi
+for i in $@
+do
+    if [ "$i" = "menuconfig" ]
+    then exec $makecmd "$@"
+    fi
+done
 
 workaround=`Temporary_File`
 
