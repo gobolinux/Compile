@@ -30,6 +30,15 @@ global_dependencies_cache_dir = os.path.expanduser(getGoboVariable('goboUserSett
 global_dependencies_blacklist=[ 'glibc' ] # lower case, please.
 global_dependencies_blacklist += [ i.lower() for i in getGoboVariable('','Scripts/Dependencies.blacklist') ]
 
+global_compatibility_list = {}
+for line in getGoboVariable('','Scripts/CompatibilityList') :
+	try :
+		dependency_x      = line.split(':')[0].strip()
+		is_satisfiable_by = line.split(':')[1].split()
+		global_compatibility_list[dependency_x.lower()] = is_satisfiable_by
+	except :
+		pass
+
 if not os.access(global_dependencies_cache_dir, os.R_OK) :
 	os.makedirs(global_dependencies_cache_dir)
 
@@ -41,6 +50,21 @@ for i in ['recipe', 'official_package', 'contrib_package', 'local_package'] :
 # Functions used to identify which rules apply to a given program version 
 #  type (a specific url can be passed, to avoid calling 'FindpPackage')
 #############################################################################
+
+def add_compatible_dependencies(rule) :
+	program_name = rule['program'].lower()
+	if program_name in global_compatibility_list.keys() :
+		for option in global_compatibility_list[program_name] :
+			# compatible_rule could also be set to something more related to
+			# rule itself (using the same version range, for example).
+			compatible_rule = {'program'    : option,
+			                   'loincluded' : True,
+			                   'lover'      : '',
+			                   'hiver'      : '',
+			                   'hiincluded' : True,
+			                   'optional'   : True }
+			rule['option'] = compatible_rule
+			rule = compatible_rule # linked list of compatible_rules
 
 # Notice that type may be required since dependencies(recipe(p)) != dependencies(package(p))
 def get_rules_for(p, v, t, u=None, noWeb=False) :
@@ -58,6 +82,7 @@ def get_rules_for(p, v, t, u=None, noWeb=False) :
 						last_rule['option'] = rule
 						last_rule = rule
 				if rule :
+					add_compatible_dependencies(rule)
 					toReturn.append(rule)
 			f.close()
 	return toReturn
@@ -198,14 +223,22 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 	if not global_available_packages_cache :
 		global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], accessWeb=not noWeb)
 	available_options = FindPackage(rule['program'], types=acceptable_types, availables=global_available_packages_cache, accessWeb = not noWeb)
+	
 	if available_options :
 		for p,v,t,u in available_options :
 			if does_version_match_rule(v, rule) :
 				return (p, v, t, u)
-		return ((rule['program'],rule['lover'], None, "NOWHERE, no version."))
+		to_return = ((rule['program'],rule['lover'], None, "NOWHERE, no version."))
 	else :
-		return ((rule['program'],rule['lover'], None, "NOWHERE, no program."))
+		to_return = ((rule['program'],rule['lover'], None, "NOWHERE, no program."))
 
+	# if we got here, no matching program/version was found.
+	if rule.has_key('option') :
+		ret = find_matching_package(rule['option'], acceptable_types, noWeb)
+		if ret and ret[3] : # ret[3] corresponds to 'type'
+			return ret
+		
+	return to_return
 
 #############################################################################
 # User interaction Functions
