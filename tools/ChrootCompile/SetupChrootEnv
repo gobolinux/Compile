@@ -10,19 +10,11 @@ function update_tools() {
     cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/ChrootCompile 
     cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Compile 
     cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Scripts 
-    pushd tools/Scripts
-    make
-    popd
-    mkdir -p Bootstrap/Scripts
-    mkdir -p Bootstrap/Compile
-    cp -a tools/Scripts Bootstrap/Scripts/2.1-CVS
-    cp -a tools/Compile Bootstrap/Compile/1.4-CVS
     ln -nfs tools/Scripts/bin/LinkOrExpandAll .
     ln -nfs tools/ChrootCompile/ChrootCompile .
     ln -nfs tools/ChrootCompile/MiniInstallPackage .
     ln -nfs tools/ChrootCompile/MiniSymlinkProgram .
     ln -nfs tools/ChrootCompile/GenericInstall .
-    mkdir -p Archives
 }
 
 function configure_tools() {

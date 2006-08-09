@@ -29,7 +29,7 @@
 #############################################################################
 
 function die() {
-   echo "ChrootCompile: $*"
+   echo "ChrootCompile: $*" >&2
    exit 1
 }
 
@@ -47,22 +47,8 @@ else sudo=
 fi
 
 #############################################################################
-# '--repack' option: (to be used only on GoboLinux systems)
+# '--local-repository' option: (to be used only on GoboLinux systems)
 #############################################################################
-if [ "$1" == "--repack" -o "$1" == "--just-repack" -o "$1" == "-r" -o "$1" == "-j" ]
-then
-   cd Bootstrap || exit 1
-   for i in Compile Scripts
-   do
-      [ -d $i ] && rm -rf $i
-      rm $i--*
-      CreatePackage --no-verify --no-sign $i
-   done
-   cd -
-   [ "$1" == "--just-repack" -o "$1" == "-j" ] && exit 0
-   shift
-fi
-
 unset localrepository
 if [ "$1" == "--local-repository" -o "$1" == "-l" ]
 then
@@ -118,8 +104,6 @@ then
     echo "Usage: $0 [options] <recipe dir>"
     echo " "
     echo "Available options are:"
-    echo "  -r, --repack:               repacks GoboLinux scripts taken from CVS (GoboLinux only)"
-    echo "  -j, --just-repack:          repacks scripts and exit (GoboLinux only)"
     echo "  -l, --local-repository:     use the repository at /Files/Compile (GoboLinux only)"
     echo "  -X, --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
     echo "  -v, --verbose:              verbose output"
@@ -306,11 +290,49 @@ else
    echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
 fi
 
+#############################################################################
+# Packing CVS versions of the tools
+#############################################################################
+
+arch=i686
+today=`date +%Y%m%d`
+tools="Scripts Compile"
+localcvs="."
+for package in $tools 
+do
+   tarball=Bootstrap/$package--$today--$arch.tar.bz2
+   if [ ! -e "$tarball" -o "`find "$localcvs/tools/$package/" -newer "$tarball" 2> /dev/null`" ] 
+   then
+      echo "Packing $package CVS snapshot..."
+      rm -rf $package                    # only required if there are leftovers from a previous execution
+      mkdir -p $package
+      cp -a $localcvs/tools/$package $package/$today
+      # we need to build here in order to create the files which are going to be linked inside BuildRoot
+      [ -e $package/$today/Makefile ] && echo Building $package/$today && make -C $package/$today > /dev/null 
+      find $package/$today/ -type d -name CVS | xargs rm -rf 
+      rm -f Bootstrap/$package--*--$arch.tar.bz2   # cleaning up old versions too
+      tar cjpf $tarball $package/$today  # create the package
+      rm -rf $package
+      toolswhichneedmake="$toolswhichneedmake $package"
+   else
+      echo "Don't repacking $package CVS snapshot..."
+   fi
+done
 
 #############################################################################
 # Getting packages for Bootstrap - Temporary only
 #############################################################################
-[ -d LocalPackages ] || mkdir LocalPackages
+
+[ -d Unpacked ] || mkdir Unpacked
+[ -d Unpacked/_Checksums ] || mkdir Unpacked/_Checksums
+
+# function get_package_for() {
+#    for dir in Clean Bootstrap; do
+#       if ls $dir/$1--* &> /dev/null
+#       
+#    done
+# }
+
 [ -d Bootstrap ] || mkdir Bootstrap
 [ -d $getclean ] || mkdir $getclean
 for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
@@ -318,13 +340,7 @@ do
    if ! ls Bootstrap/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
    && ! [ -d Bootstrap/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
    then
-#      if [ -e /System/Settings/gobo ]
-#      then
-#         echo "Warning: Could not find $dep in ./{LocalPackages,Bootstrap,$getclean}. Creating package based on host system"
-#         cd Bootstrap; CreatePackage --no-verify --no-sign $dep; cd - &> /dev/null
-#      else
-         die "Package $dep, needed for bootstrap, was not found."
-#      fi
+      die "Package $dep, needed for bootstrap, was not found."
    fi
 done
 
@@ -337,7 +353,7 @@ function filter_dir() {
    grep -v Settings | grep -v Variable | grep -v Current
 }
 
-function load_dependency() {
+function get_package_for() {
    local dep="$1"
    local pkg=
    if [ "$crossopts" ]
@@ -349,13 +365,44 @@ function load_dependency() {
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
          die "More than one entry for $dep in $repo/ directory."
       } || true
-      [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && {
-         die "More than one entry for $dep in $repo/ directory."
-      } || true
-      pkg=`ls -d $repo/$dep/* 2> /dev/null | filter_dir || true`
-      [ ! "$pkg" ] && pkg=`ls $repo/$dep--* 2> /dev/null || true`
+      pkg=`ls $repo/$dep--* 2> /dev/null || true`
       [ "$pkg" ] && break
    done
+   echo "$pkg"
+}
+
+function unpack_package() {
+   local pkg="$1"
+   local dep="$2"
+
+   packagemd5=`md5sum $pkg`
+
+   [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && rm -rf "Unpacked/$dep" || true
+
+   if [ "`cat Unpacked/_Checksums/$dep 2> /dev/null`" !=  "$packagemd5" ]
+   then
+      # We may enter here even if "Unpacked/$dep" does not exists. Notice the '-f' of rm.
+      # cleanup old md5 file
+      rm -f Unpacked/_Checksums/$dep
+      # remove the installed package: $package was updated 
+      rm -rf "Unpacked/$dep"
+   fi
+
+   unpacked=`ls -d Unpacked/$dep/* 2> /dev/null | filter_dir || true`
+   if [ ! "$unpacked" ]
+   then
+      echo "Unpacking $pkg..." >&2
+      tar xfj "$pkg" -C Unpacked 
+      unpacked=`ls -d Unpacked/$dep/* 2> /dev/null | filter_dir`
+      [ "$unpacked" ] || die "Error unpacking $pkg"
+   fi
+   echo "$packagemd5" > Unpacked/_Checksums/$dep
+   echo "$unpacked"
+}
+
+function load_dependency() {
+   local dep="$1"
+   local pkg=`get_package_for $dep`
    [ ! "$pkg" ] && {
       [ "$crossopts" -a -d "$crossrepodir/$dep" ] && {
          [ "$verbose" ] && echo "ChrootCompile: Dependency $dep found at $crossrepodir/$dep"
@@ -363,14 +410,16 @@ function load_dependency() {
       }
       die "Dependency $dep could not be found."
    }
+   unpacked=`unpack_package "$pkg" "$dep"`
+
    if [ $dep = $name ]
    then realcopy="--real-copy"
    else realcopy=""
    fi
-   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$pkg" "$root"
+   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root"
 }
 
-# unused for now
+unused for now
 function guess_and_load_dependency() {
    echo "=> GuessLatest enabled"
    for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
@@ -405,7 +454,7 @@ deps=`{
    echo "${base_dependencies[*]} " "${cross_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
    [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
-} | sort -u`
+} | sort -u | strings -n 1`
 
 needsprocessing="yes" 
 while [ $needsprocessing = "yes" ]
@@ -414,7 +463,7 @@ do
    for dep in $deps
    do
       [ -d $root/$goboPrograms/$dep ] && continue
-      echo Installing $dep...
+      echo Installing \"$dep\"...
       load_dependency "$dep"
 
       # if just loaded dependency has a Dependencies file...
