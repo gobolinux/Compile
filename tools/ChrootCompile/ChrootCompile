@@ -416,7 +416,7 @@ function load_dependency() {
    $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root"
 }
 
-unused for now
+# unused for now
 function guess_and_load_dependency() {
    echo "=> GuessLatest enabled"
    for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
