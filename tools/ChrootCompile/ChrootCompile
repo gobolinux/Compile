@@ -416,37 +416,6 @@ function load_dependency() {
    $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root"
 }
 
-# unused for now
-function guess_and_load_dependency() {
-   echo "=> GuessLatest enabled"
-   for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
-   do
-      packed_places="$getclean Bootstrap"
-      unpacked_place=BootStrap
-      #packages=`ls -d Bootstrap/$dep/* | filter_dir`
-      packages=`ls -d -U Bootstrap/$dep/* {$getclean,Bootstrap,LocalPackages}/$dep--* 2> /dev/null | filter_dir` 
-      if [ ! "$packages" ]
-      then
-         die "Base dependency $dep could not be found."
-      fi
-      latest=`GuessLatest $packages`
-      echo "ChrootCompile: Using $latest"
-
-      if ! echo "$latest" | grep "^Bootstrap/" &> /dev/null
-      then
-         cp "$latest" Bootstrap/ # only 'packed' packages
-         pkg=Bootstrap/`basename "$latest"`
-      else
-         pkg="$latest"
-      fi
-      if [ $dep = $name ]
-      then realcopy="--realcopy"
-      else realcopy=""
-      fi
-      $sudo $scriptdir/MiniInstallPackage $verbose "$pkg" "$root"
-   done
-}
-
 deps=`{
    echo "${base_dependencies[*]} " "${cross_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
