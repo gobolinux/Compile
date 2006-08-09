@@ -3,21 +3,18 @@
 
 #############################################################################
 # Current requirements for this script:
-# - './Recipes' directory containing all potentially required recipes
-#   Not a requirement right now, but implies accessing the web if not present
-#
-# - './Bootstrap' directory which will contain unpacked packages installed
-#   within $root. Those unpacked dirs are binded within $root (instead
-#   of simply copied or unpacked) in order to reduce preparation time.
-#   Not exactly a requirement right now, since it is created on demand, based
-#   on packages from './LocalPackages'. Can be understood as a 'unpacked 
-#   packages cache'
-#
-# - './LocalPackages' directory containing binary packages available to 
-#    prepare the Bootsrap and fulfill dependencies. It may be, for example,
-#    a mirror of all official packaes available.
+# - './Bootstrap' directory from where ChrootCompile gets package to build
+#   the compilation environment. Only one version per package should be 
+#   stored here.
 #
 # Other directories:
+# - './Recipes' directory containing all potentially required recipes.
+#   Not needed if using --local-repository option
+#
+# - './Unpacked' directory which contains unpacked packages installed
+#   within $root. Those unpacked dirs are binded within $root (instead
+#   of simply copied or unpacked) in order to reduce preparation time.
+#
 # - './$getclean' directory where newly compiled packages are fetched.
 # - './$putclean' directory where compiled packages are stored.
 #   (These are usually the same (./Clean) but can be different for
