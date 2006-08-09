@@ -202,6 +202,8 @@ symlink_options="-c overwrite"
 export uname_m="$cross_uname_m"
 export cross_compiling=yes
 
+# tells SandboxInstall to ignore the usage of UnionFS
+export NO_UNIONFS=yes
 
 pushd $subdir >& /dev/null
 skip_all=0
