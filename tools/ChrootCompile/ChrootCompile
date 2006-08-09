@@ -678,6 +678,7 @@ function check_dependencies() {
 # check_dependencies
 
 echo "ChrootCompile: Will run Compile..."
+export NO_UNIONFS=1
 in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $version || die "Compilation failed."
 
 #############################################################################
