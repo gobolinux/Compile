@@ -234,6 +234,7 @@ source "packages/Linux-Fusion/Config.in"
 source "packages/DirectFB/Config.in"
 source "packages/TIFF/Config.in"
 source "packages/SDL/Config.in"
+source "packages/SVGALib/Config.in"
 source "packages/IMLib/Config.in"
 source "packages/FFmpeg-Motion/Config.in"
 endmenu
