@@ -266,8 +266,8 @@ function check_direct_dependencies() {
       for i in ${goboShared}/Compile/Recompile/${appname}/*
       do
          depapp=`basename $i`
-	 Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
-	 Compile $batch $lazy $noweb $depapp
+         Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
+         Compile $batch $lazy $noweb $depapp
       done
    fi
 }
@@ -1053,6 +1053,31 @@ fi
 
 ##################################################
 
+if [ "$is_xmkmf" = "yes" ]
+then
+   is_function_set pre_build && pre_build
+   xmkmf
+   $make Makefiles
+   buildmerged=(
+      "BINDIR=$target/bin"
+      "LIBDIR=$target/lib"
+      "LIBEXECDIR=$target/libexec"
+      "INCDIR=$target/include"
+      "${buildmerged[@]}"
+   )
+   installmerged=(
+      "BINDIR=$installprefix/bin"
+      "LIBDIR=$installprefix/lib"
+      "LIBEXECDIR=$installprefix/libexec"
+      "INCDIR=$installprefix/include"
+      "${installmerged[@]}"
+   )
+   is_makefile=yes # fall through!
+   unset pre_build # Little hack: we already ran it, so don't run it in is_makefile.
+fi
+
+##################################################
+
 if [ "$is_makefile" = "yes" ]
 then
    build_tree_if "$create_dirs_first" = "yes"
@@ -1066,41 +1091,6 @@ then
    is_function_set pre_install && pre_install
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   fi
-   check_direct_dependencies
-   is_function_set post_install && post_install
-   wrapup
-fi
-
-##################################################
-
-if [ "$is_xmkmf" = "yes" ]
-then
-   is_function_set pre_build && pre_build
-   xmkmf
-   $make Makefiles
-   imakevars=(
-      "BINDIR=$target/bin"
-      "LIBDIR=$target/lib"
-      "LIBEXECDIR=$target/libexec"
-      "INCDIR=$target/include"
-   )
-   $make -f "$makefile" $imakevars $build_target || wrap_fail "Build failed."
-   Boolean "no-install" && exit
-   build_tree_if "true"
-   is_function_set pre_install && pre_install
-   imakevars=(
-      "BINDIR=$installprefix/bin"
-      "LIBDIR=$installprefix/lib"
-      "LIBEXECDIR=$installprefix/libexec"
-      "INCDIR=$installprefix/include"
-   )
-   installmerged=(
-      "${imakevars[@]}"
-   )
-   if ! [ "$do_install" = "no" ]
-   then do_symlink "$appname" "$versionnumber"
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    check_direct_dependencies
