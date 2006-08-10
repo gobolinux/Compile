@@ -119,6 +119,9 @@ done
 sed -i 's/is_\(.*\)=yes/recipe_type=\1/
 s/compileprogram/configure/' Recipe
 
+# Update compile_version to current version
+sed -i "s/\(compile_version=\).*/\1${scriptVersion}/" Recipe
+
 # TODO: support for arch-specific recipe
 . Recipe
 
