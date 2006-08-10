@@ -639,7 +639,7 @@ test_resources() {
       grep -q "^#" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
-      for line in `grep -v "^#" $depfile | grep -v "^Glibc" | tr ' ' '@'`
+      for line in `grep -v "^#" $depfile | tr ' ' '@'`
       do
          depname="${line%@*}"
          depversion="${line#*@}"
