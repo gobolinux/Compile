@@ -223,18 +223,18 @@ if grep -q "configure.in$" "$file_contents" \
 || grep -q "configure.ac$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
-   echo "is_compileprogram=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=configure" >> "$recipedir/Recipe"
    if ! grep -q "configure$" "$file_contents"
    then echo "autogen_before_configure=yes" >> "$recipedir/Recipe"
    fi
 elif grep -q "/configure$" "$file_contents"
 then
    Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
-   echo "is_compileprogram=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=configure" >> "$recipedir/Recipe"
 elif grep -q "Makefile.PL$" "$file_contents" || grep -q "Build.PL$" "$file_contents" 
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
-   echo "is_perl=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=perl" >> "$recipedir/Recipe"
    perlprefixed="$genRecipeRecipeDir/Perl-$packagename"
    notprefixed=$(readlink -f "$recipedir/..")
    if [ -e "$perlprefixed" ]
@@ -248,22 +248,22 @@ then
 elif grep -q "Imakefile$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on imake."
-   echo "is_xmkmf=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=xmkmf" >> "$recipedir/Recipe"
 elif grep -q "SConstruct$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on SCons."
-   echo "is_scons=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=scons" >> "$recipedir/Recipe"
 elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -iq makefile && \
        grep -q "\.py$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Python."
-   echo "is_python=yes" >> "$recipedir/Recipe"
+   echo "recipe_type=python" >> "$recipedir/Recipe"
 else
    basemakefile=`grep -i "^[^/]*/Makefile$" "$file_contents" 2>/dev/null`
    if [ "$basemakefile" ]
    then
       Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
-      echo "is_makefile=yes" >> "$recipedir/Recipe"
+      echo "recipe_type=makefile" >> "$recipedir/Recipe"
       aunpack "$file" "$basemakefile"
       if [ "$basemakefile" != "Makefile" ]
       then echo "makefile='$(basename $basemakefile)'" >> "$recipedir/Recipe"
