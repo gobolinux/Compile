@@ -201,6 +201,13 @@ bash -n ./Recipe || {
 test_recipe=yes
 cat Recipe | perl -e '
    %decls = (
+      is_compileprogram => "bool",
+      is_makefile => "bool",
+      is_perl => "bool",
+      is_python => "bool",
+      is_xmkmf => "bool",
+      is_manifest => "bool",
+      is_scons => "bool",
       compile_version => "string",
       environment => "array",
       url => "string",
@@ -216,7 +223,6 @@ cat Recipe | perl -e '
       include => "array",
       keep_existing_target => "bool",
       configure_options => "array",
-      unmanaged_files => "array",
       autogen_before_configure => "bool",
       build_variables => "array",
       install_variables => "array",
@@ -243,20 +249,21 @@ cat Recipe | perl -e '
       cvs_options => "string",
       cvs_checkout_options => "string",
       cvs_rsh => "string",
+      unmanaged_files => "array",
    );
    sub check_array_name {
       my ($name, $num) = @_;
-      if ($decls{$name} != "array") {
+      if ($decls{$name} ne "array") {
          print "Error at line ".$num.": ".$name." is not a valid array.\n";
          exit 1;
       }
    }
    sub check_var {
       my ($name, $value, $num) = @_;
-      if ($decls{$name} == "string") {
-      } elsif ($decls{$name} == "bool") {
-         if ($value != "yes" && $value != "no") {
-            print "Error at line ".$num.": ".$value." in not valid for ".$name." (expected yes or no).\n";
+      if ($decls{$name} eq "string") {
+      } elsif ($decls{$name} eq "bool") {
+         if ($value ne "yes" && $value ne "no") {
+            print "Error at line ".$num.": ".$value." is not valid for ".$name." (expected yes or no).\n";
             exit 1;
          }
       } else {
@@ -297,7 +304,7 @@ cat Recipe | perl -e '
       } else {
          if (/^#.*$/) {
          } elsif (/^[[:blank:]]*$/) {
-         } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*$/) {
+         } elsif (/^((pre|post)_(patch|install|build|link)|private__[a-z0-9_]*)[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*$/) {
             $fn_name = $1;
             if ($functions{$fn_name} == 1) {
                print "Error at line ".$n.": function redefinition:\n";
@@ -306,7 +313,7 @@ cat Recipe | perl -e '
             }
             $functions{%fn_name} = 1;
             $want_bracket = 1;
-         } elsif (/^((pre|post)_(patch|install|build|link))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*\{/) {
+         } elsif (/^((pre|post)_(patch|install|build|link)|private__[a-z0-9_]*)[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*\{/) {
             $fn_name = $1;
             if ($functions{$fn_name} == 1) {
                print "Error at line ".$n.": function redefinition:\n";
@@ -322,7 +329,7 @@ cat Recipe | perl -e '
          } elsif (/^([a-z][a-z0-9_]*)=\(/) {
             check_array_name($1, $n);
             $in_array = 1;
-         } elsif (/^([a-z][a-z0-9_]*)=([^[:blank:]]*)[[:blank:]]*$/
+         } elsif (/^([a-z][a-z0-9_]*)=([^[:blank:]\n]*)[[:blank:]]*$/
                || /^([a-z][a-z0-9_]*)="([^"]*)"[[:blank:]]*$/
                || /^([a-z][a-z0-9_]*)='\''([^'\'']*)'\''[[:blank:]]*$/) {
             check_var($1, $2, $n);
