@@ -208,6 +208,8 @@ cat Recipe | perl -e '
       is_xmkmf => "bool",
       is_manifest => "bool",
       is_scons => "bool",
+      is_meta => "bool",
+      recipe_type => "string",
       compile_version => "string",
       environment => "array",
       url => "string",
@@ -249,6 +251,8 @@ cat Recipe | perl -e '
       cvs_options => "string",
       cvs_checkout_options => "string",
       cvs_rsh => "string",
+      svn => "string",
+      svn_module => "string",
       unmanaged_files => "array",
    );
    sub check_array_name {
@@ -478,7 +482,30 @@ test_recipe() {
    settings_target="${goboPrograms}/$name/Settings"
    variable_target="${goboPrograms}/$name/Variable"
    source Recipe
-   [ "$is_meta" = "yes" ] && {
+   
+   msg "Checking recipe declarations..."
+   if [ ! "$recipe_type" ]
+   then
+   {
+       if [ "$is_compileprogram" -o "$is_makefile" -o "$is_python" -o "$is_perl" \
+            -o "$is_xmkmf" -o "$is_meta" -o "$is_manifest" ]
+       then
+           WARN "Recipe type is declarated in deprecated style."
+           # Backwards compability fix
+           [ "$is_compileprogram" = "yes" ] && recipe_type="configure"
+           [ "$is_makefile" = "yes" ] && recipe_type="makefile"
+           [ "$is_python" = "yes" ] && recipe_type="python"
+           [ "$is_perl" = "yes" ] && recipe_type="perl"
+           [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
+           [ "$is_meta" = "yes" ] && recipe_type="meta"
+           [ "$is_scons" = "yes" ] && recipe_type="scons"
+           [ "$is_manifest" = "yes" ] && recipe_type="manifest"
+       else
+           ERROR "Recipe type is not declared."
+       fi
+   }
+   fi
+   [ "$recipe_type" = "meta" ] && {
       for inc in "${include[@]}"
       do
          msg "Checking include $inc..."
@@ -504,11 +531,6 @@ test_recipe() {
    }
    [ "$url" -o "${urls[0]}" -o "$cvs" -o "$svn" ] || {
       ERROR "No download location specified in recipe."
-   }
-   msg "Checking recipe declarations..."
-   [ "$is_compileprogram" -o "$is_makefile" -o "$is_python" \
-     -o "$is_perl" -o "$is_xmkmf" -o "$is_manifest" ] || {
-      ERROR "Recipe type is not declared."
    }
    if [ "$compile_version" ]
    then
@@ -542,21 +564,21 @@ test_recipe() {
       esac
    fi
    declarations=(
-      configure_options=compileprogram
-      autogen_before_configure=compileprogram
-      build_variables=compileprogram,makefile
-      install_variables=compileprogram,makefile
-      make_variables=compileprogram,makefile
-      configure=compileprogram
-      makefile=compileprogram,makefile,xmkmf
-      build_target=compileprogram,makefile,xmkmf,python
-      install_target=compileprogram,makefile,xmkmf,python
+      configure_options=configure
+      autogen_before_configure=configure
+      build_variables=configure,makefile
+      install_variables=configure,makefile
+      make_variables=configure,makefile
+      configure=configure
+      makefile=configure,makefile,xmkmf
+      build_target=configure,makefile,xmkmf,python
+      install_target=configure,makefile,xmkmf,python
       do_build=makefile,python
       do_install=makefile,xmkmf,python
-      needs_build_directory=compileprogram
+      needs_build_directory=configure
       manifest=manifest
       without=perl
-      create_dirs_first=compileprogram,makefile,perl
+      create_dirs_first=configure,makefile,perl
       python_options=python
       override_default_options=python
       build_script=python
@@ -572,7 +594,7 @@ test_recipe() {
          eval "ok=no
          for mode in $dtypes
          do
-            eval '[ \"\$$dname\" -a \"\$is_'\$mode'\" == \"yes\" ] && { ok=yes; break; }'
+            eval '[ \"\$$dname\" -a \"\$recipe_type\" == \"'\$mode'\" ] && { ok=yes; break; }'
          done
          [ \$ok = yes ] || {
             ERROR \"Declaration $dname not valid in this recipes' mode.\"
@@ -667,5 +689,5 @@ test_resources() {
    }
 }
 
-cat Recipe | grep -q "is_meta=yes" || test_resources
+cat Recipe | grep -q "recipe_type=meta" || test_resources
 

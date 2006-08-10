@@ -538,6 +538,16 @@ source "$recipe"
 
 ! Boolean "no-build" && Log_Normal "Compiling $app version $version."
 
+# Backwards compability fix
+[ "$is_compileprogram" = "yes" ] && recipe_type="configure"
+[ "$is_makefile" = "yes" ] && recipe_type="makefile"
+[ "$is_python" = "yes" ] && recipe_type="python"
+[ "$is_perl" = "yes" ] && recipe_type="perl"
+[ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
+[ "$is_meta" = "yes" ] && recipe_type="meta"
+[ "$is_scons" = "yes" ] && recipe_type="scons"
+[ "$is_manifest" = "yes" ] && recipe_type="manifest"
+
 ##################################################
 # Set up enviroment
 ##################################################
@@ -594,7 +604,7 @@ foreach_if_array_set "include" '
    fi
 '
 
-if [ "$is_meta" = "yes" ]
+if [ "$recipe_type" = "meta" ]
 then
    wrapup
 fi
@@ -672,7 +682,7 @@ dir="${dirs[0]}"
 ##################################################
 if [ "$goboCrossCompiling" = "yes" ]
 then
-   if [ "$is_compileprogram" = "yes" ] && config_is_autoconf
+   if [ "$recipe_type" = "configure" ] && config_is_autoconf
    then cross_array=configure_options
    else cross_array=compileMakeOptions
    fi
@@ -881,7 +891,7 @@ fi
 # Compile!
 ##################################################
 
-if [ "$is_compileprogram" = "yes" ]
+if [ "$recipe_type" = "configure" ]
 then
    eval `combine_arrays config configure_options userconfigureoptions`
    [ "$configure" ] || configure="./configure"
@@ -957,7 +967,7 @@ build_python_options() {
    eval `combine_arrays opts python_options default_python_options`
 }
 
-if [ "$is_python" = "yes" ]
+if [ "$recipe_type" = "python" ]
 then
    Boolean "batch" || Ask_Continue "This recipe uses the experimental Python target. Proceed?"
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
@@ -995,7 +1005,7 @@ fi
 
 ##################################################
 
-if [ "$is_perl" = "yes" ]
+if [ "$recipe_type" = "perl" ]
 then
    [ "$PERL5LIB" ] || {
       export PERL5LIB="/System/Links/Libraries/perl5/site_perl/$(basename $(readlink -f /Programs/Perl/Current))/"
@@ -1053,7 +1063,7 @@ fi
 
 ##################################################
 
-if [ "$is_xmkmf" = "yes" ]
+if [ "$recipe_type" = "xmkmf" ]
 then
    is_function_set pre_build && pre_build
    xmkmf
@@ -1078,7 +1088,7 @@ fi
 
 ##################################################
 
-if [ "$is_makefile" = "yes" ]
+if [ "$recipe_type" = "makefile" ]
 then
    build_tree_if "$create_dirs_first" = "yes"
    if ! [ "$do_build" = "no" ]
@@ -1100,7 +1110,7 @@ fi
 
 ##################################################
 
-if [ "$is_scons" = "yes" ]
+if [ "$recipe_type" = "scons" ]
 then
    [ "$scons" ] || scons="scons"
    if [ ! "$override_default_options" = "yes" ]
@@ -1129,7 +1139,7 @@ fi
 
 # Manifest mode is experimental.
 
-if [ "$is_manifest" = "yes" ]
+if [ "$recipe_type" = "manifest" ]
 then
    build_tree_if "true"
    is_function_set pre_install && pre_install

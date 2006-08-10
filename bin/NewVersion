@@ -114,6 +114,11 @@ do
    fi
 done
 
+# convert old recipe type to new recipe type
+# recipe type compileprogram is renamed to configure
+sed -i 's/is_\(.*\)=yes/recipe_type=\1/
+s/compileprogram/configure/' Recipe
+
 # TODO: support for arch-specific recipe
 . Recipe
 
