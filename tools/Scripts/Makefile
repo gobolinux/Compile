@@ -27,7 +27,7 @@ version_check:
 
 cleanup:
 	rm -rf Resources/FileHash*
-	find * -path "*~" -or -path "*/.\#*" | xargs rm -f
+	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
 	cd src; make clean
 
 verify:
