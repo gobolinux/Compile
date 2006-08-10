@@ -13,17 +13,17 @@ Import GoboLinux
 # Options and configuration
 ##################################################
 
+Parse_Conf Compile.conf
+
 scriptDescription='Generate "packed recipes", ready for submission.'
 scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
-scriptNotes="This script will take all recipes in $genRecipeRecipeDir and "\
+scriptUsage="[<program> [<version>]]"
+scriptNotes="Given no arguments, this script will take all recipes in $genRecipeRecipeDir and "\
 "pack them as Foo--1.0--recipe.tar.bz2 files at $genRecipeStoreDir."
 Add_Option_Boolean "L" "no-lint" "Do not verify recipes (not recommended)."
 Add_Option_Boolean "W" "no-web" "Offline operation when running RecipeLint (avoid if possible)."
-scriptUsage=""
 Parse_Options "$@"
 shift $parsedArguments
-
-Parse_Conf Compile.conf
 
 if Boolean "no-web"
 then noweb=--no-web
@@ -95,6 +95,9 @@ pack_all_versions() {
 if [ "$1" ]
 then
    name=`ls "$genRecipeRecipeDir" | grep -i "^$1$"`
+   if [ ! "$name" ]
+   then Die "Could not find recipe directory for $1 in $genRecipeRecipeDir."
+   fi
    if [ "$2" ]
    then pack_recipe "$name" "$2"
    else pack_all_versions "$name"
