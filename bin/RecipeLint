@@ -216,6 +216,7 @@ cat Recipe | perl -e '
       include => "array",
       keep_existing_target => "bool",
       configure_options => "array",
+      unmanaged_files => "array",
       autogen_before_configure => "bool",
       build_variables => "array",
       install_variables => "array",
@@ -638,7 +639,7 @@ test_resources() {
       grep -q "^#" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
-      for line in `grep -v "^#" $depfile | tr ' ' '@'`
+      for line in `grep -v "^#" $depfile | grep -v "^Glibc" | tr ' ' '@'`
       do
          depname="${line%@*}"
          depversion="${line#*@}"
