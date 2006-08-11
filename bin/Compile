@@ -632,7 +632,6 @@ fi
 
 if [ "$cvs_module" ]
 then
-   
    if ! [ "$dir" ]
    then
       dir="$cvs_module"
@@ -641,11 +640,7 @@ elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      if ! [ "$svn_module" ]
-      then
-         svn_module="`echo $svn | sed 's/.*\/\(.*\)\/\(.*$\)/\1-\2/'`"
-      fi
-      dir="$svn_module"
+      dir="${packagename}_svn"
    fi
 fi
 
@@ -715,8 +710,8 @@ then
    if ! Boolean "no-web"
    then
       cd "$compileSourcesDir"
-      echo "Fetching Subversion module $svn_module from $svn"
-      svn co "$svn" "$svn_module"
+      echo "Fetching ${packagename} from $svn"
+      svn co "$svn" "${dir}"
       echo "Well done!"
    fi
 else

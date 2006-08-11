@@ -11,7 +11,7 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>} | {<app_name> svn co <server> <module>}}"
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>} | {<app_name> svn co <svn url>}"
 scriptNotes="A URL, a cvs or a svn command line should be passed as a parameter."
 scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
@@ -85,9 +85,8 @@ elif [ "$versionnumber" = "svn" ]
 then
    svn=yes
    shift
-   svn_server="$1"
-   svn_module="$2"
-   shift 2
+   svn_uri="$1"
+   shift
 else
    # TODO: generalize mirror system
    url=`echo "$1" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
@@ -181,13 +180,12 @@ then
    Quiet popd
 elif [ "$svn" = "yes" ]
 then
-   echo "svn=$svn_server" >> "$recipedir/Recipe"
-   echo "svn_module=$svn_module" >> "$recipedir/Recipe"
+   echo "svn=$svn_uri" >> "$recipedir/Recipe"
 
    Quiet pushd "$compileSourcesDir"
-   svn checkout "$svn_server" "$svn_module"
+   svn checkout "$svn_uri" "${packagename}_svn"
    file_contents=`mktemp`
-   find "$svn_module" >> "$file_contents"
+   find "${packagename}_svn" >> "$file_contents"
    Quiet popd
 else
    echo "url=\"$url\"" >> "$recipedir/Recipe"
