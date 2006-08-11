@@ -11,8 +11,8 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>}}"
-scriptNotes="A URL or a cvs command line should be passed as a parameter."
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>} | {<app_name> svn co <server> <module>}}"
+scriptNotes="A URL, a cvs or a svn command line should be passed as a parameter."
 scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
 Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
@@ -58,6 +58,7 @@ if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = "-" ]
 then Die "You must pass the program name when using a cvs command."
 fi
 
+svn=no
 cvs=no
 if [ "$versionnumber" = "cvs" ]
 then
@@ -80,6 +81,13 @@ then
       shift
    done
    cvs_server=`echo "$cvs_server" | sed 's,anonymous@,anonymous:@,g'`
+elif [ "$versionnumber" = "svn" ]
+then
+   svn=yes
+   shift
+   svn_server="$1"
+   svn_module="$2"
+   shift 2
 else
    # TODO: generalize mirror system
    url=`echo "$1" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
@@ -136,8 +144,12 @@ fi
 
 if ! Boolean "batch"
 then
-   if [ "$cvs" = "yes" ]
-   then Ask_Continue "Creating recipe template for CVS build of $packagename."
+   unset buildtype
+   [ "$cvs" = yes ] && buildtype="CVS"
+   [ "$svn" = yes ] && buildtype="SVN"
+   
+   if [ ! -z "$buildtype" ]
+   then Ask_Continue "Creating recipe template for $buildtype build of $packagename."
    else Ask_Continue "Creating recipe template for $packagename version $versionnumber."
    fi
 fi
@@ -166,6 +178,16 @@ then
    cvs -d "$cvs_server" checkout "$cvs_module"
    file_contents=`mktemp`
    find "$cvs_module" >> "$file_contents"
+   Quiet popd
+elif [ "$svn" = "yes" ]
+then
+   echo "svn=$svn_server" >> "$recipedir/Recipe"
+   echo "svn_module=$svn_module" >> "$recipedir/Recipe"
+
+   Quiet pushd "$compileSourcesDir"
+   svn checkout "$svn_server" "$svn_module"
+   file_contents=`mktemp`
+   find "$svn_module" >> "$file_contents"
    Quiet popd
 else
    echo "url=\"$url\"" >> "$recipedir/Recipe"
