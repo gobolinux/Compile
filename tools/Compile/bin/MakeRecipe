@@ -183,9 +183,9 @@ then
    echo "svn=$svn_uri" >> "$recipedir/Recipe"
 
    Quiet pushd "$compileSourcesDir"
-   svn checkout "$svn_uri" "${packagename}_svn"
+   svn checkout "$svn_uri" "${packagename}-svn"
    file_contents=`mktemp`
-   find "${packagename}_svn" >> "$file_contents"
+   find "${packagename}-svn" >> "$file_contents"
    Quiet popd
 else
    echo "url=\"$url\"" >> "$recipedir/Recipe"

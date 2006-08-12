@@ -640,7 +640,7 @@ elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${packagename}_svn"
+      dir="${packagename}-svn"
    fi
 fi
 
