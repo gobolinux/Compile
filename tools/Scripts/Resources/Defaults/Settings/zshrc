@@ -45,7 +45,7 @@ export TMPDIR="${goboPrefix}/System/Variable/tmp"
 
 export PATH="${goboPrefix}/System/Links/Executables:${PATH}:."
 path=("${goboPrefix}/System/Links/Executables" $path ".")
-fpath=("${goboPrefix}/System/Settings/zsh/functions" "${goboUserPrefix}/.Settings/zsh/functions" $fpath)
+fpath=("${goboPrefix}/System/Links/Shared/zsh/functions" "${goboUserPrefix}/.Settings/zsh/functions" $fpath)
 
 unset goboUserPrefix
 
