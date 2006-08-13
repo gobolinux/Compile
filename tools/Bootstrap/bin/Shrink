@@ -16,6 +16,18 @@ source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
 prefix="$cross_prefix_dir"
 
 
+# exported so that they can be used by per-package Shrink scripts
+[ -z "$STRIP" ] && export STRIP="strip"
+
+unset STRIP_OPT
+if [ "$SHRINK_STRIP_ALL" ]
+then export STRIP_OPT="--strip-all"
+fi
+if [ "$SHRINK_STRIP_UNNEEDED" ]
+then export STRIP_OPT="--strip-unneeded"
+fi
+
+
 #
 # Creates a backup of the working tree before cleaning it up
 #
@@ -40,13 +52,14 @@ fi
 #
 for i in $prefix/$goboPrograms/*
 do
-    Log_Terse "Shrinking package `basename $i`"
+    package=`basename $i`
+    
+    [ ! "$SHRINK_ALL" ] && Log_Terse "Shrinking package $package"
     pushd $i/Current > /dev/null || exit 1
     
     if [ "$SHRINK_ALL" ]
     then
-        Log_Normal "Removing as much data as possible..."
-        package=`basename $i`
+        Log_Normal "Shrinking package $package at the extreme..."
         [ -f $TOPDIR/packages/$package/Shrink ] && $TOPDIR/packages/$package/Shrink
     fi
 
@@ -84,14 +97,14 @@ do
     if [ "$SHRINK_DOCS" ]
     then
         [ ! "$SHRINK_ALL" ] && Log_Normal "Removing documentation..."
-        rm -Rf Shared/doc doc Shared/man man Shared/info info 2> /dev/null
+        rm -Rf Shared/doc doc Shared/man man Shared/info info Shared/gtk-doc 2> /dev/null
         rmdir Shared 2> /dev/null
     fi
 
     if [ "$SHRINK_LOCALES" ]
     then
         [ ! "$SHRINK_ALL" ] && Log_Normal "Removing internationalization data..."
-        rm -Rf Shared/locale lib/locale 2> /dev/null
+        rm -Rf Shared/locale lib/locale lib/X11/locale 2> /dev/null
         rmdir Shared 2> /dev/null
         rmdir lib    2> /dev/null
     fi
@@ -109,21 +122,17 @@ do
         Log_Normal "Removing backup of the default settings..."
     fi
     
-    unset STRIP_OPT
-    
-    if [ "$SHRINK_STRIP_ALL" ]
-    then STRIP_OPT="--strip-all"
-    fi
-    if [ "$SHRINK_STRIP_UNNEEDED" ]
-    then STRIP_OPT="--strip-unneeded"
-    fi
-    
     if [ "$STRIP_OPT" ]
     then
         [ ! "$SHRINK_ALL" ] && Log_Normal "Stripping executables and libraries..."
-        [ -z "$STRIP" ] && STRIP="strip"
         $STRIP $STRIP_OPT bin/* sbin/* lib/* 2> /dev/null
     fi
+
+    [ ! "$SHRINK_ALL" ] && Log_Normal "Removing empty directories..."
+    find . -type d | sort -r | xargs rmdir 2> /dev/null
+    
+    [ ! "$SHRINK_ALL" ] && Log_Normal "Removing broken links..."
+    find . | RemoveBroken >& /dev/null
 
     popd > /dev/null
     Log_Terse "Done."
