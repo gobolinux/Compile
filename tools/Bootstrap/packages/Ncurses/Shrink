@@ -11,17 +11,20 @@ do
 done
 
 # keeps only linux, xterm and xterm-color terminfo data
-pushd Shared/terminfo
-for i in [^l\|^x]*
-do
-	rm -Rf $i
-done
-popd
+if [ -d Shared/terminfo ]
+then
+    pushd Shared/terminfo
+    for i in [^l\|^x]*
+    do
+    	rm -Rf $i
+    done
+    popd
 
-pushd Shared/terminfo/l
-ls | grep -v linux$ | xargs rm
-popd
+    pushd Shared/terminfo/l
+    ls | grep -v linux$ | xargs rm
+    popd
 
-pushd Shared/terminfo/x
-ls | grep -v xterm$ | grep -v xterm-color$ | xargs rm
-popd
+    pushd Shared/terminfo/x
+    ls | grep -v xterm$ | grep -v xterm-color$ | xargs rm
+    popd
+fi
