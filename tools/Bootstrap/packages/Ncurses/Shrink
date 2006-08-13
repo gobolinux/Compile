@@ -13,18 +13,18 @@ done
 # keeps only linux, xterm and xterm-color terminfo data
 if [ -d Shared/terminfo ]
 then
-    pushd Shared/terminfo
+    pushd Shared/terminfo >& /dev/null
     for i in [^l\|^x]*
     do
     	rm -Rf $i
     done
-    popd
+    popd >& /dev/null
 
-    pushd Shared/terminfo/l
+    pushd Shared/terminfo/l >& /dev/null
     ls | grep -v linux$ | xargs rm
-    popd
+    popd >& /dev/null
 
-    pushd Shared/terminfo/x
+    pushd Shared/terminfo/x >& /dev/null
     ls | grep -v xterm$ | grep -v xterm-color$ | xargs rm
-    popd
+    popd >& /dev/null
 fi
