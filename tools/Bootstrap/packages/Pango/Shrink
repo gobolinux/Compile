@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -d lib/pango/*/modules ]
+then
+    pushd lib/pango/*/modules >& /dev/null
+    $STRIP $STRIP_OPT *
+    popd >& /dev/null
+fi

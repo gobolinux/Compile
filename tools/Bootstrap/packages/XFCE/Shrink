@@ -1,0 +1,18 @@
+#!/bin/sh
+
+rm -f  lib/*.a
+rm -f  lib/*.la
+
+rm -Rf include
+rm -Rf man
+
+rm -Rf Shared/xfce4/m4
+rm -Rf Shared/xfce4/doc
+
+# Full themes keeps about 18Mb in Shared
+if [ -d Shared/themes ]
+then
+    pushd Shared/themes >& /dev/null
+    ls | grep -v ^Default$ | xargs rm -Rf
+    popd >& /dev/null
+fi
