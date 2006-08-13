@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# This package is only needed at compile time by other applications.
+# There's no harm on completely removing it at Shrink time.
+
+rm * -Rf
