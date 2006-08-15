@@ -522,7 +522,7 @@ variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
 installprefix="$target"
 mark_export target settings_target variable_target
 
-if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "$keep"
+if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "keep"
 then
    if ! Ask "$target already exists. Continue?"
    then exit 0
