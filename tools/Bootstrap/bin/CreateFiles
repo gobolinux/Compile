@@ -131,9 +131,9 @@ xinitrc_file=$prefix/$goboUsers/$super_user/.xinitrc
 if [ ! -e $xinitrc_file ]
 then
     cat << EOF > $xinitrc_file
-[ -x /bin/xfce  ] && exec xfce  || \
-[ -x /bin/icewm ] && exec icewm || \
-[ -x /bin/rxvt  ] && exec rxvt  || \
+[ -x /bin/xfce4-session  ] && exec xfce4-session || \\
+[ -x /bin/icewm ] && exec icewm || \\
+[ -x /bin/rxvt  ] && exec rxvt  || \\
 [ -x /bin/xterm ] && exec xterm
 EOF
 fi
@@ -173,7 +173,23 @@ fi
 
 # Creates an index of FreeType font files
 if [ -d $goboPrograms/Fontconfig ]
-then fc-cache
+then fc-cache -f -v /Files/fonts
+fi
+
+# Creates index files for Pango
+if [ -d $goboPrograms/Pango ]
+then
+    mkdir -p $goboPrograms/Pango/Settings/pango
+    pango-querymodules > $goboPrograms/Pango/Settings/pango/pango.modules
+fi
+
+# Creates index files for GTK+ and GDK
+if [ -d $goboPrograms/GTK+ ]
+then
+    mkdir -p $goboPrograms/GTK+/Settings/gtk-2.0
+    gtk-query-immodules-2.0 > $goboPrograms/GTK+/Settings/gtk-2.0/gtk.immodules
+    gdk-pixbuf-query-loaders > $goboPrograms/GTK+/Settings/gtk-2.0/gdk-pixbuf.loaders
+    gtk-update-icon-cache
 fi
 
 # Creates public and private keys
