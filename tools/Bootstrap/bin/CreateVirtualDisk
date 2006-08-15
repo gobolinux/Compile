@@ -1,0 +1,102 @@
+#!/bin/sh
+
+#
+# Creates a virtual disk and populates it with the contents of a given directory.
+#
+# Written by Lucas C. Villa Real <lucasvr@gobolinux.org>
+#
+
+source ScriptFunctions
+
+TOP_DIR=..
+dir_name="$1"
+mount_point="/Mount/Loop"
+loop_dev="/dev/loop6"
+
+img_name="filesystem.img"
+img_size=0
+img_partition_offset=0
+
+
+function remove_loop_devices() {
+    #
+    # Sometimes 'mount -o loop' behaves strange and doesn't call 'losetup -d'
+    # at umount time. This function ensures that the loops are destroyed if
+    # they're not being used.
+    #
+    for i in /dev/loop*
+    do
+        losetup -d $i 2> /dev/null
+    done
+}
+
+function create_disk() {
+    Log_Normal "Creating a virtual disk..."
+    
+    # create an image with at least 64Mb of free space
+    img_size=`du -s $dir_name | awk {'print $1'}`
+    img_size=$(( img_size + 16384 ))
+    echo dd if=/dev/zero of=$img_name bs=1024 count=$img_size
+    dd if=/dev/zero of=$img_name bs=1024 count=$img_size
+}
+
+function create_partition() {
+    Log_Normal "Creating a virtual partition..."
+    
+    losetup $loop_dev $img_name
+    local cylinders=$(( img_size / 1024 ))
+    echo -e "n\n p\n 1\n \n \n a\n 1\n w\n" | fdisk $loop_dev 2> /dev/null | grep "ioctl\|Syncing"
+    remove_loop_devices
+}
+
+function format_partition() {
+    Log_Normal "Formatting the virtual partition..."
+    
+    local units=`fdisk -lu $img_name 2> /dev/null | grep Units | awk {'print $9'}`
+    local start=`fdisk -lu $img_name 2> /dev/null | grep Linux | awk {'print $3'}`
+    img_partition_offset=$(( units * start ))
+    losetup -o $img_partition_offset $loop_dev $img_name
+    
+    # generate the filesystem
+    [ $img_size -gt 65536 ] && block_size=4096 || block_size=1024
+    mkreiserfs -q -b $block_size $loop_dev > /dev/null
+    remove_loop_devices
+}
+
+function populate_partition() {
+    Log_Normal "Populating the virtual partition from $dir_name..."
+    
+    losetup -o $img_partition_offset $loop_dev $img_name
+    mount $loop_dev $mount_point
+    
+    # copy the contents from a given directory to the virtual disk
+    mkdir -p $mount_point
+    cp -a $dir_name/* $mount_point
+
+    umount $mount_point
+    remove_loop_devices
+}
+
+function install_bootloader() {
+    Log_Normal "Installing the LILO bootloader in the virtual disk..."
+
+    losetup $loop_dev $img_name
+    lilo -C $TOP_DIR/files/lilo-virtual_disk.conf \
+         -m $dir_name/System/Kernel/Boot/map \
+         -s /dev/null
+    remove_loop_devices
+}
+
+if [ "$1" = "" -o ! -d "$dir_name" ]
+then
+    echo "Syntax: $0 <directory>"
+    exit 1
+fi
+
+create_disk
+create_partition
+format_partition
+populate_partition
+install_bootloader
+
+Log_Normal "Partition offset: $img_partition_offset"
