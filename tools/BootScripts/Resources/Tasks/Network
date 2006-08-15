@@ -2,7 +2,9 @@
 
 source GoboPath
 source ${goboSettings}/BootOptions
-source ${goboSettings}/NetworkOptions 2> /dev/null
+if [ -r "${goboSettings}/NetworkOptions" ]; then
+   source ${goboSettings}/NetworkOptions 2> /dev/null
+fi
 
 #
 # Bring up or down either a specific network interface,
