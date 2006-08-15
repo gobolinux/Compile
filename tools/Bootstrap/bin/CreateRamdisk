@@ -6,9 +6,11 @@
 # Written by Lucas C. Villa Real <lucasvr@gobolinux.org>
 #
 
+[ -x CreateRamdisk ] && TOP_DIR=.. || TOP_DIR=.
 source ScriptFunctions
+source $TOP_DIR/.config
+source $TOP_DIR/functions/Platforms
 
-TOP_DIR=..
 mount_point="/Mount/Loop"
 loop_dev="/dev/loop6"
 
@@ -16,14 +18,20 @@ img_name="ramdisk_img"
 img_partition_offset=0
 
 
-if [ "$2" = "" ]
+if [ "$1" = "" ]
 then
-    echo "Syntax: make ramdisk DIR=<directory> SIZE=<size in MBs>"
+    echo "Syntax: make ramdisk SIZE=<size in MBs>"
     exit 1
 fi
 
-dir_name="`echo $1 | cut -d= -f2-`"
-img_size="`echo $2 | cut -d= -f2-`"
+if [ "$NATIVE_COMPILING" = "y" ]
+then export arch_conf="Native"
+else export arch_conf=`get_chosen_arch`
+fi
+
+source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
+dir_name="$cross_prefix_dir"
+img_size="`echo $1 | cut -d= -f2-`"
 
 
 function remove_loop_devices() {
