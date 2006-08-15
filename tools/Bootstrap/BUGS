@@ -7,11 +7,22 @@
   own copy of them, taken from the CVS. Need to figure out a clean way to handle
   this.
 
+# cross-compiling dependencies
+- Files needed in the host platform to cross-compile the Xorg misc fonts
+  (http://xorg.freedesktop.org/releases/X11R7.0/src/font):
+  /Programs/Xorg-Font-Util/7.0/bin/ucs2any
+  /Programs/Xorg/7.0/bin/bdftopcf
+  /Programs/Xorg/7.0/bin/mkfontscale
+  /Programs/Xorg/7.0/bin/mkfontdir
+- Files needed in the host platform to cross-compile Glib:
+  /Programs/GLib/2.8.1/bin/glib-genmarshal
+
 # still open / needs more attention:
 - populate /Files/Fonts
 - ln -s /Files/Fonts /System/ARM/Programs/Xorg/7.0/lib/X11/fonts
 - 'Compile RXVT' doesn't install librxvt.so.1
 - Fontconfig and its fonts/fonts.conf which needs to be adjusted to /Files/Fonts
+- Find a clean way to call /System/Links/Tasks/EnvironmentCheck at the 1st boot
 
 # X.org problems:
 - startx:
@@ -23,3 +34,7 @@
   Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/CID/, removing from list!
   Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/100dpi/, removing from list!
   Could not init font path element /System/ARM/Programs/Xorg/7.0/lib/X11/fonts/75dpi/, removing from list!
+
+# Interesting packages that should be considered for the embedded:
+Tremor (fixed-point OGG)
+http://audacious-media-player.org/Downloads (based on libmad)
