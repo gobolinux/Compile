@@ -1,0 +1,47 @@
+
+The Shrink script is used to perform cleanups on the generated filesystem.
+This document shows Bootstrap's Shrink script in action, so that you can
+take an idea on how much each shrink option available can reduce your
+filesystem.
+
+The scenario is a fresh ARM filesystem with the following packages:
+
+gobo@Ummagumma /System] ls ARM/Programs
+BusyBox  FFmpeg-Motion  Gnokii    JPEG  LibGCC  LibTool   Motion   OpenVPN  TinyScripts
+Compile  Glibc          GoboHide  LZO   LibPNG  Listener  OpenSSL  Scripts  ZLib
+
+
+And here we go!
+
+gobo@Ummagumma /System] du -sh ARM   # original tree
+80M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # removing headers
+75M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing static libs
+52M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing libtool files
+52M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing pkgconfig files
+52M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing doc, info and man
+48M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing locales
+48M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also removing aclocal m4 macros
+48M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also calling the per-package Shrink script
+31M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # also stripping executables and libraries
+14M     ARM
+
+gobo@Ummagumma /System] du -sh ARM   # after manually doing a final cleanup
+12M     ARM
