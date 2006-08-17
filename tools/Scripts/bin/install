@@ -4,11 +4,11 @@ declare inOptions
 declare outOptions
 
 inOptions=("$@")
+o=0
 
 if [ `whoami` = "fibo" -o "$ROOTLESS_GOBOLINUX" = 1 ]
 then
    skipnext=0
-   o=0
    for (( i = 0; i < "${#inOptions[@]}"; i++ ))
    do
       if [ "$skipnext" = 1 ]
@@ -23,8 +23,8 @@ then
       elif [ "${inOptions[i]:0:1}" = "-" -a "$goboCrossCompiling" ]
       then
          # ignore strip options if cross-compiling
-         outOptions[o]=`echo "${inOptions[i]}" | sed 's,s,,g' | sed 's,--strip,,g'`
-         o=$[o+1]
+         outOptions[o]="`echo "${inOptions[i]}" | sed 's,-s,,g' | sed 's,--strip,,g'`"
+         [ ! -z "${outOptions[o]}" ] && o=$[o+1]
       else
          outOptions[o]="${inOptions[i]}"
          o=$[o+1]
@@ -35,14 +35,16 @@ else
    do
       if [ "${inOptions[i]}" = "root" ]
       then
-         outOptions[i]="0"
+         outOptions[o]="0"
       elif [ "${inOptions[i]:0:1}" = "-" -a "$goboCrossCompiling" ]
       then
          # ignore strip options if cross-compiling
-         outOptions[i]=`echo "${inOptions[i]}" | sed 's,s,,g' | sed 's,--strip,,g'`
+         outOptions[o]="`echo "${inOptions[i]}" | sed 's,-s,,g' | sed 's,--strip,,g'`"
+         [ -z "${outOptions[o]}" ] && continue
       else
-         outOptions[i]="${inOptions[i]}"
+         outOptions[o]="${inOptions[i]}"
       fi
+      o=$[o+1]
    done
 fi
 
