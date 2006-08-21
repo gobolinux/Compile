@@ -358,11 +358,11 @@ cvs_rsh=<string>
 
 svn=<Subversion server>
    Valid modes: all
+   The URL to be fetched in order to obtain the program's source
+   package.
+   Example:
    svn=http://svn.o-hand.com/repos/matchbox/trunk
    
-svn_module=<module name to co>
-   Valid modes: all
-
 unmanaged_files=(<files>)
    Valid modes: all
    Specify a list of files that the recipes stored in Resources/Unmanaged.
