@@ -15,19 +15,39 @@ then
 fi
 
 tarball="$1"
-tar jxvf "$tarball" -C "$goboPrograms"
-
 program=`echo $tarball | sed 's/--.*//g'`
 version=`echo $tarball | sed "s%$program--%%g" | sed 's/--.*//g'`
+target="$goboPrograms/$program/$version"
+settings_target="$goboPrograms/$program/Settings"
 
+echo "Installing package $program, version $version..."
+
+#
+# Unpack and configure the Current symlink
+#
+tar jxvf "$tarball" -C "$goboPrograms"
 cd "$goboPrograms/$program"
-rm -f Current
-ln -s "$version" Current
+rm -f Current && ln -s "$version" Current
 
+#
+# Symlink, taking care of Defaults/Settings
+#
+if [ -d "$target/Resources/Defaults/Settings" ]
+then
+    if [ -d "$settings_target" ]
+    then
+        echo "Will not touch existing settings"
+    else
+        mkdir -p $settings_target
+        cp -a $target/Resources/Defaults/Settings/* $settings_target/
+    fi
+fi
 SymlinkProgram "$program"
 
-if [ -d "$goboPrograms/$program/Current/lib" ]
+if [ -d "$target/lib" ]
 then
     echo "Running ldconfig..."
     ldconfig
 fi
+
+echo "Done."
