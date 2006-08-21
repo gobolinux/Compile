@@ -256,7 +256,6 @@ cat Recipe | perl -e '
       cvs_checkout_options => "string",
       cvs_rsh => "string",
       svn => "string",
-      svn_module => "string",
       unmanaged_files => "array",
    );
    sub check_array_name {
