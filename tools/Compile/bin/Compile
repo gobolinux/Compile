@@ -640,7 +640,7 @@ elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${packagename}-svn"
+      dir="${appname}-svn"
    fi
 fi
 
@@ -710,7 +710,7 @@ then
    if ! Boolean "no-web"
    then
       cd "$compileSourcesDir"
-      echo "Fetching ${packagename} from $svn"
+      echo "Fetching ${appname} from $svn"
       svn co "$svn" "${dir}"
       echo "Well done!"
    fi
