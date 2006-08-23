@@ -187,12 +187,18 @@ create_dir $root/System/Links/Libraries
 create_dir $root/System/Links/Headers
 create_dir $root/System/Links/Manuals
 create_dir $root/System/Links/Shared
+create_dir $root/System/Links/Shared/misc
 create_dir $root/System/Links/Tasks
 create_dir $root/System/Settings
 create_dir $root/System/Variable
 create_dir $root/System/Variable/tmp a+wt
 create_dir $root/System/Variable/log
 create_dir $root/System/Variable/run
+create_dir $root/System/Variable/lock
+create_dir $root/System/Variable/spool
+create_dir $root/System/Variable/cache
+create_dir $root/System/Variable/lib
+create_dir $root/System/Variable/lib/misc
 create_dir $root/System/Kernel
 create_dir $root/System/Kernel/Boot
 create_dir $root/System/Kernel/Objects
@@ -230,21 +236,31 @@ create_link /System/Kernel/Devices $root/dev
 create_link /System/Kernel/Status $root/proc
 create_link /System/Variable $root/var
 create_link /System/Variable/tmp $root/tmp
+create_link /System/Variable $root/var/local
 create_link /System/Links/Libraries $root/lib
 create_link /System/Settings $root/etc
 create_link /System/Links/Executables $root/bin
 create_link /System/Links/Executables $root/sbin
+create_link /System/Kernel/Boot $root/boot
+create_link /Mount $root/mnt
+create_link /Mount $root/media
+create_link /Files $root/srv
 
 create_link /System/Kernel/Modules $root/System/Links/Libraries/modules
 
 create_link . $root/usr/X11R6
 create_link . $root/usr/local
+create_link /Files/Compile/Source $root/usr/src
 create_link /System/Links/Executables $root/usr/bin
 create_link /System/Links/Headers $root/usr/include
 create_link /System/Links/Libraries $root/usr/lib
 create_link /System/Links/Manuals $root/usr/man
 create_link /System/Links/Executables $root/usr/sbin
 create_link /System/Links/Shared $root/usr/share
+create_link /System/Links/Manuals /System/Links/Shared/man
+
+create_link /Users $root/home
+create_link /Users/`whoami` $root/root
 
 [ -e $root/System/Kernel/Devices/log ] || mkfifo $root/System/Kernel/Devices/log
 [ -e $root/System/Kernel/Devices/null ] || mknod -m0666 $root/System/Kernel/Devices/null c 1 3
