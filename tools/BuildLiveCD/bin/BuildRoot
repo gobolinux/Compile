@@ -246,8 +246,9 @@ create_link /System/Links/Manuals $root/usr/man
 create_link /System/Links/Executables $root/usr/sbin
 create_link /System/Links/Shared $root/usr/share
 
+[ -e $root/System/Kernel/Devices/log ] || mkfifo $root/System/Kernel/Devices/log
 [ -e $root/System/Kernel/Devices/null ] || mknod -m0666 $root/System/Kernel/Devices/null c 1 3
-[ -e $root/System/Kernel/Devices/null ] || mknod -m0600 $root/System/Kernel/Devices/console c 5 1
+[ -e $root/System/Kernel/Devices/console ] || mknod -m0600 $root/System/Kernel/Devices/console c 5 1
 
 mkdir -p "${root}"/../Checksums/
 
