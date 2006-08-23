@@ -12,7 +12,7 @@ case "$1" in
         exit 1
 esac
         
-for dir in /bin /etc /lib /sbin /tmp /var /usr /proc /dev /sys /lost+found
+for dir in /bin /etc /lib /sbin /tmp /var /usr /proc /dev /sys
 do
     if [ -d "$dir" -o -h "$dir" ]
     then
