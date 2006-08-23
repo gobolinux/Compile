@@ -54,7 +54,7 @@
 
 /* Paranoia setting */
 #ifndef FIGOBOLINUX
-#define FIGOBOLINUX _IOW(0x00, 0x22,sizeof(struct gobolinux_hide)) /* gobolinux-fs ioctl */
+#define FIGOBOLINUX _IOW(0x00, 0x22, size_t) /* gobolinux-fs ioctl */
 #endif
 
 void usage (int status);
