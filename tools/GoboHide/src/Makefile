@@ -7,6 +7,10 @@ gobohide: gobohide.c
 	mkdir -p ../sbin
 	mv gobohide ../sbin 
 
+install:
+	install -d $(PREFIX)/sbin
+	install ../sbin/gobohide $(PREFIX)/sbin
+
 debug: MYCFLAGS = -g -DDEBUG
 debug: all
 
