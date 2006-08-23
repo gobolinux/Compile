@@ -10,22 +10,22 @@
  * Author: Felipe W Damasio <felipewd@terra.com.br>
  * 
  * Changes:
+ * 0.10 - Lucas C. Villa Real
+ *        Handling multiple entries.
+ *        
  * 0.09 - Lucas C. Villa Real
  *        We were passing (struct gobolinux_hide **) to ioctl(),
  *        changed to (struct gobolinux_hide *);
  *        Added an exit call after purge_list().
  *
  * 0.08a- Felipe W Damasio
- *        Added -f, --flush option to flush (delete all)
- *        the hide list
+ *        Added -f, --flush option to flush (delete all) the hide list.
  *
  * 0.08 - Felipe W Damasio
- *        Error-checking on "open" calls
- *        cleanup code
+ *        Error-checking on "open" calls cleanup code.
  *        
- * 0.07 - Lucas C. Villa Real <lucasvr@gobolinux.org>
- *        Added a valid file descriptor to be used on statistics 
- *        ioctl calls.
+ * 0.07 - Lucas C. Villa Real
+ *        Added a valid file descriptor to be used on statistics ioctl calls.
  *        
  * 0.05 - Lucas C. Villa Real 
  *        Real path is now being handled, so the statistics can now 
@@ -101,19 +101,6 @@ usage (int status)
 	exit (0);
 }
 
-char *
-duplicate (char *original)
-{
-	char *tmp;
-
-	tmp = strdup (original);
-	if (!tmp) {
-		perror ("strdup");
-		exit (1);
-	}
-	return tmp;
-}
-
 void
 err_quit (int status, char *file)
 {
@@ -172,22 +159,25 @@ get_stats ()
 	struct gobolinux_hide *hide;
 
 	hide = (struct gobolinux_hide *) calloc (1, sizeof (struct gobolinux_hide));
-	if (!hide)
-	{
+	if (!hide) {
 		perror ("calloc");
 		exit (EXIT_FAILURE);
 	}
+	
 	/* Get a valid file descriptor */
 	fd = open ("/", O_RDONLY|O_NOFOLLOW);
 	if (fd == -1) {
 		perror ("open");
 		exit (EXIT_FAILURE);
 	}
+	
 	if (fstat (fd, &stats) == -1) {
 		perror ("fstat");
 		exit (1);
 	}
-	if (!S_ISDIR(stats.st_mode)) err_quit (1, "/");
+	
+	if (!S_ISDIR(stats.st_mode)) 
+		err_quit (1, "/");
 
 	hide->operation           = GETSTATSUIDNUMBER;
 	hide->stats.hidden_inodes = 0;
@@ -206,6 +196,7 @@ get_stats ()
 		perror ("calloc");
 		exit (EXIT_FAILURE);
 	}
+	
 	for (i = 0; i < hide->stats.hidden_inodes; ++i) {
 		hide->stats.hidden_list[i] = (char *) calloc (PATH_MAX, sizeof (char));
 		if (!hide->stats.hidden_list[i]) {
@@ -226,6 +217,7 @@ get_stats ()
 
 	return hide;
 }
+
 void
 list_hidden (void)
 {
@@ -255,12 +247,14 @@ purge_list ()
 	struct gobolinux_hide *hide;
 
 	hide = get_stats ();
-	if (!hide) return; /* No list to purge */
+	if (!hide)
+		return; /* No list to purge */
 
 	for (i = 0; i < hide->stats.filled_size; i++) {
 		generic_ioctl (hide->stats.hidden_list[i], GOBOLINUX_UNHIDEINODE);
 		free (hide->stats.hidden_list[i]);
 	}
+	
 	free (hide->stats.hidden_list);
         free (hide);
 }
@@ -270,7 +264,7 @@ main (int argc, char **argv)
 {
 	int c;
 	int a = -1, purge = 0;
-	char *dir = NULL;
+	const char *dir = NULL;
 
 
 	/* Only the superuser is allowed to execute this */
@@ -283,10 +277,10 @@ main (int argc, char **argv)
 	while ((c = getopt_long (argc, argv, shortopts, longopts, 0)) != -1) {
 		switch (c) {
 		case 'h': a = GOBOLINUX_HIDEINODE;
-			  dir = duplicate (optarg);
+			  dir = optarg;
 			  break;
 		case 'u': a = GOBOLINUX_UNHIDEINODE;
-			  dir = duplicate (optarg);
+			  dir = optarg;
 			  break;
 		case 'l': a = GETSTATSUID;
 			  break;
@@ -295,29 +289,36 @@ main (int argc, char **argv)
 		}
 	}
 
-	if (show_help) usage (1);
-	if (show_version) usage (0);
-	if (purge) 
-	{
+	if (show_help)
+		usage (1);
+	if (show_version)
+		usage (0);
+	if (purge) {
 		purge_list ();
 		exit (EXIT_SUCCESS);
 	}
 
-	switch (a)
-	{
-		case -1: fprintf (stderr, 
-				  "%s: You must specify at least one option!\n\n"
-				  "try '%s --help' for more information\n", 
-				  program_name, program_name);
-			 break;
+	switch (a) {
+		case -1:
+			fprintf (stderr, 
+					 "%s: You must specify at least one option!\n\n"
+				  	 "try '%s --help' for more information\n", 
+				  	 program_name, program_name);
+			break;
 
-		case GETSTATSUID: list_hidden ();
-				  break;
+		case GETSTATSUID:
+			list_hidden ();
+			break;
 				  
-		default: generic_ioctl (dir, a);
-			 break;
+		default:
+			generic_ioctl (dir, a);
+			while (optind < argc)
+				generic_ioctl (argv[optind++], a);
 	}
 	
 	exit (EXIT_SUCCESS);
 }
 
+/*
+ * vim: sw=4 ts=4
+ */
