@@ -38,6 +38,5 @@ cd /Mount/UnionFS
 /bin/pivot_root . Mount/.Pivot
 
 echo "Invoking init..."
-#exec /sbin/init
-exec /sbin/StartLiveCD
+exec /sbin/init
 echo "Done."
