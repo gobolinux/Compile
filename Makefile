@@ -14,7 +14,7 @@ version_check:
 
 cleanup:
 	rm -rf Resources/FileHash*
-	find * -path "*~" -or -path "*/.\#*" | xargs rm -f
+	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
 
 verify:
 	! { cvs up 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
