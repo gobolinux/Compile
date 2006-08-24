@@ -1,0 +1,2 @@
+config PKG_GQMPEG
+    bool "GQmpeg"
