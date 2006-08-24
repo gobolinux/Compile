@@ -149,7 +149,7 @@ function remove_fonts() {
         pushd `dirname $i` > /dev/null
         for i in "$@"
         do
-            ls $i
+            rm -f $i
         done
         popd > /dev/null
     done
