@@ -1,0 +1,2 @@
+config PKG_SDL_MIXER
+    bool "SDL Mixer"

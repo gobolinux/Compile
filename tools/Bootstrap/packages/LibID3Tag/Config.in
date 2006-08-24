@@ -1,0 +1,2 @@
+config PKG_LIBID3TAG
+    bool "LibID3Tag"

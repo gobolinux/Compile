@@ -1,0 +1,2 @@
+config PKG_MADPLAY
+    bool "Madplay"
