@@ -29,10 +29,10 @@ source $dot_config
 # TODO: the headers script have shown to be broken on many releases I've tested.
 #       we're relying on the existence of a binary package for now.
 function make_headers() {
-    dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+    dirname="$prefix/$goboPrograms/Linux-Headers"
     [ -d "$dirname" ] && return
 	
-    Log_Normal "Creating the Libc Headers package..."
+    Log_Normal "Creating the Linux-Headers package..."
     if [ "$NATIVE_COMPILING" = "y" ]
     then
         case `uname -m` in
@@ -53,13 +53,13 @@ function make_headers() {
     popd >& /dev/null
 
     export goboCrossCompiling=yes
-    SymlinkProgram $symlink_options Linux-Libc-Headers
+    SymlinkProgram $symlink_options Linux-Headers
     unset goboCrossCompiling goboPrefix
     Parse_Conf Directories.conf
 }
 
 function download_headers() {
-    dirname="$prefix/$goboPrograms/Linux-Libc-Headers"
+    dirname="$prefix/$goboPrograms/Linux-Headers"
     [ -d "$dirname" ] && return
 	
     Log_Normal "Downloading the Libc Headers package..."
@@ -82,22 +82,22 @@ function download_headers() {
     # download the headers package
     download_dir="`readlink -f $TOP_DIR/downloads`"
     pushd $download_dir >& /dev/null
-    wget -c $repository/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2
+    wget -c $repository/Linux-Headers--2.6.12--$uname_m.tar.bz2
     if [ $? != 0 ]
     then
-        Log_Error "Could not download $repository/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2"
+        Log_Error "Could not download $repository/Linux-Headers--2.6.12--$uname_m.tar.bz2"
         exit 1
     fi
     popd >& /dev/null
      
     # uncompress it
     pushd "$prefix/$goboPrograms" >& /dev/null
-    tar jxvf $download_dir/Linux-Libc-Headers--2.6.12--$uname_m.tar.bz2
+    tar jxvf $download_dir/Linux-Headers--2.6.12--$uname_m.tar.bz2
     popd >& /dev/null
      
     # symlink it
     export goboCrossCompiling=yes
-    SymlinkProgram $symlink_options Linux-Libc-Headers
+    SymlinkProgram $symlink_options Linux-Headers
     unset goboCrossCompiling goboPrefix
     Parse_Conf Directories.conf
 }
@@ -250,7 +250,7 @@ do
     chroot_compile $local_recipe
 
     # And here is the final trick: if we have just compiled Glibc, create the
-    # Linux-Libc-Headers package, as it needs to be compiled with raw kernel headers.
+    # Linux-Headers package, as it needs to be compiled with raw kernel headers.
     if [ "$pkg_name" = "Glibc" ]
     then [ "$NATIVE_COMPILING" = "y" ] && make_headers || download_headers
     fi
