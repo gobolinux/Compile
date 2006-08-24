@@ -16,6 +16,8 @@
   /Programs/Xorg/7.0/bin/mkfontdir
 - Files needed in the host platform to cross-compile Glib:
   /Programs/GLib/2.8.1/bin/glib-genmarshal
+- Needed to compile GQmpeg (and probably others):
+  /Programs/GTK+/2.6.0/bin/gdk-pixbuf-csource
 
 # still open / needs more attention:
 - populate /Files/Fonts
