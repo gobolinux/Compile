@@ -18,12 +18,6 @@ img_name="ramdisk_img"
 img_partition_offset=0
 
 
-if [ "$1" = "" ]
-then
-    echo "Syntax: make ramdisk SIZE=<size in MBs>"
-    exit 1
-fi
-
 if [ "$NATIVE_COMPILING" = "y" ]
 then export arch_conf="Native"
 else export arch_conf=`get_chosen_arch`
@@ -31,8 +25,17 @@ fi
 
 source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
 dir_name="$cross_prefix_dir"
-img_size="`echo $1 | cut -d= -f2-`"
 
+if [ "$1" = "" ]
+then
+    echo "Syntax: make ramdisk SIZE=<size in MBs>"
+    echo
+    echo "(your current filesystem is `du -sh $dir_name | awk {'print $1'}` in size)"
+    echo
+    exit 1
+fi
+
+img_size="`echo $1 | cut -d= -f2-`"
 
 function remove_loop_devices() {
     #
@@ -70,7 +73,7 @@ function populate_ramdisk() {
     remove_loop_devices
 
     Log_Normal "Compressing the image file..."
-    gzip $img_name
+    gzip -9 $img_name && Log_Normal "Image successfully created at $img_name.gz"
 }
 
 # just ensure that our mount point exists
