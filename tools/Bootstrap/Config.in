@@ -129,10 +129,10 @@ config NETWORK_NAMESERVER
 comment ""
 
 config KERNEL_HEADERS_VERSION
-	string "Kernel version for Linux-Libc-Headers package"
+	string "Kernel version for Linux-Headers package"
 	default "2.6.16.18"
 	---help---
-	  Specifies which kernel version to use to create the Linux-Libc-Headers
+	  Specifies which kernel version to use to create the Linux-Headers
 	  package.
 
 config NEW_HOSTNAME
@@ -205,16 +205,21 @@ source "packages/ALSA-Lib/Config.in"
 source "packages/LibMad/Config.in"
 source "packages/LibOGG/Config.in"
 source "packages/LibVorbis/Config.in"
+source "packages/LibID3Tag/Config.in"
+source "packages/Madplay/Config.in"
+source "packages/GQmpeg/Config.in"
 endmenu
 
 #############################################
-menu "Networking"
+menu "Networking and Communications"
 #############################################
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
 source "packages/LZO/Config.in"
 source "packages/OpenVPN/Config.in"
 source "packages/Links/Config.in"
+source "packages/Minicom/Config.in"
+source "packages/PPP/Config.in"
 endmenu
 
 #############################################
@@ -234,6 +239,8 @@ source "packages/Linux-Fusion/Config.in"
 source "packages/DirectFB/Config.in"
 source "packages/TIFF/Config.in"
 source "packages/SDL/Config.in"
+source "packages/SDL_ttf/Config.in"
+source "packages/SDL_mixer/Config.in"
 source "packages/SVGALib/Config.in"
 source "packages/IMLib/Config.in"
 source "packages/FFmpeg-Motion/Config.in"
@@ -282,7 +289,7 @@ source "packages/IceWM/Config.in"
 comment "Applications"
 #source "packages/ROX-Filer/Config.in"
 source "packages/RXVT/Config.in"
-source "packages/MRXVT/Config.in"
+source "packages/Mrxvt/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
 endmenu
