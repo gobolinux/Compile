@@ -50,7 +50,6 @@ function create_tree() {
     ln -s "$goboSettings" "$1"/etc
     ln -s "$goboKernel"/Objects "$1"/sys
 
-    mkdir -p "$1"/initrd
     mkdir -p "$1"/usr
     ln -s /usr/. "$1"/usr/X11R6
     ln -s /usr/. "$1"/usr/local
