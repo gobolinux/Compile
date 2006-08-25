@@ -3,7 +3,7 @@
 
 #############################################################################
 # Current requirements for this script:
-# - './Bootstrap' directory from where ChrootCompile gets package to build
+# - './BaseDependencies' directory from where ChrootCompile gets package to build
 #   the compilation environment. Only one version per package should be 
 #   stored here.
 #
@@ -62,7 +62,7 @@ if [ "$1" == "--cross-compile" -o "$1" == "-X" ]
 then
     [ "$2" = "" ] && die "Expected architecture as a parameter."
     crossopts="--cross-compile $2"
-    crossconf=`ls Bootstrap/Compile/*/Resources/Defaults/Settings/Compile/Cross/Cross-$2.conf`
+    crossconf=`ls BaseDependencies/Compile/*/Resources/Defaults/Settings/Compile/Cross/Cross-$2.conf`
 
     [ ! -f $crossconf ] && die "$crossconf: file not found."
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
@@ -297,7 +297,7 @@ tools="Scripts Compile"
 localcvs="."
 for package in $tools 
 do
-   tarball=Bootstrap/$package--$today--$arch.tar.bz2
+   tarball=BaseDependencies/$package--$today--$arch.tar.bz2
    if [ ! -e "$tarball" -o "`find "$localcvs/tools/$package/" -newer "$tarball" 2> /dev/null`" ] 
    then
       echo "Packing $package CVS snapshot..."
@@ -307,7 +307,7 @@ do
       # we need to build here in order to create the files which are going to be linked inside BuildRoot
       [ -e $package/$today/Makefile ] && echo Building $package/$today && make -C $package/$today > /dev/null 
       find $package/$today/ -type d -name CVS | xargs rm -rf 
-      rm -f Bootstrap/$package--*--$arch.tar.bz2   # cleaning up old versions too
+      rm -f BaseDependencies/$package--*--$arch.tar.bz2   # cleaning up old versions too
       tar cjpf $tarball $package/$today  # create the package
       rm -rf $package
       toolswhichneedmake="$toolswhichneedmake $package"
@@ -317,25 +317,25 @@ do
 done
 
 #############################################################################
-# Getting packages for Bootstrap - Temporary only
+# Getting packages for BaseDependencies - Temporary only
 #############################################################################
 
 [ -d Unpacked ] || mkdir Unpacked
 [ -d Unpacked/_Checksums ] || mkdir Unpacked/_Checksums
 
 # function get_package_for() {
-#    for dir in Clean Bootstrap; do
+#    for dir in Clean BaseDependencies; do
 #       if ls $dir/$1--* &> /dev/null
 #       
 #    done
 # }
 
-[ -d Bootstrap ] || mkdir Bootstrap
+[ -d BaseDependencies ] || mkdir BaseDependencies
 [ -d $getclean ] || mkdir $getclean
 for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
 do
-   if ! ls Bootstrap/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
-   && ! [ -d Bootstrap/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
+   if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
+   && ! [ -d BaseDependencies/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
    then
       die "Package $dep, needed for bootstrap, was not found."
    fi
@@ -354,8 +354,8 @@ function get_package_for() {
    local dep="$1"
    local pkg=
    if [ "$crossopts" ]
-   then local repositories="Bootstrap"
-   else local repositories="$getclean Bootstrap"
+   then local repositories="BaseDependencies"
+   else local repositories="$getclean BaseDependencies"
    fi
    for repo in $repositories
    do
@@ -441,6 +441,7 @@ do
             # if the program is not already at dependencies list, append it and force extra recursion
             if [ ! "`echo $deps | grep -w  $i`" -a "$i" != '#' ]
             then
+               echo "  Adding dependency $i"
                deps="$deps $i"
                needsprocessing="yes"
             fi

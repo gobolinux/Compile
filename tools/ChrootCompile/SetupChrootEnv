@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function download_packages() {
-   mkdir -p Bootstrap
-   rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$1/ Bootstrap/
+   mkdir -p BaseDependencies
+   rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$1/ BaseDependencies/
 }
 
 function update_tools() {
