@@ -53,6 +53,11 @@ then
     shift
 fi
 
+hostarch=`uname -m`
+case "$arch" in
+   i686|i585|i486|i386) hostarch=i686 ;;
+esac
+
 unset crossopts
 unset crossrepodir
 unset crossprefixdir
@@ -82,12 +87,13 @@ then
 
     shift 2
 else
-    arch=`uname -m`
-    case "$arch" in
+    case "$hostarch" in
        i686|i585|i486|i386) recipesubdir=i686 ;;
        *)                   recipesubdir="$arch"
     esac
 fi
+
+targetarch=$recipesubdir
 
 unset verbose
 if [ "$1" == "--verbose" -o "$1" == "-v" ]
@@ -164,8 +170,9 @@ echo "ChrootCompile: Compiling $name $version..."
 # Preparing stub root directory
 #############################################################################
 root=$PWD/Area-$name-$version
-getclean=Clean
-putclean=Clean
+hostgetclean=Clean/$hostarch
+targetgetclean=Clean/$targetarch
+putclean=Clean/$targetarch
 
 echo "ChrootCompile: Preparing $root..."
 
@@ -229,7 +236,8 @@ mkdir -p $root/$goboPrograms
 mkdir -p $root/usr
 
 mkdir -p $root/Depot/LocalPackages
-mkdir -p $root/Depot/$getclean
+mkdir -p $root/Depot/$hostgetclean
+mkdir -p $root/Depot/$targetgetclean
 
 ln -nfs /System/Kernel/Objects $root/sys
 ln -nfs /System/Kernel/Devices $root/dev
@@ -319,11 +327,11 @@ done
 # }
 
 [ -d BaseDependencies ] || mkdir BaseDependencies
-[ -d $getclean ] || mkdir $getclean
+[ -d $hostgetclean ] || mkdir $hostgetclean
 for dep in "${base_dependencies[@]}"
 do
-   if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
-   && ! [ -d BaseDependencies/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
+   if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $hostgetclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
+   && ! [ -d BaseDependencies/$dep -o -d $hostgetclean/$dep -o -d LocalPackages/$dep ]
    then
       die "Package $dep, needed for bootstrap, was not found."
    fi
@@ -340,6 +348,7 @@ function filter_dir() {
 
 function get_package_for() {
    local dep="$1"
+   local repositories="$2"
    local pkg=
    if [ "$crossopts" ]
    then local repositories="BaseDependencies"
@@ -495,7 +504,8 @@ $sudo mount --bind /proc $root/System/Kernel/Status
 [ ! "$localrepository" ] && $sudo mount --bind Archives $root/Files/Compile/Archives
 
 $sudo mount --bind LocalPackages $root/Depot/LocalPackages
-$sudo mount --bind $getclean $root/Depot/$getclean
+$sudo mount --bind $hostgetclean $root/Depot/$hostgetclean
+$sudo mount --bind $targetgetclean $root/Depot/$targetgetclean
 
 if [ "$crossopts" ]
 then
@@ -604,7 +614,7 @@ fi
 
 # Only local packages are used to fullfil dependencies
 $sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
-$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$getclean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
+$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$targetgetclean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
 function check_dependencies() {
    [ "$verbose" ] && echo "ChrootCompile: Checking dependencies..."
