@@ -711,7 +711,7 @@ then
    then
       cd "$compileSourcesDir"
       echo "Fetching ${appname} from $svn"
-      svn co "$svn" "${dir}"
+      svn co $svn "${dir}"
       echo "Well done!"
    fi
 else
