@@ -6,8 +6,9 @@ source $(readlink -f $(dirname $0))/ChrootCompile.conf || {
 }
 
 [ "$2" ] || {
-   echo "Usage:   `basename $0` <package-file> <root>"
+   echo "Usage:   `basename $0` <package-file> <root> [cross prefix dir]"
    echo "Example: `basename $0` Glibc--2.3.2--i686.tar.bz2 /Mount/Disk/"
+   echo "         `basename $0` Glibc--2.3.2--i686.tar.bz2 /Mount/Disk/ /System/ARM"
    exit 1
 } 
 
@@ -52,7 +53,8 @@ then
    exit 1
 fi
 
-root="$2"
+crossprefixdir="$3"
+root="$crossprefixdir/$2"
 
 [ "$verbose" ] && echo "MiniInstallPackage: Installing $name version $version..."
 
@@ -79,4 +81,4 @@ then
 fi
 popd &> /dev/null
 
-$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root 2>&1 | grep -v "/CVS/"
+$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root $crossprefixdir 2>&1 | grep -v "/CVS/"

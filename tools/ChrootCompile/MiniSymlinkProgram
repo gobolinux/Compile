@@ -21,8 +21,9 @@ if [ ! "$1" -o "$1" = "--help" ]
 then
    echo "MiniSymlinkProgram" 1>&2
    echo "A minimal functionality SymlinkProgram" 1>&2
-   echo "Usage:   `basename $0` <program_path> <root>" 1>&2 
+   echo "Usage:   `basename $0` <program_path> <root> [cross prefix dir]" 1>&2 
    echo "Example: `basename $0` /Programs/Glibc/Current /Mount/Disk" 1>&2 
+   echo "         `basename $0` /Programs/Glibc/Current /Mount/Disk /System/ARM" 1>&2 
    exit 1
 fi
 
@@ -33,9 +34,10 @@ then
     shift
 fi
 
-full_path="$1"
-root=`readlink -f $2`
-gobolinks=/System/Links
+crossprefixdir="$3"
+full_path="$crossprefixdir/$1"
+root="`readlink -f $2`/$crossprefixdir"
+gobolinks="$crossprefixdir/System/Links"
 
 [ "$verbose" ] && echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
 

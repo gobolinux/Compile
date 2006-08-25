@@ -316,8 +316,11 @@ done
 # Getting packages for BaseDependencies - Temporary only
 #############################################################################
 
-[ -d Unpacked ] || mkdir Unpacked
-[ -d Unpacked/_Checksums ] || mkdir Unpacked/_Checksums
+for arch in $hostarch $targetarch
+do
+   [ -d Unpacked/$arch ] || mkdir -p Unpacked/$arch
+   [ -d Unpacked/$arch/_Checksums ] || mkdir -p Unpacked/$arch/_Checksums
+done
 
 # function get_package_for() {
 #    for dir in Clean BaseDependencies; do
@@ -327,7 +330,7 @@ done
 # }
 
 [ -d BaseDependencies ] || mkdir BaseDependencies
-[ -d $hostgetclean ] || mkdir $hostgetclean
+[ -d $hostgetclean ] || mkdir -p $hostgetclean
 for dep in "${base_dependencies[@]}"
 do
    if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $hostgetclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
@@ -350,10 +353,6 @@ function get_package_for() {
    local dep="$1"
    local repositories="$2"
    local pkg=
-   if [ "$crossopts" ]
-   then local repositories="BaseDependencies"
-   else local repositories="$getclean BaseDependencies"
-   fi
    for repo in $repositories
    do
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
@@ -368,82 +367,106 @@ function get_package_for() {
 function unpack_package() {
    local pkg="$1"
    local dep="$2"
+   local arch="$3"
 
    packagemd5=`md5sum $pkg`
 
-   [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && rm -rf "Unpacked/$dep" || true
+   # This seems to be broken, as $repo isn't being set here
+   [ `ls $repo/$dep 2> /dev/null | filter_dir | wc -l` -gt 1 ] && rm -rf "Unpacked/$arch/$dep" || true
 
-   if [ "`cat Unpacked/_Checksums/$dep 2> /dev/null`" !=  "$packagemd5" ]
+   if [ "`cat Unpacked/$arch/_Checksums/$dep 2> /dev/null`" !=  "$packagemd5" ]
    then
-      # We may enter here even if "Unpacked/$dep" does not exists. Notice the '-f' of rm.
+      # We may enter here even if "Unpacked/$arch/$dep" does not exists. Notice the '-f' of rm.
       # cleanup old md5 file
-      rm -f Unpacked/_Checksums/$dep
+      rm -f Unpacked/$arch/_Checksums/$dep
       # remove the installed package: $package was updated 
-      rm -rf "Unpacked/$dep"
+      rm -rf "Unpacked/$arch/$dep"
    fi
 
-   unpacked=`ls -d Unpacked/$dep/* 2> /dev/null | filter_dir || true`
+   unpacked=`ls -d Unpacked/$arch/$dep/* 2> /dev/null | filter_dir || true`
    if [ ! "$unpacked" ]
    then
       echo "Unpacking $pkg..." >&2
-      tar xfj "$pkg" -C Unpacked 
-      unpacked=`ls -d Unpacked/$dep/* 2> /dev/null | filter_dir`
+      tar xfj "$pkg" -C Unpacked/$arch
+      unpacked=`ls -d Unpacked/$arch/$dep/* 2> /dev/null | filter_dir`
       [ "$unpacked" ] || die "Error unpacking $pkg"
    fi
-   echo "$packagemd5" > Unpacked/_Checksums/$dep
+   echo "$packagemd5" > Unpacked/$arch/_Checksums/$dep
    echo "$unpacked"
 }
 
 function load_dependency() {
    local dep="$1"
-   local pkg=`get_package_for $dep`
-   [ ! "$pkg" ] && {
-      [ "$crossopts" -a -d "$crossrepodir/$dep" ] && {
-         [ "$verbose" ] && echo "ChrootCompile: Dependency $dep found at $crossrepodir/$dep"
-         continue
-      }
-      die "Dependency $dep could not be found."
-   }
-   unpacked=`unpack_package "$pkg" "$dep"`
+   local repositories="$2"
+   local arch="$3"
+   local pkg=`get_package_for "$dep" "$repositories"`
+   [ ! "$pkg" ] && die "Dependency $dep could not be found."
+   unpacked=`unpack_package "$pkg" "$dep" "$arch"`
 
    if [ $dep = $name ]
    then realcopy="--real-copy"
    else realcopy=""
    fi
-   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root"
+   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $crossprefixdir
 }
 
-deps=`{
+hostdeps=`{
    echo "${base_dependencies[*]} " | tr " " "\n" 
-   [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
    [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
 } | sort -u | strings -n 1`
+
+targetdeps=`{
+   [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
+} | sort -u | strings -n 1`
+
+targetroot=$root/$crossprefixdir
+if [ "$crossopts" ]
+then targetrepository="$targetgetclean"
+else targetrepository="$targetgetclean BaseDependencies"
+fi
 
 needsprocessing="yes" 
 while [ $needsprocessing = "yes" ]
 do
    needsprocessing="no"
-   for dep in $deps
+   for dep in $hostdeps
    do
       [ -d $root/$goboPrograms/$dep ] && continue
-      echo Installing \"$dep\"...
-      load_dependency "$dep"
+      echo Installing host dependency \"$dep\"...
+      load_dependency "$dep" "$hostgetclean BaseDependencies" "$hostarch"
 
-      # if just loaded dependency has a Dependencies file...
-      if [ -e $root/$goboPrograms/$dep/Current/Resources/Dependencies ]
-      then
-         # for each program at dependencies list (no version handling)...
-         for i in `cat $root/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
-         do
-            # if the program is not already at dependencies list, append it and force extra recursion
-            if [ ! "`echo $deps | grep -w  $i`" -a "$i" != '#' ]
-            then
-               echo "  Adding dependency $i"
-               deps="$deps $i"
-               needsprocessing="yes"
-            fi
-         done
-      fi
+      # if just loaded dependency doesn't have a Dependencies file, skip to next entry
+      [ ! -e $root/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
+      
+      # for each program at dependencies list (no version handling)...
+      for i in `cat $root/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
+      do
+         # if the program is not already at dependencies list, append it and force extra recursion
+         if [ ! "`echo $hostdeps | grep -w  $i`" -a "$i" != '#' ]
+         then
+            echo "  Adding dependency $i"
+            hostdeps="$hostdeps $i"
+            needsprocessing="yes"
+         fi
+      done
+   done
+   
+   for dep in $targetdeps
+   do
+      [ -d $targetroot/$goboPrograms/$dep ] && continue
+      echo Installing target dependency \"$dep\"...
+      load_dependency "$dep" "$targetrepository" "$targetarch"
+      [ ! -e $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
+
+      for i in `cat $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
+      do
+         if [ ! "`echo $hostdeps | grep -w  $i`" -a "$i" != '#' ]
+         then
+            echo "  Adding dependency $i"
+            targetdeps="$targetdeps $i"
+            needsprocessing="yes"
+         fi
+      done
    done
 done
 
