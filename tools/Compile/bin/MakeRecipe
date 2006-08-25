@@ -84,7 +84,6 @@ then
 elif [ "$versionnumber" = "svn" ]
 then
    svn=yes
-   shift
    svn_uri="$1"
    shift
 else
