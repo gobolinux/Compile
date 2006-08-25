@@ -322,13 +322,6 @@ do
    [ -d Unpacked/$arch/_Checksums ] || mkdir -p Unpacked/$arch/_Checksums
 done
 
-# function get_package_for() {
-#    for dir in Clean BaseDependencies; do
-#       if ls $dir/$1--* &> /dev/null
-#       
-#    done
-# }
-
 [ -d BaseDependencies ] || mkdir BaseDependencies
 [ -d $hostgetclean ] || mkdir -p $hostgetclean
 for dep in "${base_dependencies[@]}"
