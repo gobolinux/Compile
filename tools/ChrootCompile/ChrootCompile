@@ -145,18 +145,6 @@ base_dependencies=(
     "Compile"
 )
 
-cross_dependencies=
-if [ "$crossopts" ]
-then
-    cross_dependencies=(
-        "Automake"  # needed by Recipes which call autogen.sh
-        "Autoconf"  # needed by Recipes which call autogen.sh
-        "M4"        # Automake dependency
-        "Pkgconfig" # this package is a mess to be cross-compiled, keep it on the host platform
-        "GLib"      # GLib build expect its gen-marshall executable to be in $PATH if cross-compiling
-    )
-fi
-
 export LANG=C
 export LC_ALL=C
 
@@ -332,7 +320,7 @@ done
 
 [ -d BaseDependencies ] || mkdir BaseDependencies
 [ -d $getclean ] || mkdir $getclean
-for dep in "${base_dependencies[@]}" "${cross_dependencies[@]}"
+for dep in "${base_dependencies[@]}"
 do
    if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $getclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
    && ! [ -d BaseDependencies/$dep -o -d $getclean/$dep -o -d LocalPackages/$dep ]
@@ -417,7 +405,7 @@ function load_dependency() {
 }
 
 deps=`{
-   echo "${base_dependencies[*]} " "${cross_dependencies[*]} " | tr " " "\n" 
+   echo "${base_dependencies[*]} " | tr " " "\n" 
    [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
    [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
 } | sort -u | strings -n 1`
