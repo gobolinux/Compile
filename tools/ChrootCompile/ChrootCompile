@@ -277,10 +277,8 @@ then
 fi
 
 if [ -d Recipes ]
-then
-   cp -rL Recipes $root/Files/Compile
-else
-   echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
+then cp -rL Recipes $root/Files/Compile
+else echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
 fi
 
 #############################################################################
@@ -425,7 +423,7 @@ do
    for dep in $hostdeps
    do
       [ -d $root/$goboPrograms/$dep ] && continue
-      echo Installing host dependency \"$dep\"...
+      echo Installing \"$dep\"...
       load_dependency "$dep" "$hostgetclean BaseDependencies" "$hostarch"
 
       # if just loaded dependency doesn't have a Dependencies file, skip to next entry
@@ -447,7 +445,7 @@ do
    for dep in $targetdeps
    do
       [ -d $targetroot/$goboPrograms/$dep ] && continue
-      echo Installing target dependency \"$dep\"...
+      echo Installing \"$dep\"...
       load_dependency "$dep" "$targetrepository" "$targetarch"
       [ ! -e $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
 
