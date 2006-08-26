@@ -54,7 +54,7 @@ then
 fi
 
 crossprefixdir="$3"
-root="$crossprefixdir/$2"
+root="$2/$crossprefixdir"
 
 [ "$verbose" ] && echo "MiniInstallPackage: Installing $name version $version..."
 

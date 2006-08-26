@@ -208,57 +208,66 @@ then
    $sudo mv $root $root-old-$date
 fi
 
-mkdir -p $root
-mkdir -p $root/System/Links/Executables
-mkdir -p $root/System/Links/Environment
-mkdir -p $root/System/Links/Libraries
-mkdir -p $root/System/Links/Headers
-mkdir -p $root/System/Links/Manuals
-mkdir -p $root/System/Links/Shared
-mkdir -p $root/System/Links/Tasks
-mkdir -p $root/System/Settings
-mkdir -p $root/System/Variable
-mkdir -p $root/System/Variable/tmp
-mkdir -p $root/System/Variable/log
-mkdir -p $root/System/Kernel
-mkdir -p $root/System/Kernel/Boot
-mkdir -p $root/System/Kernel/Objects
-mkdir -p $root/System/Kernel/Modules
-mkdir -p $root/System/Kernel/Devices
-mkdir -p $root/System/Kernel/Status
-mkdir -p $root/Users
-mkdir -p $root/Users/root
-mkdir -p $root/Files
-mkdir -p $root/Files/Compile
-mkdir -p $root/Files/Compile/Archives
-mkdir -p $root/Mount
-mkdir -p $root/$goboPrograms
-mkdir -p $root/usr
+function create_root() {
+   local rootdir="$1"
+   local prefix="$2"
+   mkdir -p $rootdir
+   mkdir -p $rootdir/System/Links/Executables
+   mkdir -p $rootdir/System/Links/Environment
+   mkdir -p $rootdir/System/Links/Libraries
+   mkdir -p $rootdir/System/Links/Headers
+   mkdir -p $rootdir/System/Links/Manuals
+   mkdir -p $rootdir/System/Links/Shared
+   mkdir -p $rootdir/System/Links/Tasks
+   mkdir -p $rootdir/System/Settings
+   mkdir -p $rootdir/System/Variable
+   mkdir -p $rootdir/System/Variable/tmp
+   mkdir -p $rootdir/System/Variable/log
+   mkdir -p $rootdir/System/Kernel
+   mkdir -p $rootdir/System/Kernel/Boot
+   mkdir -p $rootdir/System/Kernel/Objects
+   mkdir -p $rootdir/System/Kernel/Modules
+   mkdir -p $rootdir/System/Kernel/Devices
+   mkdir -p $rootdir/System/Kernel/Status
+   mkdir -p $rootdir/Users
+   mkdir -p $rootdir/Users/root
+   mkdir -p $rootdir/Files
+   mkdir -p $rootdir/Files/Compile
+   mkdir -p $rootdir/Files/Compile/Archives
+   mkdir -p $rootdir/Mount
+   mkdir -p $rootdir/$goboPrograms
+   mkdir -p $rootdir/usr
 
-mkdir -p $root/Depot/LocalPackages
-mkdir -p $root/Depot/$hostgetclean
-mkdir -p $root/Depot/$targetgetclean
+   mkdir -p $rootdir/Depot/LocalPackages
+   mkdir -p $rootdir/Depot/$hostgetclean
+   mkdir -p $rootdir/Depot/$targetgetclean
 
-ln -nfs /System/Kernel/Objects $root/sys
-ln -nfs /System/Kernel/Devices $root/dev
-ln -nfs /System/Kernel/Status $root/proc
-ln -nfs /System/Variable $root/var
-ln -nfs /System/Variable/tmp $root/tmp
-ln -nfs /System/Links/Libraries $root/lib
-ln -nfs /System/Settings $root/etc
-ln -nfs /System/Links/Executables $root/bin
-ln -nfs /System/Links/Executables $root/sbin
+   ln -nfs $prefix/System/Kernel/Objects $rootdir/sys
+   ln -nfs $prefix/System/Kernel/Devices $rootdir/dev
+   ln -nfs $prefix/System/Kernel/Status $rootdir/proc
+   ln -nfs $prefix/System/Variable $rootdir/var
+   ln -nfs $prefix/System/Variable/tmp $rootdir/tmp
+   ln -nfs $prefix/System/Links/Libraries $rootdir/lib
+   ln -nfs $prefix/System/Settings $rootdir/etc
+   ln -nfs $prefix/System/Links/Executables $rootdir/bin
+   ln -nfs $prefix/System/Links/Executables $rootdir/sbin
 
-ln -nfs . $root/usr/X11R6
-ln -nfs . $root/usr/local
-ln -nfs /System/Links/Executables $root/usr/bin
-ln -nfs /System/Links/Headers $root/usr/include
-ln -nfs /System/Links/Libraries $root/usr/lib
-ln -nfs /System/Links/Manuals $root/usr/man
-ln -nfs /System/Links/Executables $root/usr/sbin
-ln -nfs /System/Links/Shared $root/usr/share
+   ln -nfs . $rootdir/usr/X11R6
+   ln -nfs . $rootdir/usr/local
+   ln -nfs $prefix/System/Links/Executables $rootdir/usr/bin
+   ln -nfs $prefix/System/Links/Headers $rootdir/usr/include
+   ln -nfs $prefix/System/Links/Libraries $rootdir/usr/lib
+   ln -nfs $prefix/System/Links/Manuals $rootdir/usr/man
+   ln -nfs $prefix/System/Links/Executables $rootdir/usr/sbin
+   ln -nfs $prefix/System/Links/Shared $rootdir/usr/share
 
-chmod 777 $root/System/Variable/tmp # Fibo also wants to write temp files
+   [ ! -z "$prefix" ] && ln -nfs .. $rootdir/$prefix
+
+   chmod 777 $rootdir/System/Variable/tmp # Fibo also wants to write temp files
+}
+
+create_root $root
+[ "$hostarch" != "$targetarch" ] && create_root $root/$crossprefixdir $crossprefixdir
 
 #############################################################################
 # Copying recipes to root directory
@@ -398,7 +407,11 @@ function load_dependency() {
    then realcopy="--real-copy"
    else realcopy=""
    fi
-   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $crossprefixdir
+   if [ "$arch" = "$hostarch" ]
+   then params=""
+   else params=$crossprefixdir
+   fi
+   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $params
 }
 
 hostdeps=`{
