@@ -6,6 +6,7 @@ export PATH=$PATH:$TOP_DIR/functions
 source PkgFunctions
 source ScriptFunctions
 source $TOP_DIR/.config
+source $TOP_DIR/functions/Platforms
 
 #
 # Fetch and install ChrootCompile in the private downloads dir
@@ -20,16 +21,20 @@ then
     popd >& /dev/null
 fi
 
+#
+# Create the chroot environment
+#
 dirname="$TOP_DIR/chroot/tools/ChrootCompile"
-got_glibc=`ls $TOP_DIR/chroot/Bootstrap/Glibc--* 2> /dev/null`
+got_glibc=`ls $TOP_DIR/chroot/BaseDependencies/Glibc--* 2> /dev/null`
 if [ ! -d "$dirname" -o ! "$got_glibc" ]
 then
+    Log_Normal "Creating the ChrootCompile environment..."
     mkdir -p "$TOP_DIR/chroot"
     pushd "$TOP_DIR/chroot" >& /dev/null
-    ../downloads/ChrootCompile/SetupChrootEnv
+    ../downloads/ChrootCompile/SetupChrootEnv --quiet
     popd >& /dev/null
 
-    got_glibc=`ls $TOP_DIR/chroot/Bootstrap/Glibc--* 2> /dev/null`
+    got_glibc=`ls $TOP_DIR/chroot/BaseDependencies/Glibc--* 2> /dev/null`
     if [ ! "$got_glibc" ]
     then
         Log_Error "Could not get files from rsync"
@@ -37,15 +42,41 @@ then
     fi
 fi
 
+function check_consistency() {
+    diff "$1" "$2" >& /dev/null && return
+
+    Log_Error "$1 differs from $2."
+    Log_Error "Please ensure that they're the same."
+    exit 1
+}
+
 #
-# Create the chroot environment
+# Check for consistency between the host's cross conf files and
+# the ones fetched from the cvs by SetupChrootEnv.
 #
-dirname="$TOP_DIR/chroot"
-if [ ! -d "$dirname" ]
+if [ ! "$NATIVE_COMPILING" ]
 then
-    Log_Normal "Creating the ChrootCompile environment..."
-    mkdir -p "$dirname"
-    pushd "$dirname" >& /dev/null
-    SetupChrootEnv --quiet
-    popd >& /dev/null
+    dirname=`readlink -f $TOP_DIR/chroot/tools/Compile/Resources/Defaults/Settings/Compile/Cross`
+    if [ ! -d "$dirname" ]
+    then
+        Log_Error "Error on SetupChrootEnv: $dirname not found."
+        exit 1
+    fi
+
+    arch_conf=`get_chosen_arch`
+    localdir=$goboSettings/Compile/Cross
+    if [ ! -d "$localdir" ]
+    then
+        Log_Error "$localdir not found. Please update your Compile/Scripts packages."
+        exit 1
+    fi
+
+    # get the cross_cache_file variable
+    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_cache_file=" | sed 's/\"//g'`
+    
+    unset differ
+    for i in Cross-$arch_conf.conf Cross-Common.conf Cross-ResetEnv.conf $cross_cache_file
+    do
+        check_consistency $localdir/$i $dirname/$i
+    done    
 fi
