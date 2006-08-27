@@ -99,7 +99,7 @@ fi
 if Exists "${FileHash_loc}"
 then
    Boolean "quiet" || Log_Normal "Verifying FileHash..."
-   output=`Check_FileHash "$package" "$prefix" "Resources/FileHash"`
+   output=`Check_FileHash "$package" "$version" "Resources/FileHash"`
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"

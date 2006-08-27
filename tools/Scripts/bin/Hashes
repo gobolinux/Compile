@@ -114,7 +114,7 @@ then
          exit $result
       fi
    fi
-   output=`Check_FileHash "$package" "$prefix" "$FileHash_loc"`
+   output=`Check_FileHash "$package" "$version" "$FileHash_loc"`
    rtn=$?
    if [ $rtn -eq "0" ]
    then
