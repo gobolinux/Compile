@@ -260,7 +260,12 @@ function create_root() {
    ln -nfs $prefix/System/Links/Executables $rootdir/usr/sbin
    ln -nfs $prefix/System/Links/Shared $rootdir/usr/share
 
-   [ ! -z "$prefix" ] && ln -nfs .. $rootdir/$prefix
+   if [ ! -z "$prefix" ]
+   then
+       ln -nfs .. $rootdir/$prefix
+       ln -nfs /System/Settings/Compile $rootdir/System/Settings/
+       ln -nfs /System/Settings/Scripts $rootdir/System/Settings/
+   fi
 
    chmod 777 $rootdir/System/Variable/tmp # Fibo also wants to write temp files
 }
@@ -678,10 +683,18 @@ in_chroot Compile --batch --no-web --no-symlink --no-sign $crossopts $name $vers
 #  of pure packages
 #############################################################################
 
+function in_target() {
+   [ "$crossopts" ] && export goboCrossCompiling=yes
+   $@
+   ret=$?
+   [ "$crossopts" ] && unset goboCrossCompiling
+   return $ret
+}
+
 # FIXME: Should be based on Directories.conf
 if [ "$chrootcompileMode" = "gobo" ]
 then
-   package=`in_chroot CreatePackage --no-sign --no-verify $name $version`
+   package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $version`
    mkdir -p $scriptdir/$putclean
    cp $root/$name--$version* $scriptdir/$putclean
 else
