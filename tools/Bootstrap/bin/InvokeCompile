@@ -33,20 +33,7 @@ function make_headers() {
     [ -d "$dirname" ] && return
 	
     Log_Normal "Creating the Linux-Headers package..."
-    if [ "$NATIVE_COMPILING" = "y" ]
-    then
-        case `uname -m` in
-            i386|i486|i586|i686)
-                kernelArch="i386"
-                ;;
-            *)
-                Log_Error "Please add your architecture to this file!"
-                exit 1
-                ;;
-        esac
-    else
-        kernelArch="$cross_kernel_arch"
-    fi
+    kernelArch=`get_kernel_arch`
 
     pushd "$TOP_DIR/bin" >& /dev/null
     ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $kernelArch $dirname
@@ -63,20 +50,10 @@ function download_headers() {
     [ -d "$dirname" ] && return
 	
     Log_Normal "Downloading the Libc Headers package..."
-    if [ "$NATIVE_COMPILING" = "y" ]
-    then
-        case `uname -m` in
-            i386|i486|i586|i686)
-                repository="http://gobo.calica.com/packages/official"
-                uname_m=i686
-                ;;
-            *)
-                Log_Error "Please add your architecture to this file!"
-                exit 1
-                ;;
-        esac
-    else
-        repository="http://gobo.calica.com/packages/$uname_m"
+
+    if [ "$uname_m" = "i686" ]
+    then repository="http://gobo.calica.com/packages/official"
+    else repository="http://gobo.calica.com/packages/$uname_m"
     fi
     
     # download the headers package
@@ -138,7 +115,6 @@ function chroot_compile() {
 
     # check if needs to download meta recipes
     download_meta $local_recipe
-    
     common_options="--local-repository $cross_options"
 
     echo
@@ -153,7 +129,15 @@ function chroot_compile() {
     #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
+    # Uncompress and symlink
     export goboCrossCompiling=yes
+    package=`ls -t Clean/$recipe_arch/$pkg_name*.bz2 | head -n 1`
+    tar jxf $package -C $prefix/$goboPrograms
+    if [ -z "$pkg_version" ] 
+    then
+        pkg_version=`echo $package | sed "s,Clean/$recipe_arch/${pkg_name}--,,g" | sed "s,--.*,,g"`
+    fi
+    
     UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $pkg_name $pkg_version
     unset goboCrossCompiling && Parse_Conf Directories.conf
@@ -199,6 +183,7 @@ prefix=$cross_prefix_dir
 cross_options="--cross-compile $arch_conf"
 symlink_options="-c overwrite"
 
+export recipe_arch=`get_recipe_arch`
 export uname_m="$cross_uname_m"
 export cross_compiling=yes
 

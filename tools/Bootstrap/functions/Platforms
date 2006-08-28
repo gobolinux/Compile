@@ -4,3 +4,30 @@ function get_chosen_arch() {
     [ "$CROSS_ARM"  = "y" ] && echo ARM
     [ "$CROSS_SH4"  = "y" ] && echo SH4
 }
+
+function get_recipe_arch() {
+    [ "$CROSS_ARM" = "y" ] && echo arm
+    [ "$CROSS_SH4" = "y" ] && echo sh4
+    [ "$CROSS_PPC" = "y" ] && echo ppc
+    if [ "$NATIVE_COMPILING" = "y" ]
+    then
+        arch=`uname -m`
+        case $arch in
+            i686|i586|i486|i386) echo i686 ;;
+            *) echo $arch
+        esac
+    fi
+}
+
+function get_kernel_arch() {
+    if [ "$NATIVE_COMPILING" = "y" ]
+    then
+        arch=`uname -m`
+        case $arch in
+            i686|i586|i486|i386) echo i386 ;;
+            *) echo $arch
+        esac
+    else
+        echo "$cross_kernel_arch"
+    fi
+}
