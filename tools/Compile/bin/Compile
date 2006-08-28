@@ -194,6 +194,11 @@ function wrapup() {
       Install_Unmanaged_Files "$target/Resources/UnmanagedFiles" "$target/Resources/Unmanaged"
    fi
 
+   if [ ! -z "$cross_uname_m" ]
+   then echo "$cross_uname_m" > "$target/Resources/Architecture"
+   else echo "`uname -m`" > "$target/Resources/Architecture"
+   fi
+   
    Log_Normal "Generating package's build information..."
    GenBuildInformation "$appname" "$versionnumber" > "$target/Resources/BuildInformation"
 
