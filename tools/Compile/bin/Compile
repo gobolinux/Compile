@@ -417,6 +417,7 @@ then
       "CPP=$CPP"
       "CXX=$CXX"
       "LIBTOOL=$LIBTOOL"
+      "PKG_CONFIG=$PKG_CONFIG"
       "CROSS=$cross_compiler"
    )
    # ARCH is taken from the cross config file
