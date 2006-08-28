@@ -35,8 +35,8 @@ then
 fi
 
 crossprefixdir="$3"
-full_path="$crossprefixdir/$1"
-root="`readlink -f $2`/$crossprefixdir"
+full_path="$1"
+root="`readlink -f $2`"
 gobolinks="$crossprefixdir/System/Links"
 
 [ "$verbose" ] && echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
