@@ -65,10 +65,8 @@ Log_Normal "Creating package for ${package} ${versionnumber}."
 
 archfile="$package/$versionnumber/Resources/Architecture"
 if Exists "$archfile"
-then
-   architecture=`cat "$archfile"`
-else
-   architecture=`Get_Architecture`
+then architecture=`cat "$archfile"`
+else architecture=`Get_Architecture`
 fi
 
 packagefile="$package--$versionnumber--$architecture.tar"
