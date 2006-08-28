@@ -21,8 +21,10 @@ Add_Option_Boolean "u" "upper" "rename file to all capitals:
 Add_Option_Boolean "l" "lower" "rename file to lowercase:
         'Any_file.ext' becomes 'any_file.ext'
         This is the default mode if no option is selected."
-Add_Option_Boolean "i" "inverse" "inverse \"artist and track names\":
+Add_Option_Boolean "i" "invert" "invert \"artist and track names\":
         'Bar Bar - Foo Foo.ext' becomes 'Foo Foo - Bar Bar.ext'"
+Add_Option_Entry "a" "add" "add <entry> to the track number"
+Add_Option_Boolean "d" "dry-run" "do not rename files, just show what it would try to do."
 Parse_Options "$@"
 shift $parsedArguments
 
@@ -30,9 +32,16 @@ shift $parsedArguments
 
 # Rename file to ALL CAPS
 
+function move_file() {
+   if Boolean "dry-run"
+   then echo mv "$@"
+   else mv "$@" &> /dev/null
+   fi
+}
+
 function upc_cap() {
 
-mv "$1" "`echo "$1" | tr "[:lower:]" "[:upper:]"`"
+move_file "$1" "`echo "$1" | tr "[:lower:]" "[:upper:]"`"
 
 }
 
@@ -42,7 +51,7 @@ mv "$1" "`echo "$1" | tr "[:lower:]" "[:upper:]"`"
 
 function low_cap() {
 
-mv "$1" "`echo "$1" | tr "[:upper:]" "[:lower:]"`"
+move_file "$1" "`echo "$1" | tr "[:upper:]" "[:lower:]"`"
 
 }
 
@@ -107,6 +116,18 @@ then
    uppercase="`echo "$uppercase" | cut -b4-`"
 fi
 
+if Is_Entry "add"
+then
+   track="`echo "$uppercase" | cut -b-2`"
+   rest="`echo "$uppercase" | cut -b3-`"
+   if [ "$track" -gt 0 ]
+   then
+      track=${track#0}
+      track=$[track+`Entry add`]
+      [ ${#track} = 0 ] && track="0$track"
+      uppercase="$track$rest"
+   fi
+fi
 
 #awk
 NEW_NAME="$prefix`echo "$uppercase" | awk '
@@ -182,9 +203,14 @@ if [ "$1" != "$NEW_NAME" ]
 then
    echo "$1"
    printf "=> $NEW_NAME"
-   if Quiet mv "$1" "$NEW_NAME"
-   then echo " [ok]"
-   else echo " [error]"
+   if ! Boolean "dry-run"
+   then
+      if move_file "$1" "$NEW_NAME"
+      then echo " [ok]"
+      else echo " [error]"
+      fi
+   else
+      echo
    fi
 fi
 
