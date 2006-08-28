@@ -47,7 +47,7 @@ fi
 
 
 #
-# Since we have $goboDevices bind-mounted, unmount it and mount it afterwards
+# Since we have $goboDevices bind-mounted, unmount and mount it afterwards
 #
 umount $prefix/$goboDevices 2> /dev/null
 
