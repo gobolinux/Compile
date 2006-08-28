@@ -235,7 +235,7 @@ function wrapup() {
       # experimental 'callback': you can create a script that automatically 
       # uploads the recipe to somewhere, or asks for confirmation and sends 
       # it to the a recipe-store mantainer
-      [ `which LocalRecipeCompiled 2> /dev/null` ] && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+      which LocalRecipeCompiled >& /dev/null && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
    fi
    cleanup
 }
