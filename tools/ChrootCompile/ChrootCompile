@@ -187,7 +187,7 @@ function unmount_dir() {
 
 function cleanup() {
    unset LANG LC_ALL
-   for point in $root/Files/Compile/Archives $root/Files/Compile $crossprefixdir $crosstoolchaindir $crosskerneldir
+   for point in $root/Files/Compile/Archives $root/Files/Compile $crosstoolchaindir $crosskerneldir
    do
       unmount_dir $point
    done
@@ -238,7 +238,6 @@ function create_root() {
    mkdir -p $rootdir/$goboPrograms
    mkdir -p $rootdir/usr
 
-   mkdir -p $rootdir/Depot/LocalPackages
    mkdir -p $rootdir/Depot/$hostgetclean
    mkdir -p $rootdir/Depot/$targetgetclean
 
@@ -333,8 +332,8 @@ done
 [ -d $hostgetclean ] || mkdir -p $hostgetclean
 for dep in "${base_dependencies[@]}"
 do
-   if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $hostgetclean/$dep--* &> /dev/null && ! ls LocalPackages/$dep--* &> /dev/null \
-   && ! [ -d BaseDependencies/$dep -o -d $hostgetclean/$dep -o -d LocalPackages/$dep ]
+   if ! ls BaseDependencies/$dep--* &> /dev/null && ! ls $hostgetclean/$dep--* &> /dev/null \
+   && ! [ -d BaseDependencies/$dep -o -d $hostgetclean/$dep ]
    then
       die "Package $dep, needed for bootstrap, was not found."
    fi
@@ -458,7 +457,10 @@ do
    for dep in $targetdeps
    do
       [ -d $targetroot/$goboPrograms/$dep ] && continue
-      echo Installing \"$dep\"...
+      if [ "$hostarch" = "$targetarch" ]
+      then echo Installing \"$dep\"...
+      else echo Installing \"$dep\" for $targetarch...
+      fi
       load_dependency "$dep" "$targetrepository" "$targetarch"
       [ ! -e $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
 
@@ -530,15 +532,12 @@ $sudo mount --bind /proc $root/System/Kernel/Status
 [ -d ./Archives ] || mkdir ./Archives
 [ ! "$localrepository" ] && $sudo mount --bind Archives $root/Files/Compile/Archives
 
-$sudo mount --bind LocalPackages $root/Depot/LocalPackages
 $sudo mount --bind $hostgetclean $root/Depot/$hostgetclean
 $sudo mount --bind $targetgetclean $root/Depot/$targetgetclean
 
 if [ "$crossopts" ]
 then
-    mkdir -p $root/$crossprefixdir
     mkdir -p $root/$crosstoolchaindir
-    $sudo mount --bind $crossprefixdir $root/$crossprefixdir
     $sudo mount --bind $crosstoolchaindir $root/$crosstoolchaindir
 fi
 
@@ -641,7 +640,7 @@ fi
 
 # Only local packages are used to fullfil dependencies
 $sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
-$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$targetgetclean ; /Depot/LocalPackages )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
+$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$targetgetclean ; )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
 function check_dependencies() {
    [ "$verbose" ] && echo "ChrootCompile: Checking dependencies..."
