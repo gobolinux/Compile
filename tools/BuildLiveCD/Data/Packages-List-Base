@@ -13,7 +13,6 @@ DiffUtils
 DHCPCD
 E2FSProgs
 Ed
-EnhancedSkel
 File
 FindUtils
 Flex
@@ -73,3 +72,5 @@ Wget
 ZLib
 ZSH
 Dialog
+GoboHide
+EnhancedSkel
