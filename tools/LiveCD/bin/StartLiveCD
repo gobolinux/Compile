@@ -15,7 +15,7 @@ msg "Starting Udev"
 # change console font
 ######################################
 msg "Setting console font"
-setfont ${goboSettings}/kbd/consolefonts/lode-lat1u-16.psf.gz
+setfont /Files/Fonts/Console/lode-lat1u-16.psf.gz
 
 ######################################
 # launch the loopback interface
@@ -38,7 +38,7 @@ done
 msg "Initializing home directory"
 export HOME=${goboUsers}/gobo
 rm -rf ${goboUsers}
-mkdir -p ${goboUsers}
+mkdir -p ${goboUsers}/gobo
 cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default $HOME
 
 cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* $HOME/Desktop
