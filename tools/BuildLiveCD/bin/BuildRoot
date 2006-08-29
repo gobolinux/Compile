@@ -35,8 +35,13 @@ function get_package_name() {
    [ -z "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
    if [ -z "$pkg" ]
    then
-      echo "*** Package $packagename $packagever could not be filled. ***"
-      exit 1
+      echo "*** Package $packagename $packagever could not be filled. ***" >&2
+      return 1
+   fi
+   if [ "`ls $packagedir/${packagename}--* | wc -l 2> /dev/null`" -gt 1 ]
+   then  
+      echo "*** More than one version for $packagename available. Aborting. ***" >&2
+      return 1
    fi
 
    echo "$pkg"
@@ -46,9 +51,10 @@ function get_package_name() {
 cat $packagelists | while read line
 do
    # just ensure that required packages are found
-   get_package_name "$line" > /dev/null
+   [ `get_package_name "$line"` ] || exit 1
 done
 
+[ $? -eq 0 ] || exit 1
 
 function do_link() {
    if [ -d "$root/$1" ]
@@ -82,7 +88,6 @@ function symlink_program() {
    full_path="$1"
    root=`readlink -f $2`
    gobolinks=/System/Links
- 
    name=$(basename $(dirname $full_path))
    version=$(basename ${full_path})
    #echo "Linking ${full_path} inside ${gobolinks}" 1>&2
@@ -114,7 +119,6 @@ function program_md5() {
 function install_package() {
    package=`readlink -f "$1"`
    root="$2"
-   
    base=$(basename $package)
    name=${base%%--*}
    version=${base#*--}
