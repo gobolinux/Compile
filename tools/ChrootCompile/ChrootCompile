@@ -209,8 +209,9 @@ then
 fi
 
 function create_root() {
-   local rootdir="$1"
+   local chrootdir="$1"
    local prefix="$2"
+   local rootdir="$1/$2"
    mkdir -p $rootdir
    mkdir -p $rootdir/System/Links/Executables
    mkdir -p $rootdir/System/Links/Environment
@@ -263,15 +264,15 @@ function create_root() {
    if [ ! -z "$prefix" ]
    then
        ln -nfs .. $rootdir/$prefix
-       ln -nfs /System/Settings/Compile $rootdir/System/Settings/
-       ln -nfs /System/Settings/Scripts $rootdir/System/Settings/
+       ln -nfs $chrootdir/System/Settings/Compile $rootdir/System/Settings/
+       ln -nfs $chrootdir/System/Settings/Scripts $rootdir/System/Settings/
    fi
 
    chmod 777 $rootdir/System/Variable/tmp # Fibo also wants to write temp files
 }
 
 create_root $root
-[ "$hostarch" != "$targetarch" ] && create_root $root/$crossprefixdir $crossprefixdir
+[ "$hostarch" != "$targetarch" ] && create_root $root $crossprefixdir
 
 #############################################################################
 # Copying recipes to root directory
