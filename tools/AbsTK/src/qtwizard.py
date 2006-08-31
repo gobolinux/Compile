@@ -433,7 +433,7 @@ class AbsQtScreen(AbsScreen) :
 		w.setTopMargin(0)
 		#w.setHScrollBarMode(QTable.AlwaysOff)
 
-		w.horizontalHeader().setLabel(0, None)
+		#w.horizontalHeader().setLabel(0, None)
 		
 		if callBack :
 			w.connect(w,SIGNAL("currentChanged(int,int)"),callBack)		
@@ -452,7 +452,7 @@ class AbsQtScreen(AbsScreen) :
 		w.setNumRows(len(items))
 		j = 0
 		for item in items :
-			w.verticalHeader().setLabel(j,None)
+			#w.verticalHeader().setLabel(j,None)
 			#c = AbsQtQCheckTableItem(w, item)
 			
 			c = QCheckTableItem(w, item)
