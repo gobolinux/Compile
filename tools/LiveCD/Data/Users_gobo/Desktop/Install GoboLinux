@@ -2,10 +2,10 @@
 Comment=
 Comment[en_US]=
 Encoding=UTF-8
-Exec=/Depot/Install/Wizard/runInstallerQt.sh
+Exec=/bin/GoboLinuxInstaller install qt
 GenericName=
 GenericName[en_US]=
-Icon=/Depot/Install/Wizard/que.png
+Icon=/System/Links/Shared/Installer/Images/que.png
 MimeType=
 Name=Install GoboLinux
 Name[en_US]=Install GoboLinux
