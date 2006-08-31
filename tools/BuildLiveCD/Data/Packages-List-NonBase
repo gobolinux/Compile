@@ -20,7 +20,6 @@ DB
 Device-Mapper
 DosFSTools
 Eject
-EnhancedSkel
 GDB
 Gnupg
 Htop
@@ -94,3 +93,8 @@ MPlayer
 QtParted
 KDE-I18n-pt_BR
 KDE-I18n-de
+CDRDAO
+IMLib
+ImageMagick
+NTFSProgs
+Unsermake
