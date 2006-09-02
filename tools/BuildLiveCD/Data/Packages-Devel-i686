@@ -1,5 +1,5 @@
 Archives/Ext    http://rsync.gobolinux.org/livecd-devel/Linux--2.6.17.3-Gobo--kernel-i686.tar.bz2  5ae286ebfdcb0b5882a0cd1808f52e29
-Archives/Ext    http://rsync.gobolinux.org/livecd-devel/Files-Fonts.tar.bz2                        1e4069a9ad430d25ddb277394ea40c05
+Archives/Ext    http://rsync.gobolinux.org/livecd-devel/Files-Fonts.tar.bz2                        374747070d2585c905e24c0f5d30f029
 Archives/Ext    http://rsync.gobolinux.org/livecd-devel/CD-Bootloader-i686.tar.bz2                 ef2052679910fcbed51edb292508f446
 Archives/InitRD http://rsync.gobolinux.org/initrd-devel/BusyBox-InitRD--20060202-SVN--i686.tar.bz2 46ca30ec4834771b771ea7cdb0d56e51
 Archives/InitRD http://rsync.gobolinux.org/initrd-devel/MiniUdev--0.1--i686.tar.bz2                2c3a9d7c659f8548ed00657491d4e22f
