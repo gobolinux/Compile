@@ -847,6 +847,11 @@ try :
 
 		o = ''
 		
+		if (installer.getValue('HostName')) :
+			o += 'HostName' + '=' + installer.getValue('HostName') + '\n\n'
+		else :
+			o += comments['HostName'] + '\n\n'
+
 		# clockmode is a special case...
 		o += comments['ClockMode'] + '\n'
 		if (installer.getValue('ClockMode')) :
@@ -882,11 +887,7 @@ lo_IP=127.0.0.1
 lo_Netmask=255.0.0.0
 """
 		o = ''
-		if (installer.getValue('HostName')) :
-			o += 'HostName' + '=' + installer.getValue('HostName') + '\n\n'
-		else :
-			o += comments['HostName'] + '\n\n'
-		
+
 		o += 'NetworkInterfacesOnBoot=('+'\n'+'   lo'+'\n'
 		for interface in interfaces :
 			if installer.getValue('Automatic'+interface) :
