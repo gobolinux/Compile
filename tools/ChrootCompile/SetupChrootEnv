@@ -23,7 +23,7 @@ function configure_tools() {
        echo "chrootcompileCompileConf=$PWD/Compile.conf"
        echo "goboPrograms=/Programs"
     } > ChrootCompile.conf
-    [ -e /System/Setting/gobo ] && echo "chrootcompileMode=gobo" >> ChrootCompile.conf
+    [ -e /System/Settings/gobo ] && echo "chrootcompileMode=gobo" >> ChrootCompile.conf
     cp tools/Compile/Resources/Defaults/Settings/Compile/Compile.conf .
     pushd tools/Scripts/src
     make
