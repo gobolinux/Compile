@@ -22,7 +22,7 @@ $(LIB_DIR)/ManagerConfigForm.py: $(GUI_DIR)/ManagerConfigForm.ui
 	pyuic $? > $@
 
 
-libs : $(LIB_DIR)/DescribeProgram.py $(LIB_DIR)/ManagerRunner.py compilation
+libs : $(LIB_DIR)/ManagerRunner.py compilation
 
 
 $(LIB_DIR)/GetInstalled.py : $(BIN_DIR)/GetInstalled
