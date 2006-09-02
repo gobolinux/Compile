@@ -125,6 +125,7 @@ function installBase() {
     
     Log_Normal "Installing directory "${goboSystem}/Variable
     cp -ra ${goboSystem}/Variable  ${dest_dir}/${goboSystem} 2> /dev/null
+    rm -rf ${dest_dir}/${goboSystem}/Variable/run/*
     #rm -rf ${dest_dir}/${goboSystem}/Variable/tmp/*  &> /dev/null
     sync
     
@@ -161,20 +162,17 @@ function installBase() {
     cp -ra /Files ${dest_dir}/Files
 	sync
     
-    Log_Normal "Installing directory "/Depot
+    Log_Normal "Creating "/Depot
     mkdir ${dest_dir}/Depot/
-    cp -ra /Depot/{Docs,Wallpapers} ${dest_dir}/Depot/ &> /dev/null
     sync
     
     Log_Normal "Installing legacy links on "${dest_dir}
     cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var ${dest_dir}
     
     Log_Normal "Installing directory "${goboUsers}/${superuser}
-    #mkdir -p ${dest_dir}/${goboUsers}/${superuser}/
-    
     mkdir -p ${dest_dir}/${goboUsers}
-    cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default ${dest_dir}/${goboUsers}/${superuser}
-	chmod 600 ${dest_dir}/${goboUsers}/${superuser}/
+    cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default ${dest_dir}/${goboUsers}/${superuser} || mkdir ${dest_dir}/${goboUsers}/${superuser} 
+    chmod 600 ${dest_dir}/${goboUsers}/${superuser}/
 
     cd ${dest_dir}/${goboUsers}/${superuser}
     GrepReplace -R "/Users/testuser" "${goboUsers}/${superuser}/"
@@ -182,6 +180,7 @@ function installBase() {
     cd - &> /dev/null
     
     sync
+    mkdir ${dest_dir}/System/Variable/tmp/{.ICE-unix,.X11-unix} -m a+rwxt 
     
     Log_Normal "Creating directory "${goboPrograms}
     mkdir ${dest_dir}/${goboPrograms}
@@ -213,11 +212,6 @@ function installPackages() {
 		fi
 		sync
 	#	SymlinkProgram ${line} &> /dev/null
-	else 
-	    echo
-	    #cp /Depot/Packages/$line* ${dest_dir}/Depot
-	    #chroot ${dest_dir} InstallPackage --batch /Depot/$line*
-	    #rm -f ${dest_dir}/Depot/$line* &> /dev/null
 	fi
     done < ${profile}
 }
