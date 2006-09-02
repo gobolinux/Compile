@@ -152,7 +152,10 @@ then
       echo "Keeping kernel files..."
    else
       echo "Unpacking kernel files..."
-      rm -rf Output/ROLayer/System/Kernel/{Modules,Boot}
+      # We need to keep /S/K/Boot/grub here
+      rm -rf Output/ROLayer/System/Kernel/Modules
+      rm -f  Output/ROLayer/System/Kernel/Boot/kernel--*
+      rm -f  Output/ROLayer/System/Kernel/Boot/System.map--*
       tar xfj Archives/Ext/Linux--$kernel_version--kernel-i686.tar.bz2 --overwrite -C Output/ROLayer
       echo "$kernelmd5" > Output/Checksums/Kernel
    fi
