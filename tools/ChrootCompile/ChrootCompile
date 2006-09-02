@@ -35,6 +35,8 @@ function die() {
 #############################################################################
 scriptdir=$(readlink -f $(dirname $0))
 source $scriptdir/ChrootCompile.conf
+chrootcompileMode="gobo"
+
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
 fi
