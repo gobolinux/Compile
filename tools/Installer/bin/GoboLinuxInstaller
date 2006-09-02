@@ -1054,9 +1054,9 @@ lo_Netmask=255.0.0.0
 	##############################################################################
 	##############################################################################
 	# [OK]: x11
-	if os.access(destMountPoint+'/Programs/Xorg/Settings/X11/', os.W_OK) :
-		log(tr('Updating X11 config file...'))
-		safeRun('cp -fL /System/Settings/X11/xorg.conf %s/Programs/Xorg/Settings/X11/xorg.conf'%destMountPoint)
+	#if os.access(destMountPoint+'/Programs/Xorg/Settings/X11/', os.W_OK) :
+	#	log(tr('Updating X11 config file...'))
+	#	safeRun('cp -fL /System/Settings/X11/xorg.conf %s/Programs/Xorg/Settings/X11/xorg.conf'%destMountPoint)
 
 		
 	##############################################################################
