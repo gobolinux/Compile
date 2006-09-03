@@ -180,7 +180,7 @@ function installBase() {
     cd - &> /dev/null
     
     sync
-    mkdir ${dest_dir}/System/Variable/tmp/{.ICE-unix,.X11-unix} -m a+rwxt 
+    mkdir -p ${dest_dir}/System/Variable/tmp/{.ICE-unix,.X11-unix} -m a+rwxt 
     
     Log_Normal "Creating directory "${goboPrograms}
     mkdir ${dest_dir}/${goboPrograms}
