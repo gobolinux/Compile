@@ -51,7 +51,7 @@ Log_Verbose "Creating user $name account and home directory..."
 Is_Entry "password" && passwordstring="-p `Entry password`"
 
 Boolean "skel" && {
-   skeldir="${goboShared}/EnhancedSkel/Default"
+   skeldir="${goboPrograms}/EnhancedSkel/Current/testuser"
    if Is_Directory "$skeldir"
    then
       skel="-k $skeldir"

@@ -171,7 +171,7 @@ function installBase() {
     
     Log_Normal "Installing directory "${goboUsers}/${superuser}
     mkdir -p ${dest_dir}/${goboUsers}
-    cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default ${dest_dir}/${goboUsers}/${superuser} || mkdir ${dest_dir}/${goboUsers}/${superuser} 
+    cp -a ${goboPrograms}/EnhancedSkel/Current/testuser ${dest_dir}/${goboUsers}/${superuser} || mkdir ${dest_dir}/${goboUsers}/${superuser} 
     chmod 600 ${dest_dir}/${goboUsers}/${superuser}/
 
     cd ${dest_dir}/${goboUsers}/${superuser}

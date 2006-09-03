@@ -39,7 +39,7 @@ msg "Initializing home directory"
 export HOME=${goboUsers}/gobo
 rm -rf ${goboUsers}
 mkdir -p ${goboUsers}
-cp -a ${goboPrograms}/EnhancedSkel/Current/Shared/EnhancedSkel/Default $HOME || mkdir -p $HOME
+cp -a ${goboPrograms}/EnhancedSkel/Current/testuser $HOME || mkdir -p $HOME
 
 cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* $HOME/Desktop
 cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/.zshrc    $HOME

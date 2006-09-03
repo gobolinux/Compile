@@ -51,7 +51,7 @@ then
    esac
    if [ "$kdecountry" ]
    then
-      eskeldir=${goboShared}/EnhancedSkel/Default/
+      eskeldir=${goboPrograms}/EnhancedSkel/Current/testuser/
 cat <<EOF | tee -a $HOME/.kde/share/config/kdeglobals > ${eskeldir}/.kde/share/config/kdeglobals
 [Locale]
 Country=$kdecountry
