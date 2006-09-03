@@ -34,8 +34,8 @@ function die() {
 # Parsing options. By now, only 'chrootcompileCompileConf'
 #############################################################################
 scriptdir=$(readlink -f $(dirname $0))
-source $scriptdir/ChrootCompile.conf
 chrootcompileMode="gobo"
+source $scriptdir/ChrootCompile.conf
 
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
