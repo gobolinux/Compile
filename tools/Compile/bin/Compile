@@ -1057,7 +1057,7 @@ then
    else
       # Old Makefile.PL system 
       perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
-      is_makefile=yes # fall through!
+      recipe_type="makefile"
    fi
 fi
 
@@ -1082,7 +1082,7 @@ then
       "INCDIR=$installprefix/include"
       "${installmerged[@]}"
    )
-   is_makefile=yes # fall through!
+   recipe_type="makefile"
    unset pre_build # Little hack: we already ran it, so don't run it in is_makefile.
 fi
 
