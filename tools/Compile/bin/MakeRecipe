@@ -296,6 +296,14 @@ else
             Log_Normal "Detected Makefile variable $var."
          fi
       done
+      for var in sysconfdir
+      do
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*=" &> /dev/null
+         then
+            makevars=("${makevars[@]}" "\"$var=\$settings_target\"")
+            Log_Normal "Detected Makefile variable $var."
+         fi
+      done
       if [ "${makevars[*]}" ]
       then
          echo "make_variables=(" >> "$recipedir/Recipe"
