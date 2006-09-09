@@ -119,6 +119,11 @@ function do_symlink() {
       then
          mkdir -p "$target/Resources/Unmanaged/"
          cp -a "$target/.SandboxInstall_Root"/* "$target/Resources/Unmanaged/"
+
+         rm -f -- $target/Resources/UnmanagedFiles
+	 for file in "${unmanaged_files[@]}"
+	 do echo $file >> $target/Resources/UnmanagedFiles
+	 done
       fi
    fi
 
@@ -184,15 +189,6 @@ function install_extras() {
 function wrapup() {
 
    Quiet mkdir -p $target/Resources
-
-   if [ "${unmanaged_files[*]}" ]
-   then
-      rm -f -- $target/Resources/UnmanagedFiles
-      for file in "${unmanaged_files[@]}"
-      do echo $file >> $target/Resources/UnmanagedFiles
-      done
-      Install_Unmanaged_Files "$target/Resources/UnmanagedFiles" "$target/Resources/Unmanaged"
-   fi
 
    if [ ! -z "$cross_uname_m" ]
    then echo "$cross_uname_m" > "$target/Resources/Architecture"
