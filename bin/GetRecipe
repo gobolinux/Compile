@@ -4,7 +4,12 @@
 # Imports
 ##################################################
 
-unset goboCrossCompiling goboPrefix
+if [ "$goboCrossCompiling" ]
+then
+    unset goboCrossCompiling
+    unset goboPrefix
+fi
+
 . ScriptFunctions
 Import OptionParser
 Import File
