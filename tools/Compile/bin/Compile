@@ -121,9 +121,9 @@ function do_symlink() {
          cp -a "$target/.SandboxInstall_Root"/* "$target/Resources/Unmanaged/"
 
          rm -f -- $target/Resources/UnmanagedFiles
-	 for file in "${unmanaged_files[@]}"
-	 do echo $file >> $target/Resources/UnmanagedFiles
-	 done
+         for file in "${unmanaged_files[@]}"
+         do echo $file >> $target/Resources/UnmanagedFiles
+         done
       fi
    fi
 
