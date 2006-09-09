@@ -322,7 +322,7 @@ do
       rm -rf $package
       toolswhichneedmake="$toolswhichneedmake $package"
    else
-      echo "Don't repacking $package CVS snapshot..."
+      echo "Not repacking $package CVS snapshot..."
    fi
 done
 
