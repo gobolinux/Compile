@@ -55,7 +55,7 @@ colors
 
 # This line has to come first for dircolors.
 export SHELL=`which zsh`
-eval `dircolors`
+eval `dircolors ${goboPrefix}/System/Settings/dircolors.conf 2> /dev/null`
 
 # The following lines were added by compinstall
 
