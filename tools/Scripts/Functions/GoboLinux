@@ -594,7 +594,21 @@ function Install_Unmanaged_Files() {
       do
          local dname=$(dirname "${goboPrefix}/$line")
          mkdir -p "${dname}"
-         cp -a "${sourcedir}/${line}" "${dname}/"
+         Quiet ln "${sourcedir}/${line}" "${dname}/" || Quiet cp -af "${sourcedir}/${line}" "${dname}/"
+      done
+   fi
+}
+
+function Uninstall_Unmanaged_Files() {
+   Parameters "$@" unmanagedfilesfile
+   echo "$unmanagedfilesfile"
+   if [ -f "$unmanagedfilesfile" ] 
+   then
+      cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
+      do
+         local dname=$(dirname "${goboPrefix}/$line")
+         rm -f "${line}"
+         Quiet rmdir "${dname}"
       done
    fi
 }

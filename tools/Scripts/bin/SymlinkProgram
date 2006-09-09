@@ -22,6 +22,7 @@ Add_Option_Entry "w" "wrappers" "Link wrappers into ${goboExecutables}: 'yes', '
 Add_Option_Entry "t" "tasks" "Link tasks into ${goboExecutables}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Boolean "E" "no-environment" "Do not link entries from ${goboEnvironment}."
 Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVariable}."
+Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files."
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
 Add_Option_Entry "c" "conflict" "What to do on conflicts, 'keep' or 'overwrite'." "keep"
@@ -317,6 +318,14 @@ then
       rm "share"
    fi
    Quiet cd -
+fi
+
+################################################################################
+
+if ! Boolean "no-unmanaged"
+then
+   Log_Normal "Installing unmanaged files..."
+   Install_Unmanaged_Files "$current/Resources/UnmanagedFiles" "$current/Resources/Unmanaged"
 fi
 
 ################################################################################
