@@ -16,7 +16,7 @@ scriptUsage="<program> <version>"
 scriptExample="Qt 3.2.3"
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
-"from package. Options available is \"ask\", \"remove\" and \"keep\". Default is \"ask\"" "ask"
+"from package. Options available are \"ask\", \"remove\" and \"keep\". Default is \"ask\"" "ask"
 Parse_Options "$@"
 shift $parsedArguments
 
