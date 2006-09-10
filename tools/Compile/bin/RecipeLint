@@ -570,7 +570,7 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       build_variables=configure,makefile
-      install_variables=configure,makefile
+      install_variables=configure,makefile,xmkmf
       make_variables=configure,makefile
       configure=configure
       makefile=configure,makefile,xmkmf
