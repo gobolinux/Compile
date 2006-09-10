@@ -58,9 +58,9 @@ GrepReplace "./include/" "./Headers/"      $filesdir
 GrepReplace "./info/"    "./Manuals/info/" $filesdir
 GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
 find ${goboEnvironment} >> $filesdir
-if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "remove-unmanaged" "no"
+if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
-   { Is_Entry "remove-unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$programname/$versionnumber-Disabled/Resources/UnmanagedFiles"
+   { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$programname/$versionnumber-Disabled/Resources/UnmanagedFiles"
 fi
 cd ${goboLinks}
 
