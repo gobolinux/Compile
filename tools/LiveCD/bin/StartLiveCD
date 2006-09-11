@@ -56,11 +56,14 @@ rm -f $HOME/Desktop/Manager.desktop
 msg "Setting hostname"
 hostname LiveCD
 
-######################################
-# GoboHide
-######################################
+########################################
+# GoboHide - little trick due to unionfs
+########################################
 msg "Hiding legacy directories"
-${goboPrograms}/BootScripts/Current/bin/StartTask GoboHide
+for i in bin dev etc lib proc sbin sys tmp usr var
+do
+    gobohide -h /Mount/.Pivot/Mount/SquashFS/Rest/$i
+done
 
 ######################################
 # Launch the configuration script
@@ -79,4 +82,3 @@ ifconfig eth0 2> /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
 ######################################
 clear
 cat ${goboPrograms}/LiveCD/Current/Data/Language/Welcome_${LANG}
-zsh
