@@ -78,6 +78,17 @@ LANG=`cat ${goboTemp}/setup/language`
 ifconfig eth0 2> /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
 
 ######################################
+# Mount remaining filesystems
+######################################
+mount -a -t tmpfs,devpts,usbfs
+
+######################################
+# Configure date and time
+######################################
+msg "Configuring date and time"
+hwclock --hctosys
+
+######################################
 # Welcome message
 ######################################
 clear
