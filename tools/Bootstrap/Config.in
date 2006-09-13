@@ -202,6 +202,7 @@ endmenu
 menu "Audio"
 #############################################
 source "packages/ALSA-Lib/Config.in"
+source "packages/ALSA-Utils/Config.in"
 source "packages/LibMad/Config.in"
 source "packages/LibOGG/Config.in"
 source "packages/LibVorbis/Config.in"
