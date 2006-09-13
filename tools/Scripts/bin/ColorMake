@@ -3,6 +3,7 @@
 . ScriptFunctions
 Import File
 Import GoboLinux
+Import Process
 
 # XXX "Real vs. rootless" support
 if [ -x /bin/make ]
@@ -20,11 +21,16 @@ done
 
 workaround=`Temporary_File`
 
-{ $makecmd "$@" 2>&1
-  echo $? > $workaround
-} | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
+if Quiet which mtail; then
+   { $makecmd "$@" 2>&1
+     echo $? > $workaround
+   } | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
 
-returnvalue=`cat $workaround`
-rm -- $workaround
+   returnvalue=`cat $workaround`
+   rm -- $workaround
 
-exit $returnvalue
+   exit $returnvalue
+else
+   Log_Terse "mtail not found. Unable to colorize output."
+   $makecmd "$@"
+fi
