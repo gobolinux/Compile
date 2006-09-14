@@ -156,7 +156,7 @@ function Check_FileHash() {
 # 10/10/2004 - [calica] First version
    Parameters "$@" program version hash_file
    local rtn
-   $sudo_exec ListProgramFiles --files "$program" "$version" | grep -v "$hash_file" | $sudo_exec python -c """
+   $sudo_exec ListProgramFiles --files "$program" "$version" | grep -v "$hash_file" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
 hashfile='$file'
