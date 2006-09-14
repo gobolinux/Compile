@@ -11,6 +11,8 @@ PYTHON_LIBS=FindPackage GetAvailable GuessLatest CheckDependencies DescribeProgr
 PYTHON_SITE=lib/python$(PYTHON_VERSION)/site-packages
 
 all: python
+	sed -i~ "s/CURRENT_SCRIPTS_VERSION=.*#/CURRENT_SCRIPTS_VERSION="${VERSION}" #/g" bin/CreateRootlessEnvironment
+	rm bin/CreateRootlessEnvironment~
 	cd src; make all
 
 debug: python

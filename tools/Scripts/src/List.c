@@ -25,8 +25,13 @@
 #define __USE_LARGEFILE64
 #define __USE_FILE_OFFSET64
 #include <sys/stat.h>
-#include <sys/statfs.h>
-#include <sys/vfs.h>
+#ifdef __APPLE__
+	#include <sys/param.h>
+	#include <sys/mount.h>
+#else
+	#include <sys/statfs.h>
+	#include <sys/vfs.h>
+#endif
 #include <linux/kdev_t.h>
 #include "List.h"
 
