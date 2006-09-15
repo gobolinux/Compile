@@ -1,0 +1,17 @@
+id:2:initdefault:
+
+l1:S:wait:/System/Links/Executables/BootDriver BootUp
+su:S:respawn:/sbin/sulogin
+
+l2:12345:wait:/System/Links/Executables/BootDriver Console
+l6:6:wait:/System/Links/Executables/BootDriver Reboot
+l0:0:wait:/System/Links/Executables/BootDriver Halt
+
+ca:12345:ctrlaltdel:/sbin/shutdown -t1 -r now
+
+1:2345:respawn:/System/Links/Executables/zsh
+2:2345:respawn:/System/Links/Executables/zsh
+3:2345:respawn:/System/Links/Executables/zsh
+4:2345:respawn:/System/Links/Executables/zsh
+5:2345:respawn:/System/Links/Executables/zsh
+6:2345:respawn:/System/Links/Executables/zsh
