@@ -4,7 +4,7 @@ source GoboPath
 source StartFunctions
 
 if `cat ${goboStatus}/ide/*/model | grep -qi qemu`
-then platform=qemu
+then platform=emulated
 else platform=native
 fi
 
@@ -80,7 +80,7 @@ loadkeys $MAPNAME
 ######################################
 # Adjusting xorg.conf
 ######################################
-if [ -d ${goboPrograms}/Xorg -a -f ${goboPrograms}/Xorg/Settings/X11/xorg.conf -a "$platform" = "native" ]
+if [ -d ${goboPrograms}/Xorg -a -f ${goboPrograms}/Xorg/Settings/X11/xorg.conf ]
 then
 	msg "Adjusting xorg.conf"
 	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
