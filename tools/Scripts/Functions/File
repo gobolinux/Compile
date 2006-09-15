@@ -112,7 +112,7 @@ function Line_Match() {
 
 
 #calica 09/11/2005 Move GPG_gobo_keyring to Functions/File
-GPG_gobo_keyring="/Programs/Scripts/Current/Data/gpg/goboring.gpg"
+GPG_gobo_keyring="${goboPrograms}/Scripts/Current/Data/gpg/goboring.gpg"
 
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
@@ -130,14 +130,14 @@ function Gen_FileHash() {
 
 # Verifies gpg is installed and user has private key
 function Can_Sign() {
-   Quiet /bin/gpg -n --list-secret-keys
+   Quiet gpg -n --list-secret-keys
    [ "$?" = "0" ]
 }
 
 function Sign_File() {
    Parameters "$@" file sig
 
-   output=`/bin/gpg ${GPG_opts} --armor --output - --detach-sig "$file"`
+   output="`gpg ${GPG_opts} --armor --output - --detach-sig "$file"`"
    result="$?"
 
    Quiet $sudo_exec rm -f "$sig"
@@ -148,7 +148,7 @@ function Sign_File() {
 
 function Check_FileSig() {
    Parameters "$@" file sig
-   /bin/gpgv ${GPG_opts} "$sig" "$file"
+   gpgv ${GPG_opts} "$sig" "$file"
 }
 
 function Check_FileHash() {

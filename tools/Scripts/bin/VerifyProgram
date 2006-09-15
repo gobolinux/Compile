@@ -74,7 +74,7 @@ fi
 ########## Operations ##########
 
 result=0
-if Is_Executable "/bin/gpgv"
+if Is_Executable "`which gpgv`"
 then
    if Exists "${FileHash_sig}" && ! Boolean "no-signature"
    then
