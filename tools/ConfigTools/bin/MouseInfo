@@ -115,7 +115,7 @@ class Mouse :
                                         emu = 'no'
                                 return mouseDevice, gpm_protocol, x_protocol, emu
 
-                return '/dev/mouse', 'ms',  'auto', 'yes'
+                return '/dev/input/mice', 'ms',  'auto', 'yes'
 
 def getMouseOptions(mode='') :
 	mouse = Mouse()
