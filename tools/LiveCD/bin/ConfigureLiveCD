@@ -3,13 +3,18 @@
 source GoboPath
 source StartFunctions
 
+if `cat ${goboStatus}/ide/*/model | grep -qi qemu`
+then platform=qemu
+else platform=native
+fi
+
 ######################################
 # X11
 ######################################
-if [ -d ${goboPrograms}/Xorg ]
+if [ -d ${goboPrograms}/Xorg -a "$platform" = "native" ]
 then
 	msg_no_nl "Starting X11 detection (<esc> to skip)" 
-	skip_on_esc 3000 && echo && { 
+	skip_on_esc 3 && echo && { 
 	   GenXorgConf > /tmp/xorg.conf && mv /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf || echo FAILED
 	} || echo '<SKIPPED>'
 fi
@@ -75,7 +80,7 @@ loadkeys $MAPNAME
 ######################################
 # Adjusting xorg.conf
 ######################################
-if [ -d ${goboPrograms}/Xorg -a -f ${goboPrograms}/Xorg/Settings/X11/xorg.conf ]
+if [ -d ${goboPrograms}/Xorg -a -f ${goboPrograms}/Xorg/Settings/X11/xorg.conf -a "$platform" = "native" ]
 then
 	msg "Adjusting xorg.conf"
 	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
