@@ -97,7 +97,5 @@ cat ${goboPrograms}/LiveCD/Current/Data/Language/Welcome_${LANG}
 ######################################
 # Fix the multi-user console
 ######################################
-inittablnk=`readlink -f ${goboSettings}/inittab`
-ln -nfs ${goboPrograms}/LiveCD/Current/Resources/Defaults/Settings/inittab ${goboSettings}/inittab
-init q
+inittablnk=${goboPrograms}/BootScripts/Settings/inittab
 ln -nfs $inittablnk ${goboSettings}/inittab
