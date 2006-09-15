@@ -93,3 +93,11 @@ hwclock --hctosys
 ######################################
 clear
 cat ${goboPrograms}/LiveCD/Current/Data/Language/Welcome_${LANG}
+
+######################################
+# Fix the multi-user console
+######################################
+inittablnk=`readlink -f ${goboSettings}/inittab`
+ln -nfs ${goboPrograms}/LiveCD/Current/Resources/Defaults/Settings/inittab ${goboSettings}/inittab
+init q
+ln -nfs $inittablnk ${goboSettings}/inittab
