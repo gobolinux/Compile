@@ -2,7 +2,7 @@ CC = gcc
 DESTDIR = /usr
 SYSCONFDIR = /etc
 DEVDIR = /dev
-KERNDIR = /usr/src/linux
+KERNDIR = /System/Kernel/Modules/Current/build
 CFLAGS  = -I. -I$(KERNDIR)/include -DSYSCONFDIR=\"$(SYSCONFDIR)\" -DDEVDIR=\"$(DEVDIR)\" -Wall -DDEBUG=1 -g
 LDFLAGS = -lpthread
 
