@@ -182,16 +182,30 @@ parse_masks(char *masks)
 {
 	int ret = EMPTY_MASK;
 
-	if ((strstr(masks, "CLOSE_WRITE")))
-		ret |= IN_CLOSE_WRITE;
-	if ((strstr(masks, "MOVED_TO")))
-		ret |= IN_MOVED_TO;
-	if ((strstr(masks, "DELETE")))
-		ret |= IN_DELETE;
-	if ((strstr(masks, "CREATE")))
-		ret |= IN_CREATE;
+	if ((strstr(masks, "ACCESS")))
+		ret |= IN_ACCESS;
 	if ((strstr(masks, "MODIFY")))
 		ret |= IN_MODIFY;
+	if ((strstr(masks, "ATTRIB")))
+		ret |= IN_ATTRIB;
+	if ((strstr(masks, "CLOSE_WRITE")))
+		ret |= IN_CLOSE_WRITE;
+	if ((strstr(masks, "CLOSE_NOWRITE")))
+		ret |= IN_CLOSE_NOWRITE;
+	if ((strstr(masks, "OPEN")))
+		ret |= IN_OPEN;
+	if ((strstr(masks, "MOVED_FROM")))
+		ret |= IN_MOVED_FROM;
+	if ((strstr(masks, "MOVED_TO")))
+		ret |= IN_MOVED_TO;
+	if ((strstr(masks, "CREATE")))
+		ret |= IN_CREATE;
+	if ((strstr(masks, "DELETE")))
+		ret |= IN_DELETE;
+	if ((strstr(masks, "DELETE_SELF")))
+		ret |= IN_DELETE_SELF;
+	if ((strstr(masks, "MOVE_SELF")))
+		ret |= IN_MOVE_SELF;
 
 	return ret;
 }

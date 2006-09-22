@@ -126,22 +126,38 @@ select_on_inotify(void)
 char *
 mask_name(int mask)
 {
-	switch(mask) {
-		case IN_MOVED_FROM:
-			return "moved from";
-		case IN_MOVED_TO:
-			return "moved to";
-		case IN_CLOSE_WRITE:
-			return "close write";
-		case IN_CREATE:
-			return "create";
-		case IN_MODIFY:
-			return "modify";
-		case IN_DELETE:
-			return "delete";
-		default:
-			return "unknown";
-	}
+	char buf[128];
+	
+	memset(buf, 0, sizeof(buf));
+	
+	if (mask & IN_ACCESS)
+		snprintf(buf, sizeof(buf), "access");
+	if (mask & IN_MODIFY)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "modify");
+	if (mask & IN_ATTRIB)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "attrib");
+	if (mask & IN_CLOSE_WRITE)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "close write");
+	if (mask & IN_CLOSE_NOWRITE)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "close nowrite");
+	if (mask & IN_OPEN)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "open");
+	if (mask & IN_MOVED_FROM)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "moved from");
+	if (mask & IN_MOVED_TO)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "moved to");
+	if (mask & IN_CREATE)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "create");
+	if (mask & IN_DELETE)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "delete");
+	if (mask & IN_DELETE_SELF)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "delete self");
+	if (mask & IN_MOVE_SELF)
+		snprintf(buf, sizeof(buf), "%s%s", strlen(buf)?" | ":"", "move self");
+	if (! strlen(buf))
+		snprintf(buf, sizeof(buf), "unknown");
+
+	return strdup(buf);
 }
 
 void
@@ -154,6 +170,7 @@ treat_events(struct inotify_event *ev)
 	struct stat status;
 	char stat_pathname[PATH_MAX], offending_name[PATH_MAX];
 	struct directory_info *di, *ptr;
+	char *mask;
 
 	start_index = i = 0;
 
@@ -192,19 +209,24 @@ treat_events(struct inotify_event *ev)
 			fprintf(stderr, "stat %s: %s\n", stat_pathname, strerror(errno));
 			continue;
 		}
-		if (FILTER_DIRS(di->filter) && (di->depends_on_entry && (! S_ISDIR(status.st_mode)))) {
+#if 0
+		if (FILTER_DIRS(di->filter) && !FILTER_FILES(di->filter) && (di->depends_on_entry &&
+		   (! S_ISDIR(status.st_mode)))) {
 			dprintf("watch descriptor %d listens for DIRS rules, which is not the case here\n", di->wd);
 			continue;
 		}
 		
-		if (FILTER_FILES(di->filter) && (di->depends_on_entry && (! S_ISREG(status.st_mode)))) {
+		if (FILTER_FILES(di->filter) && !FILTER_DIRS(di->filter) && (di->depends_on_entry &&
+		   (! S_ISREG(status.st_mode)))) {
 			dprintf("watch descriptor %d listens for FILES rules, which is not the case here\n", di->wd);
 			continue;
 		}
-
+#endif
+		mask = mask_name(ev->mask);
 		dprintf("-> event on dir %s, watch %d\n", di->pathname, di->wd);
 		dprintf("-> filename:    %s\n", offending_name);
-		dprintf("-> event mask:  %#X (%s)\n\n", ev->mask, mask_name(ev->mask));
+		dprintf("-> event mask:  %#X (%s)\n\n", ev->mask, mask);
+		free(mask);
 
 		/* launches a thread to deal with the event */
 		info = (struct thread_info *) malloc(sizeof(struct thread_info));
