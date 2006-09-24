@@ -26,6 +26,7 @@ Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVari
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
 Add_Option_Entry "c" "conflict" "What to do on conflicts, 'keep' or 'overwrite'." "keep"
+Add_Option_Boolean "f" "force" "Force symlinks. Same as '--conflict overwrite'."
 Add_Option_Boolean "n" "no-make" "Dummy option. Preserved for backwards compatibility."
 Add_Option_Boolean "r" "relative" "Use relative paths to link files from ${goboPrograms}."
 #Add_Option_Boolean "r" "rootfs" "Copy program to rootfs if a symlink."
@@ -46,6 +47,7 @@ linkheaders=`Entry "headers"`
 linkshared=`Entry "shared"`
 linkwrappers=`Entry "wrappers"`
 
+Boolean "force" && conflict="overwrite"
 ################################################################################
 
 # Creates links from one directory into another.
@@ -62,7 +64,7 @@ function link_directory() {
       cd "$here"
 
       Boolean "relative" && relative="--relative" || relative=""
-      [ `Entry "conflict"` = "overwrite" ] && overwrite="--overwrite" || overwrite=""
+      [ "${conflict}" = "overwrite" ] && overwrite="--overwrite" || overwrite=""
       if [ `type -p LinkOrExpandAll` ]
       then
          LinkOrExpandAll "$rfrom" "$overwrite" "$relative"
