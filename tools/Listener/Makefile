@@ -3,7 +3,7 @@ DESTDIR = /usr
 SYSCONFDIR = /etc
 DEVDIR = /dev
 KERNDIR = /System/Kernel/Modules/Current/build
-CFLAGS  = -I. -I$(KERNDIR)/include -DSYSCONFDIR=\"$(SYSCONFDIR)\" -DDEVDIR=\"$(DEVDIR)\" -Wall -DDEBUG=1 -g
+CFLAGS  = -I. -I$(KERNDIR)/include -DSYSCONFDIR=\"$(SYSCONFDIR)\" -DDEVDIR=\"$(DEVDIR)\" -Wall -g
 LDFLAGS = -lpthread
 
 all: listener

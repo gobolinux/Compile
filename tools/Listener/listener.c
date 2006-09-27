@@ -88,13 +88,11 @@ perform_action(void *thread_info)
 		exec_array[1] = "-c";
 		exec_array[2] = strdup(exec_cmd);
 		exec_array[3] = NULL;
-#ifdef DEBUG
-		{
+		if (debug_mode) {
 			int i;
 			for (i = 0; exec_array[i] != NULL; ++i)
 				fprintf(stderr, "token: '%s'\n", exec_array[i]);
 		}
-#endif
 		execvp(exec_array[0], exec_array);
 
 	} else if (pid > 0) {
