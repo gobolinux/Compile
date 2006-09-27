@@ -9,6 +9,7 @@ PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 LANG_TEMP_DIR=Data/Language/.Temp
 
 all: language
+	cd src; make all
 
 language:
 	[ -e "$(LANG_TEMP_DIR)" ] || mkdir $(LANG_TEMP_DIR)
@@ -28,6 +29,7 @@ version_check:
 cleanup:
 	rm -rf Resources/FileHash*
 	find * -path "*~" -or -path "*/.\#*" | xargs rm -f
+	cd src; make clean
 
 verify:
 	! { cvs up 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
