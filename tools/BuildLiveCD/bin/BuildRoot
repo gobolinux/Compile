@@ -156,7 +156,7 @@ function install_package() {
    dvariable="$name/$version/Resources/Defaults/Variable"
    if [ -d "$dvariable" ]
    then
-      cp -a "$dvariable" /System/Variable
+      cp -rf "$dvariable"/* /System/Variable
       ln -s /System/Variable "$name/Variable"
    fi
    
