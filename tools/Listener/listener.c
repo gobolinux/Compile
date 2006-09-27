@@ -24,6 +24,15 @@
 
 static struct directory_info *dir_info;
 static int inotify_fd;
+static int debug_mode;
+
+static void
+debug_printf(const char *format, ...)
+{
+	if (! debug_mode)
+		return;
+	printf(format);
+}
 
 /* TODO: handle SIGHUP */
 void
@@ -189,7 +198,7 @@ treat_events(struct inotify_event *ev)
 		 * watched twice or even more times
 		 */
 		if (! (di->mask & ev->mask)) {
-			dprintf("event doesn't come from watch descriptor %d\n", di->wd);
+			debug_printf("event doesn't come from watch descriptor %d\n", di->wd);
 			continue;
 		}
 
@@ -198,7 +207,7 @@ treat_events(struct inotify_event *ev)
 		snprintf(offending_name, ev->len, "%s", ev->name);
 		ret = regexec(&di->regex, offending_name, 1, &match, 0);
 		if (ret != 0) {
-			dprintf("event from watch descriptor %d, but regex doesn't match\n", di->wd);
+			debug_printf("event from watch descriptor %d, but regex doesn't match\n", di->wd);
 			continue;
 		}
 
@@ -212,20 +221,20 @@ treat_events(struct inotify_event *ev)
 #if 0
 		if (FILTER_DIRS(di->filter) && !FILTER_FILES(di->filter) && (di->depends_on_entry &&
 		   (! S_ISDIR(status.st_mode)))) {
-			dprintf("watch descriptor %d listens for DIRS rules, which is not the case here\n", di->wd);
+			debug_printf("watch descriptor %d listens for DIRS rules, which is not the case here\n", di->wd);
 			continue;
 		}
 		
 		if (FILTER_FILES(di->filter) && !FILTER_DIRS(di->filter) && (di->depends_on_entry &&
 		   (! S_ISREG(status.st_mode)))) {
-			dprintf("watch descriptor %d listens for FILES rules, which is not the case here\n", di->wd);
+			debug_printf("watch descriptor %d listens for FILES rules, which is not the case here\n", di->wd);
 			continue;
 		}
 #endif
 		mask = mask_name(ev->mask);
-		dprintf("-> event on dir %s, watch %d\n", di->pathname, di->wd);
-		dprintf("-> filename:    %s\n", offending_name);
-		dprintf("-> event mask:  %#X (%s)\n\n", ev->mask, mask);
+		debug_printf("-> event on dir %s, watch %d\n", di->pathname, di->wd);
+		debug_printf("-> filename:    %s\n", offending_name);
+		debug_printf("-> event mask:  %#X (%s)\n\n", ev->mask, mask);
 		free(mask);
 
 		/* launches a thread to deal with the event */
@@ -327,12 +336,14 @@ show_usage(char *program_name)
 {
 	fprintf(stderr, "Usage: %s [options]\n\nAvailable options are:\n"
 			"--config, -c <file>    Use config file as specified in <file>\n"
+			"--debug, -d            Do not fork and become a daemon\n"
 			"--help, -h             This help\n", program_name);
 }
 
-static char short_opts[] = "c:h";
+static char short_opts[] = "c:dh";
 static struct option long_options[] = {
 	{"config", required_argument, NULL, 'c'},
+	{"debug",        no_argument, NULL, 'd'},
 	{"help",         no_argument, NULL, 'h'},
 	{0, 0, 0, 0}
 };
@@ -349,12 +360,16 @@ main(int argc, char **argv)
 			case 0:
 			case '?':
 				return 1;
-			case 'h':
-				show_usage(argv[0]);
-				return 0;
 			case 'c':
 				config_file = strdup(optarg);
 				break;
+			case 'd':
+				printf("Running in debug mode\n");
+				debug_mode = 1;
+				break;
+			case 'h':
+				show_usage(argv[0]);
+				return 0;
 			default:
 				printf("invalid option %d\n", c);
 				show_usage (argv[0]);
@@ -383,7 +398,19 @@ main(int argc, char **argv)
 	/* install a signal handler to clean up memory */
 	signal(SIGINT, suicide);
 
-	listen_for_events();
+	if (debug_mode)
+		listen_for_events();
+	else {
+		pid_t id = fork();
+
+		if (id == 0)
+			listen_for_events();
+		else if (id < 0 ){
+			perror("fork");
+			exit(EXIT_FAILURE);
+		}
+	}
+	
 	exit(EXIT_SUCCESS);
 }
 

@@ -27,7 +27,6 @@
 #include "inotify.h"
 #include "inotify-syscalls.h"
 
-
 #ifndef SYSCONFDIR
 #define SYSCONFDIR      "/System/Settings"
 #endif
@@ -37,12 +36,6 @@
 
 #define FILTER_DIRS(m)  S_ISDIR(m)
 #define FILTER_FILES(m) S_ISREG(m)
-
-#ifdef DEBUG
-#define dprintf(x...) printf(x)
-#else
-#define dprintf(x...) do { } while(0);
-#endif
 
 struct directory_info {
 	char pathname[PATH_MAX];	/* the pathname being listened */
@@ -63,7 +56,6 @@ struct thread_info {
 	struct directory_info *di;		/* the struct directory_info */
 	char offending_name[PATH_MAX];	/* the file/directory entry we're dealing with */
 };
-
 
 int monitor_directory(int i, struct directory_info *di);
 
