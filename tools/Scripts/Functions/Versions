@@ -8,7 +8,6 @@
 # Date::   10 June 2006
 
 Import GoboLinux
-Import Directories
 Import File
 Import String
 Import Process
