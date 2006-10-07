@@ -18,6 +18,7 @@ shift $parsedArguments
 
 [ "$httpSourceforge" ] || {
    echo -e "\033[41;33;1mFATAL ERROR: could not load initial configuration.\033[0m"
+   errors=$[errors+1]
    exit 1
 }
 
@@ -69,6 +70,7 @@ function ERROR() {
 function FATAL() {
    echo -e "\033[41;33;1mFATAL ERROR: $@\033[0m"
    echo "FATAL ERROR: $@" >> $report
+   errors=$[errors+1]
    exit 1
 }
 
@@ -694,3 +696,18 @@ test_resources() {
 
 cat Recipe | grep -q "recipe_type=meta" || test_resources
 
+test_patch() {
+   msg "Checking patch $1..."
+   grep -q "/Programs" "$1" && {
+      if [ `basename "$1" .in` = "$1" ]
+      then instruction="Rename to $1.in and use @%Compile_target%@ and @%Compile_<dep>_path%@."
+      else instruction="Use @%Compile_target%@ and @%Compile_<dep>_path%@."
+      fi
+      ERROR "Patch references /Programs tree explicitly. $instruction"
+   }
+}
+
+ls *.patch *.patch.in 2> /dev/null | while read patch
+do
+   test_patch "$patch"
+done
