@@ -29,6 +29,14 @@ config CROSS_ARM
 	---help---
 	  Run a toolchain to generate a distribution suitable for ARM processors.
 
+config CROSS_ARM_SOFT_FLOAT
+	prompt "Soft-Float ARM target"
+	bool
+	---help---
+	  Run a toolchain to generate a distribution suitable for ARM processors
+	  based on GCC's soft-float library. Use this if you have a working
+	  Cross-ARM-SoftFloat.conf file and your platform doesn't have a FPU.
+
 config CROSS_SH4
 	prompt "SH-4 target"
 	bool

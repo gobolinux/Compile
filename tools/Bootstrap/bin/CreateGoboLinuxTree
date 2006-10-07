@@ -15,7 +15,7 @@ source GoboPath
 function create_tree() {
     mkdir -p "$1/$goboPrograms"
     mkdir -p "$1/$goboMount"
-    [ "$arch_conf" = "ARM" -o "$arch_conf" = "SH4" ] && mkdir -p "$1/$goboMount/JFFS2"
+    [ "$arch_conf" != "Native" ] && mkdir -p "$1/$goboMount/JFFS2"
 
     mkdir -p "$1/$goboLinks/Tasks"
     mkdir -p "$1/$goboEnvironment"

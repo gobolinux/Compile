@@ -1,12 +1,13 @@
 #!/bin/sh
 
 function get_chosen_arch() {
-    [ "$CROSS_ARM"  = "y" ] && echo ARM
-    [ "$CROSS_SH4"  = "y" ] && echo SH4
+    [ "$CROSS_SH4" = "y" ] && echo SH4
+    [ "$CROSS_ARM" = "y" ] && echo ARM
+    [ "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo ARM-SoftFloat
 }
 
 function get_recipe_arch() {
-    [ "$CROSS_ARM" = "y" ] && echo arm
+    [ "$CROSS_ARM" = "y" -o "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo arm
     [ "$CROSS_SH4" = "y" ] && echo sh4
     [ "$CROSS_PPC" = "y" ] && echo ppc
     if [ "$NATIVE_COMPILING" = "y" ]

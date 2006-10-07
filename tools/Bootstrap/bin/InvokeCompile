@@ -204,7 +204,7 @@ do
     # If a hook is configured for the current package, execute it
     # so that a specific version can be used. Hooks are declared
     # inside functions/PkgFunctions.
-    hook_function="`echo ${pkg_name} | sed 's/-/_/g'`_hook"
+    hook_function="`echo ${pkg_name} | sed 's/+//g' | sed 's/-/_/g'`_hook"
     pkg_version=`${hook_function} 2> /dev/null`
 
     if [ -d "$prefix/$goboPrograms/$pkg_name" ]
