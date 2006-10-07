@@ -1,5 +1,10 @@
 #!/bin/sh
 
+tar --help | grep -q -- --overwrite || {
+   echo "Your version of tar is too old. Please upgrade."
+   exit 1
+}
+
 if [ "$1" = "--help" ]
 then
    echo "$0 [<start_stage> [<end_stage>]]"
