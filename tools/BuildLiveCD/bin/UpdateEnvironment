@@ -90,7 +90,7 @@ do
    then
       echo Updating $cvsrepo...
       cd $cvsrepo
-      cvs -q up
+      cvs -q up -d
       cd - &> /dev/null
    else
       echo Getting $cvsrepo...
