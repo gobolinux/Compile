@@ -152,7 +152,7 @@ function install_package() {
    tar xjpf "$package"
 
    # Remove empty dirs in Resources
-   for i in `find "$name/$version/Resources" -type d 2> /dev/null | sort -r`
+   for i in `find "$name/$version/Resources" -type d 2> /dev/null | grep -v Variable | sort -r`
    do
        rmdir $i 2> /dev/null || true
    done
