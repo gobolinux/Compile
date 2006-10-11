@@ -151,6 +151,16 @@ function install_package() {
    pushd "$root/Programs" &> /dev/null
    tar xjpf "$package"
 
+   # Remove empty dirs in Resources
+   for i in `find "$name/$version/Resources" -type d 2> /dev/null | sort -r`
+   do
+       rmdir $i 2> /dev/null || true
+   done
+   
+   # Fixes broken share->Shared instead of share->/System/Links/Shared
+   lshare="$name/$version/share"
+   [ -h "$lshare" ] && ln -nfs /System/Links/Shared "$lshare"
+
    dsettings="$name/$version/Resources/Defaults/Settings"
    [ -d "$dsettings" ] && cp -a "$dsettings" "$name/Settings"
    dvariable="$name/$version/Resources/Defaults/Variable"
@@ -301,7 +311,7 @@ then
    rm -f ${root}/System/Links/Environment/Cache
    for link in ${root}/System/Links/Environment/*--*
    do
-      [ -e ${link} ] && cat ${link} >>${root}/System/Links/Environment/Cache || rm ${link}
+      [ -e ${link} ] && { cat ${link} >> ${root}/System/Links/Environment/Cache || rm -f ${link}; }
    done
 else
    echo "Keeping ${root}/System/Links/Environment/Cache"
