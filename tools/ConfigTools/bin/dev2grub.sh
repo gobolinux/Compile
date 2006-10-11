@@ -12,14 +12,17 @@ then
     exit 1
 fi
 
-if [ ! -b /dev/$1 ]
+# ensure that we're dealing only with the device string
+partition=`echo $1 | sed 's,^/dev/,,g'`
+
+if [ ! -b /dev/$partition ]
 then
-    echo "/dev/$1 is not a valid partition!"
+    echo "/dev/$partition is not a valid partition!"
     exit 1
 fi
 
-target_disk=$(echo $1 | sed 's/[0-9]//g')
-target_partition=$(echo $1 | sed 's/[a-zA-Z]//g')
+target_disk=$(echo $partition | sed 's/[0-9]//g')
+target_partition=$(echo $partition | sed 's/[a-zA-Z]//g')
 
 disk_prefix=$(echo $target_disk | cut -b1-2)
 disk_count=-1
@@ -38,7 +41,7 @@ done
 # find grub's partition
 for i in /dev/${target_disk}*
 do
-    [ "$i" = "/dev/$1" ] && break
+    [ "$i" = "/dev/$partition" ] && break
     partition_count=$(( partition_count + 1 ))
 done
 
