@@ -46,5 +46,5 @@ dist: version_check cleanup verify all
 	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
 	@echo; echo "Package at $(PACKAGE_FILE)"; echo
-	! { cvs up 2>&1 | grep "^M" ;}
+	! { cvs up 2>&1 | grep "^M" | grep -v CreateRootlessEnvironment ;}
 
