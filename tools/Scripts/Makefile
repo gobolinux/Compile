@@ -27,6 +27,8 @@ python:
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
 
+clean: cleanup
+
 cleanup:
 	rm -rf Resources/FileHash*
 	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
