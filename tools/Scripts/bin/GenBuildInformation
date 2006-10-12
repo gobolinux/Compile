@@ -11,11 +11,12 @@ Import Array
 
 ### Options ###################################################################
 
-scriptDescription="Generates a dependencies list for a GoboLinux package."
+scriptDescription="Generates the list of packages from the current environment used by a GoboLinux package."
 scriptCredits="Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<package> [<version>]"
 scriptNotes="If no version is specified, Current is assumed. "
+Add_Option_Boolean "s" "store" "Store the information in Resources/BuildInformation. Default is standard output."
 
 Parse_Options "$@"
 shift $parsedArguments
@@ -74,6 +75,13 @@ prefix=`readlink -f $goboPrograms/$package/$version`
 Is_Directory "$prefix" || Die "$package version $version is not a valid package."
 dependenciesfile=`Dependencies_File "$package" "$version"`
 
+if Boolean "store"
+then
+   store="$prefix/Resources/BuildInformation"
+   [ -w $store ] || Verify_Superuser
+else store=/dev/stdout
+fi
+
 ### default: Generate a dependency report ###############################################
 
 if [ "$prefix" ]
@@ -99,5 +107,5 @@ then
       Progress_Move
    done
    Progress_End
-} | path2programs | sort | uniq | grep -v "^$package "
+} | path2programs | sort | uniq | grep -v "^$package " >$store
 fi
