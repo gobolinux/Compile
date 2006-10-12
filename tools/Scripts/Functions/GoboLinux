@@ -535,7 +535,7 @@ function Bypass_Superuser() {
 
 # Some simple define for sudo
 sudo_exec="sudo -u #0"
-sudo_validate="sudo -v"
+sudo_validate="sudo -u `whoami` true"
 
 # If we can't sudo, we shouldn't try .
 if [ $ROOTLESS_GOBOLINUX ]
