@@ -18,6 +18,11 @@ echo "Initializing GoboLinux squashfs files..."
 # Mounting 'GoboLinux-{rest,files}.squashfs' (still harcoded names)
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs  /Mount/SquashFS/Rest
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
+# Little trick to make gobohide work on UnionFS, as theirs VFS patches weren't merged yet
+for i in bin dev etc lib proc sbin sys tmp usr var
+do
+  gobohide -h /Mount/SquashFS/Rest/$i
+done
 mount -t unionfs -o dirs=/Mount/TmpFS=rw:/Mount/SquashFS/Rest=ro:/Mount/SquashFS/Files=ro:/Mount/UnionFS=ro none /Mount/UnionFS
 
 # Mounting Packages*.squashfs files inside /Programs
