@@ -31,11 +31,22 @@ function die() {
 }
 
 #############################################################################
+# Verify our whereabouts
+#############################################################################
+if [ ! -d BaseDependencies ]
+then
+   if [ ! -z "`ls`" ]
+   then die "This doesn't look like a ChrootCompile environment directory. Rerun this script on an empty directory to build an environment."
+   fi
+   SetupChrootEnv
+fi
+
+#############################################################################
 # Parsing options. By now, only 'chrootcompileCompileConf'
 #############################################################################
-scriptdir=$(readlink -f $(dirname $0))
+workenv=$PWD
 chrootcompileMode="gobo"
-source $scriptdir/ChrootCompile.conf
+source ./ChrootCompile.conf
 
 if [ ! "$goboPrograms" ]
 then export goboPrograms=/Programs
@@ -279,6 +290,16 @@ create_root $root
 #############################################################################
 # Copying recipes to root directory
 #############################################################################
+
+if [ -d Recipes ]
+then
+   cp -rL Recipes $root/Files/Compile
+else
+   echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
+   echo "Assuming use of local repository from host's /Files/Compile."
+   localrepository=yes
+fi
+
 if [ "$localrepository" ]
 then
     [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile inside $root"
@@ -290,11 +311,6 @@ then
         mkdir -p $root/$crosskerneldir
         $sudo mount --bind $crosskerneldir $root/$crosskerneldir
     fi
-fi
-
-if [ -d Recipes ]
-then cp -rL Recipes $root/Files/Compile
-else echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
 fi
 
 #############################################################################
@@ -418,7 +434,7 @@ function load_dependency() {
    then params=""
    else params=$crossprefixdir
    fi
-   $sudo $scriptdir/MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $params
+   $sudo MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $params
 }
 
 hostdeps=`{
@@ -705,8 +721,8 @@ function in_target() {
 if [ "$chrootcompileMode" = "gobo" ]
 then
    package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $version`
-   mkdir -p $scriptdir/$putclean
-   cp $root/$name--$version* $scriptdir/$putclean
+   mkdir -p $root/$putclean
+   cp $root/$name--$version* $root/$putclean
 else
    fullroot=`readlink -f $root`
    cd $root/View

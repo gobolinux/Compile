@@ -74,7 +74,7 @@ function do_link() {
    if [ -d "$root/$1" ]
    then
       cd $root/$2
-      goboPrefix=$root goboPrograms=$root/Programs $scriptdir/LinkOrExpandAll $root/$1 --relative
+      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative
       cd - &> /dev/null
    fi
 }

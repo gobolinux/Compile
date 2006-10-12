@@ -8,8 +8,8 @@ PACKAGE_ROOT = $(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE = $(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE = $(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 
-CONF_FILES = ChrootCompile.conf
-BIN_FILES = ChrootCompile GenericInstall MiniInstallPackage MiniSymlinkProgram SetupChrootEnv
+CONF_FILES = Resources/Defaults/Settings/ChrootCompile.conf
+BIN_FILES = bin/ChrootCompile bin/GenericInstall bin/MiniInstallPackage bin/MiniSymlinkProgram bin/SetupChrootEnv
 
 all: version_check
 

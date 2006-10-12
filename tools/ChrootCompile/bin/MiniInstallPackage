@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source $(readlink -f $(dirname $0))/ChrootCompile.conf || {
+source ChrootCompile.conf || {
    echo "ChrootCompile.conf not found."
    exit 1
 }
@@ -81,4 +81,4 @@ then
 fi
 popd &> /dev/null
 
-$(dirname $0)/MiniSymlinkProgram $goboPrograms/$name/$version $root $crossprefixdir 2>&1 | grep -v "/CVS/"
+MiniSymlinkProgram $goboPrograms/$name/$version $root $crossprefixdir 2>&1 | grep -v "/CVS/"

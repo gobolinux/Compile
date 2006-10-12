@@ -6,16 +6,9 @@ function download_packages() {
 }
 
 function update_tools() {
-    [ "$quiet" ] && echo "Fetching the ChrootCompile module from CVS..."
-    cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/ChrootCompile 
+    [ "$quiet" ] && echo "Fetching the Compile and Scripts module from CVS..."
     cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Compile 
     cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Scripts 
-    ln -nfs tools/Scripts/bin/LinkOrExpandAll .
-    ln -nfs tools/ChrootCompile/ChrootCompile .
-    ln -nfs tools/ChrootCompile/MiniInstallPackage .
-    ln -nfs tools/ChrootCompile/MiniSymlinkProgram .
-    ln -nfs tools/ChrootCompile/GenericInstall .
-    ln -nfs tools/ChrootCompile/SetupChrootEnv .
 }
 
 function configure_tools() {
