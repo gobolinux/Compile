@@ -12,9 +12,9 @@ happens there is flexible. Just look at listener.conf for explanation on
 how to configure it.
 
 This application is based on inotify, a great notification event which's 
-going to deprecate dnotify (fcntl). In order for inotify to work, a kernel 
-patch is needed, which is provided by the recipe for 2.6.12.2 ('Compile Linux 
-2.6.12.2' or later on GoboLinux).
+going to deprecate dnotify (fcntl). In order for inotify to work you need
+a recent kernel version, which can be guaranteed on GoboLinux by running
+'Compile Linux'.
 
 Please send bugfixes, questions and suggestions to our mailing list at
 gobolinux-users@lists.gobolinux.org, or directly to lucasvr@gobolinux.org.
