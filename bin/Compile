@@ -160,6 +160,11 @@ function do_symlink() {
 }
 
 function install_extras() {
+
+   # TODO: Dependencies file of binary package is currently being copied from Recipe at install_extras
+   #       We sould adapt this dependency file, since dependencies for a binary package are usually
+   #       more 'strict' than those for recipes.
+
    [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
    [ -d "$recipedaemons" ]   && $sudo cp -R "$recipedaemons" "$installprefix"
 
@@ -198,14 +203,16 @@ function wrapup() {
    Log_Normal "Generating package's build information..."
    GenBuildInformation --store "$appname" "$versionnumber"
 
-   # TODO: Dependencies file of binary package is currently being copied from Recipe at install_extras
-   #       We sould adapt this dependency file, since dependencies for a binary package are usually
-   #       more 'strict' than those for recipes.
-
    if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
    then
-      Log_Normal "Generating package's signature..."
-      SignProgram "$appname" "$versionnumber"
+      if [ -e "$target/Resources/Dependencies" ]
+      then
+         Log_Normal "Generating package's signature..."
+         SignProgram "$appname" "$versionnumber"
+      else
+         Log_Error "Program does not have a Resources/Dependencies file."
+         Log_Error "Not signing it yet."
+      fi
    fi
 
    recipedeps="$reciperesources/Dependencies"
