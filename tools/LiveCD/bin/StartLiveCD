@@ -75,7 +75,7 @@ LANG=`cat ${goboTemp}/setup/language`
 # DHCP
 ######################################
 # Executes the 'launch_dhcp' function if an ethernet interface was found
-ifconfig eth0 2> /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
+ifconfig eth0 >& /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
 
 ######################################
 # Mount remaining filesystems
