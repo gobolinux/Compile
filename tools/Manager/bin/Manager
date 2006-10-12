@@ -9,16 +9,6 @@
 # PyQT based front-end to easy the task of managing the installed packages
 #
 
-#############################################################################
-# Changelog
-#############################################################################
-# 20/10/2005 - [detsch] - Going for 1.1.0 release (including multiple processing threads)
-# 23/08/2004 - [detsch] - DescribeProgram moved to another script
-# 23/08/2004 - [detsch] - Runner moved to another script (lib only)
-# 19/07/2003 - [detsch] - GetAvailable and GetInstalled moved to proper scripts (libs)
-# 31/05/2004 - [detsch] - First version
-#
-
 import string, os, os.path, sys, re, urllib, time
 
 from ManagerUI         import *
@@ -775,14 +765,15 @@ class ManagerUIImpl(ManagerUI) :
 				
 			methods.append(updateDescription)
 			
-		if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
+		#if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
+		if t in ['local_package', 'installed', 'recipe'] :
 			def updateDependencies(p,v,t) :
 				if v :
 					d = v
 				else :
 					d = 'Current'
 				
-				ret = ListDependencies(p,v,t,None,mode='html', report_missing=True, report_updating=True,recursive=True)
+				ret = ListDependencies(p,v,t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
 				if not ret.strip() :
 					return ''
 				return ret
@@ -925,6 +916,7 @@ class ManagerUIImpl(ManagerUI) :
 	
 	
 	def addCommandsForDependencies(self, p,v,t,u, cmds,apps, justDownload) :
+		return # skipping for now.
 		if (self.configWindow.autoDependencies.isChecked()) :
 			if self.configWindow.allwaysUpdate.isChecked() :
 				mode='updating'
