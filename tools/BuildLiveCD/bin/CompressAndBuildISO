@@ -89,7 +89,6 @@ then
          # we need to build here in order to create the files which are going to be linked inside BuildRoot
          [ -e $package/$today/Makefile ] && echo Building $package/$today && make -C $package/$today > /dev/null 
          find $package/$today/ -type d -name CVS | xargs rm -rf
-         rm -rf $package/$today/src
          rm -f $package--*--$arch.tar.bz2   # cleaning up old versions too
          tar cjpf $tarball $package/$today  # create the package
          rm -rf $package
