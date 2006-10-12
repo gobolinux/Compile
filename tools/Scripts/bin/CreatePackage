@@ -14,7 +14,6 @@ scriptDescription="Make a GoboLinux package."
 scriptCredits="Copyright (C) 2002-2003 Hisham Muhammad - Released under the GNU GPL."
 scriptUsage="<directory>"
 Add_Option_Boolean "b" "bzip2" "Compress using bzip2"
-Add_Option_Boolean "D" "no-dependencies" "Do not create Dependencies file"
 Add_Option_Boolean "g" "gzip" "Compress using gzip"
 Add_Option_Boolean "p" "personal-backup" "Use personal backup mode.  Do NOT use for public distribution"
 Add_Option_Boolean "d" "devel-version" "Obsoleted"
@@ -29,9 +28,7 @@ shift $parsedArguments
 
 ### Operation ############################################################
 
-#Verify_Superuser
-
-if { ! Boolean "no-dependencies" ;} || {  ! Boolean "no-sign" ;}
+if ! Boolean "no-sign"
 then
    Verify_Superuser
 fi 
@@ -74,12 +71,14 @@ Boolean "personal-backup" && packagefile="$package--$versionnumber-PersonalBacku
 
 [ -e "$package/Settings" ] && anysettings="$package/Settings"
 
-if ! Boolean "no-dependencies"
+resources="$package/$versionnumber/Resources"
+if ! [ -e "$resources/Dependencies" ]
 then
-   resources="$package/$versionnumber/Resources"
-   Make_Directory "$resources"
-   if ! [ -e "$resources/Dependencies" ]
-   then GenBuildInformation "$package" "$versionnumber" > "$resources/Dependencies"
+   if [ -e "$resources/BuildInformation" ]
+   then Die "No $resources/Dependencies file. You can use the information in "\
+            "$resources/BuildInformation as a basis when writing it."
+   else Die "No $resources/Dependencies file. You can run GenBuildInformation "\
+            "and use the returned information as a basis when writing it."
    fi
 fi
 
