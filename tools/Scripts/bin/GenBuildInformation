@@ -79,6 +79,7 @@ if Boolean "store"
 then
    store="$prefix/Resources/BuildInformation"
    [ -w $store ] || Verify_Superuser
+   mkdir -p "$prefix/Resources/"
 else store=/dev/stdout
 fi
 
