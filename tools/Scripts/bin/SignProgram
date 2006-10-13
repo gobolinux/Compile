@@ -15,7 +15,7 @@ Import String
 scriptDescription="Generate and sign a hash file of a Gobolinux package with gpg."
 scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{ [<options>] <package> [<version>] }"
+scriptUsage="{ <package> [<version>] | <package_file> }"
 scriptNotes="If no version is specified, Current is assumed.  "\
 "If the -u option isn't used, the first ID found in the secret keyring is used."
 
@@ -28,29 +28,43 @@ shift $parsedArguments
 
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
-if Is_Entry_Set "local-user" 
+if Is_Entry_Set "local-user"
 then
    localuser=`Entry "local-user"`
    GPG_opts="${GPG_opts} -u $localuser"
 fi
 
 ########## Version ##########
-package=`GuessProgramCase $1 $2`
-if [ "$2" ]
+if [ -f "$1" ]
 then
-   version=`Get_Version "$package" "$2"`
+   filepath=`readlink -f $1`
+   bn=`basename $filepath`
+   package=`Get_Token "$bn" "--" "0"`
+   version=`Get_Token "$bn" "--" "1"`
+   prefix=$goboTemp/$package/$version
+   cd $goboTemp
+   [ -d $package ] && rm -rf $package
+   Log_Normal "Unpacking $filepath at $goboTemp..."
+   tar xfvj $filepath
+   sudo_exec=""
+   sudo_validate=""
+   [ -d $prefix ] || Die "Error unpacking $filepath ($package $version)"
+   cd $prefix
 else
-   version=`Get_Version "$package" "Current"`
+   package=`GuessProgramCase $1 $2`
+   if [ "$2" ]
+   then
+      version=`Get_Version "$package" "$2"`
+   else
+      version=`Get_Version "$package" "Current"`
+   fi
+   prefix="$goboPrograms/$package/$version"
+   Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+   Is_Empty "$version" && Die "Couldn't find a proper version for $package."
+   Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+   cd "$prefix"
+   Release_Superuser
 fi
-
-prefix="$goboPrograms/$package/$version"
-
-Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
-Is_Empty "$version" && Die "Couldn't find a proper version for $package."
-Is_Directory "$prefix" || Die "$package version $version is not a valid package."
-cd "$prefix"
-
-Release_Superuser
 
 ########## Functions ##########
 
@@ -64,7 +78,7 @@ $sudo_exec rm -f "$FileHash_log"
 $sudo_exec rm -f "$FileHash_sig"
 
 Log_Normal "Creating FileHash"
-Gen_FileHash "$package" "$prefix" "$FileHash_loc"
+Gen_FileHash "$prefix" "$FileHash_loc"
 Succeeded || exit 1
 Boolean "no-signature" && exit 0
 
@@ -73,10 +87,18 @@ Can_Sign || exit 2
 
 Log_Normal "Signing FileHash"
 Sign_File "$FileHash_loc" "$FileHash_sig"
-if Failed 
+if Failed
 then
    Log_Error "Unable to sign"
    exit 3
+fi
+
+if [ "$filepath" ]
+then
+   Log_Normal "Re-packing signed $filepath..."
+   mv $filepath $filepath.bk
+   cd $prefix/../..
+   tar cfj $filepath $package/$version || Die "Error re-packing $filepath ($package $version)"
 fi
 
 exit 0

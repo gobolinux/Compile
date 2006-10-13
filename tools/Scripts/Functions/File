@@ -116,15 +116,15 @@ GPG_gobo_keyring="${goboPrograms}/Scripts/Current/Data/gpg/goboring.gpg"
 
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
-   Parameters "$@" program prefix hash_file
-   local dname=`dirname $hash_file`
+   Parameters "$@" prefix hashfile
+   local dname=`dirname $hashfile`
    # Validate password
    $sudo_validate
    Assert_Dir $dname
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gpg must run as normal user.
    Quiet pushd $prefix
-   $sudo_exec ListProgramFiles --files "$program" | grep -v "$hash_file" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hash_file" >/dev/null
+   $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$hashfile" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hashfile" >/dev/null
    Quiet popd
 }
 
@@ -168,7 +168,7 @@ hashes = file(hashfile, 'r')
 for line in hashes:
    fields = re.split('\s+', line)
    file_checksums[fields[1]]=fields[0]
-   
+
 # Walk file tree
 for line in sys.stdin:
    line = line.rstrip()
@@ -186,7 +186,7 @@ for line in sys.stdin:
 for missing in file_checksums:
    print missing, 'is missing'
    errors+=1
-      
+
 sys.exit(errors)
 
 """
