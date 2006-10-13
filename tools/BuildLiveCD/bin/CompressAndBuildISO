@@ -1,9 +1,11 @@
 #!/bin/sh
 
-tar --help | grep -q -- --overwrite || {
-   echo "Your version of tar is too old. Please upgrade."
+function die() {
+   echo "$@"
    exit 1
 }
+
+tar --help | grep -q -- --overwrite || die "Your version of tar is too old. Please upgrade."
 
 if [ "$1" = "--help" ]
 then
@@ -304,7 +306,7 @@ then
    done
    cd $root
 
-   MakeInitRDTree
+   MakeInitRDTree || die "Failed creating initrd environment."
    echo "Extracting isolinux/kernel from Archives/Ext/Linux--${kernel_version}--kernel-i686.tar.bz2"
    tar xfj Archives/Ext/Linux--${kernel_version}--kernel-i686.tar.bz2 -O System/Kernel/Boot/kernel-${kernel_version}  > Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
