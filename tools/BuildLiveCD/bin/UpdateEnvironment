@@ -54,6 +54,11 @@ function check_and_dl() {
    fi
 }
 
+(
+   cd $datadir
+   [ -d CVS ] && cvs up
+)
+
 arch=i686
 cat $datadir/Packages-Devel-$arch | while read dir url md5
 do
