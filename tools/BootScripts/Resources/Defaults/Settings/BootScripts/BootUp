@@ -25,7 +25,6 @@ Exec "Creating utmp and wtmp..."              CreateChmod 644 $goboVariable/run/
 Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastboot /forcefsck
 
 #Exec "Starting PCMCIA daemon..."             PCMCIA Start
-Exec "Setting max timer frequency..."         echo 1024 > $goboStatus/sys/dev/rtc/max-user-freq
 Exec "Initializing network..."                Network Start
 Exec "Loading keymap..."                      loadkeys "$KeymapLayout"
 
