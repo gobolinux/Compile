@@ -57,13 +57,10 @@ msg "Setting hostname"
 hostname LiveCD
 
 ########################################
-# GoboHide - little trick due to unionfs
+# GoboHide task
 ########################################
 msg "Hiding legacy directories"
-for i in bin dev etc lib proc sbin sys tmp usr var
-do
-    gobohide -h /Mount/.Pivot/Mount/SquashFS/Rest/$i
-done
+StartTask GoboHide
 
 ######################################
 # Launch the configuration script
