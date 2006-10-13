@@ -18,7 +18,7 @@ function write_file() {
 }
 
 write_file GoboLinuxVersion <<EOF
-013-pre1
+013
 EOF
 
 write_file gobo <<EOF
