@@ -12,7 +12,7 @@ PYTHON_SITE=lib/python$(PYTHON_VERSION)/site-packages
 
 all: python
 	sed -i~ "s/CURRENT_SCRIPTS_VERSION=.*#/CURRENT_SCRIPTS_VERSION="${VERSION}" #/g" bin/CreateRootlessEnvironment
-	rm bin/CreateRootlessEnvironment~
+	rm -f bin/CreateRootlessEnvironment~
 	cd src; make all
 
 debug: python
