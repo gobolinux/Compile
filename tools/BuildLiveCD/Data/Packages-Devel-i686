@@ -3,3 +3,4 @@ Archives/Ext    http://rsync.gobolinux.org/livecd-devel/Files-Fonts.tar.bz2     
 Archives/Ext    http://rsync.gobolinux.org/livecd-devel/CD-Bootloader-i686.tar.bz2                 e6c5e08e87205bde6e3e6303a4b1052c
 Archives/InitRD http://rsync.gobolinux.org/initrd-devel/BusyBox-InitRD--20060202-SVN--i686.tar.bz2 46ca30ec4834771b771ea7cdb0d56e51
 Archives/InitRD http://rsync.gobolinux.org/initrd-devel/MiniUdev--0.1--i686.tar.bz2                2c3a9d7c659f8548ed00657491d4e22f
+Archives/InitRD http://rsync.gobolinux.org/initrd-devel/Unionfs--1.0.14--i686.tar.bz2              5525a9521e4f8cd1b1d7c97ecc906ed9
