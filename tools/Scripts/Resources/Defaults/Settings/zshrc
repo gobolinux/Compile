@@ -80,9 +80,9 @@ compinit -i
 # This must be done before loading a zkbd
 zmodload zsh/complist &> /dev/null
 
-if [[ -e ${goboPrefix}/System/Settings/zsh/zkbd-$TERM-$VENDOR-$OSTYPE ]]
+if [[ -e ${goboPrefix}/System/Links/Shared/zsh/zkbd-$TERM-$VENDOR-$OSTYPE ]]
 then
-   . ${goboPrefix}/System/Settings/zsh/zkbd-$TERM-$VENDOR-$OSTYPE
+   . ${goboPrefix}/System/Links/Shared/zsh/zkbd-$TERM-$VENDOR-$OSTYPE
 
    bindkey "${key[Home]}" beginning-of-line
    bindkey "${key[End]}" end-of-line
