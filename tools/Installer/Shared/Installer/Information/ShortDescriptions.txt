@@ -35,7 +35,7 @@ EnhancedSkel :: GoboLinux default user settings
 Expat :: XML parser library
 FBSH :: A graphical shell and getty to run under the Linux framebuffer device
 File :: Classifies files depending on their contents
-FindUtils:: Tools to find files and to operate on groups of files
+FindUtils :: Tools to find files and to operate on groups of files
 FireFox :: Lightweight Mozilla browser
 Flex :: Generates text-scanning programs
 Fontconfig :: A library for configuring and customizing font access
@@ -47,7 +47,7 @@ GDB :: Gnu Debugger
 GDK-Pixbuf :: a replacement for Imlib
 GDKXFT :: Provides anti-aliased fonts
 Gettext :: Tools to produce multi-lingual messages
-Ghostscript :: Interpreter for the Postscript and PDF graphics languages
+GhostScript :: Interpreter for the Postscript and PDF graphics languages
 Gimp :: GNU image manipulation program
 Gimp-Print :: Printer drivers for use with Ghostscript, CUPS, Foomatic, and the Gimp
 Glade :: A user interface builder for GTK+ and Gnome
@@ -68,7 +68,7 @@ ImageMagick :: Image display and manipulation program
 IMLib :: General Image loading and rendering library
 InetUtils :: Collection of common network programs
 Ispell :: Interactive spell checker
-JPEG :: Libraries for compression of images based on the Joint 
+JPEG :: Libraries for compression of images based on the Joint
 Photographic Experts Group standard
 KBD :: Keytable files and keyboard utilities
 KDE :: The K Desktop Environment
@@ -103,7 +103,7 @@ MC :: Midnight Commander, a console directory browser/file manager
 Mesa :: Open source implementation of the OpenGL graphics API
 MkTemp :: A small program to allow safe temporary file creation from shell scripts
 ModUtils :: Kernel module management utilities for the Linux 2.4 kernels
-Module-Init-Tools :: Kernel module management utilities for the Linux 2.6 kernels 
+Module-Init-Tools :: Kernel module management utilities for the Linux 2.6 kernels
 MPlayer :: Framebuffer or X movie and audio player
 Mtail :: A colorized tail workalike
 Nano :: Small, user friendly text editor (a Pico clone)
@@ -123,7 +123,7 @@ Perl :: A high-level programming language with an eclectic heritage
 Pinfo :: Ncurses based info documentation browser
 Pkgconfig :: A system for managing library compile/link flags that works with automake and autoconf
 Popt :: Library for parsing command line options
-PPP :: A daemon which implements the Point to Point Protocol for 
+PPP :: A daemon which implements the Point to Point Protocol for
 internetworking over dialup lines
 Procinfo :: Gets useful information from /proc
 Procps :: Utilties that monitor system status
@@ -167,7 +167,7 @@ Xaw3d :: A 3D version of the MIT Athena widget set for X
 XFS-Utils :: Utilities for the XFS journaled filesystem
 XMMS :: X MultiMedia System - Winamp-like music player
 Xorg :: An open source implementation of the X Window System
-Xtest :: A X11 server testing tool 
+Xtest :: A X11 server testing tool
 Zip :: A compression and file packaging utility
 ZLib :: Data compression library
 ZSH :: GoboLinux's default shell
@@ -179,30 +179,49 @@ Gnuplot :: A command-line driven interactive datafile and function plotting util
 LibMad :: MPEG Audio Decoder library
 T1Lib :: A library which implements functions for generating bitmaps from Adobe Type 1 fonts
 KDE-I18n-pt_BR :: KDE translations for brazilian portuguese
-KDE-I18n-de    :: KDE translations for german
+KDE-I18n-de :: KDE translations for german
 LibSigc++ :: Typesafe Callback Framework for C++
 Aspell :: Intelligent Spell Checker
 Device-Mapper :: Device Mapper Tools
-Dialog :: A tool to display dialog boxes from shell scripts.
+Dialog :: A tool to display dialog boxes from shell scripts
 DosFSTools :: Utilities for Making and Checking MS-DOS FAT Filesystems on Linux
 Esound :: The Enlightened Sound Daemon.
 Flac :: Free Lossless Audio Coder.
 Hotplug :: Automatic configuration of hotplugged devices
-ID3Lib :: An ID3v1/ID3v2 tagging library.
+ID3Lib :: An ID3v1/ID3v2 tagging library
 Indent :: Formats C source code
-K3B :: A CD/DVD burning application.
-LCMS :: A little color management system.
-LibExif :: An EXIF tags parsing library.
+K3B :: A CD/DVD burning application
+LCMS :: A little color management system
+LibExif :: An EXIF tags parsing library
 LibIDN :: Support for Internationalized Domain Names (IDN)
-LibMNG :: reference library for MNG, the animation extension to PNG.
-LibSndfile :: A library for reading and writing  sound files.
-Libungif :: An uncompressed GIF library compatible with giflib.
-Links :: A text and graphics mode portable WWW browser.
-Pcmcia-CS :: A complete PCMCIA support package for Linux.
+LibMNG :: reference library for MNG, the animation extension to PNG
+LibSndfile :: A library for reading and writing  sound files
+Libungif :: An uncompressed GIF library compatible with giflib
+Links :: A text and graphics mode portable WWW browser
+Pcmcia-CS :: A complete PCMCIA support package for Linux
 Pilot-Link :: PalmPilot Link Utility (Backup, Uploading Tools, and more)
-Rsync :: A file transfer program to keep remote files in sync.
-Thunderbird :: A total redesign of the Mozilla mail component.
+Rsync :: A file transfer program to keep remote files in sync
+Thunderbird :: A total redesign of the Mozilla mail component
 Udev :: A userspace implementation of devfs
 YAFC :: Yet another FTP client
 ConfigTools :: Tools that help the configuration process of a GoboLinux installation
 CDRDAO :: Write CD-Rs in Disk-At-Once mode
+Lazy :: A console-based CD player with digital audio extraction and freedb support
+LibGPhoto2 :: A digital camera library
+LibID3Tag :: ID3 tag manipulation library
+LibSamplerate :: Sample Rate Converter for audio
+LibUSB :: Library for userspace access to USB devices
+Linux-Headers :: Linux kernel headers
+Listener :: A generic inotify consumer with regular expression support
+LiveCD :: Scripts used at the GoboLinux live cd environment
+Lsof :: An Unix-specific diagnostic tool
+Manager :: A graphical management front-end for GoboLinux
+NTFSProgs :: NTFS Utilities
+Perl-XML-Parser :: XML Parser (Perl Module)
+SquashFS-Tools :: Tools required to prepare squashfs images
+Subversion :: An open-source revision control system
+SysFSUtils :: Linux Diagnostic Tools
+TagLib :: An audio meta data (tag) reading and modification library
+Unsermake :: A replacement for automake
+Wireless-Tools :: Tools to configure wireless interfaces
+XTerm :: Classic X terminal
