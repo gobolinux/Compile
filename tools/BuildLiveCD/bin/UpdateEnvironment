@@ -56,7 +56,7 @@ function check_and_dl() {
 
 (
    cd $datadir
-   [ -d CVS ] && cvs up
+   [ -d CVS ] && cvs up -dP
 )
 
 arch=i686
@@ -95,7 +95,7 @@ do
    then
       echo Updating $cvsrepo...
       cd $cvsrepo
-      cvs -q up -d
+      cvs -q up -dP
       cd - &> /dev/null
    else
       echo Getting $cvsrepo...
