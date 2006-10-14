@@ -28,8 +28,6 @@ int
 do_probe(enum deviceClass class, enum deviceBus bus)
 {
 	int i;
-	char *class_string = get_class_name(class);
-	char *bus_string = get_bus_name(bus);
 	struct device **currentDevs;
 
 	DEBUG("probing class %s on bus %s\n", class_string, bus_string);
