@@ -17,7 +17,7 @@ cleanup:
 	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
 
 verify:
-	! { cvs up 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
 dist: version_check cleanup verify
 	rm -rf $(PACKAGE_ROOT)
@@ -28,5 +28,5 @@ dist: version_check cleanup verify
 	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
 	@echo; echo "Package at $(PACKAGE_FILE)"; echo
-	! { cvs up 2>&1 | grep "^M" ;}
+	! { cvs up -dP 2>&1 | grep "^M" ;}
 
