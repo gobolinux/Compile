@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-## $Id: ppmtolss16,v 1.1 2006-03-18 20:29:58 hisham Exp $
+## $Id: ppmtolss16,v 1.2 2006-10-14 18:20:16 hisham Exp $
 ## -----------------------------------------------------------------------
 ##   
 ##   Copyright 2001 H. Peter Anvin - All Rights Reserved
@@ -105,7 +105,9 @@ foreach $arg ( @ARGV ) {
 
 $form = <STDIN>;
 die "$0: stdin is not a raw PPM file" if ( $form ne "P6\n" );
-$sizes = <STDIN>;
+do {
+   $sizes = <STDIN>;
+} while ($sizes =~ /^#.*$/);
 chomp $sizes;
 if ( $sizes !~ /^([0-9]+)\s+([0-9]+)\s*$/ ) {
     die "$0: Input format error 1\n";
