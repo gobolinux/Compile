@@ -121,7 +121,7 @@ then
 
    echo "Coping /Files from LocalCVS..."
    # Add few items to rolayer
-   for directory in Documentation Descriptions Wallpapers
+   for directory in Descriptions Wallpapers
    do
       if ! diff --recursive --exclude=CVS "LocalCVS/files/$directory" "Output/ROLayer/Files/$directory" &> /dev/null
       then
