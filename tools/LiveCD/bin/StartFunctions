@@ -9,7 +9,6 @@ function msg_no_nl() {
 }
 
 function launch_dhcp() {
-   echo "=> Starting DHCP client daemon"
    dhcpcd -t 5 2> /dev/null &
 }
 
