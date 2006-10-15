@@ -116,15 +116,15 @@ GPG_gobo_keyring="${goboPrograms}/Scripts/Current/Data/gpg/goboring.gpg"
 
 #calica 11-10-2004 - These routines handle package/recipe signing and verification
 function Gen_FileHash() {
-   Parameters "$@" prefix hashfile
+   Parameters "$@" file_prefix hashfile
    local dname=`dirname $hashfile`
    # Validate password
    $sudo_validate
    Assert_Dir $dname
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gpg must run as normal user.
-   Quiet pushd $prefix
-   $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$hashfile" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hashfile" >/dev/null
+   Quiet pushd $file_prefix
+   $sudo_exec ListProgramFiles --files "$file_prefix" | grep -v "Resources/FileHash" | $sudo_exec xargs sha1sum | $sudo_exec tee "$hashfile" >/dev/null
    Quiet popd
 }
 
