@@ -118,6 +118,7 @@ Procps
 ProgsReiserFS
 Psmisc
 Python
+PyQt
 Qt
 Readline
 ReiserFSProgs
@@ -126,6 +127,7 @@ Sash
 Scripts
 Sed
 Shadow
+SIP
 Strace
 Subversion
 Sudo
