@@ -87,7 +87,10 @@ fi
 mkdir -p $root/LocalCVS/
 cd $root/LocalCVS/
 
-tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts" 
+if [ -e $datadir/Packages-List-GoboLinuxTools ]
+then tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts"
+else tools="InitRDScripts"
+fi
 
 for cvsrepo in files `for x in $tools; do echo tools/$x; done`
 do
