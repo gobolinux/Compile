@@ -16,6 +16,7 @@ $(LIB_DIR)/GenericEditor.py: $(GUI_DIR)/GenericEditor.ui
 	pyuic $? >$@
 
 $(LIB_DIR)/ManagerUI.py: $(GUI_DIR)/ManagerUI.ui
+	mkdir -p $(LIB_DIR)
 	pyuic $? > $@
 
 $(LIB_DIR)/ManagerConfigForm.py: $(GUI_DIR)/ManagerConfigForm.ui
