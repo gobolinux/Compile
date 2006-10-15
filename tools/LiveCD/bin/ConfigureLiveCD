@@ -48,7 +48,7 @@ EOF
 # Adjusting .kde to the chosen lang
 ######################################
 
-if [ -d "${goboPrograms}/KDE" ]
+if [ -d "${goboPrograms}/KDE-Base" ]
 then
    case "$LANG" in
    pt_BR) kdecountry=br; kdelanguage=pt_BR ;;
