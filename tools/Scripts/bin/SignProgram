@@ -41,15 +41,13 @@ then
    bn=`basename $filepath`
    package=`Get_Token "$bn" "--" "0"`
    version=`Get_Token "$bn" "--" "1"`
-   prefix=$goboTemp/$package/$version
-   cd $goboTemp
-   [ -d $package ] && rm -rf $package
-   Log_Normal "Unpacking $filepath at $goboTemp..."
-   tar xfvj $filepath
+   prefix=$goboTemp
+   [ -d $prefix/$package/$version ] && rm -rf $prefix/$package/$version
+   Log_Normal "Unpacking $filepath at $prefix..."
+   tar -C$prefix -xvjf $filepath
    sudo_exec=""
    sudo_validate=""
-   [ -d $prefix ] || Die "Error unpacking $filepath ($package $version)"
-   cd $prefix
+   [ -d $prefix/$package/$version ] || Die "Error unpacking $filepath ($package $version)"
 else
    package=`GuessProgramCase $1 $2`
    if [ "$2" ]
@@ -58,27 +56,27 @@ else
    else
       version=`Get_Version "$package" "Current"`
    fi
-   prefix="$goboPrograms/$package/$version"
-   Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+   prefix="$goboPrograms"
+   Is_Directory "$prefix/$package" || Die "Package $package does not exist."
    Is_Empty "$version" && Die "Couldn't find a proper version for $package."
-   Is_Directory "$prefix" || Die "$package version $version is not a valid package."
-   cd "$prefix"
-   Release_Superuser
+   Is_Directory "$prefix/$package/$version" || Die "$package version $version is not a valid package."
 fi
+
+Release_Superuser
 
 ########## Functions ##########
 
 ########## Sign Resources/FileHash ##########
 
-FileHash_loc="Resources/FileHash"
+FileHash_loc="$prefix/$package/$version/Resources/FileHash"
 FileHash_sig="${FileHash_loc}.sig"
 
 # Clear existing sigs and hashes
-$sudo_exec rm -f "$FileHash_log"
+$sudo_exec rm -f "$FileHash_loc"
 $sudo_exec rm -f "$FileHash_sig"
 
 Log_Normal "Creating FileHash"
-Gen_FileHash "$prefix" "$FileHash_loc"
+Gen_FileHash "$prefix/$package/$version" "$FileHash_loc"
 Succeeded || exit 1
 Boolean "no-signature" && exit 0
 
@@ -97,8 +95,9 @@ if [ "$filepath" ]
 then
    Log_Normal "Re-packing signed $filepath..."
    mv $filepath $filepath.bk
-   cd $prefix/../..
-   tar cfj $filepath $package/$version || Die "Error re-packing $filepath ($package $version)"
+   tar -cjf $filepath -C$prefix $package/$version || Die "Error re-packing $filepath ($package $version)"
+   rm -f $filepath.bk
+   rm -rf $prefix/$package
 fi
 
 exit 0
