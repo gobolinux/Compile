@@ -41,8 +41,6 @@ fi
 
 ### Simulating /bin/BootScript ###
 
-
-source "${goboSettings}/BootOptions"
 source "$BootScriptsDir/Functions/BootScripts"
 source "$themefile"
 
