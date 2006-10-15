@@ -7,8 +7,7 @@ execCtr=0
 forkCtr=0
 
 logpath=${goboVariable}/log
-dateformat=+%F' '%R
-datestamp="\ndate \"$dateformat\""
+datestamp="\n`date "+%F' '%R"`"
 templog="$datestamp\n----------------\n$modescript"
 [ -z "$BootLogging" ] && BootLogging="yes" # yes|no can be passed as option at $
 AppendLog="no" # yes|no
@@ -159,19 +158,12 @@ Quit() {
 
 ExecBackend() {
     command=$@
-    local message=`"$@" 2>&1`
+    "$@" 1> $ThemeStdoutStream 2> $ThemeStderrStream
     exitstatus=$?
     ThemeAfter "$execCtr" "$exitstatus"
    
-    if test $exitstatus -lt 1
-	then
-	echo $message > $ThemeStdoutStream
-	test -z "$message" && message="ok"
-	[ "$BootLogging" = "yes" ] && LogBoot $command " -- " $message
-    else
-	echo $message > $ThemeStderrStream
-	test -z "$message" && message="error"
-	[ "$BootLogging" = "yes" ] && LogBoot $command " -- " $message
+    if [ "$BootLogging" = "yes" ]
+    then LogBoot $message " [$exitstatus] " $command 
     fi
 }
 
@@ -190,16 +182,16 @@ WaitBackend() {
 }
 
 LogBoot() {
-    if touch ${logpath}/boot.log 2>/dev/null
-	then
-	if test -n "$templog"
-	    then
-            [ "$AppendLog" = "no" ] && mv ${logpath}/boot.log ${logpath}/boot.log.old
-	    echo -e $templog >> ${logpath}/boot.log
-	    unset templog
-	fi
-	echo -e $@ >> ${logpath}/boot.log
-    else
-	export templog="$templog\n$@"
-    fi
+   if touch ${logpath}/boot.log 2>/dev/null
+   then
+      if test -n "$templog"
+      then
+         [ "$AppendLog" = "no" ] && mv ${logpath}/boot.log ${logpath}/boot.log.old
+         echo -e $templog >> ${logpath}/boot.log
+         unset templog
+      fi
+      echo -e $@ >> ${logpath}/boot.log
+   else
+      export templog="$templog\n$@"
+   fi
 }
