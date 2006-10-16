@@ -21,7 +21,7 @@ Is_Writable "$PWD" || exit 0
 
 for i in "$@"
 do
-   Log_Verbose "Converting $i..."
+   [ "${i##*.}" != "la" ] && continue || Log_Verbose "Converting $i..."
 
    old="$i~"
    while [ -e "$old" ]
