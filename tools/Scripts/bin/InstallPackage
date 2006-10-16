@@ -187,9 +187,7 @@ existingpackage=`ls ${goboPrograms} | grep -i "^$packagename$"`
       doask=yes
    }
    
-   existingversion=$(Which_Version "${goboPrograms}/$existingpackage/Current")
-   
-   [ "$packageversion" = "$existingversion" ] && {
+   ls "${goboPrograms}/$existingpackage/" | grep -q "^$packageversion$" && {
       Is_Entry "same" "cancel" && Pass_Away "Attempting to install $packagename over same version."
       Is_Entry "same" "remove" && doremove=yes
       Is_Entry "same" "ask" && {
