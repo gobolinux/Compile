@@ -187,7 +187,8 @@ existingpackage=`ls ${goboPrograms} | grep -i "^$packagename$"`
       doask=yes
    }
    
-   ls "${goboPrograms}/$existingpackage/" | grep -q "^$packageversion$" && {
+   if [ -e "${goboPrograms}/$existingpackage/$packageversion" ]
+   then
       Is_Entry "same" "cancel" && Pass_Away "Attempting to install $packagename over same version."
       Is_Entry "same" "remove" && doremove=yes
       Is_Entry "same" "ask" && {
@@ -195,7 +196,7 @@ existingpackage=`ls ${goboPrograms} | grep -i "^$packagename$"`
          doremove=yes
          doask=yes
       }
-   }
+   fi
 }
 
 function try_remove() {
@@ -206,7 +207,7 @@ function try_remove() {
          [ "$REPLY" = "C" -o "$REPLY" = "c" ] && exit 1
          [ "$REPLY" = "K" -o "$REPLY" = "k" ] && return
       }
-      rm -rf -- "${goboPrograms}/$existingpackage/$existingversion"
+      rm -rf -- "${goboPrograms}/$existingpackage/$packageversion"
    }
 }
 
@@ -286,7 +287,7 @@ Quiet cd -
 if [ "$packagename" = "Scripts" ]
 then
     cd "${goboPrograms}/$packagename/Current/src"
-				make --silent
+    make --silent
     cd "${goboPrograms}/$packagename/Current/bin"
     PATH=$PWD:$PATH ./SymlinkProgram Scripts
     Quiet cd -
