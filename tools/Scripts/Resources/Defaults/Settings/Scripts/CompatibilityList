@@ -11,3 +11,5 @@ BerkeleyDB: DB
 Sendmail: Qmail Postfix
 Qmail: Sendmail Postfix
 Postfix: Qmail Sendmail
+Tcl: Tcl-Tk
+Tk: Tcl-Tk
