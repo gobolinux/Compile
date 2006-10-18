@@ -7,13 +7,7 @@
 # based on RescueSymlinkProgram by
 # (C) 2004 Andre Detsch. Released under the GNU GPL.
 #     detsch at gobolinux.org
-#
-#
-#############################################################################
-# Changelog
-#############################################################################
-# 29/08/2004 - [detsch] - First version
-#
+
 
 scriptdir=$(readlink -f $(dirname $0))
 
@@ -40,21 +34,6 @@ root="`readlink -f $2`"
 gobolinks="$crossprefixdir/System/Links"
 
 [ "$verbose" ] && echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
-
-#function do_link() {
-#   if [ -d "$root/$1" ]
-#   then
-#      cd $root/$1
-#      find -mindepth 1 -printf "%P\n" | while read file
-#      do
-#         dir=`dirname $root/$2/$file`
-#         [ -L "$dir" ] && rm -f "$dir"
-#         mkdir -p "$dir"
-#         ln -nfs $1/$file $root/$2/$file
-#      done
-#      cd -
-#   fi
-#}
 
 export verboseFD=100
 export normalFD=101
