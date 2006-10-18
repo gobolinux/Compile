@@ -94,6 +94,10 @@ fi
 
 if [ "$newurl" ]
 then
+   # TODO: generalize mirror system
+   newurl=`echo "$newurl" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
+   newurl=`echo "$newurl" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
+
    . Recipe.old
    switchurls="s,$url,$newurl,g;"
    switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
