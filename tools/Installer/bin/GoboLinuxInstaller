@@ -780,6 +780,7 @@ try :
 			import GenLiloConf
 			lilo_conf = GenLiloConf.generateLiloConfFile(installer.getValue('RootPartition')[1].split()[0])
 			generateLiloConf(installer.getValue('RootPartition')[1].split()[0])
+			os.mkdir(destMountPoint+'/Programs/LILO/Settings')
 			safeWriteToFile(destMountPoint+'/Programs/LILO/Settings/lilo.conf', lilo_conf, logger)
 	except :
 		log('Error creating lilo.conf file')
