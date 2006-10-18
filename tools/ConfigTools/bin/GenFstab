@@ -48,10 +48,6 @@ echo "# shm (kernel 2.6)."
 echo "none /System/Kernel/Devices/shm tmpfs  defaults 0 0"
 echo
 
-echo "# GoboLinux Live CD."
-echo "/Mount/CD-ROM/GoboLinux.squashfs /Mount/SquashFS squashfs loop,noauto,user"
-echo
-
 
 ################################################################################
 # IDE Drives
