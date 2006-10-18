@@ -28,7 +28,7 @@ else chrootcompileCompileConf="./$goboPrograms/Compile/Settings/Compile/Compile.
 fi
 
 # allows one to override any of the three above variables 
-[ -e "./ChrootCompile.conf" ] source "./ChrootCompile.conf"
+[ -e "./ChrootCompile.conf" ] && source "./ChrootCompile.conf"
 
 if [ "$UID" -ne 0 ]
 then sudo=sudo
