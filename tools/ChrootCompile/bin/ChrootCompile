@@ -669,8 +669,8 @@ function in_target() {
 if [ "$chrootcompileMode" = "gobo" ]
 then
    package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $version`
-   mkdir -p $root/$putclean
-   cp $root/$name--$version* $root/$putclean
+   mkdir -p $putclean
+   cp -v $root/$name--$version* $putclean
 else
    fullroot=`readlink -f $root`
    cd $root/View
