@@ -20,15 +20,15 @@ fi
 #############################################################################
 # Setting options
 #############################################################################
-workenv=$PWD
 export goboPrograms="/Programs"
 chrootcompileMode="gobo"
-if [ -e "$workenv/Compile.conf" ]
-then chrootcompileCompileConf="$workenv/Compile.conf"
-else chrootcompileCompileConf="$workenv/$goboPrograms/Compile/Settings/Compile/Compile.conf"
+if [ -e "./Compile.conf" ]
+then chrootcompileCompileConf="./Compile.conf"
+else chrootcompileCompileConf="./$goboPrograms/Compile/Settings/Compile/Compile.conf"
 fi
+
 # allows one to override any of the three above variables 
-[ -e "$workenv/ChrootCompile.conf" ] source "$workenv/ChrootCompile.conf"
+[ -e "./ChrootCompile.conf" ] source "./ChrootCompile.conf"
 
 if [ "$UID" -ne 0 ]
 then sudo=sudo
