@@ -16,11 +16,8 @@ then
 	msg_no_nl "Starting X11 detection (<esc> to skip)" 
 	skip_on_esc 3 && echo && { 
 	   if GenXorgConf > /tmp/xorg.conf 
-       then
-           cp /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf
-           mv /tmp/xorg.conf ${goboPrograms}/Xorg/Current/Resources/Defaults/Settings/X11/xorg.conf
-       else
-           echo FAILED
+       then mv /tmp/xorg.conf ${goboPrograms}/Xorg/Settings/X11/xorg.conf
+       else echo FAILED
        fi
 	} || echo '<SKIPPED>'
 fi
