@@ -91,4 +91,5 @@ then
 	msg "Adjusting xorg.conf"
 	cat ${goboPrograms}/Xorg/Settings/X11/xorg.conf | ModifyXorgConf `cat ${goboTemp}/setup/keymap` > /tmp/xorg.conf.$$ 
 	cp -f /tmp/xorg.conf.$$ ${goboPrograms}/Xorg/Settings/X11/xorg.conf
+	cp -f /tmp/xorg.conf.$$ ${goboPrograms}/Xorg/Current/Resources/Defaults/Settings/X11/xorg.conf
 fi
