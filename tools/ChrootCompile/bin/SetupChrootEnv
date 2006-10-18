@@ -26,5 +26,5 @@ fi
 
 echo
 echo "You can now add compilation recipes to the Recipes/ directory"
-echo "and run builds with ./ChrootCompile Recipes/App/Version"
+echo "and run builds with 'ChrootCompile Recipes/App/Version'"
 echo
