@@ -30,13 +30,11 @@ menu-title=" GoboLinux 013
 	o += '  label=GoboLinux' + '\n'
 	o += '  root=/dev/'+targetPartition+'\n'
 	o += '  video=vesafb:off\n'
-	o += '  append="acpi=off"\n'
 	
 	o += '\n'
 	o += '  image=/System/Kernel/Boot/kernel'+'\n'
 	o += '  label=GoboLinux - Framebuffer' + '\n'
 	o += '  root=/dev/'+targetPartition+'\n'
-	o += '  append="acpi=off"\n'
 	
 	for partition in bootableWindowsPartitions:
 		o += '\n'

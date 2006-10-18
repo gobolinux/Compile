@@ -148,15 +148,15 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 	if genGraphicDesktop :
 		o += '\n'
 		o += 'title '+tr('GoboLinux - Graphic Desktop') + '\n'
-		o += 'kernel %s/System/Kernel/Boot/kernel acpi=off video=vesafb:off root=/dev/%s Boot=Graphic'%(grubFormatTarget,targetPartition) + '\n'
+		o += 'kernel %s/System/Kernel/Boot/kernel video=vesafb:off root=/dev/%s Boot=Graphic'%(grubFormatTarget,targetPartition) + '\n'
 
 	o += '\n'
 	o += 'title '+tr('GoboLinux - Console') + '\n'
-	o += 'kernel %s/System/Kernel/Boot/kernel acpi=off video=vesafb:off root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
+	o += 'kernel %s/System/Kernel/Boot/kernel video=vesafb:off root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
 
 	o += '\n'
 	o += 'title '+tr('GoboLinux - Framebuffer Console') + '\n'
-	o += 'kernel %s/System/Kernel/Boot/kernel acpi=off root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
+	o += 'kernel %s/System/Kernel/Boot/kernel root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
 	
 	# TODO: verificar isto:
 	for partition in bootableWindowsPartitions:
