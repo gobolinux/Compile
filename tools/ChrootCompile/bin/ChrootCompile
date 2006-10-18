@@ -22,10 +22,7 @@ fi
 #############################################################################
 export goboPrograms="/Programs"
 chrootcompileMode="gobo"
-if [ -e "./Compile.conf" ]
-then chrootcompileCompileConf="./Compile.conf"
-else chrootcompileCompileConf="./$goboPrograms/Compile/Settings/Compile/Compile.conf"
-fi
+[ -e "./Compile.conf" ] && chrootcompileCompileConf="./Compile.conf"
 
 # allows one to override any of the three above variables 
 [ -e "./ChrootCompile.conf" ] && source "./ChrootCompile.conf"
@@ -582,6 +579,7 @@ function fetch_archive_off_recipe() {
    ) || die
 }
 
+[ "$chrootcompileCompileConf" ] || chrootcompileCompileConf="$root/$goboPrograms/Compile/Settings/Compile/Compile.conf"
 source "$chrootcompileCompileConf"
 
 fetch_archive_off_recipe "$1"
