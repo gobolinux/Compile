@@ -1,59 +1,30 @@
 #!/bin/bash
 
-function download_packages() {
-   mkdir -p BaseDependencies
-   rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$1/ BaseDependencies/
-}
-
-function update_tools() {
-    [ "$quiet" ] && echo "Fetching the Compile and Scripts module from CVS..."
-    cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Compile 
-    cvs $cvsopts -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts co tools/Scripts 
-}
-
-function configure_tools() {
-    {
-       echo "chrootcompileCompileConf=$PWD/Compile.conf"
-       echo "goboPrograms=/Programs"
-    } > ChrootCompile.conf
-    [ -e /System/Settings/gobo ] && echo "chrootcompileMode=gobo" >> ChrootCompile.conf
-    cp tools/Compile/Resources/Defaults/Settings/Compile/Compile.conf .
-    pushd tools/Scripts/src
-    make
-    popd
-}
-
-unset quiet
-if [ "$1" = "--quiet" ]
-then
-    quiet=yes
-    wgetopts="--quiet"
-    cvsopts="-Q"
-fi
-
-bootstraprepository="chrootcompile-packages"
+#############################################################################
+# Choosing between complete and base set of packages
+#############################################################################
+repository="chrootcompile-packages"
 if [ "$1" = "--complete" -o "$1" = "-c" ]
 then
-   bootstraprepository="livecd-packages"
+   repository="livecd-packages"
 fi
 
+#############################################################################
+# Download packages
+#############################################################################
+mkdir -p BaseDependencies
+rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$repository/ BaseDependencies/
 
-download_packages "$bootstraprepository"
-update_tools
-configure_tools
-
+#############################################################################
+# SetupAddOn and final message
+#############################################################################
 if [ -e "./SetupAddOn" ]
 then
    chmod +x SetupAddOn
    ./SetupAddOn
 fi
 
-if [ ! "$quiet" ]
-then
-   echo
-   echo
-   echo "You can now add compilation recipes to the Recipes/ directory"
-   echo "and run builds with ./ChrootCompile Recipes/App/Version"
-   echo
-   echo
-fi
+echo
+echo "You can now add compilation recipes to the Recipes/ directory"
+echo "and run builds with ./ChrootCompile Recipes/App/Version"
+echo

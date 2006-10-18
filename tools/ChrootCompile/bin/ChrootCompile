@@ -1,30 +1,6 @@
 #!/bin/sh 
 #-e
 
-#############################################################################
-# Current requirements for this script:
-# - './BaseDependencies' directory from where ChrootCompile gets package to build
-#   the compilation environment. Only one version per package should be 
-#   stored here.
-#
-# Other directories:
-# - './Recipes' directory containing all potentially required recipes.
-#   Not needed if using --local-repository option
-#
-# - './Unpacked' directory which contains unpacked packages installed
-#   within $root. Those unpacked dirs are binded within $root (instead
-#   of simply copied or unpacked) in order to reduce preparation time.
-#
-# - './$getclean' directory where newly compiled packages are fetched.
-# - './$putclean' directory where compiled packages are stored.
-#   (These are usually the same (./Clean) but can be different for
-#   debugging purposes.)
-#
-# - './Area' directory created at each run, which will contain a complete 
-#    set of installed programs, required to compile something.
-#
-#############################################################################
-
 function die() {
    echo "ChrootCompile: $*" >&2
    exit 1
@@ -42,15 +18,18 @@ then
 fi
 
 #############################################################################
-# Parsing options. By now, only 'chrootcompileCompileConf'
+# Setting options
 #############################################################################
 workenv=$PWD
+export goboPrograms="/Programs"
 chrootcompileMode="gobo"
-source ./ChrootCompile.conf
-
-if [ ! "$goboPrograms" ]
-then export goboPrograms=/Programs
+if [ -e "$workenv/Compile.conf" ]
+then chrootcompileCompileConf="$workenv/Compile.conf"
+else chrootcompileCompileConf="$workenv/$goboPrograms/Compile/Settings/Compile/Compile.conf"
 fi
+# allows one to override any of the three above variables 
+[ -e "$workenv/ChrootCompile.conf" ] source "$workenv/ChrootCompile.conf"
+
 if [ "$UID" -ne 0 ]
 then sudo=sudo
 else sudo=
@@ -312,35 +291,6 @@ then
         $sudo mount --bind $crosskerneldir $root/$crosskerneldir
     fi
 fi
-
-#############################################################################
-# Packing CVS versions of the tools
-#############################################################################
-
-arch=i686
-today=`date +%Y%m%d`
-tools="Scripts Compile"
-localcvs="."
-for package in $tools 
-do
-   tarball=BaseDependencies/$package--$today--$arch.tar.bz2
-   if [ ! -e "$tarball" -o "`find "$localcvs/tools/$package/" -newer "$tarball" 2> /dev/null`" ] 
-   then
-      echo "Packing $package CVS snapshot..."
-      rm -rf $package                    # only required if there are leftovers from a previous execution
-      mkdir -p $package
-      cp -a $localcvs/tools/$package $package/$today
-      # we need to build here in order to create the files which are going to be linked inside BuildRoot
-      [ -e $package/$today/Makefile ] && echo Building $package/$today && make -C $package/$today > /dev/null 
-      find $package/$today/ -type d -name CVS | xargs rm -rf 
-      rm -f BaseDependencies/$package--*--$arch.tar.bz2   # cleaning up old versions too
-      tar cjpf $tarball $package/$today  # create the package
-      rm -rf $package
-      toolswhichneedmake="$toolswhichneedmake $package"
-   else
-      echo "Not repacking $package CVS snapshot..."
-   fi
-done
 
 #############################################################################
 # Getting packages for BaseDependencies - Temporary only
