@@ -106,7 +106,6 @@ function installation_failed() {
    then
       Is_Link "${settings}" && rm "${settings}"
       Is_Directory "${settings}.hold" && mv "${settings}.hold" "${settings}"
-      exit 1
    fi
    Die "Installation failed."
 }
