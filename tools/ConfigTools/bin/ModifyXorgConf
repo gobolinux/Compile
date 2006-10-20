@@ -51,11 +51,10 @@ EOF
   mv ${tempfile}.tmp ${tempfile}
 }
 
-apply_sed "s%/Programs/.*/lib/modules%/System/Links/Libraries/modules%"
+apply_sed "s%/Programs/.*/lib/xorg/modules%/System/Links/Libraries/xorg/modules%"
+apply_sed "s%/Programs/.*/share/X11/rgb%/System/Links/Shared/X11/rgb%"
 apply_sed "s%/Programs/.*/fonts%/Files/Fonts%"
 apply_sed "s%/Files/Fonts/misc%/Files/Fonts/Misc%"
-
-apply_ed 'Section "Files"' '        FontPath     "/Files/Fonts/TrueType/"'
 
 if Quiet grep '"Protocol".*"auto"' ${tempfile}
 then
