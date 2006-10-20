@@ -157,26 +157,6 @@ function do_symlink() {
       SymlinkProgram $safeopts $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
    fi
-
-   cat $reciperesources/ExpectedGroups 2> /dev/null | while read group
-   do
-      if [ "$goboCrossCompiling" ]
-      then
-      else
-         groupadd $group
-      fi
-   done
-   
-   cat $reciperesources/ExpectedUsers 2> /dev/null | while read entry
-   do
-      user=`echo $entry | cut -d: -f1`
-      group=`echo $entry | cut -d: -f1`
-      if [ "$goboCrossCompiling" ]
-      then
-      else
-         groupadd $group
-      fi
-   done
 }
 
 function install_extras() {
