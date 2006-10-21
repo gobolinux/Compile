@@ -6,7 +6,7 @@
 #
 #####################################################################
 
-CURRENT_SCRIPTS_VERSION=2.4.2 # This variable is automatically set by Make
+CURRENT_SCRIPTS_VERSION=2.5.3 # This variable is automatically set by Make
 hostSystemDependencies=(
    sh mv cp ls find sed grep
    python
