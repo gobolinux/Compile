@@ -21,7 +21,7 @@ new_format = s_name +s_blank+ s_operand +s_blank+ s_version + '('+s_blank+ ',' +
 
 new_format_c = re.compile(new_format)
 
-old_format = s_name+s_blank+s_version
+old_format = s_name+s_blank+s_version+'?'
 old_format_c = re.compile(old_format)
 
 global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True) 
