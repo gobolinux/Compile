@@ -21,7 +21,7 @@
 1380	./CDRDAO
 3756	./CDRTools
 380	./Compile
-328	./ConfigTools
+324	./ConfigTools
 9392	./CoreUtils
 536	./Cpio
 13884	./CUPS
@@ -40,7 +40,7 @@
 464	./Expat
 1752	./File
 1492	./FindUtils
-21996	./FireFox
+22028	./Firefox
 3792	./Flac
 968	./Flex
 3080	./Fontconfig
@@ -73,7 +73,7 @@
 596	./IMLib
 752	./Indent
 664	./InetUtils
-300	./Installer
+308	./Installer
 708	./JACK
 596	./JPEG
 12608	./K3B
@@ -116,7 +116,7 @@
 3100	./Links
 6260	./Linux-Headers
 92	./Listener
-148	./LiveCD
+144	./LiveCD
 292	./Lsof
 284	./M4
 1784	./Make
