@@ -184,9 +184,9 @@ def interpret_dependency_line(line, t=None) :
 			ret[limit+'included'] = '=' in m.group(i)
 	else :
 		m = old_format_c.match(line)
-		if (m.group(1).lower() in global_dependencies_blacklist) :
-			return
 		if m :
+	        	if (m.group(1).lower() in global_dependencies_blacklist) :
+        			return
 			ret = {'program'    : m.group(1),
 			       'lover'      : m.group(2),
 			       'loincluded' : True,
