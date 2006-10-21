@@ -160,8 +160,12 @@ def interpret_dependency_line(line, t=None) :
 	if not line :
 		return
 
+	global global_dependencies_blacklist
+	
 	m = new_format_c.match(line)
 	if m :
+		if (m.group(1).lower() in global_dependencies_blacklist) :
+			return
 		ret = {'program'    : m.group(1),
 		       'loincluded' : True,
 		       'lover'      : '',
@@ -180,6 +184,8 @@ def interpret_dependency_line(line, t=None) :
 			ret[limit+'included'] = '=' in m.group(i)
 	else :
 		m = old_format_c.match(line)
+		if (m.group(1).lower() in global_dependencies_blacklist) :
+			return
 		if m :
 			ret = {'program'    : m.group(1),
 			       'lover'      : m.group(2),
@@ -336,7 +342,6 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None):
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
-	global global_dependencies_blacklist
 	
 	if all_matches == None :
 		global_available_packages_cache = {}
@@ -372,7 +377,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	for rule in all_rules :
 		if hook :
 			hook("Checking dependencies", len(all_matches), len(all_matches)+1)
-			
+
 		if mode == 'missing' and find_matching_package(rule, ['installed'], noWeb=noWeb)[2] :
 			continue
 		
@@ -384,9 +389,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		#       tuple with None in the place of type
 		if not match in all_matches :
 			all_matches.append(match) # we append before, to avoid asking twice for a package that is meant to be skipped
-			if (match[0].lower() in global_dependencies_blacklist) :
-				continue # blacklisted
-
+			
 			if mode != 'all' :
 				# Asking here!
 				if install_optional == 'never' or (install_optional == 'ask' and ask_hook and not ask_hook(match)) :
