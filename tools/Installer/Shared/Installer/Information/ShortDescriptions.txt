@@ -36,7 +36,7 @@ Expat :: XML parser library
 FBSH :: A graphical shell and getty to run under the Linux framebuffer device
 File :: Classifies files depending on their contents
 FindUtils :: Tools to find files and to operate on groups of files
-FireFox :: Lightweight Mozilla browser
+Firefox :: Lightweight Mozilla browser
 Flex :: Generates text-scanning programs
 Fontconfig :: A library for configuring and customizing font access
 FreeType :: Font engine
