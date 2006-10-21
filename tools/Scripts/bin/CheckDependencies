@@ -265,6 +265,17 @@ def ask_if_install(match) :
 	else :
 		reason = p + " is not installed."
 
+	if t == None :
+		os.system('''
+. ScriptFunctions
+Import Log
+export scriptName=CheckDependencies
+echo >&2
+Log_Terse "%s"
+Log_Terse "Unable to fulfill the dependency."
+'''%(reason))
+		return
+
 	if global_always_do :
 		if global_always_do=='install/compile' :
 			if t == 'recipe' :
