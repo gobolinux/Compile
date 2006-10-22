@@ -312,7 +312,11 @@ then
    rm -f ${root}/System/Links/Environment/Cache
    for link in ${root}/System/Links/Environment/*--*
    do
-      [ -e ${link} ] && { cat ${link} >> ${root}/System/Links/Environment/Cache || rm -f ${link}; }
+      if [ -e ${link} ] 
+      then
+         cat ${link} >> ${root}/System/Links/Environment/Cache || rm -f ${link}
+         echo >> ${root}/System/Links/Environment/Cache
+      fi
    done
 else
    echo "Keeping ${root}/System/Links/Environment/Cache"
