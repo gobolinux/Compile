@@ -75,7 +75,7 @@ struct option longopts[] = {
 
 /* The invocation name of the program */
 static char *program_name;
-const char version[] = "0.09";
+const char version[] = "0.10";
 
 void
 usage (int status)
