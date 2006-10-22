@@ -97,6 +97,7 @@ function symlink_program() {
    do_link ${full_path}/Resources/Tasks ${gobolinks}/Tasks
    do_link ${full_path}/lib ${gobolinks}/Libraries
    do_link ${full_path}/man ${gobolinks}/Manuals
+   do_link ${full_path}/info ${gobolinks}/Manuals/info
    do_link ${full_path}/include ${gobolinks}/Headers
    do_link ${full_path}/../Settings ${gobolinks}/../Settings
    do_link ${full_path}/Shared ${gobolinks}/Shared
@@ -197,7 +198,7 @@ create_dir $root/System/Links/Executables
 create_dir $root/System/Links/Environment
 create_dir $root/System/Links/Libraries
 create_dir $root/System/Links/Headers
-create_dir $root/System/Links/Manuals
+create_dir $root/System/Links/Manuals/info
 create_dir $root/System/Links/Shared
 # create_dir $root/System/Links/Shared/misc
 create_dir $root/System/Links/Tasks
