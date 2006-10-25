@@ -11,7 +11,7 @@ root=`mount | grep "/Mount/GoboLinux" | head -n 1 | awk '{ print $1 }'`
 # Assume it applies to currently running system
 if ! [ "$root" ]
 then
-   root=`readlink -f /dev/root`
+   root=`mount | grep -i dev | grep " / " | awk '{print $1}'`
 fi
 root=`readlink -f /$root`
 
@@ -32,22 +32,94 @@ echo "# Proc filesystem."
 echo "proc $goboStatus proc defaults 0 0"
 echo
 
-echo "# Sys filesystem (kernel 2.6)."
+echo "# Sys filesystem."
 echo "none /System/Kernel/Objects sysfs defaults 0 0"
 echo
 
-echo "# Pts filesystem (kernel 2.6)."
+echo "# Pts filesystem."
 echo "none /System/Kernel/Devices/pts devpts defaults 0 0"
 echo
 
-echo "# USB filesystem (kernel 2.6)."
+echo "# USB filesystem."
 echo "none /System/Kernel/Status/bus/usb usbfs defaults 0 0"
 echo
 
-echo "# shm (kernel 2.6)."
+echo "# Shared memory."
 echo "none /System/Kernel/Devices/shm tmpfs  defaults 0 0"
 echo
 
+
+################################################################################
+# Hard Disk Drives
+################################################################################
+
+function gen_config() {
+   fdisk -l "$realdev" 2>&1 | grep "^/" | awk -v "root=$root" -v "drive=${upper[drive]}" \
+         -v "devicetype=$1" '
+   BEGIN {
+      lastpart=1
+      win=1
+      dos=1
+   }
+   {
+      part=$1
+      if ($1 == "") {
+         exit
+      }
+      if ($2 == "*")
+         n = 3
+      else
+         n = 2
+      n += 3
+
+      if ($1 == root) {
+         print "# Root partition."
+         print $1 " / auto defaults 1 0" 
+         print ""
+      } else if ($(n) == "1" || $(n) == "4" || $(n) == "6") {
+         print "# DOS partition."
+         if (dos == 1)
+            print $1 " /Mount/DOS msdos defaults 1 0" 
+         else
+            print $1 " /Mount/DOS" dos " msdos umask=000 1 0" 
+         print ""
+         dos++
+      } else if ($(n) == "b" || $(n) == "c") {
+         print "# Windows partition."
+         if (win == 1)
+            print $1 " /Mount/Windows vfat defaults 1 0" 
+         else
+            print $1 " /Mount/Windows" win " vfat umask=000 1 0" 
+         print ""
+         win++
+      } else if ($(n) == "e") {
+         print "# Windows partition."
+         if (win == 1)
+            print $1 " /Mount/Windows msdos defaults 1 0" 
+         else
+            print $1 " /Mount/Windows" win " msdos umask=000 1 0" 
+         print ""
+         win++
+      } else if ($(n) == "82") {
+         print "# Swap partition."
+         print $1 " none swap pri=1 0 0" 
+         print ""
+      } else if ($(n) != "5") {
+         partnum=substr($1, length($1))
+         // so that hda10 does not become HDA0
+         if (lastpart > int(partnum)) {
+            lastpart++
+            partnum = lastpart
+         } else {
+            lastpart = int(partnum)
+         }
+         print "# Additional partition."
+         print $1 " /Mount/" devicetype drive partnum " auto defaults 1 0" 
+         print ""
+      }
+   }
+   '
+}
 
 ################################################################################
 # IDE Drives
@@ -60,73 +132,21 @@ do
    device=/dev/hd${lower[drive]}
    realdev=`readlink -f "$device"`
    [ -e "$realdev" ] || continue
-   fdisk -l "$realdev" 2>&1 | grep "^/" | awk -v "root=$root" -v "drive=${upper[drive]}" '
-      BEGIN {
-         lastpart=1
-         win=1
-	 dos=1
-      }
-      {
-         part=$1
-	 if ($1 == "") {
-	    exit
-	 }
-	 if ($2 == "*")
-	    n = 3
-	 else
-	    n = 2
-	 n += 3
-	 
-	 
-	 if ($1 == root) {
-	    print "# Root partition."
-	    print $1 " / auto defaults 1 0" 
-	    print ""
-	 } else if ($(n) == "1" || $(n) == "4" || $(n) == "6") {
-	    print "# DOS partition."
-	    if (dos == 1)
-	       print $1 " /Mount/DOS msdos defaults 1 0" 
-	    else
-	       print $1 " /Mount/DOS" dos " msdos umask=000 1 0" 
-	    print ""
-	    dos++
-	 } else if ($(n) == "b" || $(n) == "c") {
-	    print "# Windows partition."
-	    if (win == 1)
-	       print $1 " /Mount/Windows vfat defaults 1 0" 
-	    else
-	       print $1 " /Mount/Windows" win " vfat umask=000 1 0" 
-	    print ""
-	    win++
-	 } else if ($(n) == "e") {
-	    print "# Windows partition."
-	    if (win == 1)
-	       print $1 " /Mount/Windows msdos defaults 1 0" 
-	    else
-	       print $1 " /Mount/Windows" win " msdos umask=000 1 0" 
-	    print ""
-	    win++
-	 } else if ($(n) == "82") {
-	    print "# Swap partition."
-	    print $1 " none swap pri=1 0 0" 
-	    print ""
-	 } else if ($(n) != "5") {
-	    partnum=substr($1, length($1))
+   gen_config "HD"
+done
 
-            // so that hda10 does not become HDA0
-	    if (lastpart > int(partnum)) {
-	       lastpart++
-	       partnum = lastpart
-	    } else {
-	       lastpart = int(partnum)
-	    }
+################################################################################
+# SCSI Drives
+################################################################################
 
-	    print "# Additional partition."
-	    print $1 " /Mount/HD" drive partnum " auto defaults 1 0" 
-	    print ""
-	 }
-      }
-   '
+upper=(A B C D E F G H I J)
+lower=(a b c d e f g h i j)
+for drive in 0 1 2 3 4 5 6 7 8 9
+do
+   device=/dev/sd${lower[drive]}
+   realdev=`readlink -f "$device"`
+   [ -e "$realdev" ] || continue
+   gen_config "SD"
 done
 
 ################################################################################
