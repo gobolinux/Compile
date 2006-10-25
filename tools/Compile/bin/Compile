@@ -461,7 +461,7 @@ then
    CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress  "$app" "$version" \
      "recipe" "$recipedir" > $selecteddeps || Die "Aborted."
-   cat $selecteddeps | while read d_program d_version d_type d_url; 
+   for d_url in `awk '{ print $4 }' < $selecteddeps`
    do
       Compile --no-dependencies $d_url || {
          ret=$?
@@ -1058,7 +1058,7 @@ then
       wrapup
    else
       # Old Makefile.PL system 
-      perl Makefile.PL prefix=$target ${withoutopts[@]} ${perl_options[@]}
+      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
       recipe_type="makefile"
    fi
 fi
