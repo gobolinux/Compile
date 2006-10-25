@@ -77,43 +77,6 @@ fi
 
 Is_Entry "super-user" && superuser="`Entry super-user`" || superuser='gobo'
 
-function installKernel() {
-    # detect whether we are running on a SMP/HT machine or not
-	CPUS=$(cat /proc/cpuinfo | grep ^processor | wc -l)
-    if [ $CPUS = 1 ]; then
-        SMP=0
-    else
-        SMP=1
-    fi
-    
-    pushd ${dest_dir}/${goboSystem}/Kernel/Boot &> /dev/null
-    KERNEL=`readlink kernel`
-    SYSMAP=`readlink System.map`
-
-    lsmod | grep sd_mod && {
-    	# SCSI disk found, replace the current kernel image by the SCSI one
-
-		if [ $SMP = 1 ]; then
-		    ln -fs ${KERNEL}-SMP-SCSI kernel
-	    	ln -fs ${SYSMAP}-SMP-SCSI System.map
-		else
-		    ln -fs ${KERNEL}-SCSI kernel
-	    	ln -fs ${SYSMAP}-SCSI System.map
-		fi
-    } || {
-    	# SCSI disk not found, keep using the non-SCSI images
-
-		if [ $SMP = 1 ]; then
-		    ln -fs ${KERNEL}-SMP kernel
-		    ln -fs ${SYSMAP}-SMP System.map
-		else
-		    ln -fs ${KERNEL} kernel
-		    ln -fs ${SYSMAP} System.map
-		fi
-    }
-    popd &> /dev/null
-}
-
 function installBase() {
     
     Log_Normal "Creating directory "${goboSystem}
@@ -141,7 +104,6 @@ function installBase() {
 
     Log_Normal "Installing directory "${goboSystem}/Kernel/Boot
     cp -ra ${goboSystem}/Kernel/Boot  ${dest_dir}/${goboSystem}/Kernel
-    installKernel
     sync
     
     Log_Normal "Installing directory "${goboSystem}/Kernel/Modules
