@@ -47,7 +47,8 @@ linkheaders=`Entry "headers"`
 linkshared=`Entry "shared"`
 linkwrappers=`Entry "wrappers"`
 
-Boolean "force" && conflict="overwrite"
+[ `Boolean "force"` -o `Entry "conflict"`=="overwrite" ] && conflict="overwrite"
+
 ################################################################################
 
 # Creates links from one directory into another.
