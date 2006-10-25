@@ -517,8 +517,8 @@ function attempt_action() {
             Log_Normal "Successfully patched ${cur}"
          else
             case "$difftype" in
-               mod*)    Log_Normal "Not updating $default" ;;
-               del*)    Log_Normal "Not deleting $default" ;;
+               mod*)    Log_Normal "Not updating $cur" ;;
+               del*)    Log_Normal "Not deleting $cur" ;;
                new*)    Log_Normal "Not using $default" ;;
                *)       Log_Normal "Leaving $cur alone" ;;
             esac
