@@ -236,6 +236,16 @@ def does_version_match_rule(version, rule) :
 # This cache variable is reset at each CheckDependencies call
 global_available_packages_cache = {}
 
+def version_range_string(r) :
+	ss = ''
+	if r['lover'] :
+		ss += ' ' + (r['loincluded'] and '>=' or '>') + ' ' + r['lover']
+	if r['hiver'] :
+		if r['lover'] :
+			ss += ','
+		ss += ' ' + (r['hiincluded'] and '<=' or '<') + ' ' + r['hiver']
+	return ss
+
 def find_matching_package(rule, acceptable_types, noWeb=False) :
 	global global_available_packages_cache
 	if not global_available_packages_cache :
@@ -246,7 +256,7 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 		for p,v,t,u in available_options :
 			if does_version_match_rule(v, rule) :
 				return (p, v, t, u)
-		to_return = ((rule['program'],rule['lover'], None, "NOWHERE, no version."))
+		to_return = ((rule['program'], version_range_string(rule).replace(' ',''), None, "NOWHERE, no version."))
 	else :
 		to_return = ((rule['program'], None, None, "NOWHERE, no program."))
 
