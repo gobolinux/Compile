@@ -197,9 +197,17 @@ msg "Checking recipe contents..."
    FATAL "No Recipe file."
 }
 msg "Performing basic syntax validation..."
-bash -n ./Recipe || {
+
+# Workaround weird bash behavior
+temprecipe=`mktemp ${goboTemp}/RecipeLint.XXXX`
+echo > $temprecipe
+cat ./Recipe >> $temprecipe
+bash -n $temprecipe || {
+   rm $temprecipe
    FATAL "Recipe does not parse as valid shell script."
 }
+rm $temprecipe
+
 test_recipe=yes
 cat Recipe | perl -e '
    %decls = (
@@ -258,7 +266,7 @@ cat Recipe | perl -e '
       cvs_checkout_options => "string",
       cvs_rsh => "string",
       svn => "string",
-      unmanaged_files => "array",
+      unmanaged_files => "array"
    );
    sub check_array_name {
       my ($name, $num) = @_;
