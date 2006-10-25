@@ -479,14 +479,12 @@ fi
 dependencies_file=$bakedrecipedir/Resources/Dependencies
 if [ -f "$dependencies_file" ]
 then
-   for dep in `cat "$dependencies_file" | sed 's/  */ /g' | tr ' ' ':' `
+   for dep_name in `cat "$dependencies_file" | sed 's/^\ *//' | grep -v "^#" | awk '{ split($0,dep,/[\ <>=]*/); print dep[1] }'`
    do
-      dep_name="${dep%:*}"
-      dep_vers=${dep#*:}
       # GuessProgramCase prefers the name used by the given version,
       # but will give us any available if the version is not found.
       # I'm counting on this behavior here.
-      guess_dep_name=`GuessProgramCase "$dep_name" "$dep_vers" 2> /dev/null`
+      guess_dep_name=`GuessProgramCase "$dep_name" 2> /dev/null`
       [ "$guess_dep_name" ] && dep_name="$guess_dep_name"
       lowercase_name=`echo $dep_name | tr '[:upper:]-+' '[:lower:]__'`
       dep_path=`Get_Dir runtime $dep_name Current`
@@ -496,6 +494,8 @@ then
          dep_path="$real_dep_path"
          [ -d "$dep_path" ] || dep_path=`Get_Dir runtime $dep_name $dep_vers`
          dep_vers=${dep_path##*/}
+      else
+         dep_vers=Current
       fi
       dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
       dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
