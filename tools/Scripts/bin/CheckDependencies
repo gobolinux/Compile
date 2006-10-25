@@ -120,6 +120,8 @@ def find_dependencies_files(p, v, t, u=None, noWeb=False):
 					os.remove(cachedep)
 		
 	elif t == 'recipe' :
+		if u :
+			return [ u+'/Resources/Dependencies', u+'/Resources/BuildDependencies' ]
 		# searches local recipes first
 		compileRecipeDirs, getRecipeStores = getCompileOptions()
 		for compileRecipeDir in compileRecipeDirs :
@@ -246,7 +248,7 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 				return (p, v, t, u)
 		to_return = ((rule['program'],rule['lover'], None, "NOWHERE, no version."))
 	else :
-		to_return = ((rule['program'],rule['lover'], None, "NOWHERE, no program."))
+		to_return = ((rule['program'], None, None, "NOWHERE, no program."))
 
 	# if we got here, no matching program/version was found.
 	if rule.has_key('option') :
@@ -381,10 +383,13 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		if mode == 'missing' and find_matching_package(rule, ['installed'], noWeb=noWeb)[2] :
 			continue
 		
-		match = find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb) # (program, version, type, site)
-		if mode == 'updating' and find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb)[2] == 'installed' :
-			continue
-		
+		if mode == 'all' :
+			match = find_matching_package(rule, acceptable_types, noWeb=noWeb) # (program, version, type, site)
+		else :
+			match = find_matching_package(rule, ['installed']+acceptable_types, noWeb=noWeb) # (program, version, type, site)
+			if mode == 'updating' and match[2] == 'installed' :
+				continue
+
 		# Note: if no package is found, find_matching_package returns a
 		#       tuple with None in the place of type
 		if not match in all_matches :
