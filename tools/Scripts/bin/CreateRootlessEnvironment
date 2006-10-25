@@ -6,13 +6,29 @@
 #
 #####################################################################
 
+function our_which() {
+   eval 'dirs=(`echo $PATH | tr ":" " "`)'
+   for dir in "${dirs[@]}"
+   do
+      if [ -e "$dir/$1" ]
+      then
+         echo "$dir/$1"
+         return 0
+      fi
+   done
+   return 1
+}
+
 CURRENT_SCRIPTS_VERSION=2.5.3 # This variable is automatically set by Make
 hostSystemDependencies=(
-   sh mv cp ls find sed grep
+   sh mv cp find grep
    python
    seq
 )
 
+gnuSystemDependencies=(
+   sed readlink dircolors ls
+)
 
 ###############################################################################
 # help message on $1 == --help
@@ -33,19 +49,29 @@ fi
 ###############################################################################
 
 # Note: wget is not required when running on a GoboLinux box
-if [ ! -e "/Programs/Scripts/Current" -a ! "`which wget`" ]
+if [ ! -e "/Programs/Scripts/Current" -a ! "`our_which wget`" ]
 then 
     echo "Please install wget in order to run this script."
     exit 1
 fi
 
-for app in "${hostSystemDependencies[@]}"; do
-   if [ ! "`which "$app"`" ]; then
-      echo "For Rootless GoboLinux requires $app."
-      echo 1
+for app in "${hostSystemDependencies[@]}"
+do
+   if [ ! "`our_which "$app"`" ]
+   then
+      echo "Rootless GoboLinux requires the '$app' command in your \$PATH."
+      exit 1
    fi
 done
 
+for app in "${gnuSystemDependencies[@]}"
+do
+   if ! { $app --version 2> /dev/null | grep -q GNU ;}
+   then
+      echo "Rootless GoboLinux requires the GNU version of $app in your \$PATH."
+      exit 1
+   fi
+done
 
 ###############################################################################
 # Preparing env variables
@@ -61,7 +87,7 @@ else
    export goboPrefix=${HOME}
 fi
 
-# Saves the current directory for latter restoration
+# Saves the current directory for later restoration
 pwd=$PWD
 
 
@@ -69,7 +95,7 @@ pwd=$PWD
 # Startup message and 'press a key to continue'
 ###############################################################################
 
-echo "You have choose to create Rootless enviroment at" 
+echo "You are about to create a Rootless environment at" 
 echo "${goboPrefix}"
 echo "Press any key to continue or Ctrl+C to abort."
 read
@@ -140,7 +166,7 @@ export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:$
 ' >> ${goboPrefix}/Programs/Rootless/1.0/bin/StartRootless
 
 # preparing a real_install (which is wrapped by Scripts install)...
-if [ ! "`which real_install`" ] 
+if [ ! "`our_which real_install`" ] 
 then
    if [ -e "/bin/install" ]
    then
@@ -149,7 +175,7 @@ then
    then
       ln -sfn /usr/bin/install ${goboPrefix}/Programs/Rootless/1.0/bin/real_install
    else 
-      i=`which install`
+      i=`our_which install`
       g=`file "$i" | grep ELF`
       if [ "$g" ]
       then
@@ -258,10 +284,10 @@ function rootless_uninstall() {
 binaries_ok="no"
 if [ "`Get_Architecture`" != i686 ]; then
    Log_Terse "Your machine is `Get_Architecture`."
-   if ! Quiet which gcc; then
+   if ! Quiet our_which gcc; then
       Log_Error "gcc isn't installed. Can't recompile"
       binaries_ok="no"
-   elif ! Quiet which make; then
+   elif ! Quiet our_which make; then
       Log_Error "make isn't installed. Can't recompile"
    elif [ -d "${goboPrograms}/Scripts/Current" ]; then
       if Ask "Recompile binaries for your system?"; then
