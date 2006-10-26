@@ -547,7 +547,7 @@ if __name__ == '__main__' :
 		try :
 			if not sys.argv[1:] :
 				sys.argv[1:] = [ '--help' ]
-			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'quiet-progress', 'help'])
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'help'])
 		except getopt.GetoptError, detail :
 			print sys.argv[0].split('/')[-1]+': '+str(detail)
 			sys.exit(1)
@@ -580,6 +580,8 @@ if __name__ == '__main__' :
 				add_self=a
 			elif o in ['--no-web', '-W'] :
 				noWeb = True
+			elif o in ['--no-blacklist', '-B'] :
+				global_dependencies_blacklist = []
 			elif o in ['--help', '-h'] :
 				print """
 CheckDependencies
@@ -619,6 +621,9 @@ Options:
 
  -R
  --no-recursive       Only the direct dependencies are considered
+
+ -B
+ --no-blacklist       Do not skip packages listed at Dependencies.blacklist
 
  --quiet-progress     Do not show progress indicator
 
