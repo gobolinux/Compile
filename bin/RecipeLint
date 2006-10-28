@@ -682,17 +682,33 @@ test_resources() {
       grep -q "^#" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
-      for line in `grep -v "^#" $depfile | tr ' ' '@'`
-      do
-         depname="${line%@*}"
-         depversion="${line#*@}"
-         echo "Checking for dependency $depname $depversion..."
-         if ! FindPackage $noweb --types=recipe $depname $depversion &> /dev/null
-         then
-            if FindPackage $noweb --types=official_package $depname $depversion &> /dev/null
-            then WARN "$depname $depversion available only as a package."
-            else ERROR "Dependency $depname $depversion not available."
+      missing_deps() {
+         CheckDependencies --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist --no-compatlist $name $version recipe $PWD | while read d_program d_version d_type d_url;
+         do
+            if [ $d_type = "None" ]
+            then
+               if [ "$d_version" != "None" ]
+               then echo \"$d_program $d_version\"
+               else echo \"$d_program\"
+               fi
             fi
+         done
+      }
+      
+      eval "no_nothing=(`missing_deps recipe,official_package`)"
+      eval "no_recipe=(`missing_deps recipe`)"
+      j=0
+      for prog in "${no_recipe[@]}"
+      do
+         noth="${no_nothing[$j]}"
+         progname="${prog% *}"
+         nothname="${noth% *}"
+         if [ "$progname" = "$nothname" ]
+         then
+            ERROR "Dependency $prog not available."
+            j=$[j+1]
+         else
+            WARN "Dependency $prog has no recipe."
          fi
       done
    else
