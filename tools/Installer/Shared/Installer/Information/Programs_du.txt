@@ -132,6 +132,7 @@
 1296	./Nano
 476	./Nasm
 9476	./Ncurses
+336     ./Mdadm
 296	./Netkit-Base
 452	./Net-Tools
 936	./NTFSProgs

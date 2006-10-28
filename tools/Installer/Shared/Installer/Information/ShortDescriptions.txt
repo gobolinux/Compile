@@ -225,3 +225,4 @@ TagLib :: An audio meta data (tag) reading and modification library
 Unsermake :: A replacement for automake
 Wireless-Tools :: Tools to configure wireless interfaces
 XTerm :: Classic X terminal
+Mdadm :: A tool for managing Linux Software RAID arrays
