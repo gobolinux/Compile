@@ -67,7 +67,7 @@ def add_compatible_dependencies(rule) :
 			rule = compatible_rule # linked list of compatible_rules
 
 # Notice that type may be required since dependencies(recipe(p)) != dependencies(package(p))
-def get_rules_for(p, v, t, u=None, noWeb=False) :
+def get_rules_for(p, v, t, u=None, noWeb=False, no_compatlist=False) :
 	depfiles = find_dependencies_files(p, v, t, u, noWeb=False)
 	toReturn = []
 	for depfile in depfiles :
@@ -82,7 +82,8 @@ def get_rules_for(p, v, t, u=None, noWeb=False) :
 						last_rule['option'] = rule
 						last_rule = rule
 				if rule :
-					add_compatible_dependencies(rule)
+					if not no_compatlist :
+						add_compatible_dependencies(rule)
 					toReturn.append(rule)
 			f.close()
 	return toReturn
@@ -351,7 +352,7 @@ echo "$REPLY"'''%(reason,action,t,p,v,yes,action,yes,action))
 #
 def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
-	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None):
+	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None, no_compatlist=False):
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
 	
@@ -382,7 +383,7 @@ def get_all_dependencies_and_matches_for( p, v=None, t=None, u=None,
 		all_matches.append(self_match)
 		p,v,t,u = self_match
 	
-	all_rules = get_rules_for(p, v, t, u, noWeb=noWeb)
+	all_rules = get_rules_for(p, v, t, u, noWeb=noWeb, no_compatlist=no_compatlist)
 	# optimization only:
 	#all_rules  = [ r for r in all_rules if not any(pp == r['program'] for pp,vv,tt,uu in all_matches) ]	
 	missing_dependencies = [ r for r in all_rules if not find_matching_package(r, ['installed'], noWeb=noWeb) ]	
@@ -547,7 +548,7 @@ if __name__ == '__main__' :
 		try :
 			if not sys.argv[1:] :
 				sys.argv[1:] = [ '--help' ]
-			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'help'])
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBCh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'help'])
 		except getopt.GetoptError, detail :
 			print sys.argv[0].split('/')[-1]+': '+str(detail)
 			sys.exit(1)
@@ -559,6 +560,7 @@ if __name__ == '__main__' :
 		noWeb = False
 		add_self='if_required'
 		progress_hook=consoleProgressHook
+		no_compatlist = False
 		for o, a in opts :
 			if o in ['--types','--type', '-t'] :
 				types = a.split(',')
@@ -582,6 +584,8 @@ if __name__ == '__main__' :
 				noWeb = True
 			elif o in ['--no-blacklist', '-B'] :
 				global_dependencies_blacklist = []
+			elif o in ['--no-compatlist', '-C'] :
+				no_compatlist = True
 			elif o in ['--help', '-h'] :
 				print """
 CheckDependencies
@@ -650,7 +654,7 @@ Examples of usage:
 		if mode == 'list' :
 			print ListDependencies(p,v,t,u,recursive=recursive,hook=progress_hook,noWeb=noWeb)
 		else :
-			rr, mm = get_all_dependencies_and_matches_for(p, v, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install)
+			rr, mm = get_all_dependencies_and_matches_for(p, v, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install, no_compatlist=no_compatlist)
 			if rr :
 				for r,m in zip(rr,mm):
 					pp,vv,tt,uu=m
