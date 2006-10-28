@@ -594,7 +594,7 @@ test_recipe() {
       without=perl
       create_dirs_first=configure,makefile,perl
       python_options=python
-      override_default_options=python
+      override_default_options=python,scons,configure
       build_script=python
    )
    for decl in "${declarations[@]}"
