@@ -257,9 +257,9 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 		for p,v,t,u in available_options :
 			if does_version_match_rule(v, rule) :
 				return (p, v, t, u)
-		to_return = ((rule['program'], version_range_string(rule).replace(' ',''), None, "NOWHERE, no version."))
+		to_return = ((rule['program'], version_range_string(rule).replace(' ',''), None, "NO_VERSION"))
 	else :
-		to_return = ((rule['program'], None, None, "NOWHERE, no program."))
+		to_return = ((rule['program'], None, None, "NO_PROGRAM"))
 
 	# if we got here, no matching program/version was found.
 	if rule.has_key('option') :
