@@ -388,7 +388,7 @@ function load_dependency() {
       [ -d $unpacked ] || die "Dependency $dep could not be found."
    else
       local pkg=`get_package_for "$dep" "$repositories"`
-      [ ! "$pkg" ] && die "Dependency $dep could not be found."
+      [ ! "$pkg" ] && die "Dependency $dep could not be found. You may need to get the package and put it at $hostgetclean."
       unpacked=`unpack_package "$pkg" "$dep" "$arch"`
    fi
    if [ $dep = $name ]
@@ -495,6 +495,12 @@ tty:x:4:
 fibo:x:21:fibo
 EOF
 
+hostname=`hostname`
+sudo_rm_if_e $root/System/Settings/hosts
+cat <<EOF > $root/System/Settings/hosts
+127.0.0.1 localhost $hostname
+EOF
+
 sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
 sudo chmod 777 $root/$goboPrograms/Sudo/Settings
 cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
@@ -510,7 +516,6 @@ touch $root/System/Settings/fstab
 
 # This should limit network access inside the chroot
 #cp /etc/resolv.conf $root/System/Settings/resolv.conf
-#cp /etc/hosts $root/System/Settings/hosts
 
 #############################################################################
 # Binding /dev, /proc and ./Archives inside root directory
