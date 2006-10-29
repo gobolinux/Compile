@@ -47,7 +47,10 @@ linkheaders=`Entry "headers"`
 linkshared=`Entry "shared"`
 linkwrappers=`Entry "wrappers"`
 
-[ `Boolean "force"` -o `Entry "conflict"`=="overwrite" ] && conflict="overwrite"
+if Boolean "force" || Is_Entry "conflict" "overwrite"
+then
+   conflict="overwrite"
+fi
 
 ################################################################################
 
