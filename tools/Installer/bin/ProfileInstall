@@ -114,7 +114,6 @@ function installBase() {
     mkdir ${dest_dir}/${goboMount}
     mkdir ${dest_dir}/${goboMount}/CD-ROM
     mkdir ${dest_dir}/${goboMount}/Floppy
-    mkdir ${dest_dir}/${goboMount}/SquashFS
     
     Log_Normal "Installing legacy directory "/usr
     cp -ra /usr ${dest_dir}/usr
