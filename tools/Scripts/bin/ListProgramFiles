@@ -36,5 +36,5 @@ Boolean "files" && type="-type f"
 
 find * \( -path "CVS" \
       -or -path "*/CVS" \
-      -or -path "Resources/SettingsBackup" \
-      -or -path "*.py[oc]" \) -prune -or $type -print
+      -or -path "Resources/SettingsBackup" \) -prune -or $type -print
+

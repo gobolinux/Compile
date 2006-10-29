@@ -23,6 +23,10 @@ python:
 	do libf=$(PYTHON_SITE)/$$f.py; \
 	   rm -f $$libf; ln -nfs ../../../bin/$$f $$libf; \
 	done
+	cd $(PYTHON_SITE) && \
+	for f in *.py; \
+	do python -c "import `basename $$f .py`"; \
+	done
 
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
@@ -35,7 +39,7 @@ cleanup:
 	cd src; make clean
 
 verify:
-	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" | grep -v ".pyc$$" ;}
 
 dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
