@@ -8,8 +8,7 @@ PACKAGE_ROOT = $(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE = $(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE = $(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 
-CONF_FILES = Resources/Defaults/Settings/ChrootCompile.conf
-BIN_FILES = bin/ChrootCompile bin/GenericInstall bin/MiniInstallPackage bin/MiniSymlinkProgram bin/SetupChrootEnv
+BIN_FILES = bin/ChrootCompile bin/MiniInstallPackage bin/MiniSymlinkProgram bin/SetupChrootEnv
 
 all: version_check
 
@@ -40,5 +39,4 @@ dist: version_check cleanup verify all
 install: version_check
 	mkdir -p $(PREFIX)/bin $(SETTINGS_DIR)
 	cp $(BIN_FILES) $(PREFIX)/bin
-	cp $(CONF_FILES) $(SETTINGS_DIR)
 	ln -s $(SETTINGS_DIR)/* $(PREFIX)/bin
