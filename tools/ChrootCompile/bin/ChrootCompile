@@ -126,6 +126,7 @@ base_dependencies=(
     "Python"     # needed by Scripts
     "Gawk"       # needed by Compile
     "FindUtils"  # needed by Compile (find)
+    "DB"         # needed by Perl on 013
     "Bzip2"      # needed by Atool
     "Gzip"       # needed by Atool
     "Tar"        # needed by Atool
