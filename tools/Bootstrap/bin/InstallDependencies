@@ -45,9 +45,17 @@ fi
 function check_consistency() {
     diff "$1" "$2" >& /dev/null && return
 
-    Log_Error "$1 differs from $2."
-    Log_Error "Please ensure that they're the same."
-    exit 1
+    if [ "$3" = "host" ]
+    then
+        cp -fv "$1" "$2"
+    elif [ "$3" = "biggest" ]
+    then
+        # the biggest the better
+        if [ `wc -l "$1" | awk {'print $1'}` -ge `wc -l "$2" | awk {'print $1'}` ]
+        then cp -fv "$1" "$2"
+        else cp -fv "$2" "$1"
+        fi
+    fi
 }
 
 #
@@ -56,27 +64,34 @@ function check_consistency() {
 #
 if [ ! "$NATIVE_COMPILING" ]
 then
-    dirname=`readlink -f $TOP_DIR/chroot/tools/Compile/Resources/Defaults/Settings/Compile/Cross`
-    if [ ! -d "$dirname" ]
+    cvsdir=`readlink -f $TOP_DIR/chroot/tools/Compile/Resources/Defaults/Settings/Compile/Cross`
+    if [ ! -d "$cvsdir" ]
     then
-        Log_Error "Error on SetupChrootEnv: $dirname not found."
+        Log_Error "Error on SetupChrootEnv: $cvsdir not found."
         exit 1
     fi
 
-    arch_conf=`get_chosen_arch`
-    localdir=$goboSettings/Compile/Cross
-    if [ ! -d "$localdir" ]
+    hostdir=$goboSettings/Compile/Cross
+    if [ ! -d "$hostdir" ]
     then
-        Log_Error "$localdir not found. Please update your Compile/Scripts packages."
+        Log_Error "$hostdir not found. Please update your Compile/Scripts packages."
         exit 1
     fi
 
     # get the cross_cache_file variable
-    `cat $goboSettings/Compile/Cross/Cross-$arch_conf.conf | grep "cross_cache_file=" | sed 's/\"//g'`
+    target_arch=`get_chosen_arch`
+    `cat $goboSettings/Compile/Cross/Cross-$target_arch.conf | grep "cross_cache_file=" | sed 's/\"//g'`
     
-    unset differ
-    for i in Cross-$arch_conf.conf Cross-Common.conf Cross-ResetEnv.conf $cross_cache_file
+    # check settings for /Programs/Compile and chroot/{tools/Compile,Unpacked/i686/Compile}
+    local_arch=`get_native_arch`
+    unpackeddir=$(readlink -f $TOP_DIR/chroot/Unpacked/$local_arch/Compile/*/Resources/Defaults/Settings/Compile/Cross)
+    for dir in "$cvsdir" "$unpackeddir"
     do
-        check_consistency $localdir/$i $dirname/$i
-    done    
+        # chroot/Unpacked may not exist yet
+        [ ! -d "$dir" ] && continue
+        check_consistency $hostdir/Cross-$target_arch.conf $dir/Cross-$target_arch.conf host
+        check_consistency $hostdir/Cross-Common.conf     $dir/Cross-Common.conf     host
+        check_consistency $hostdir/Cross-ResetEnv.conf   $dir/Cross-ResetEnv.conf   host
+        check_consistency $hostdir/$cross_cache_file     $dir/$cross_cache_file     biggest
+    done
 fi
