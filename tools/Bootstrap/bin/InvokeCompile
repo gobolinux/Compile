@@ -35,8 +35,12 @@ function make_headers() {
     Log_Normal "Creating the Linux-Headers package..."
     kernelArch=`get_kernel_arch`
 
+    wget -nv -O /tmp/finger_banner http://www.kernel.org/kdist/finger_banner || exit 1
+    latest_kernel_version=`cat /tmp/finger_banner | head -n1 | cut -d: -f2 | awk {'print $1'}`
+    rm -f /tmp/finger_banner
+
     pushd "$TOP_DIR/bin" >& /dev/null
-    ./MakeKernelHeaders "$KERNEL_HEADERS_VERSION" $kernelArch $dirname
+    ./MakeKernelHeaders "$latest_kernel_version" $kernelArch $dirname
     popd >& /dev/null
 
     export goboCrossCompiling=yes
@@ -57,19 +61,21 @@ function download_headers() {
     fi
     
     # download the headers package
+    # TODO: Add multi-architecture support to FindPackage and use it instead of wget
+
+    kernel_version=2.6.16
     download_dir="`readlink -f $TOP_DIR/downloads`"
+    filename=Linux-Headers--$kernel_version--$uname_m.tar.bz2
     pushd $download_dir >& /dev/null
-    wget -c $repository/Linux-Headers--2.6.12--$uname_m.tar.bz2
-    if [ $? != 0 ]
-    then
-        Log_Error "Could not download $repository/Linux-Headers--2.6.12--$uname_m.tar.bz2"
-        exit 1
-    fi
+    wget -nv -c $repository/$filename || exit 1
     popd >& /dev/null
+    
+    mkdir -p $TOP_DIR/chroot/Clean/$recipe_arch
+    cp $filename $TOP_DIR/chroot/Clean/$recipe_arch
      
     # uncompress it
     pushd "$prefix/$goboPrograms" >& /dev/null
-    tar jxvf $download_dir/Linux-Headers--2.6.12--$uname_m.tar.bz2
+    tar jxvf $download_dir/Linux-Headers--$kernel_version--$uname_m.tar.bz2
     popd >& /dev/null
      
     # symlink it
@@ -223,7 +229,8 @@ do
                   skip_all=1
                   continue
                   ;;
-            *)    continue 
+            *)    Log_Error "Invalid option"
+                  exit 1
                   ;;
         esac
     fi
@@ -232,13 +239,11 @@ do
     echo $recipe | grep -q "^http" && local_recipe=`GetRecipe $recipe` || local_recipe=$recipe
     [ -z "$local_recipe" ] && Log_Error "Could not find recipe for $pkg_name" && exit 1
 
-    chroot_compile $local_recipe
-
-    # And here is the final trick: if we have just compiled Glibc, create the
-    # Linux-Headers package, as it needs to be compiled with raw kernel headers.
+    # Create the Linux-Headers package, as it's needed by Glibc
     if [ "$pkg_name" = "Glibc" ]
     then [ "$NATIVE_COMPILING" = "y" ] && make_headers || download_headers
     fi
+    chroot_compile $local_recipe
 done
 
 popd >& /dev/null
