@@ -12,7 +12,7 @@ do
       device="/dev/$devname"
       mount -t iso9660 "$device" "$cdrom" 2> /dev/null
       # Check for squashfs
-      ls $cdrom/*.squashfs &> /dev/null && exit 0
+      ls $cdrom/*.squashfs 2> /dev/null && exit 0
       umount "$cdrom"
    fi
 done
@@ -22,7 +22,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   ls $cdrom/*.squashfs &> /dev/null && exit 0
+   ls $cdrom/*.squashfs 2> /dev/null && exit 0
    umount "$cdrom"
 done
 
@@ -40,7 +40,7 @@ for device in /dev/sr*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
-   ls $cdrom/*.squashfs &> /dev/null && exit 0
+   ls $cdrom/*.squashfs 2> /dev/null && exit 0
    umount "$cdrom"
 done
 
