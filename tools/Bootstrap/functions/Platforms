@@ -1,23 +1,24 @@
 #!/bin/sh
 
+function get_native_arch() {
+    arch=`uname -m`
+    case $arch in
+        i686|i586|i486|i386) echo i686 ;;
+        *) echo $arch
+    esac
+}
+
 function get_chosen_arch() {
     [ "$CROSS_SH4" = "y" ] && echo SH4
     [ "$CROSS_ARM" = "y" ] && echo ARM
-    [ "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo ARM-SoftFloat
+    [ "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo ARM-SoftFP
 }
 
 function get_recipe_arch() {
     [ "$CROSS_ARM" = "y" -o "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo arm
     [ "$CROSS_SH4" = "y" ] && echo sh4
     [ "$CROSS_PPC" = "y" ] && echo ppc
-    if [ "$NATIVE_COMPILING" = "y" ]
-    then
-        arch=`uname -m`
-        case $arch in
-            i686|i586|i486|i386) echo i686 ;;
-            *) echo $arch
-        esac
-    fi
+    [ "$NATIVE_COMPILING" = "y" ] && get_native_arch
 }
 
 function get_kernel_arch() {
