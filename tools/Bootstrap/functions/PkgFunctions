@@ -63,7 +63,14 @@ function DirectFB_hook() {
 
 function Glibc_hook() {
     [ ! "$cross_compiling" ] && return
-    [ "$cross_kernel_arch" = "arm" ] && echo 2.3.6
+    [ "$cross_kernel_arch" = "sh" ]  && echo 2.3.6
+    [ "$cross_kernel_arch" = "arm" ] && echo 2.4
+}
+
+function GTK_hook() {
+    [ ! "$cross_compiling" ] && return
+    # use a version which doesn't depend on Cairo
+    echo "2.6.10"
 }
 
 function Linux() {
@@ -87,4 +94,9 @@ function Udev_hook() {
     # if cross_kernel_version for cross-compile is older than 2.6.15,
     # recommend usage of Udev 070 instead of the latest release.
 #    [ "$latest_kernel" = "2.6.15" ] && echo "070"
+}
+
+function XFCE_hook() {
+    [ ! "$cross_compiling" ] && return
+    echo "4.2.3.2"
 }
