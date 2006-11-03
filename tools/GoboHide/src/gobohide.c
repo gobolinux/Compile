@@ -256,7 +256,7 @@ purge_list ()
 	}
 	
 	free (hide->stats.hidden_list);
-        free (hide);
+	free (hide);
 }
 
 int
@@ -266,13 +266,6 @@ main (int argc, char **argv)
 	int a = -1, purge = 0;
 	const char *dir = NULL;
 
-
-	/* Only the superuser is allowed to execute this */
-	if (getuid () != 0) {
-		fprintf (stderr, "Must be superuser\n");
-		exit (EXIT_SUCCESS);
-	}
-	
 	program_name = argv[0];
 	while ((c = getopt_long (argc, argv, shortopts, longopts, 0)) != -1) {
 		switch (c) {
@@ -293,6 +286,13 @@ main (int argc, char **argv)
 		usage (1);
 	if (show_version)
 		usage (0);
+
+	/* Only the superuser is allowed to execute further */
+	if (getuid () != 0) {
+		fprintf (stderr, "Must be superuser\n");
+		exit (EXIT_SUCCESS);
+	}
+	
 	if (purge) {
 		purge_list ();
 		exit (EXIT_SUCCESS);
