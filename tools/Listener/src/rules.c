@@ -25,7 +25,7 @@
 char *
 get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 {
-	int i=0, j=0, skip=0;
+	int i=0, skip=0;
 	char line[LINE_MAX], work_line[LINE_MAX];
 	char *entry_ptr, *ptr;
 
@@ -48,36 +48,30 @@ get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 	*skip_bytes = skip;
 
 	if ((entry_ptr = strstr(line, "$ENTRY_RELATIVE"))) {
-		int wi = 0;
-		for (ptr=line; ptr != entry_ptr; ptr++)
+		for (wi=0, ptr=line; ptr != entry_ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
-
 		for (j=0; j<strlen(info->offending_name); ++j)
 			work_line[wi++] = info->offending_name[j];
 
 		/* skip '$ENTRY_RELATIVE' and copy the remaining data */
 		for (ptr+=15; *ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
+		strcpy(line, work_line);
+	}
 
-		return strdup(work_line);
-
-	} else if ((entry_ptr = strstr(line, "$ENTRY"))) {
-		int wi = 0;
-		for (ptr=line; ptr != entry_ptr; ptr++)
+	if ((entry_ptr = strstr(line, "$ENTRY"))) {
+		for (wi=0, ptr=line; ptr != entry_ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
-
 		for (j=0; j<strlen(pathname); ++j)
 			work_line[wi++] = pathname[j];
 		work_line[wi++] = '/';
-
 		for (j=0; j<strlen(info->offending_name); ++j)
 			work_line[wi++] = info->offending_name[j];
 
 		/* skip '$ENTRY' and copy the remaining data */
 		for (ptr+=6; *ptr; ptr++)
 			work_line[wi++] = (*ptr)++;
-
-		return strdup(work_line);
+		strcpy(line, work_line);
 	}
 	return strdup(line);
 }
@@ -106,7 +100,6 @@ expect_rule_start(FILE *fp)
 		else
 			break;
 	}
-
 	return -1;
 }
 
@@ -134,7 +127,6 @@ expect_rule_end(FILE *fp)
 		else
 			break;
 	}
-
 	return -1;
 }
 
@@ -399,4 +391,3 @@ assign_rules(char *config_file, int *retval)
 	fclose(fp);
 	return dir_info;
 }
-
