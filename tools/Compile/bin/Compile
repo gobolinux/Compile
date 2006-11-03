@@ -210,8 +210,8 @@ function wrapup() {
          Log_Normal "Generating package's signature..."
          SignProgram "$appname" "$versionnumber"
       else
-         Log_Error "Program does not have a Resources/Dependencies file."
-         Log_Error "Not signing it yet."
+         Log_Terse "Program does not have a Resources/Dependencies file."
+         Log_Terse "Not signing it yet."
       fi
    fi
 
