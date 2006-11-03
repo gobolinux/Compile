@@ -22,7 +22,7 @@ fi
 unset verbose
 if [ "$1" = "--verbose" ] 
 then
-   verbose=yes
+   verbose="--verbose"
    shift
 fi
 
@@ -81,4 +81,4 @@ then
 fi
 popd &> /dev/null
 
-MiniSymlinkProgram $goboPrograms/$name/$version $root $crossprefixdir 2>&1 | grep -v "/CVS/"
+MiniSymlinkProgram $verbose $goboPrograms/$name/$version $root $crossprefixdir 2>&1 | grep -v "/CVS/"
