@@ -3,7 +3,7 @@
 source GoboPath
 source StartFunctions
 
-if `cat ${goboStatus}/ide/*/model | grep -qi qemu`
+if `cat ${goboStatus}/ide/*/model | grep -qi "qemu\|virtual"`
 then platform=emulated
 else platform=native
 fi
