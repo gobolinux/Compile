@@ -267,38 +267,37 @@ then
 fi
 
 cd "${goboPrograms}/$packagename"
-ln -sfn "$packageversion" "Current"
 
 #Backward compatibility:
-if [ -d "Current/Wrappers" ]
+if [ -d "$packageversion/Wrappers" ]
 then
     Log_Normal "Moving \"Wrappers\" directory inside \"Resources\""
-    [ -d "Current/Resources" ] || mkdir "Current/Resources"
-    mv "Current/Wrappers" "Current/Resources"
+    [ -d "$packageversion/Resources" ] || mkdir "$packageversion/Resources"
+    mv "$packageversion/Wrappers" "$packageversion/Resources"
 fi
-if [ -d "Current/Defaults" ]
+if [ -d "$packageversion/Defaults" ]
 then
     Log_Normal "Moving \"Defaults\" directory inside \"Resources\""
-    [ -d "Current/Resources" ] || mkdir "Current/Resources"
-    mv "Current/Defaults" "Current/Resources/"
+    [ -d "$packageversion/Resources" ] || mkdir "$packageversion/Resources"
+    mv "$packageversion/Defaults" "$packageversion/Resources/"
 fi
 Quiet cd -
 
 if [ "$packagename" = "Scripts" ]
 then
-    cd "${goboPrograms}/$packagename/Current/src"
+    cd "${goboPrograms}/$packagename/$packageversion/src"
     make --silent
-    cd "${goboPrograms}/$packagename/Current/bin"
-    PATH=$PWD:$PATH ./SymlinkProgram Scripts
+    cd "${goboPrograms}/$packagename/$packageversion/bin"
+    PATH=$PWD:$PATH ./SymlinkProgram Scripts "$packageversion"
     Quiet cd -
     exit 0
 fi
 
 cd "${goboPrograms}/$packagename"
-if ! Boolean "no-unmanaged" && [ -f "Current/Resources/UnmanagedFiles" ]
+if ! Boolean "no-unmanaged" && [ -f "$packageversion/Resources/UnmanagedFiles" ]
 then
    Log_Normal "Installing UnmanagedFiles"
-   Install_Unmanaged_Files "Current/Resources/UnmanagedFiles" "Current/Resources/Unmanaged"
+   Install_Unmanaged_Files "$packageversion/Resources/UnmanagedFiles" "$packageversion/Resources/Unmanaged"
 fi
 Quiet cd -
 
