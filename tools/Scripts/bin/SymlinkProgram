@@ -121,6 +121,12 @@ if ! Is_Directory "$packageDir"
 then Die "Directory $packageDir does not exist."
 fi
 
+
+if [ $package = "Glibc" ]
+then
+   glibcinstalledversion=`Get_Version Glibc Current`
+fi
+
 if [ "$2" ]
 then
    vdir="$goboPrograms/$package/$2"
@@ -372,6 +378,12 @@ then
 fi
 
 ################################################################################
+
+if [ "$package" = "Glibc" -a "$glibcinstalledversion" != "$version" ]
+then
+   Log_Terse "Renaming previous Glibc version to $glibcinstalledversion.disabled"
+   mv ${goboPrograms}/Glibc/$glibcinstalledversion ${goboPrograms}/Glibc/$glibcinstalledversion.disabled
+fi
 
 Log_Normal "Waiting for background tasks..."
 
