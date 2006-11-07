@@ -266,6 +266,15 @@ then
    exit 1
 fi
 
+glibcinstalledversion=`Get_Version Glibc Current`
+glibcrequiredversion=`grep -w Glibc ${goboPrograms}/$packagename/$packageversion/Resources/BuildInformation 2> /dev/null | cut -f2 -d' '`
+if [ "$glibcrequiredversion" -a "`GuessLatest $glibcrequiredversion $glibcinstalledversion`" = "$glibcrequiredversion" ]
+then
+   Log_Question "Installed package was built using a newer Glibc ($glibcrequiredversion)."
+   Ask_Option   "Install an updated Glibc? (Y/n)"
+   [ "$REPLY" = "Y" -o "$REPLY" = "y" ] && InstallPackage Glibc
+fi
+
 cd "${goboPrograms}/$packagename"
 
 #Backward compatibility:
@@ -328,15 +337,6 @@ then
       rm $selecteddeps
    fi
 #   Dependencies --check --keep-going --higher-or-missing-only ${batch} --execute "$0 $keep" "$packagename" "$packageversion"
-fi
-
-glibcinstalledversion=`Get_Version Glibc Current`
-glibcrequiredversion=`grep -w Glibc ${goboPrograms}/$packagename/$packageversion/Resources/BuildInformation 2> /dev/null | cut -f2 -d' '`
-if [ "$glibcrequiredversion" -a "`GuessLatest $glibcrequiredversion $glibcinstalledversion`" = "$glibcrequiredversion" ]
-then
-   Log_Question "Installed package was built using a newer Glibc ($glibcrequiredversion)."
-   Ask_Option   "Install an updated Glibc? (Y/n)"
-   [ "$REPLY" = "Y" -o "$REPLY" = "y" ] && InstallPackage Glibc
 fi
 
 Log_Verbose "Done."
