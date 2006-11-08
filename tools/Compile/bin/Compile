@@ -88,31 +88,25 @@ function do_symlink() {
    do
       case "$1" in
       --no-make) nomake=yes ; shift ;;
+      --no-extras) noextras=yes ; shift ;;
       --force-link) forcelink=yes ; shift ;;
       *) break ;;
       esac # it still is.
    done
    
-   unset symlinkopts
-   symlinkopts=$(merge_array "symlink_options")
-   sandboxopts=$(merge_array "sandbox_options")
-
-   subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
-   if [ $subdirs -gt 1 ]
-   then
-      sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-   fi
-   
-   if [ "$needs_safe_linking" = "yes" ]
-   then safeopts="--libraries safe --executables safe"
-   fi
    if ! [ "$nomake" = "yes" ]
    then
       unset allowleftovers
       [ "${unmanaged_files[*]}" ] && allowleftovers=--allow-leftovers
 
+      sandboxopts=$(merge_array "sandbox_options")
+      subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
+      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       SandboxInstall $allowleftovers ${sandboxopts[@]} -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+   fi
 
+   if ! [ "$noextras" = "yes" ]
+   then
       install_extras
 
       if [ "${unmanaged_files[*]}" ]
@@ -154,6 +148,8 @@ function do_symlink() {
       if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
       then UpdateSettings "$1" "$2"
       fi
+      [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
+      symlinkopts=$(merge_array "symlink_options")
       SymlinkProgram $safeopts $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
    fi
@@ -166,7 +162,6 @@ function install_extras() {
    #       more 'strict' than those for recipes.
 
    [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
-   [ -d "$recipedaemons" ]   && $sudo cp -R "$recipedaemons" "$installprefix"
 
    if [ "$app" ]
    then name=$app
@@ -886,7 +881,7 @@ then
    then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
       cp -R "$installprefix" "$installprefix-Compile-old"
-      do_symlink --force-link --no-make "$appname" "$version-Compile-old"
+      do_symlink --force-link --no-make --no-extras "$appname" "$version-Compile-old"
    fi
 fi
 
@@ -927,7 +922,7 @@ then
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
          PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || wrap_fail "Preparation step failed."
-      )
+      ) || exit 1
    fi
    $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
    Boolean "no-install" && exit
