@@ -268,7 +268,7 @@ fi
 
 glibcinstalledversion=`Get_Version Glibc Current`
 glibcrequiredversion=`grep -w Glibc ${goboPrograms}/$packagename/$packageversion/Resources/BuildInformation 2> /dev/null | cut -f2 -d' '`
-if [ "$glibcrequiredversion" -a "`GuessLatest $glibcrequiredversion $glibcinstalledversion`" = "$glibcrequiredversion" ]
+if [ "$glibcrequiredversion" -a "`GuessLatest $glibcrequiredversion $glibcinstalledversion`" != "$glibcinstalledversion" ]
 then
    Log_Question "Installed package was built using a newer Glibc ($glibcrequiredversion)."
    Ask_Option   "Install an updated Glibc? (Y/n)"
