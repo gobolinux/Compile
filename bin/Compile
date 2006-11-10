@@ -181,7 +181,7 @@ function install_extras() {
                $sudo cp -a "$d/$i" "$docdir"
             fi
          done
-         popd
+         Quiet popd
       }
    done
 }
