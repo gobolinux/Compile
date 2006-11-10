@@ -121,12 +121,6 @@ if ! Is_Directory "$packageDir"
 then Die "Directory $packageDir does not exist."
 fi
 
-
-if [ $package = "Glibc" ]
-then
-   glibcinstalledversion=`Get_Version Glibc Current`
-fi
-
 if [ "$2" ]
 then
    vdir="$goboPrograms/$package/$2"
@@ -224,19 +218,18 @@ then
    Log_Normal "Symlinking libraries..."
    link_directory "$current/lib" "$goboLibraries" && {
       Log_Normal "Updating library database (ldconfig)..."
-      (
+      Quiet ldconfig
       if [ -d "$current/lib" ]
       then
-         cd "$current/lib"
+         Quiet pushd "$current/lib"
          if ! [[ $((` ls *.la 2> /dev/null | wc -l`)) == 0 ]]
          then
             Log_Normal "Correcting libtool entries..."
             FixLibtoolLa *.la
-         fi	
+         fi
+         Quiet popd
       fi
-      )
-      Quiet ldconfig -f $goboSettings/ld.so.conf -C $goboSettings/ld.so.cache &
-    }
+   }
 fi
 
 ################################################################################
@@ -378,16 +371,6 @@ then
 fi
 
 ################################################################################
-
-if [ "$package" = "Glibc" -a "$glibcinstalledversion" != "$version" ]
-then
-   Log_Terse "Renaming previous Glibc version to $glibcinstalledversion.disabled"
-   mv ${goboPrograms}/Glibc/$glibcinstalledversion ${goboPrograms}/Glibc/$glibcinstalledversion.disabled
-fi
-
-Log_Normal "Waiting for background tasks..."
-
-wait
 
 Log_Normal "Done."
 
