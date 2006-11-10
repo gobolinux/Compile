@@ -266,6 +266,7 @@ then
    exit 1
 fi
 
+# Hack for updating Glibc
 glibcinstalledversion=`Get_Version Glibc Current`
 glibcrequiredversion=`grep -w Glibc ${goboPrograms}/$packagename/$packageversion/Resources/BuildInformation 2> /dev/null | cut -f2 -d' '`
 if [ "$glibcrequiredversion" -a "`GuessLatest $glibcrequiredversion $glibcinstalledversion`" != "$glibcinstalledversion" ]
@@ -310,7 +311,11 @@ then
 fi
 Quiet cd -
 
-UpdateSettings "$packagename" "$packageversion"
+# Hack for updating Glibc
+if [ "$packagename" != "Glibc" ]
+then
+   UpdateSettings "$packagename" "$packageversion"
+fi
 
 SymlinkProgram "$packagename" "$packageversion"
 
