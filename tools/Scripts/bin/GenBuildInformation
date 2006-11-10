@@ -80,7 +80,7 @@ then
    store="$prefix/Resources/BuildInformation"
    [ -w $store ] || Verify_Superuser
    mkdir -p "$prefix/Resources/"
-else store=/dev/stdout
+   exec >$store
 fi
 
 ### default: Generate a dependency report ###############################################
@@ -108,5 +108,5 @@ then
       Progress_Move
    done
    Progress_End
-} | path2programs | sort | uniq | grep -v "^$package " >$store
+} | path2programs | sort | uniq | grep -v "^$package "
 fi
