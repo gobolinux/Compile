@@ -8,6 +8,7 @@ all:
 	gcc $(MYCFLAGS) -o LinkOrExpandAll LinkOrExpandAll.c -std=c99
 	gcc $(MYCFLAGS) -o List List.c
 	gcc $(MYCFLAGS) -o RescueSymlinkProgram RescueSymlinkProgram.c -static
+	strip RescueSymlinkProgram
 	if [ -e "SuperUserName.exe" ]; then \
 		for f in SuperUserName IsExecutable usleep LinkOrExpandAll List; do \
 			mv "$$f.exe" "$$f"; \
