@@ -53,7 +53,6 @@ void LinkIfExists(char* dir) {
          if (errno) {
             fprintf(stderr, "RescueSymlinkProgram: ");
             perror(base);
-            continue;
          }
          free(base);
       }
