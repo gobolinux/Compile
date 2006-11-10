@@ -247,7 +247,8 @@ def getVersionsFromList(file, d = None) :
 
 		if not d :
 			d = KeyInsensitiveDict()
-	except :
+	except Exception, e:
+		sys.stderr.write(str(e))
 		return d
 	
 	for line in lines :
@@ -291,7 +292,8 @@ def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
 					#d[l[0]][l[1]] = []
 				#d[l[0]][l[1]].append(path_prefix+line.strip())		
 		return d
-	except :
+	except Exception, e:
+		sys.stderr.write(str(e))
 		return d
 
 
