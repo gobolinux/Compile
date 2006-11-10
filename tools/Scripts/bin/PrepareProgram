@@ -164,6 +164,7 @@ then
    $dirop "$settingsdir"
    $dirop "$variabledir"
    $dirop "$programdir/Resources"
+   $dirop "$programdir/Resources/Defaults/Settings"
    $dirop "$programdir/Resources/Daemons"
    $dirop "$programdir/Resources/Tasks"
    if Dir_Set Shared
