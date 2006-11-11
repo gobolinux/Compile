@@ -627,6 +627,7 @@ foreach_if_array_set "include" '
 
 if [ "$recipe_type" = "meta" ]
 then
+   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    wrapup
 fi
 
