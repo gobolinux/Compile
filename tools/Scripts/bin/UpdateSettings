@@ -143,7 +143,7 @@ function expand_dirs()
    local difftype file
 
    while read difftype file; do
-      if Is_Directory "$file" && [ "$file" != "CVS" ]; then
+      if Is_Directory "$file" && Is_Nonempty_Directory "$file" || Quiet expr match "$file" '.*CVS'; then
          find "$file" -type f | grep -v "/CVS/" |sed "s/^/$difftype /"
       else
          echo "$difftype $file"
@@ -160,14 +160,14 @@ function list_diffs()
 
    if Is_Directory Settings && ! Is_Directory $version/Resources/Defaults/Settings; then
 
-      find Settings -type f \
+      find Settings -wholename '*CVS' -prune -o -print \
          | sed 's,^,del: ,'\
          | cat -n\
          | sed 's/^ \{4\}//;s/   / /'
 
    elif ! Is_Directory Settings && Is_Directory $version/Resources/Defaults/Settings; then
 
-      find $version/Resources/Defaults/Settings -type f \
+      find $version/Resources/Defaults/Settings -wholename '*CVS' -prune -o -print \
          | sed 's,^,new: ,'\
          | cat -n\
          | sed 's/^ \{4\}//;s/   / /'
@@ -197,7 +197,7 @@ function files_differ()
 
 function dirs_differ()
 {
-   ! Quiet diff -wr "$1" "$2"
+   test "`Quiet diff -wr "$1" "$2" | grep -v CVS`" = ""
 }
 
 function merge_and_edit()
@@ -691,4 +691,4 @@ if Boolean "update"; then
    exitStatus="$?"
 fi
 
-exit "$exitStatus"
+exit $exitStatus
