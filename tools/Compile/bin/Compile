@@ -187,18 +187,23 @@ function install_extras() {
 }
 
 function wrapup() {
+   # No action below apply to recipes called from an external meta recipe
+   # calling exit instead of return because the external caller expects wrapup 
+   #  to do it (either here or inside cleanup...)
+   [ "$compileMetaRecipe" ] && exit 0
 
+   # Add information inside binary package Resources directory
    Quiet mkdir -p $target/Resources
 
    if [ ! -z "$cross_uname_m" ]
    then echo "$cross_uname_m" > "$target/Resources/Architecture"
    else echo "`uname -m`" > "$target/Resources/Architecture"
    fi
-   
+
    Log_Normal "Generating package's build information..."
    GenBuildInformation --store "$appname" "$versionnumber"
 
-   if [ ! "$compileMetaRecipe" ] && ! Boolean "no-sign"
+   if ! Boolean "no-sign"
    then
       if [ -e "$target/Resources/Dependencies" ]
       then
@@ -210,20 +215,20 @@ function wrapup() {
       fi
    fi
 
-   recipedeps="$reciperesources/Dependencies"
-   Quiet mkdir -p "$reciperesources"
-
-   # Generated recipes (located at $genRecipeRecipeDir) 
+   # Some additional actions for LocalRecipes (adding info inside Resources, packing)
    if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
+      recipedeps="$reciperesources/Dependencies"
+      Quiet mkdir -p "$reciperesources"
+
       cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation"
-      
+
       if [ ! -f "$recipedeps" ]
       then
          cp "$target/Resources/BuildInformation" "$recipedeps"
          cat "$recipedeps"
       fi
-      
+
       Log_Normal "Packing recipe directory..."
       # remove any backup file before packing
       find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
@@ -233,7 +238,7 @@ function wrapup() {
       # experimental 'callback': you can create a script that automatically 
       # uploads the recipe to somewhere, or asks for confirmation and sends 
       # it to the a recipe-store mantainer
-      which LocalRecipeCompiled >& /dev/null && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+      which LocalRecipeCompiled &> /dev/null && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
    fi
    cleanup
 }
