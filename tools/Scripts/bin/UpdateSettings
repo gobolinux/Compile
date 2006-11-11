@@ -530,7 +530,12 @@ function attempt_action() {
          
       u) Log_Normal "Using $default"
          mkdir -p "$(dirname $cur)"
-         cp "$default" "$cur"
+         if ! Is_Directory "$default"
+         then
+            cp "$default" "$cur"
+         else
+            mkdir -p "$cur"
+         fi
          ;;
          
       m) merge_and_edit "$cur" "$default"
