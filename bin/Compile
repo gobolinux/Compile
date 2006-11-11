@@ -86,6 +86,7 @@ Import Compile
 function do_symlink() {
    local nomake=no
    local forcelink=no
+   local noextras=no
    while true
    do
       case "$1" in
