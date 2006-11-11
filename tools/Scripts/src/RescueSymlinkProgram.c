@@ -43,7 +43,7 @@ void LinkIfExists(char* dir) {
       int i;
       glob_t globbuf;
       char* pattern = StrCat(path, "/*");
-      glob(pattern, GLOB_DOOFFS, NULL, &globbuf);
+      glob(pattern, 0, NULL, &globbuf);
       for (i = 0; i < globbuf.gl_pathc; i++) {
          char* item = globbuf.gl_pathv[i];
          char* base = BaseName(item);
