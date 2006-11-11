@@ -38,10 +38,12 @@ Add_Option_Boolean "T" "no-strip" "Do not strip executables."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
+Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful build"
+Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
 
 Parse_Conf Compile.conf
-
 Parse_Options "$@"
+
 shift $parsedArguments
 [ "$compileFlags" ] && Parse_Options $compileFlags
 
@@ -264,7 +266,17 @@ function cleanup() {
       fi
       [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
    fi
+   Boolean "remove-archive" && echo Map remove_archives "${files[@]}"
+   Boolean "remove-sources" && echo Map remove_source_dir "${dirs[@]}"
    exit 0
+}
+
+function remove_archives() {
+   rm -f "$1"
+}
+
+function remove_source_dir() {
+   rm -rf "$1"
 }
 
 function check_direct_dependencies() {
