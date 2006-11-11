@@ -86,6 +86,13 @@ pattern="$1"
 shift
 Has_Uppercase "$pattern" || insensitive=-i
 if [ "$*" ]
-then grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@" | highlight
-else grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" `all` | grep -v ".svn/" | highlight
+then 
+   hits=`grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@"`
+   result=$?
+else
+   hits=`grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" \`all\``
+   result=$?
+   hits=`echo "$hits" | grep -v ".svn/"`
 fi
+[ ! -z "$hits" ] && echo "$hits" | highlight
+exit $result
