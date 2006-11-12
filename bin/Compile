@@ -934,7 +934,7 @@ then
          done
          [ "$autogen" ] || autogen="autogen.sh"
          [ -e "./$autogen" ] && autogen="./$autogen"
-         [ "$autogen_before_configure" = "yes" ] && export NOCONFIGURE=no && yes "" | $autogen
+         [ "$autogen_before_configure" = "yes" ] && export NOCONFIGURE=x && yes "" | $autogen
          prepareoptions=(
             --verbose
             --configure $configure
