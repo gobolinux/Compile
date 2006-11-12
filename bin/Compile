@@ -193,7 +193,7 @@ function wrapup() {
    # No action below apply to recipes called from an external meta recipe
    # calling exit instead of return because the external caller expects wrapup 
    #  to do it (either here or inside cleanup...)
-   [ "$compileMetaRecipe" ] && exit 0
+   [ "$app" != "$appname" ] && exit 0
 
    # Add information inside binary package Resources directory
    Quiet mkdir -p $target/Resources
