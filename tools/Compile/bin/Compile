@@ -326,7 +326,7 @@ function config_is_autoconf() {
 function build_tree_if() {
    if [ "$@" ]
    then
-      PrepareProgram -t $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram --tree $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    fi
 }
 
@@ -934,7 +934,7 @@ then
          done
          [ "$autogen" ] || autogen="autogen.sh"
          [ -e "./$autogen" ] && autogen="./$autogen"
-         [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
+         [ "$autogen_before_configure" = "yes" ] && export NOCONFIGURE=no && yes "" | $autogen
          prepareoptions=(
             --verbose
             --configure $configure
