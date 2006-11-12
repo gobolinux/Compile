@@ -190,48 +190,47 @@ function install_extras() {
 }
 
 function wrapup() {
-   # No action below apply to recipes called from an external meta recipe
-   # calling exit instead of return because the external caller expects wrapup 
-   #  to do it (either here or inside cleanup...)
-   [ "$app" != "$appname" ] && exit 0
-
-   # Add information inside binary package Resources directory
-   Quiet mkdir -p $target/Resources
-
-   if [ ! -z "$cross_uname_m" ]
-   then echo "$cross_uname_m" > "$target/Resources/Architecture"
-   else echo "`uname -m`" > "$target/Resources/Architecture"
-   fi
-
-   Log_Normal "Generating package's build information..."
-   GenBuildInformation --store "$appname" "$versionnumber"
-
-   if ! Boolean "no-sign"
+   if [ "$app" = "$appname" ] 
    then
-      if [ -e "$target/Resources/Dependencies" ]
+      # Add information inside binary package Resources directory
+      Quiet mkdir -p $target/Resources
+
+      if [ ! -z "$cross_uname_m" ]
+      then echo "$cross_uname_m" > "$target/Resources/Architecture"
+      else echo "`uname -m`" > "$target/Resources/Architecture"
+      fi
+
+      Log_Normal "Generating package's build information..."
+      GenBuildInformation --store "$appname" "$versionnumber"
+
+      if ! Boolean "no-sign"
       then
-         Log_Normal "Generating package's signature..."
-         SignProgram "$appname" "$versionnumber"
-      else
-         Log_Terse "Program does not have a Resources/Dependencies file."
-         Log_Terse "Not signing it yet."
+         if [ -e "$target/Resources/Dependencies" ]
+         then
+            Log_Normal "Generating package's signature..."
+            SignProgram "$appname" "$versionnumber"
+         else
+            Log_Terse "Program does not have a Resources/Dependencies file."
+            Log_Terse "Not signing it yet."
+         fi
       fi
    fi
-
    # Some additional actions for LocalRecipes (adding info inside Resources, packing)
    if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
-      recipedeps="$reciperesources/Dependencies"
-      Quiet mkdir -p "$reciperesources"
-
-      cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation"
-
-      if [ ! -f "$recipedeps" ]
+      if [ "$app" = "$appname" ]
       then
-         cp "$target/Resources/BuildInformation" "$recipedeps"
-         cat "$recipedeps"
-      fi
+         recipedeps="$reciperesources/Dependencies"
+         Quiet mkdir -p "$reciperesources"
 
+         cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation"
+
+         if [ ! -f "$recipedeps" ]
+         then
+            cp "$target/Resources/BuildInformation" "$recipedeps"
+            cat "$recipedeps"
+         fi
+      fi
       Log_Normal "Packing recipe directory..."
       # remove any backup file before packing
       find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
