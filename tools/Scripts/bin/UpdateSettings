@@ -602,13 +602,13 @@ function update_files()
 curdir="$pdir/Settings"
 defaultdir="$pdir/$version/Resources/Defaults/Settings"
 
-if Is_Nonempty_Directory "$curdir"; then
+if [ `find "$curdir" -not -type d | grep -v CVS | wc -l` != 0 ]; then
    has_current=yes;
 else
    has_current=no;
 fi
 
-if Is_Nonempty_Directory "$defaultdir"; then
+if [ `find "$defaultdir" -not -type d | grep -v CVS | wc -l` != 0 ]; then
    has_default=yes;
 else
    has_default=no;
