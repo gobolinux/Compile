@@ -602,13 +602,15 @@ function update_files()
 curdir="$pdir/Settings"
 defaultdir="$pdir/$version/Resources/Defaults/Settings"
 
-if [ `find "$curdir" -not -type d | grep -v CVS | wc -l` != 0 ]; then
+if find "$curdir" -not -type d -and -not -path "*CVS/*" -quit
+then
    has_current=yes;
 else
    has_current=no;
 fi
 
-if [ `find "$defaultdir" -not -type d | grep -v CVS | wc -l` != 0 ]; then
+if find "$defaultdir" -not -type d -and -not -path "*CVS/*" -quit
+then
    has_default=yes;
 else
    has_default=no;
