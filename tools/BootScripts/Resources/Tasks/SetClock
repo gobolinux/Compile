@@ -6,11 +6,16 @@ source /System/Settings/BootOptions
 # Synchronize hardware and system clocks.
 # Adapted from Linux From Scratch by Hisham Muhammad
 #
+case "$1" in                                                                                                                                                          
+[sS]tart) option="--hctosys" ;;
+[sS]top) option="--systohc" ;;                                                                                                                                            
+esac # hmm...
+
 if [ "$ClockMode" = "GMT" ]
 then
    hwclockMode="--utc"
 else
    hwclockMode="--localtime"
 fi
-hwclock --hctosys $hwclockMode
+hwclock $option $hwclockMode
 

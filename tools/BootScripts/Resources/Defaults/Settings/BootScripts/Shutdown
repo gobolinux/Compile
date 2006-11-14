@@ -1,6 +1,7 @@
 #!/bin/sh
 
 #Exec "Stopping mouse driver"                 Mouse Stop
+Exec "Saving system time"                     SetClock Stop
 Exec "Stopping kernel log daemon"            killall klogd
 Exec "Stopping system log daemon"            killall syslogd
 Exec "Stopping network"                       Network Stop "$NetworkInterfaces"
