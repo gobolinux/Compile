@@ -527,7 +527,7 @@ test_recipe() {
             ERROR "Include $include does not have -- separator."
             continue
          }
-         iname="${inc%--*}"
+         iname="${inc%%--*}"
          iversion="${inc#*--}"
          [ "$iname" == `NamingConventions $iname` ] || {
             WARN "Name $iname does not follow naming conventions."
@@ -599,7 +599,7 @@ test_recipe() {
    )
    for decl in "${declarations[@]}"
    do
-      dname="${decl%=*}"
+      dname="${decl%%=*}"
       dtypes="${decl#*=}"
       dtypes="${dtypes//,/ }"
       if eval "[ \"\$$dname\" ]"
@@ -624,7 +624,7 @@ test_recipe() {
          echo "$1" | grep -q "=" || {
             ERROR "Entry '$1' in $aname does not look like a variable assignment."
          }
-         vname="${1%=*}"
+         vname="${1%%=*}"
          echo "$vname" | egrep -q "^[A-Za-z_][A-Za-z0-9_]*$" || {
             ERROR "Entry '$vname' in $aname does not look like a variable name."
          }
