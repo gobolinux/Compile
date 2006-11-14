@@ -1,6 +1,7 @@
 #!/bin/sh
 Exec "Remounting root file system..."          mount -n -o remount,rw /
 Exec "Cleaning mtab and boot settings..."      rm -f "$goboSettings/mtab"*
+Exec "Cleaning up any stale lock files..."     eval "find $goboVariable/{run,lock}/ -type f -print0 | xargs -0 -i rm -rf {}; rm -rf  $goboTemp/.X*-lock"
 Exec "Starting Udev..."                        Udev Start
 Exec "Mounting system filesystems..."          mount -a -t tmpfs,sysfs,procfs
 Exec "Activating all swap files/partitions..." swapon -a
@@ -20,7 +21,6 @@ Exec "Setting hostname to $HostName..."       hostname "$HostName"
 [ "${UserDefinedModules[*]}" ] && \
 Exec "Loading user-defined kernel modules..." LoadModules
 
-Exec "Cleaning up any stale lock files..."    find $goboVariable/{run,lock}/ -type f -print0 | xargs -0 -i rm -rf {}; rm -rf  $goboTemp/.X*-lock
 Exec "Creating utmp and wtmp..."              CreateChmod 644 $goboVariable/run/{u,w}tmp
 Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastboot /forcefsck
 
