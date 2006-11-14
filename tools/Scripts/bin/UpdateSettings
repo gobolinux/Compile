@@ -197,7 +197,7 @@ function files_differ()
 
 function dirs_differ()
 {
-   test "`Quiet diff -wr "$1" "$2" | grep -v CVS`" = ""
+   Quiet diff -x CVS -wr "$1" "$2"
 }
 
 function merge_and_edit()
@@ -618,7 +618,7 @@ fi
 
 diffs_found=yes;
 if [ "$has_default" = "$has_current" ]; then
-   if [ "$has_default" = no ] || ! dirs_differ "$curdir" "$defaultdir"; then
+   if [ "$has_default" = no ] || dirs_differ "$curdir" "$defaultdir"; then
       diffs_found=no;
    fi
 fi
