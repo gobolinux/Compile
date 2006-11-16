@@ -602,14 +602,14 @@ function update_files()
 curdir="$pdir/Settings"
 defaultdir="$pdir/$version/Resources/Defaults/Settings"
 
-if find "$curdir" -not -type d -and -not -path "*CVS/*" -quit
+if find "$curdir" -not -type d -and -not -path "*CVS/*" -quit 2> /dev/null
 then
    has_current=yes;
 else
    has_current=no;
 fi
 
-if find "$defaultdir" -not -type d -and -not -path "*CVS/*" -quit
+if find "$defaultdir" -not -type d -and -not -path "*CVS/*" -quit 2> /dev/null
 then
    has_default=yes;
 else
