@@ -650,12 +650,12 @@ test_recipe() {
    file_md5s=($file_md5 "${file_md5s[@]}")
    file_sizes=($file_size "${file_sizes[@]}")
    [ "${urls[*]}" ] && test_urls
-
+   
    msg "Looking for common error patterns..."
    grep -q '$goboPrograms' Recipe && {
       ERROR "Recipe references \$goboPrograms explicitly. Use \$target and \$<dep>_path."
    }
-   grep -q "/Programs" Recipe && {
+   sed 's,#.*,,g' Recipe | grep -q "/Programs" && {
       ERROR "Recipe references /Programs tree explicitly. Use \$target and \$<dep>_path."
    }
    grep -q "\$target/../Settings" Recipe && {
@@ -664,7 +664,7 @@ test_recipe() {
    grep -q "\$target/../Variable" Recipe && {
       WARN "Recipe uses old \$target/../Variable idiom. Use \$variable_target."
    }
-   grep "wget" Recipe | grep -q -v "url=\|urls=" && {
+   sed 's,#.*,,g' Recipe | grep "wget" | grep -q -v "url=\|urls=" && {
       ERROR "Recipe performs wget explicitly. Use the urls= array instead."
    }
 }
