@@ -679,7 +679,7 @@ test_resources() {
    depfile=Resources/Dependencies
    if [ -f $depfile ]
    then
-      grep -q "^#" $depfile && {
+      grep -q "^# \*Warning\*" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
       missing_deps() {
