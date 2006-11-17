@@ -232,10 +232,7 @@ function wrapup() {
          fi
       fi
       Log_Normal "Packing recipe directory..."
-      # remove any backup file before packing
-      find "$genRecipeRecipeDir/$app/$version" | grep -E '~$' | xargs -i rm -f {}
-      tar cjvf "$genRecipeStoreDir/$app--$version--recipe.tar.bz2" -C "$genRecipeRecipeDir" "$app/$version" 
-      Log_Normal "Recipe packed in $genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+      GenRecipeStore "$app" "$version"
 
       # experimental 'callback': you can create a script that automatically 
       # uploads the recipe to somewhere, or asks for confirmation and sends 
