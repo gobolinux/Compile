@@ -447,13 +447,13 @@ def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=F
 	
 	if report_missing :
 		missing_dependencies      = [ r for r in all_rules if not find_matching_package(r, ['installed'], noWeb=noWeb)[2] ]
-		missing_programs          = [ r for r in missing_dependencies if 'program' in find_matching_package(r, ['installed'], noWeb=noWeb)[3] ]
+		missing_programs          = [ r for r in missing_dependencies if 'NO_PROGRAM' == find_matching_package(r, ['installed'], noWeb=noWeb)[3] ]
 		unresolvable_dependencies = [ r for r in missing_dependencies if not find_matching_package(r, ['installed']+types, noWeb=noWeb)[2] ]
 		
 	if report_updating :
 		updating_dependencies          = [ r for r in all_rules if not find_matching_package(r, ['installed']+types, noWeb=noWeb)[2] == 'installed' ]
 		tracked_is_higher_dependencies = [ r for r in all_rules if find_matching_package(r, ['installed']+types+['tracked'], noWeb=noWeb)[2] == 'tracked' ]
-		
+
 	if mode == 'terminal' :
 		s = ''
 		for r in all_rules :
@@ -484,22 +484,26 @@ def ListDependencies(p, v, t, u, mode = 'terminal', types=None, report_missing=F
 					ss += '<font color="#000000">'
 			else :
 				ss += '<font color="#000000">'
+				
 			ss += r['program']
+			
 			if report_missing and r in missing_dependencies :
 				if report_missing and not r in missing_programs :
 					ss += '</font><font color="#FF0000">'
-					if r in unresolvable_dependencies :	ss += '<b>'					
+					if r in unresolvable_dependencies : ss += '<b>'
 			elif report_updating and r in updating_dependencies :
 				ss += '</font><font color="#0000FF">'
 			elif report_updating  and r in tracked_is_higher_dependencies :
 				ss += '</font><font color="#00BB00">'
+			
 			if r['lover'] :
 				ss += ' ' + (r['loincluded'] and '>=' or '>') + ' ' + r['lover']
+			
 			if r['hiver'] :
-				if r['lover'] :
-					ss += ','
+				if r['lover'] : ss += ','
 				ss += ' ' + (r['hiincluded'] and '<=' or '<') + ' ' + r['hiver']
-			if r in unresolvable_dependencies : ss += '</b>'			
+			
+			if r in unresolvable_dependencies : ss += '</b>'
 			s += ss + '</font><br>'+'\n'
 		
 		if not all_rules : s += '<font color="#000000">-</font><br>'
