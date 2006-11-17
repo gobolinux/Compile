@@ -70,6 +70,8 @@ pack_recipe() {
             Quiet rmdir "$resources"
          }
       fi
+      #remove backups
+      find "$name/$version" | grep -E '~$' | xargs -i rm -f {}
       Quiet tar cjvf "$tarball" "$name/$version" || return 1
       touch "$tarball" --reference="$name/$version/Recipe"
       return 0
