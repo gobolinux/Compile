@@ -255,7 +255,9 @@ function Parse_Options() {
             "Entry"|"List")
                if [ "${#@}" == 0 ]
                then
-                  Die "Unknown option: $flag requires an argument."
+                  Log_Error "Unknown option: $flag requires an argument."
+                  Show_Help
+                  exit 1
                fi
                optionsStateList[i]="$1"
                export parsedArguments=$[parsedArguments+1]
@@ -267,7 +269,9 @@ function Parse_Options() {
       done
       if [ "${1:0:1}" = "-" ]
       then
-         Die "Unknown option: $1"
+         Log_Error "Unknown option: $1"
+         Show_Help
+         exit 1
       fi
       break
    done
