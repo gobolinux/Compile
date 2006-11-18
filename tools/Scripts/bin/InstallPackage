@@ -19,6 +19,7 @@ scriptNotes="Default behavior for --same is 'cancel', for --old is 'keep'.
    Notice that 'remove' may be dangerous for important system packages
    as it can leave the system in an inconsistent state during installation."
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
+Add_Option_Boolean ""  "use-contrib" "Look in contrib store as well."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
 Add_Option_Boolean "I" "no-install" "Do not install, only locate and fetch the package.
         Automatically enables '--keep'"
@@ -43,6 +44,7 @@ fi
 Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
+Boolean "use-contrib"&& contrib=",contrib_package"
 Is_Writable "${goboPrograms}" || Verify_Superuser
 Is_Writable "${goboInstall}"  || Verify_Superuser
 
@@ -89,7 +91,7 @@ then
    then
       Log_Normal "Locating a binary package for $1 $2..."
       noweb=`Forward_Boolean_Entry "no-web"` 
-      pkgType="-t local_package,official_package"
+      pkgType="-t local_package,official_package${contrib}"
       if [ $2 ] 
       then 
          found=`FindPackage $noweb $pkgType $1 $2`
