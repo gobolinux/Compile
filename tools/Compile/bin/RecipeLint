@@ -80,7 +80,7 @@ recipetar=$(readlink -f "$1")
 [ "$recipetar" ] || recipetar="$1"
 recipename=$(basename "$recipetar")
 
-report=$goboTemp/$(basename $recipetar .tar.bz2).report.txt
+report=$goboTemp/$(basename "$recipetar" .tar.bz2).report.txt
 touch "$report" &> /dev/null
 [ -w "$report" ] || {
    echo "No write permission for report file '$report'."
@@ -139,7 +139,7 @@ echo "$pureversion" | grep -q "[0-9]" || {
 
 ###############################################################################
 cd $lintdir
-tar jxpf $recipetar || {
+tar jxpf "$recipetar" || {
    FATAL "Could not unpack. Corrupted file?"
 }
 msg "Checking recipe package structure..."
@@ -149,11 +149,11 @@ msg "Checking recipe package structure..."
 [ -d "$name/$version" ] || {
    FATAL "Can't find version directory inside tarball."
 }
-[ "`ls`" == $name ] || {
+[ "`ls`" == "$name" ] || {
    WARN "Spurious files in root of recipe tarball: `ls | grep -v ^$name$`."
 }
-[ "`ls $name`" == $version ] || {
-   WARN "Spurious files in package dir of recipe tarball: `ls $name | grep -v ^$version$`."
+[ "`ls \"$name\"`" == "$version" ] || {
+   WARN "Spurious files in package dir of recipe tarball: `ls \"$name\" | grep -v ^$version$`."
 }
 arches=()
 function check_dir() {
@@ -191,7 +191,7 @@ do
    check_dir non-root "$name/$version/$arch"
 done
 ###############################################################################
-cd $name/$version
+cd "$name/$version"
 msg "Checking recipe contents..."
 [ -f Recipe ] || {
    FATAL "No Recipe file."
