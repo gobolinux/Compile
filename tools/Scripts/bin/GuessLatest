@@ -21,27 +21,18 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		w = ""
 		for i in range(len(s)) :
 			c = s[i]
-			if w :
-				if (w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits) :
-					toReturn.append(w)
-					w = c
-				else :
-					w = w + c
+			if w and ((w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits)) :
+				toReturn.append(w)
+				w = c
 			else :
-				w = w + c
-	
+				w += c
 		toReturn.append(w)
-	
 		return toReturn
-	
 	
 	built_versions = []
 	built_versions_stable = []
-	#greaterl = [-1]
-	#greater = ''
+	unstable_dict = { 'rc':0.0001, 'pre':0.001, 'pr':0.001, 'beta':0.01, 'alpha':0.1 }
 	
-	#stable_greaterl = [ -1]
-	#stable_greater = ''
 	param_order=0
 	for parameter in versions :
 		if type(parameter) == types.TupleType :
@@ -68,41 +59,14 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 				# remove '-' form, e.g., '1.0-rc2'
 				if len(i) > 0 and i[0] == '-' :
 					i = i[1:]
-					
 				try :
 					internalminors.append(int(i))
 				except :
-
-					if i in [ 'rc' ] :
+					if i in unstable_dict.keys() and internalminors :
 						unstable = 1
-						if internalminors:
-							internalminors[-1] = internalminors[-1] - 0.0001
-						else :
-							internalminors.append(i)
-
-					elif i in [ 'pre', 'pr' ] :
-						unstable = 1
-						if internalminors:
-							internalminors[-1] = internalminors[-1] - 0.001
-						else :
-							internalminors.append(i)
-
-					elif i in ['beta'] :
-						unstable = 1
-						if internalminors:
-							internalminors[-1] = internalminors[-1] - 0.01
-						else :
-							internalminors.append(i)
-	
-					elif i in ['alpha'] :
-						unstable = 1
-						if internalminors :
-							internalminors[-1] = internalminors[-1] - 0.1
-						else :
-							internalminors.append(i)
+						internalminors[-1] -= unstable_dict[i]
 					else :
 						internalminors.append(i)
-	
 			minors.append(internalminors)
 	
 		if not unstable :
@@ -125,17 +89,13 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 	if returnList :
 		if stableOnly and built_versions_stable:
 			return sbv
-			#return stable_greater
 		else :
 			return bv
-			#return greater
 	else :
 		if stableOnly and built_versions_stable:
 			return sbv[-1]
-			#return stable_greater
 		else :
 			return bv[-1]
-			#return greater
 
 
 if __name__ == '__main__' :
