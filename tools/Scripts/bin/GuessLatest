@@ -20,7 +20,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		toReturn = []
 		w = ""
 		for c in s :
-			if w and ((w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits)) :
+			if w and ((w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits)) and not (c == '.' or w[-1] == '.'):
 				toReturn.append(w)
 				w = c
 			else :
@@ -52,9 +52,9 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			minors.append(-1)
 		
 		unstable = 0
-		for k in version.lower().split(".") :
+		for k in breakInSwitches(version) :
 			internalminors = []
-			for i in breakInSwitches(k) :
+			for i in k.lower().split(".") :
 				# remove '-' form, e.g., '1.0-rc2'
 				if len(i) > 0 and i[0] == '-' :
 					i = i[1:]
