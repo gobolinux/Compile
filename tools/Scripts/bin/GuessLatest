@@ -14,6 +14,17 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		else :
 			return ""
 	
+	def extractVersion(s) :
+		if type(parameter) == types.TupleType :
+			l = parameter[0].split("/")
+		else :
+			l = parameter.split("/")
+		l = l[-1].split('--')
+		if len(l) > 1 :
+			return l[1]
+		else :
+			return l[0]
+		
 	def breakInSwitches(s) :
 		#breaks string when it switches from number to character 2a = [2,a], 3rc1 = [3,rc,1], and so on
 		from string import digits
@@ -28,26 +39,11 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		toReturn.append(w)
 		return toReturn
 	
-	built_versions = []
-	built_versions_stable = []
-	unstable_dict = { 'rc':0.0001, 'pre':0.001, 'pr':0.001, 'beta':0.01, 'alpha':0.1 }
-	
-	param_order=0
-	for parameter in versions :
-		# extracting the version from the input parameter
-		if type(parameter) == types.TupleType :
-			l = parameter[0].split("/")
-		else :
-			l = parameter.split("/")
-		l = l[-1].split('--')
-		if len(l) > 1 :
-			version = l[1]
-		else :
-			version = l[0]
-		
+	def versionWeight(version) :
+		unstable_dict = { 'rc':0.0001, 'pre':0.001, 'pr':0.001, 'beta':0.01, 'alpha':0.1 }
 		minors = []
 		
-		# if the version is cvs, must be the last choice. 
+		# if the version is cvs, must be the last choice.
 		if version.lower() == 'cvs' :
 			minors.append(-1)
 		
@@ -55,7 +51,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		for k in breakInSwitches(version) :
 			internalminors = []
 			for i in k.lower().split(".") :
-				# remove '-' form, e.g., '1.0-rc2'
+				# remove '-' from, e.g., '1.0-rc2'
 				if len(i) > 0 and i[0] == '-' :
 					i = i[1:]
 				try :
@@ -68,11 +64,30 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 						internalminors.append(i)
 			if internalminors :
 				minors.append(internalminors)
-		
+		return minors,unstable
+	
+	def splitVersionAndRevision(version_with_revision) :
+		r = version_with_revision.split('-')[-1]
+		import re
+		rev_format = 'r([0-9]+)(p([0-9]+))?'
+		rev_format_c = re.compile(rev_format)
+		m = rev_format_c.match(r)
+		if m :
+			return version_with_revision[:-len(r)-1],[m.group(1),m.group(3)]
+		else :
+			return version_with_revision,[]
+
+	built_versions = []
+	built_versions_stable = []
+	
+	param_order=0
+	for parameter in versions :
+		version_with_revision = extractVersion(parameter)
+		version,revision = splitVersionAndRevision(version_with_revision)
+		weight,unstable = versionWeight(version)
 		if not unstable :
-			built_versions_stable.append((minors,param_order,parameter))
-			
-		built_versions.append((minors,param_order,parameter))
+			built_versions_stable.append((weight,revision,param_order,parameter))
+		built_versions.append((weight,revision,param_order,parameter))
 		param_order -= 1
 
 	built_versions_stable.sort()
