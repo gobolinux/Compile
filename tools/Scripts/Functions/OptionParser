@@ -331,6 +331,7 @@ function Parse_Options() {
       if [ "${option:0:1}" = "-" ]; then
          if [ "${option:1:1}" = "-" ]; then
             if [ -z "${option:2:1}" ]; then
+	       # it's a double dash '--'. Rest of line is arguments only
                for (( l = 1; l <= $[$#-$i] ; l++ ))
                do
                   eval Arg[$[${#Arg}+$l]]=\$$[$l+$i]
@@ -370,6 +371,8 @@ function Parse_Options() {
                   esac
                   break
                fi
+	       Log_Error "Unknown option: $opt"
+	       exit 1
             done
          else
             for (( k = 1; k <= ${#option} ; k++ ))
@@ -404,6 +407,8 @@ function Parse_Options() {
                      esac
                   fi
                done
+	       Log_Error "Unknown option: -$opt"
+	       exit 1
             done
             export parsedArguments=$[parsedArguments+1]
          fi
