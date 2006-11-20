@@ -64,7 +64,7 @@ def downloadFiles(files, force = False, hook = None, message = '') :
 				wget_cmd = 'wget --no-check-certificate'
 			else :
 				wget_cmd = 'wget'
-			cmd = '%s --timeout=%d --tries=1 --quiet %s -O %s && touch %s'%(wget_cmd, timeout, url, localfile, localfile)
+			cmd = '%s --timeout=%d --tries=1 --quiet %s -O %s && touch %s || rm -f %s'%(wget_cmd, timeout, url, localfile, localfile, localfile)
 			os.system(cmd)
 		else :
 			try :
@@ -231,6 +231,9 @@ def getPackedLocalPackages(directory, d = None) :
 	return d
 
 def getVersionsFromList(file, d = None) :
+	if not os.access(file, os.R_OK) :
+		return d
+		
 	try :
 		if file[-4:] == '.bz2' :
 			import bz2
@@ -258,6 +261,9 @@ def getVersionsFromList(file, d = None) :
 	return d
 
 def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
+	if not os.access(file, os.R_OK) :
+		return d
+
 	if path_prefix and path_prefix[-1] != '/' :
 		path_prefix = path_prefix + '/'
 
