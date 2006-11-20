@@ -683,15 +683,6 @@ test_resources() {
       grep -q "^# \*Warning\*" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
-      while read line
-      do
-         bad_dep=`echo $line | sed -r -e '/.*\ [><]=?\ .*/d' -e '/^#.*/d' -e '/^\s*$/d'`
-         if [ ! -z "$bad_dep" ]
-         then
-            WARN "Old style dependency/Bad line in Dependensies: $bad_dep"   
-         fi
-      done < $depfile
-
       missing_deps() {
          CheckDependencies --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist --no-compatlist $name $version recipe $PWD | while read d_program d_version d_type d_url;
          do
