@@ -408,7 +408,7 @@ function Parse_Options() {
             export parsedArguments=$[parsedArguments+1]
          fi
       else
-         Arg[$[${#Arg[@]}+1]]=$option
+         Arg[${#Arg[@]}]=$option
       fi
       if Boolean help
       then Show_Help
