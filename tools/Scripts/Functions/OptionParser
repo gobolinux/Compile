@@ -320,21 +320,22 @@ function Parse_Options_Old() {
 
 function Parse_Options() {
    Arg[0]=$0
+
    if [ "$helpOnNoArguments" -a -z "$*" ]
    then Show_Help
    fi
-   
+
    for (( i = 1; i <= $# ; i++ ))
    do
       eval option=\$$i
-
+      unknownOption=true
       if [ "${option:0:1}" = "-" ]; then
          if [ "${option:1:1}" = "-" ]; then
             if [ -z "${option:2:1}" ]; then
-	       # it's a double dash '--'. Rest of line is arguments only
+               # it's a double dash '--'. Rest of line is arguments only
                for (( l = 1; l <= $[$#-$i] ; l++ ))
                do
-                  eval Arg[$[${#Arg}+$l]]=\$$[$l+$i]
+                  eval Arg[${#Arg[@]}]=\$$[$l+$i]
                done
                break
             fi
@@ -348,6 +349,7 @@ function Parse_Options() {
             do
                if [ "$opt" = "--${optionsLongList[j]}" ]
                then
+                  unknownOption=false
                   case "${optionsTypeList[j]}" in
                   "Boolean")
                      optionsStateList[j]="on"
@@ -367,21 +369,24 @@ function Parse_Options() {
                         exit 1
                      fi
                      optionsStateList[j]="$val"
-                     ;;
+               	     ;;
                   esac
                   break
                fi
-	       Log_Error "Unknown option: $opt"
-	       exit 1
             done
+            if $unknownOption; then
+               Log_Error "Unknown option: $opt"
+               exit 1
+            fi
          else
             for (( k = 1; k <= ${#option} ; k++ ))
             do
-	       opt=${option:$k:1}
+               opt=${option:$k:1}
                for j in `seq $optionsListSize`
                do
                   if [ "$opt" = "${optionsShortList[j]}" ]
                   then
+                     unknownOption=false
                      case "${optionsTypeList[j]}" in
                      "Boolean")
                         optionsStateList[j]="on"
@@ -407,8 +412,10 @@ function Parse_Options() {
                      esac
                   fi
                done
-	       Log_Error "Unknown option: -$opt"
-	       exit 1
+               if $unknownOption; then
+                  Log_Error "Unknown option: -$opt"
+                  exit 1
+               fi
             done
             export parsedArguments=$[parsedArguments+1]
          fi
