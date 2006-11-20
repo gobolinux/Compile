@@ -72,7 +72,15 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 				try :
 					internalminors.append(int(i))
 				except :
-					if i in [ 'rc', 'pre', 'pr' ] :
+
+					if i in [ 'rc' ] :
+						unstable = 1
+						if internalminors:
+							internalminors[-1] = internalminors[-1] - 0.0001
+						else :
+							internalminors.append(i)
+
+					elif i in [ 'pre', 'pr' ] :
 						unstable = 1
 						if internalminors:
 							internalminors[-1] = internalminors[-1] - 0.001
