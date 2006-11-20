@@ -14,7 +14,7 @@ import re
 ## Optimization
 s_blank='[ \t]*'
 s_name='([A-Za-z0-9][-A-Za-z0-9_+]*)'
-s_operand='(<|>|<=|>=)'
+s_operand='(<|>|<=|>=|=)'
 s_version='([0-9a-z._\-]+)'
 
 new_format = s_name +s_blank+ s_operand +s_blank+ s_version + '('+s_blank+ ',' +s_blank+ s_operand +s_blank+ s_version+')?'
