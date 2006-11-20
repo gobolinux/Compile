@@ -61,13 +61,14 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 				try :
 					internalminors.append(int(i))
 				except :
-					if i in unstable_dict.keys() and internalminors :
+					if i in unstable_dict.keys() and minors :
 						unstable = 1
-						internalminors[-1] -= unstable_dict[i]
+						minors[-1][-1] -= unstable_dict[i]
 					else :
 						internalminors.append(i)
-			minors.append(internalminors)
-	
+			if internalminors :
+				minors.append(internalminors)
+		
 		if not unstable :
 			built_versions_stable.append((minors,param_order,parameter))
 			
