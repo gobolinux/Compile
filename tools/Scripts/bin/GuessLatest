@@ -19,8 +19,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		from string import digits
 		toReturn = []
 		w = ""
-		for i in range(len(s)) :
-			c = s[i]
+		for c in s :
 			if w and ((w[-1] in digits and not c in digits) or (c in digits and not w[-1] in digits)) :
 				toReturn.append(w)
 				w = c
@@ -35,6 +34,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 	
 	param_order=0
 	for parameter in versions :
+		# extracting the version from the input parameter
 		if type(parameter) == types.TupleType :
 			l = parameter[0].split("/")
 		else :
@@ -53,9 +53,8 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		
 		unstable = 0
 		for k in version.lower().split(".") :
-			internalStrings = breakInSwitches(k)
 			internalminors = []
-			for i in internalStrings :
+			for i in breakInSwitches(k) :
 				# remove '-' form, e.g., '1.0-rc2'
 				if len(i) > 0 and i[0] == '-' :
 					i = i[1:]
@@ -78,21 +77,16 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 	built_versions_stable.sort()
 	built_versions.sort()
 	
-	bv = []
-	sbv = []
-	for i in built_versions :
-		bv.append(i[-1])
-	
-	for i in built_versions_stable :
-		sbv.append(i[-1])
-	
+	bv  = [ i[-1] for i in built_versions        ]
+	sbv = [ i[-1] for i in built_versions_stable ]
+		
 	if returnList :
-		if stableOnly and built_versions_stable:
+		if stableOnly and sbv :
 			return sbv
 		else :
 			return bv
 	else :
-		if stableOnly and built_versions_stable:
+		if stableOnly and sbv :
 			return sbv[-1]
 		else :
 			return bv[-1]
@@ -107,12 +101,11 @@ if __name__ == '__main__' :
 		Accepts package names, recipe names or version numbers as parameter ")
 	
 		parser.add_option("-s", "--stable", action="store_true", dest='stable',
-						default=False,  help="try to return a stable version as result")
+		                  default=False,  help="try to return a stable version as result")
 		
 		parser.add_option("-l", "--list", action="store_true", dest='return_list',
-						default=False,  help="returns a sorted list of versions")
+		                  default=False,  help="returns a sorted list of versions")
 		
-		#parser.add_option("-u", "--unstable", action="store_false", dest='stable', default=False)
 		(options, args) = parser.parse_args()
 		just_stable = options.stable
 		return_list = options.return_list
@@ -124,7 +117,6 @@ if __name__ == '__main__' :
 	if len(args) < 1:
 		print "Please pass at least one version number"
                 sys.exit(1)
-	
 	
 	r =  GuessLatest(args, just_stable, options.return_list)
 	if options.return_list :
