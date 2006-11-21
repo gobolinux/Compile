@@ -12,6 +12,7 @@ Import Process
 #declare -a optionsTypeList
 #declare -a optionsStateList
 optionsListSize=0
+argumentsListSize=0
 parsedArguments=0
 
 function Add_Option() {
@@ -49,6 +50,27 @@ function Add_Option_List() {
    then Add_Option "List" "$4" "$1" "$2" "$3"
    else Add_Option "List" "#@unset@#" "$1" "$2" "$3"
    fi 
+}
+
+function Add_Argument() {
+   argumentsList[$argumentsListSize]="$1"
+   argumentsListSize=$[argumentsListSize+1]
+}
+
+function Arg() {
+   if [ -z "$1" ]
+   then Die "You need to specify which argument"
+   fi
+   
+   if [ $1 -lt 0 ] || [ $1 -ge $argumentsListSize ]
+   then Die "Invalid argument reference: $1"
+   fi
+   echo ${argumentsList[$1]}
+}
+
+function Number_Of_Arguments() {
+   # $0 isn't considered an argument
+   echo $[$argumentsListSize-1]
 }
 
 function Entry() {
@@ -319,36 +341,42 @@ function Parse_Options_Old() {
 }
 
 function Parse_Options() {
-   Arg[0]=$0
+   Add_Argument "$0"
 
    if [ "$helpOnNoArguments" -a -z "$*" ]
    then Show_Help
    fi
 
+   # loop through all arguments
    for (( i = 1; i <= $# ; i++ ))
    do
       eval option=\$$i
       unknownOption=true
-      if [ "${option:0:1}" = "-" ]; then
-         if [ "${option:1:1}" = "-" ]; then
+      if [ "${option:0:1}" = "-" ]; then # we have an option
+         if [ "${option:1:1}" = "-" ]; then # a double dash so it should be a long option
             if [ -z "${option:2:1}" ]; then
-               # it's a double dash '--'. Rest of line is arguments only
+               # it's a lonely double dash '--'. Rest of line is arguments only
                for (( l = 1; l <= $[$#-$i] ; l++ ))
                do
-                  eval Arg[${#Arg[@]}]=\$$[$l+$i]
+                  eval argument=\$$[$l+$i]
+                  Add_Argument "$argument"
                done
                break
             fi
             if echo "$option" | grep -q = - ; then
+               # argument assignement with =
                opt=`echo $option | cut -d= -f1`
             else
                opt=$option
             fi
             export parsedArguments=$[parsedArguments+1]
+
+            # Go through the list of available options
             for j in `seq $optionsListSize`
             do
                if [ "$opt" = "--${optionsLongList[j]}" ]
                then
+                  # we found a valid (known) option
                   unknownOption=false
                   case "${optionsTypeList[j]}" in
                   "Boolean")
@@ -356,14 +384,17 @@ function Parse_Options() {
                      ;;
                   "Entry"|"List")
                      if echo "$option" | grep -q = - ; then
+                        # long option value assignment with =
                         val=`echo $option | cut -d= -f2`
                      else
+                        # else use next argument as value for the option
                         i=$[i+1]
                         eval val=\$$i
                         export parsedArguments=$[parsedArguments+1]
                      fi
                      if [ -z "$val" ]
                      then
+                        # we reached the end of the line without finding a value to assign
                         Log_Error "Unknown option: $opt requires an argument."
                         Show_Help
                         exit 1
@@ -379,13 +410,15 @@ function Parse_Options() {
                exit 1
             fi
          else
+            # go through the string of short options
             for (( k = 1; k <= ${#option} ; k++ ))
             do
-               opt=${option:$k:1}
+               opt=${option:$k:1} # the first character in the string
                for j in `seq $optionsListSize`
                do
                   if [ "$opt" = "${optionsShortList[j]}" ]
                   then
+                     # we found a valid (known) option
                      unknownOption=false
                      case "${optionsTypeList[j]}" in
                      "Boolean")
@@ -394,14 +427,18 @@ function Parse_Options() {
                         ;;
                      "Entry"|"List")
                         if [ ! -z "${option:$[k+1]:1}" ]; then
+                           # if option is entry and next character in string isn't empty
+			   # use the rest of the string as value for the option
                            val=${option:$[k+1]:${#option}}
                         else
+                           # else use next option as value
                            i=$[i+1]
                            eval val=\$$i
                            export parsedArguments=$[parsedArguments+1]
                         fi
                         if [ -z "$val" ]
                         then
+                           # we didn't find any value to assign, so we die
                            Log_Error "Unknown option: $opt requires an argument."
                            Show_Help
                            exit 1
@@ -420,7 +457,7 @@ function Parse_Options() {
             export parsedArguments=$[parsedArguments+1]
          fi
       else
-         Arg[${#Arg[@]}]=$option
+         Add_Argument "$option"
       fi
       if Boolean help
       then Show_Help
