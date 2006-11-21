@@ -44,7 +44,6 @@ Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build
 Parse_Conf Compile.conf
 Parse_Options "$@"
 
-shift $parsedArguments
 [ "$compileFlags" ] && Parse_Options $compileFlags
 
 Boolean "lazy" && Set_Boolean "no-web"
@@ -375,16 +374,14 @@ fi
 
 #unset directrecipe
 # suport for direct recipe passing
-if [ -d "$1" -o "`echo $1 | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$1"
+if [ -d "$(Arg 1)" -o "`echo $(Arg 1) | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$(Arg 1)"
 then
    #directrecipe=yes
-   rawrecipes="$1"
-   shift 1
+   rawrecipes="$(Arg 1)"
    Log_Normal "Using passed recipe $rawrecipes"
 else
-   app=$1
-   version=$2
-   shift 2
+   app="$(Arg 1)"
+   version="$(Arg 2)"
    # Find recipe:
    Log_Normal "Locating a recipe for $app $version..."
    String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
@@ -936,7 +933,7 @@ then
             --configure $configure
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "${config[@]}" || wrap_fail "Preparation step failed."
+         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" --configure-options="${config[@]}" || wrap_fail "Preparation step failed."
       ) || exit 1
    fi
    $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
