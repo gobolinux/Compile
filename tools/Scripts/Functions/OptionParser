@@ -413,7 +413,7 @@ function Parse_Options() {
             # go through the string of short options
             for (( k = 1; k <= ${#option} ; k++ ))
             do
-               opt=${option:$k:1} # the first character in the string
+               opt=${option:$k:1} # the character number k in the string
                for j in `seq $optionsListSize`
                do
                   if [ "$opt" = "${optionsShortList[j]}" ]
@@ -428,7 +428,7 @@ function Parse_Options() {
                      "Entry"|"List")
                         if [ ! -z "${option:$[k+1]:1}" ]; then
                            # if option is entry and next character in string isn't empty
-			   # use the rest of the string as value for the option
+                           # use the rest of the string as value for the option
                            val=${option:$[k+1]:${#option}}
                         else
                            # else use next option as value
