@@ -73,6 +73,7 @@ function Arg() {
          echo -n "${argumentsList[$i]} "
       done
       echo
+      exit
    fi
    
    if [ $1 -lt 0 ] || [ $1 -ge $argumentsListSize ]
