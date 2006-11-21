@@ -63,7 +63,9 @@ function Arg() {
    fi
    
    if [ $1 -lt 0 ] || [ $1 -ge $argumentsListSize ]
-   then Die "Invalid argument reference: $1"
+   then
+      echo ""
+      exit
    fi
    echo ${argumentsList[$1]}
 }
