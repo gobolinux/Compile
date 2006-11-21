@@ -131,9 +131,9 @@ if [ "$unionsandbox" ]
 then
     sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
     map_settings="--map ${default_settings}=${settings}"
-    sandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings"
+    sandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings -- "
 else
-    sandbox="FiboSandbox -s $allowed"
+    sandbox="FiboSandbox -s $allowed --"
 fi
 
 Boolean "no-sandbox" && sandbox=
