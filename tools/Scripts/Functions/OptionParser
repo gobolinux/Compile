@@ -5,7 +5,7 @@
 Import String
 Import Process
 
-#declare -a savedOptions
+declare -a savedOptions
 #declare -a optionsShortList
 #declare -a optionsLongList
 #declare -a optionsDescriptionList
@@ -363,6 +363,7 @@ function Parse_Options() {
    then Show_Help
    fi
 
+   savedOptions=("$@")
    # loop through all arguments
    for (( i = 1; i <= $# ; i++ ))
    do
