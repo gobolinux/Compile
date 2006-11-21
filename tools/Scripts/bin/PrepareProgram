@@ -27,12 +27,14 @@ Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating dire
 Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the directory hierarchy."
 Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the directory hierarchy."
 Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
-Add_Option_Entry   "o" "configure-options" "Options that should be passed to configure."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
 
 Parse_Options "$@"
+
+# hack to allow extra arguments to configure to be passed as $@
+while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
 
 Is_Entry "configure" && export PATH="$PATH:."
 
@@ -255,9 +257,7 @@ else
    configure_options=()
 fi
 
-configure_options=(${configure_options[@]} `Entry configure-options`)
-
 color_command "`Find_Conf configure.mtailrc`" \
-  "$configureprogram" "${configure_options[@]}" >&$normalFD || Die "configure failed."
+  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
 
 exit 0
