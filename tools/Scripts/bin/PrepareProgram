@@ -8,6 +8,7 @@ Import GoboLinux
 Import Log
 Import OptionParser
 Import Directories
+Import Array
 
 ### Options ##############################################################
 
@@ -26,12 +27,12 @@ Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating dire
 Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the directory hierarchy."
 Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the directory hierarchy."
 Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
+Add_Option_Entry   "o" "configure-options" "Options that should be passed to configure."
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
 
 Parse_Options "$@"
-shift $parsedArguments
 
 Is_Entry "configure" && export PATH="$PATH:."
 
@@ -75,25 +76,23 @@ remove_symlink() {
 
 ### Operation #############################################################
 
-programname="$1"
-[ "$1" ] || Die "Missing argument."
+programname="$(Arg 1)"
+[ -z "$programname" ] && Die "Missing argument."
 Dir_Set Case && {
    # Respect capitalization passed, if any.
    if [ "$programname" = `echo "$programname" | tr '[:upper:]' '[:lower:]'` ]
    then programname=`GuessProgramCase "$1"`
    fi
 }
-shift
-if [ "$1" -a "$1" != "--" ]
+
+if [ "$(Arg 2)" -a "$(Arg 2)" != "--" ]
 then
-   versionnumber="$1"
-   shift
+   versionnumber="$(Arg 2)"
 else
    versionnumber=`Which_Version "${goboPrograms}/${programname}/Current"`
    [ "$versionnumber" ] || Die "Please specify version."
 fi
 
-[ "$1" == "--" ] && shift
 programname=`NamingConventions "$programname"`
 
 baseprogramdir=`Get_Dir runtime "$programname" ''`
@@ -256,7 +255,9 @@ else
    configure_options=()
 fi
 
+configure_options=(${configure_options[@]} `Entry configure-options`)
+
 color_command "`Find_Conf configure.mtailrc`" \
-  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
+  "$configureprogram" "${configure_options[@]}" >&$normalFD || Die "configure failed."
 
 exit 0
