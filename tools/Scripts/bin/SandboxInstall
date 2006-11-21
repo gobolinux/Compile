@@ -29,7 +29,9 @@ Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative
 Add_Option_Boolean "l" "allow-leftovers" "When using UnionFS, do not return a failure code when it catches files outside the sandbox."
 
 Parse_Options "$@"
-shift $parsedArguments
+
+# hack to allow extra arguments to be passed as $@
+while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
 
 Dir_Set Sandbox || Set_Boolean "no-sandbox"
 
@@ -43,7 +45,7 @@ fi
 # TODO: this code is copy-and-pasted from SymlinkProgram.
 # It should move into functions.
 
-[ "$1" -o "$1" = "--" ] || Die "Argument missing: specify the program name."
+[ "$(Arg 1)" -o "$(Arg 1)" = "--" ] || Die "Argument missing: specify the program name."
 
 unset unionsandbox
 
@@ -58,8 +60,8 @@ then
    fi
 fi
 
-package="`basename "$1" /`"
-package="`GuessProgramCase "$1"`"
+package="`basename "$(Arg 1)" /`"
+package="`GuessProgramCase "$(Arg 1)"`"
 packageDir=`Get_Dir runtime "$package" ''`
 
 if ! Is_Directory "$packageDir"
@@ -70,24 +72,15 @@ installPackageDir=`Get_Dir install "$package" ''`
 current="$packageDir/Current"
 version=$(basename $(readlink -f $current))
 
-shift
-if [ "$1" = "--" ]
+if [ "$(Arg 2)" ]
 then
-   shift
-elif [ "$1" ]
-then
-   vdir=`Get_Dir runtime "$package" "$1"`
+   requested_version=$(Arg 2)
+   vdir=`Get_Dir runtime "$package" "$requested_version"`
    if { ! Is_Directory "$vdir" ;} && { ! Boolean "no-sandbox" ;}
-   then Die "There is no version $1 for package $package."
+   then Die "There is no version $requested_version for package $package."
    fi
-   Dir_Set Current && [ "$version" != "$1" ] && ln -sfn `basename "$vdir"` "$current"
-   version="$1"
-   shift
-fi
-
-if [ "$1" = "--" ]
-then
-   shift
+   Dir_Set Current && [ "$version" != "$requested_version" ] && ln -sfn `basename "$vdir"` "$current"
+   version="$requested_version"
 fi
 
 if Dir_Set Current && ! Exists "$current"
@@ -152,7 +145,7 @@ if Is_Entry "command"
 then
    $sandbox `Entry "command"` "$@" || installation_failed
 else
-   $sandbox make -f "`Entry "makefile"`" "$@" `Entry "target"` || installation_failed
+   $sandbox make -f "`Entry "makefile"`" "$@" "`Entry "target"`" || installation_failed
 fi
 result="$?"
 
