@@ -88,6 +88,6 @@ function Load_Hints() {
    # actually call the beautiful bit of code that actually reads the hints file,
    # then, since we know it's going to output some valid bash commands we're
    # supposed to eval, eval whatever it outputs.
-   echo "$(ruby "${parserPath}" "$file" "${scriptName}")"
+   # echo "$(ruby "${parserPath}" "$file" "${scriptName}")" # debug output
    eval "$(ruby "${parserPath}" "$file" "${scriptName}")"
 }
