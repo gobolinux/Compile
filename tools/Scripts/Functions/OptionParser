@@ -61,6 +61,19 @@ function Arg() {
    if [ -z "$1" ]
    then Die "You need to specify which argument"
    fi
+
+   if [ ! -z "$2" ]
+   then
+      if [ "$2" = "n" ]
+      then length=$[argumentsListSize-1]
+      else length=$2
+      fi
+      for (( i=$1 ; i<=$length ; i++ ))
+      do
+         echo -n "${argumentsList[$i]} "
+      done
+      echo
+   fi
    
    if [ $1 -lt 0 ] || [ $1 -ge $argumentsListSize ]
    then
