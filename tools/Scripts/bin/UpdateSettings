@@ -686,7 +686,7 @@ if Boolean "update"; then
 
    if Is_Directory "$pdir/Settings" && [ $has_current = yes ]; then
       mkdir -p "$pdir/$version/Resources"
-      backup=$(Unique_Name "$pdir/$version-SettingsBackup")
+      backup=$(Unique_Name "$pdir/$version/Resources/SettingsBackup")
 
       Log_Normal "Backing up settings in $backup"
       cp -a "$pdir/Settings" "$backup" || Die "Failed to backup settings"
