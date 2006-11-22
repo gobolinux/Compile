@@ -115,6 +115,7 @@ oldVersion="`Previous_Version "${appName}" $versionCheckingMethod`"
 EDITOR=${EDITOR:-vi}
 PAGER=${PAGER:-less}
 SKIP_ALL_MAGIC_NUMBER=123
+InstructionSource=''
 
 ##################################################
 # Helper functions
@@ -289,10 +290,10 @@ function update_one_file() {
          if Array_Contains opts_available "$hint"; then
             if [ "${hintsAllowed[@]}" ]; then
                if Array_Contains hintsAllowed "$hint"; then
-                  Append_To_Array opts_requested "$hint"
+                  Append_To_Array opts_requested "${hint}:hint"
                fi
             else
-               Append_To_Array opts_requested "$hint"
+               Append_To_Array opts_requested "${hint}:hint"
             fi
          fi
       done
@@ -306,7 +307,12 @@ function update_one_file() {
    # to try them.
    for instruction in "${opts_requested[@]}"; do
       ACTION=''
-      case "$instruction" in
+      if [ "${instruction##*:}" = hint ]; then
+      	InstructionSource='hint:'
+		else
+			InstructionSource='auto:'
+      fi
+      case "${instruction%%:hint}" in
          # I'll start with the simpler behaviors.
          create|overwrite)                     ACTION=u ;;
          delete)                               ACTION=d ;;
@@ -323,13 +329,14 @@ function update_one_file() {
          
          # Ask the user what they think.
          prompt_user)
+         	InstructionSource='user:'
             input_action "${num}" "${difftype}" "${file}"
             ;;
          
          # Something somewhere along the line told us to fail. Warn user, and
          # move on to the next file
          fail)
-            Log_Error "${file} could not be updated."
+            Log_Error "$InstructionSource ${file} could not be updated."
             Log_Error "Please examine this file manually."
             ACTION=s
             ;;
@@ -514,13 +521,13 @@ function attempt_action() {
    
    case "$action" in
       s) if [ "${lastSuccessfulMerge}" = "${cur}" ]; then
-            Log_Normal "Successfully patched ${cur}"
+            Log_Normal "$InstructionSource Successfully patched ${cur}"
          else
             case "$difftype" in
-               mod*)    Log_Normal "Not updating $cur" ;;
-               del*)    Log_Normal "Not deleting $cur" ;;
-               new*)    Log_Normal "Not using $default" ;;
-               *)       Log_Normal "Leaving $cur alone" ;;
+               mod*)    Log_Normal "$InstructionSource Not updating $cur" ;;
+               del*)    Log_Normal "$InstructionSource Not deleting $cur" ;;
+               new*)    Log_Normal "$InstructionSource Not using $default" ;;
+               *)       Log_Normal "$InstructionSource Leaving $cur alone" ;;
             esac
          fi
          ;;
@@ -528,7 +535,7 @@ function attempt_action() {
       sa)return $SKIP_ALL_MAGIC_NUMBER
          ;;
          
-      u) Log_Normal "Using $default"
+      u) Log_Normal "$InstructionSource Using $default"
          mkdir -p "$(dirname $cur)"
          if ! Is_Directory "$default"
          then
@@ -542,9 +549,9 @@ function attempt_action() {
          ;;
          
       d) if Exists "$cur"; then
-            Log_Normal "Deleting $cur"
+            Log_Normal "$InstructionSource Deleting $cur"
          else
-            Log_Normal "Not creating $cur"
+            Log_Normal "$InstructionSource Not creating $cur"
          fi
          rm -f "$cur"
          ;;
