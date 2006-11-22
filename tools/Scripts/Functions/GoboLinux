@@ -5,7 +5,7 @@ Import String
 
 function Get_Architecture() {
    [ "$1" = "" ] && arch=`uname -m` || arch="$1"
-   
+
    case "$arch" in
 	   arm*) arch=arm ;;
 	   "Power Macintosh") arch=ppc ;;
@@ -18,7 +18,7 @@ function Get_Architecture() {
 		CYGWIN*) kernelType=".Cygwin" ;;
 		*) kernelType=".$kernelType" ;;
 	esac
-   
+
    echo "$arch$kernelType"
 }
 
@@ -54,8 +54,8 @@ function Link_Or_Expand_All() {
 # 14/09/2004 - [detsch] Experimental relative option
 # 10/09/2004 - [detsch] Changed Log() function following David Smith sugestion & code
 # 23/05/2004 - [detsch] try:except and checking goboPrograms[-1]=='/' on belongs_to_same_app()
-# 01/04/2004 - [detsch] bugfix: now checking if os.path.islink(bn) when 
-#                       belongs_to_same_app() before trying to link file (3:)  
+# 01/04/2004 - [detsch] bugfix: now checking if os.path.islink(bn) when
+#                       belongs_to_same_app() before trying to link file (3:)
 # 29/03/2004 - [detsch] ported Log functions (no more os.system())
 # 29/03/2004 - [detsch] first version released for testing
 # 27/03/2004 - [detsch] major code reorganization,
@@ -95,7 +95,7 @@ def Log(mode, s) :
         color = colorBoldRed
     else :
         color = colorNormal
-    
+
     fdName = mode.lower()+'FD'
     fdString = os.environ[fdName]
     fdNum = int(fdString)
@@ -121,7 +121,7 @@ count = 0
 def Link_Or_Expand(new, conflict, relative = False) :
     global count
     count = count + 1
-    
+
     goboPrograms = os.environ['goboPrograms']
     if relative :
 	relativegoboprograms = goboPrograms
@@ -136,7 +136,7 @@ def Link_Or_Expand(new, conflict, relative = False) :
 	    if os.access(candidate, os.W_OK) :
 		relativegoboprograms=candidate
 		break
-    
+
     def points_to(p) :
         if os.access(p, os.R_OK) :
 	    return os.path.realpath(os.path.realpath(p))
@@ -162,11 +162,11 @@ def Link_Or_Expand(new, conflict, relative = False) :
          # if goboPrograms ends with an '/'
          if goboPrograms[-1] == '/' :
                pstrlen = pstrlen - 1
-         
+
          # realnew instead of new because of typical MergeTree links
 	 appnewname = realnew[pstrlen:].split('/')[1]
 	 appoldname = realold[pstrlen:].split('/')[1]
-         
+
          # added: case-insensitive
          if appnewname.lower() == appoldname.lower() :
             return 1
@@ -174,14 +174,14 @@ def Link_Or_Expand(new, conflict, relative = False) :
             return 0
       except :
          return 0
-    
+
     def create_single_link(orig, dest) :
 	if relative :
 	    relativeorig = orig.replace(os.path.realpath(goboPrograms), relativegoboprograms)
 	    os.symlink(relativeorig, './'+dest)
 	else :
 	    os.symlink(orig, './'+dest)
-    
+
     realnew = points_to(new)
     bn = os.path.basename(new)
 
@@ -277,7 +277,7 @@ else :
 #    Parameters "$@" new conflict
 #    local realnew=`readlink -f "$new"`
 #    local bn
-# 
+#
 #    function prepare_directory() {
 #       Log_Normal "Creating expanded directory '$bn'..."
 #       local realold=`readlink -f "$bn"`
@@ -299,7 +299,7 @@ else :
 #       cd ..
 #       return 0
 #    }
-# 
+#
 #    function link_inside() {
 #       Log_Verbose "Linking files from '$realnew' in directory '$bn'..."
 #       cd "$bn"
@@ -316,7 +316,7 @@ else :
 #       cd ..
 #       return 0
 #    }
-# 
+#
 #    function file_conflict() {
 #       Parameters "$@" filename
 #       Log_Error "Conflict: $filename"
@@ -327,11 +327,11 @@ else :
 #       fi
 #       return 0
 #    }
-# 
+#
 #    function prepare_and_link() {
 #       prepare_directory && link_inside
 #    }
-# 
+#
 #    function overwrite_file() {
 #       Parameters "$@" errfunc
 #       appnewdir=`echo "${new}" | sed -n "s#\\(${goboPrograms}/[^/]*\\)/.*#\\1#p"`
@@ -347,27 +347,27 @@ else :
 #           return $?
 #       fi
 #    }
-# 
+#
 #    bn=`basename "$new"`
-# 
+#
 #    function points_to() {
 #       if [ -L "$1" ]
 #       then
 #          points=`ls -l "$1" | sed 's/.* -> //;s@/share/@/Shared/@'`
 #          if ! [ "`echo "$points" | cut -b1`" = "/" ]
-#          then 
-#          points=`dirname "$1"`/"$points" 
+#          then
+#          points=`dirname "$1"`/"$points"
 #          fi
 #          echo $points
 #       else echo "$1"
 #       fi
 #    }
-# 
+#
 #    if Is_Broken_Link "$bn"
 #    then
 #       rm "$bn"
 #    fi
-# 
+#
 #    if [ -L "$new" ] && ! Exists `points_to "$new"`
 #    then
 #       :
@@ -398,9 +398,9 @@ else :
 # }
 
 function Reverse_Link_Or_Expand() {
-   local source destination 
+   local source destination
    Parameters "$@" source destination
-   local rsource bsource dsource file 
+   local rsource bsource dsource file
    rsource=`readlink -f "$source"`
    bsource=`basename "$rsource"`
    dsource=`dirname "$rsource"`
@@ -498,7 +498,7 @@ conflocations=(
 
 function Find_Conf() {
    for conf in "${conflocations[@]}"
-   do 
+   do
       if Exists "$conf/$1"
       then
          echo "$conf/$1"
@@ -549,7 +549,7 @@ fi
 # Respawn the script, asking for root privileges
 function Verify_Superuser() {
    if [ $ROOTLESS_GOBOLINUX ]
-   then 
+   then
       echo "Bypassing verification for superuser"
    else
       if [ $UID != 0 ]
@@ -597,7 +597,7 @@ print entry[0]
 
 function Install_Unmanaged_Files() {
    Parameters "$@" unmanagedfilesfile sourcedir
-   if [ -f "$unmanagedfilesfile" ] 
+   if [ -f "$unmanagedfilesfile" ]
    then
       cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
       do
@@ -610,7 +610,7 @@ function Install_Unmanaged_Files() {
 
 function Uninstall_Unmanaged_Files() {
    Parameters "$@" unmanagedfilesfile
-   if [ -f "$unmanagedfilesfile" ] 
+   if [ -f "$unmanagedfilesfile" ]
    then
       cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
       do
@@ -619,4 +619,14 @@ function Uninstall_Unmanaged_Files() {
          Quiet rmdir "${dname}"
       done
    fi
+}
+
+function Get_Revision() {
+   Parameters "$@" versionandrevision
+   echo $versionandrevision | sed -n 's,.*-\(r[0-9]*p\?[0-9]*\),\1,p'
+}
+
+function Get_Version() {
+   Parameters "$@" versionandrevision
+   echo $versionandrevision | sed -e 's/-r[0-9]*p\?[0-9]*$//g'
 }
