@@ -933,8 +933,7 @@ then
             --configure $configure
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         [ ! -z "$config" ] && configure_options="--configure-options=${config[@]}"
-         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "$configure_options" || wrap_fail "Preparation step failed."
+         PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "--" "${config[@]}" || wrap_fail "Preparation step failed."
       ) || exit 1
    fi
    $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
