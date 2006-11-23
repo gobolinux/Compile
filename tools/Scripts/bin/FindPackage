@@ -11,7 +11,7 @@
 import os, os.path, sys, urllib
 from GetAvailable import *
 
-def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdirs=None, forceupdate=False, accessWeb=True, hook=None, availables=None) :
+def FindPackage(p, v=None, r=None, fulllist=False, substring=False, types=None, localdirs=None, forceupdate=False, accessWeb=True, hook=None, availables=None) :
 	
 	if not types :
 		types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
@@ -25,7 +25,7 @@ def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdir
 		availables = GetAvailable(types, localdirs, forceupdate=forceupdate, accessWeb = accessWeb, hook = hook)
 	
 	#######################################################################
-	# Phase 2: From returned structure, decide which items fit (based on p and v)
+	# Phase 2: From returned structure, decide which items fit (based on p, v and r)
 	#######################################################################
 	relevant_items = []
 	for t in types :
@@ -41,39 +41,47 @@ def FindPackage(p, v=None, fulllist=False, substring=False, types=None, localdir
 				if pname.lower() == p.lower() :
 					matched_programs.append(pname)
 					break
-		
-		for matched_program in matched_programs  :
+				
+		d = availables[t]['programs']
+		for p in matched_programs  :
 			if v :
-				if availables[t]['programs'][matched_program].has_key(v) :
-					for i in availables[t]['programs'][matched_program][v] :
-						relevant_items.append((matched_program,v,t,i))
+				if d[p].has_key(v) :
+					if r :
+						if d[p][v].has_key(r) :
+							for u in d[p][v][r] :
+								relevant_items.append((p,v,r,t,u))
+					else :
+						for fr in d[p][v] :
+							for u in d[p][v][fr] :
+								relevant_items.append((p,v,fr,t,u))
 			else :
-				for fv in availables[t]['programs'][matched_program].keys() :
-					for i in availables[t]['programs'][matched_program][fv] :
-						relevant_items.append((matched_program,fv,t,i))
+				for fv in d[p].keys() :
+					for fr in d[p][fv] :
+						for u in d[p][fv][fr] :
+							relevant_items.append((p,fv,fr,t,u))
 						
 	#################################################################################
 	# Phase 3: Prepare the output, sorting if required
 	#################################################################################
 	del availables # Documentation: only the 'relevant_items' are used from now on
 	
-	if v :
+	if v and r :
 		if fulllist :
 			return relevant_items
 		else :
 			return relevant_items[0:1]
 	else :
 		from GuessLatest import GuessLatest
-		found_versions = map(lambda item:item[1], relevant_items)
+		found_versions_revisions = [ (i[1]+'-'+i[2]).strip('-') for i in relevant_items ]
 		toReturn = []
 		while relevant_items :
-			latest = GuessLatest(found_versions)
-			selected = [ item for item in relevant_items if item[1] == latest ][0]
+			latest = GuessLatest(found_versions_revisions)
+			selected = [ i for i in relevant_items if (i[1]+'-'+i[2]).strip('-') == latest ][0]
 			toReturn.append(selected)
 			if not fulllist :
 				break
 			relevant_items.remove(selected)
-			found_versions.remove(latest)
+			found_versions_revisions.remove(latest)
 		return toReturn
 	
 
@@ -215,9 +223,10 @@ Examples of usage:
 		sys.exit(1)
 	
 	if len (args) >= 2 :  
-		v = args[1]
+		v,r = Split_Version_Revision(args[1])
 	else  :
 		v = ''
+		r = ''
 	
 	if newestOnServer and noWeb:
 		Log_Error("--newest-on-server overridden by --no-web")
@@ -232,17 +241,15 @@ Examples of usage:
 	except :
 		pass
 	
-	returned = FindPackage(p, v, fulllist, substring, types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)	
+	returned = FindPackage(p, v, r, fulllist, substring, types, localdirs, forceupdate, accessWeb = not noWeb, hook = hook)	
     
 	if returned :
 		if newestOnServer: 
 			returnedResults = len(returned)
 			returned.sort(byNewestOnServer)
         
-		for program, version, t, site in returned :
+		for rp, rv, rr, rt, site in returned :
 			print site
-		sys.exit(0)	
+		sys.exit(0)
 	else :
-		sys.exit(1)		
-
-
+		sys.exit(1)

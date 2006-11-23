@@ -160,6 +160,15 @@ def UpdateCache(types, force = True, hook = None) :
 	ret = downloadFiles(files, force, hook, 'Downloading updated remote lists')
 	return ret
 
+def addToDict(d, p, v, r, u) :
+	if not d.has_key(p) :
+		d[p] = {}
+	if not d[p].has_key(v) :
+		d[p][v] = {}
+	if not d[p][v].has_key(r) :
+		d[p][v][r] = []
+	d[p][v][r].append(u)
+
 def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 	import os, os.path
 
@@ -194,18 +203,19 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 		if not versions :
 			continue
 
-		if not d.has_key(p) :
-			d[p] = {}
-
 		for v in versions:
 			# detsch, 12/11/2004: quick fix -> if not requireCurrent, assuming it is looking for recipes
 			if not requireCurrent and not os.access(directory+'/'+p+'/'+v+'/'+'Recipe', os.R_OK) :
 				continue
-
-			if not d[p].has_key(v) :
-				d[p][v] = []
-			d[p][v].append(directory+'/'+p+'/'+v)
-
+			
+			if os.access(directory+'/'+p+'/'+v+'/'+'Resources/Revision', os.R_OK) :
+				f = open(directory+'/'+p+'/'+v+'/'+'Resources/Revision')
+				r = f.read().strip()
+				f.close()
+			else :
+				r = ''
+			
+			addToDict(d, p,v,r,directory+'/'+p+'/'+v)
 	return d
 
 def getPackedLocalPackages(directory, d = None) :
@@ -223,11 +233,9 @@ def getPackedLocalPackages(directory, d = None) :
 	for file in files :
 		l = file.split('--')
 		if len(l) > 2 :
-			if not d.has_key(l[0]) :
-				d[l[0]] = {}
-			if not d[l[0]].has_key(l[1]) :
-				d[l[0]][l[1]] = []
-			d[l[0]][l[1]].append(directory+file)
+			p = l[0]
+			v,r = Split_Version_Revision(l[1])
+			addToDict(d, p,v,r,directory+file)
 	return d
 
 def getVersionsFromList(file, d = None) :
@@ -256,8 +264,7 @@ def getVersionsFromList(file, d = None) :
 	for line in lines :
 		l = line.split()
 		if len(l) >= 2 :
-			d[l[0]] = {}
-			d[l[0]][l[1]] = [str(l[0])+' '+str(l[1])+ ' ' + '<TRACKED>' ]
+			addToDict(d, l[0], l[1], '', str(l[0])+' '+str(l[1])+ ' ' + '<TRACKED>')
 	return d
 
 def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
@@ -286,16 +293,9 @@ def getVersionsFromPackagesList(file, path_prefix = '', d = None) :
 		for line in lines :
 			l = line.split('--')
 			if len(l) > 2 :
-				if not d.has_key(l[0]) :
-					d[l[0]] = {}
-				dl0=d[l[0]]
-				l1=l[1]
-				if not dl0.has_key(l1) :
-					dl0[l1] = []
-				dl0[l1].append(path_prefix+line.strip())
-				#if not d[l[0]].has_key(l[1]) :
-					#d[l[0]][l[1]] = []
-				#d[l[0]][l[1]].append(path_prefix+line.strip())
+				p = l[0]
+				v,r = Split_Version_Revision(l[1])
+				addToDict(d, p,v,r, path_prefix+line.strip())
 		return d
 	except Exception, e:
 		sys.stderr.write(str(e)+'\n')
