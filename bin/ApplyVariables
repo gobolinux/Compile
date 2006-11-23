@@ -15,7 +15,6 @@ Add_Option_Entry "o" "open" "Opening mark." "@%"
 Add_Option_Entry "c" "close" "Closing mark." "%@"
 Add_Option_Entry "i" "identifier" "Add a prefix identifier in the form of '<entry>_' to the opening markup."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
@@ -26,7 +25,7 @@ then
    open="${open}`Entry identifier`_"
 fi
 
-cat "$1" | python -c '
+cat "$(Arg 1)" | python -c '
 import os,sys,string
 
 op=sys.argv[1]

@@ -14,7 +14,6 @@ Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use 
 Add_Option_Boolean "D" "quick-and-dirty" "cut some corners (don't download files, etc; not recommended)."
 Add_Option_Boolean "W" "no-web" "fully offline operation (not recommended)."
 Parse_Options "$@"
-shift $parsedArguments
 
 [ "$httpSourceforge" ] || {
    echo -e "\033[41;33;1mFATAL ERROR: could not load initial configuration.\033[0m"
@@ -76,8 +75,8 @@ function FATAL() {
 
 errors=0
 warnings=0
-recipetar=$(readlink -f "$1")
-[ "$recipetar" ] || recipetar="$1"
+recipetar=$(readlink -f "$(Arg 1)")
+[ "$recipetar" ] || recipetar="$(Arg 1)"
 recipename=$(basename "$recipetar")
 
 report=$goboTemp/$(basename "$recipetar" .tar.bz2).report.txt

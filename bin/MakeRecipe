@@ -11,14 +11,14 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs -d <server> co <module>} | {<app_name> svn co <svn url>}"
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>}"
 scriptNotes="A URL, a cvs or a svn command line should be passed as a parameter."
-scriptExample="Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz"
+scriptExample=("Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz
+DirectFB cvs :pserver:anonymous:@cvs.directfb.org:/cvs/directfb DirectFB")
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
 Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
 Parse_Options "$@"
-shift $parsedArguments
 
 unset packagename versionnumber
 
@@ -39,22 +39,24 @@ fi
 
 assert_dir $genRecipeRecipeDir
 
-if [ "$3" ]
+if [ "$(Arg 3)" ]
 then
-   packagename="$1"
-   versionnumber="$2"
-   shift 2
-elif [ "$2" ]
+   packagename="$(Arg 1)"
+   versionnumber="$(Arg 2)"
+   source_url="$(Arg 3)"
+elif [ "$(Arg 2)" ]
 then
-   packagename="$1"
-   shift
+   packagename="$(Arg 1)"
+   source_url="$(Arg 2)"
+else
+   source_url="$(Arg 1)"
 fi
 
-[ "$1" ] || Die "Missing parameter."
-echo "$1" | grep -q ":" || echo "$2" | grep -q ":" || Die "Expected URL as a last parameter."
+[ "$source_url" ] || Die "Missing parameter."
+echo "$source_url" | grep -q ":" || Die "Expected URL as a last parameter."
 
 # catch parameter errors using cvs
-if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = "-" ]
+if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = ":" ]
 then Die "You must pass the program name when using a cvs command."
 fi
 
@@ -63,35 +65,19 @@ cvs=no
 if [ "$versionnumber" = "cvs" ]
 then
    cvs=yes
-   while [ "$1" ]
-   do
-      case "$1" in
-      -d)
-         shift
-         cvs_server="$1"
-         ;;
-      -d*)
-         cvs_server="${1:2}"
-         ;;
-      co|checkout)
-         shift
-         cvs_module="$1"
-         ;;
-      esac # esac is ridiculous.
-      shift
-   done
+   cvs_server="$source_url"
+   cvs_module="$(Arg 4)"
    cvs_server=`echo "$cvs_server" | sed 's,anonymous@,anonymous:@,g'`
 elif [ "$versionnumber" = "svn" ]
 then
    svn=yes
-   svn_uri="$1"
-   shift
+   svn_uri="$source_url"
 else
    # TODO: generalize mirror system
-   url=`echo "$1" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
+   url=`echo "$source_url" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
    url=`echo "$url" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
 
-   bname=`basename "$1" .tar.gz`
+   bname=`basename "$source_url" .tar.gz`
    bname=`basename "$bname" .tar.bz2`
    bname=`basename "$bname" .tgz`
    bname=`basename "$bname" .tbz2`
@@ -133,7 +119,7 @@ then
          [ ${sameprogramrecipe:0:1} = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
          then
-            NewVersion "$packagename" "$versionnumber" "$1"
+            NewVersion "$packagename" "$versionnumber" "$source_url"
             exit 0
          fi
       fi
@@ -190,14 +176,14 @@ else
    echo "url=\"$url\"" >> "$recipedir/Recipe"
 
    Quiet pushd "$compileArchivesDir"
-   basefile="$(basename "$1")"
+   basefile="$(basename "$source_url")"
    file="$PWD/$basefile"
    if ! Boolean "no-fetch"
    then
-      if Starts_With "http" "$1"
+      if Starts_With "http" "$source_url"
       then
          file_headers=`mktemp`
-         $wget --spider --server-response "$1" 2> $file_headers
+         $wget --spider --server-response "$source_url" 2> $file_headers
          filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//'`
          if [ -n "$filename" -a "$filename" != "$basefile" ]
          then
@@ -208,9 +194,9 @@ else
          rm $file_headers
       fi
 
-      $wget -O "$basefile" --passive-ftp -c "$1" || \
-      $wget -O "$basefile" --passive-ftp "$1" || \
-      $wget -O "$basefile" "$1" || {
+      $wget -O "$basefile" --passive-ftp -c "$source_url" || \
+      $wget -O "$basefile" --passive-ftp "$source_url" || \
+      $wget -O "$basefile" "$source_url" || {
          Log_Error "Couldn't fetch file, URL may be invalid."
          exit 1
       }

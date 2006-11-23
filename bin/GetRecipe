@@ -32,7 +32,6 @@ scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #Add_Option_Boolean "C" "nocvs" "Do not find CVS based recipes (TODO)"
 
 Parse_Options "$@"
-shift $parsedArguments
 
 ##################################################
 # Prepare Environment
@@ -45,21 +44,22 @@ then sudo=
 else sudo="sudo -u #0"
 fi
 
-if ! Is_URL "$1" && ! { echo "$1" | Quiet grep "/" ;} && ! [ -f "$1" ]
+if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
 then
-   url=`FindPackage --type=recipe $@`
+   url=`FindPackage --type=recipe $(Arg 1) $(Arg 2)`
    if [ "${url}" ]
    then
       GetRecipe "${url}"   
       exit $?
    else
-      Log_Terse "Recipe for $@ not found" 
+      Log_Terse "Recipe for" $(Arg 1) $(Arg 2) "not found" 
       exit 1
    fi
 fi
 
-for rawrecipe in $@
+for (( i=1 ; i<=$(Number_Of_Arguments) ; i++ ))
 do
+   rawrecipe=$(Arg $i)
    # Getting program name and version
    if [ -d "$rawrecipe" ]
    then
@@ -78,7 +78,7 @@ do
    #####################################################
    # Case #1 and #2: recipe is a local directory
    #####################################################
-   if [ -d "$1" ] 
+   if [ -d "$(Arg 1)" ]
    then
       #####################################################
       # Case #1: recipe is already in $compileRecipeDirs[@]
