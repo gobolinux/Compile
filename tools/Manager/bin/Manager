@@ -773,7 +773,7 @@ class ManagerUIImpl(ManagerUI) :
 				else :
 					d = 'Current'
 				
-				ret = ListDependencies(p,v,t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
+				ret = ListDependencies(p,v,'',t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
 				if not ret.strip() :
 					return ''
 				return ret
@@ -818,7 +818,8 @@ class ManagerUIImpl(ManagerUI) :
 			def availability(p,v,t) :
 				try :
 					T = string.capwords(string.replace(t, '_',' '))
-					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+string.join(self.availables[t]['programs'][p][v],'<br>')+'</p>'
+					urls=string.join([string.join(self.availables[t]['programs'][p][v][r], '<br>') for r in self.availables[t]['programs'][p][v].keys()], '<br>')
+					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+urls+'</p>'
 				except :
 					return ''
 				
@@ -979,7 +980,7 @@ class ManagerUIImpl(ManagerUI) :
 		
 		for ((p,v),kind) in zip(pvs,types) :
 			assert kind in ['local_package', 'official_package', 'contrib_package']
-			path = self.availables[kind]['programs'][p][v][0]
+			path = self.availables[kind]['programs'][p][v][0][0]
 			self.addCommandsForDependencies(p,v,kind,path, cmds,apps, justDownload)
 			self.addCommandsForInstallPackage(p,v,kind,path, cmds,apps, justDownload)
 			
@@ -1043,7 +1044,7 @@ class ManagerUIImpl(ManagerUI) :
 		cmds = []
 		apps = []
 		for p, v in self.getSelectedProgramsAndVersions() :
-			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][0])
+			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][0][0])
 			localRecipe = x.read().strip() + '/Recipe'
 			x.close()
 			
