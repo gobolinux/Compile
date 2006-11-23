@@ -151,8 +151,9 @@ function do_symlink() {
       then UpdateSettings "$1" "$2"
       fi
       [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
+      [ "$batch" ] && unmanaged_opts="--unmanaged install"
       symlinkopts=$(merge_array "symlink_options")
-      SymlinkProgram $safeopts $symlinkopts "$1" "$2" || Die "Linking step failed."
+      SymlinkProgram $safeopts $unmanaged_opts $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
    fi
 }
