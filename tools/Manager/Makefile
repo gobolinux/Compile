@@ -33,7 +33,10 @@ $(LIB_DIR)/ManagerRunner.py : $(BIN_DIR)/ManagerRunner
 	cd $(LIB_DIR) && ln -sfn ../../../bin/ManagerRunner ./ManagerRunner.py
 
 compilation :
-	DirPythonCompile $(LIB_DIR)
+	cd $(LIB_DIR) && \
+	for f in *.py; \
+	do python -c "import `basename $$f .py`"; \
+	done
 
 clean :
 	rm -f $(LIB_DIR)/*.pyo $(LIB_DIR)/*.pyc $(LIB_DIR)/*.py
