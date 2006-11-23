@@ -31,7 +31,6 @@ versions of each recipe."
 Add_Option_Boolean "t" "thorough" "Check all availabe mirrors for updates. "\
 "By default, only the first working mirror (as configured in Compile.conf) is used."
 Parse_Options "$@"
-shift $parsedArguments
 
 if Is_Writable "$getRecipeRecipeDir"
 then sudo=
@@ -48,7 +47,7 @@ assert_dir $getRecipeRecipeDir
 # Operation
 ##################################################
 
-app="$1"
+app="$(Arg 1)"
 
 function get_recipes_for_app() {
    for recipe in `FindPackage --types=recipe --full-list $1`

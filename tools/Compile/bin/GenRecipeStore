@@ -23,7 +23,6 @@ scriptNotes="Given no arguments, this script will take all recipes in $genRecipe
 Add_Option_Boolean "L" "no-lint" "Do not verify recipes (not recommended)."
 Add_Option_Boolean "W" "no-web" "Offline operation when running RecipeLint (avoid if possible)."
 Parse_Options "$@"
-shift $parsedArguments
 
 if Boolean "no-web"
 then noweb=--no-web
@@ -94,14 +93,14 @@ pack_all_versions() {
    done
 }
 
-if [ "$1" ]
+if [ "$(Arg 1)" ]
 then
-   name=`ls "$genRecipeRecipeDir" | grep -i "^$1$"`
+   name=`ls "$genRecipeRecipeDir" | grep -i "^$(Arg 1)$"`
    if [ ! "$name" ]
-   then Die "Could not find recipe directory for $1 in $genRecipeRecipeDir."
+   then Die "Could not find recipe directory for $(Arg 1) in $genRecipeRecipeDir."
    fi
-   if [ "$2" ]
-   then pack_recipe "$name" "$2"
+   if [ "$(Arg 2)" ]
+   then pack_recipe "$name" "$(Arg 2)"
    else pack_all_versions "$name"
    fi
 else

@@ -21,7 +21,6 @@ scriptUsage="<name> [<version>]"
 Add_Option_Boolean "t" "tag" "Tag a recipe revision (requires CVS write access)"
 Add_Option_Boolean "c" "cleanup" "Cleanup local CVS copy when tagging"
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf Compile.conf
 
@@ -214,19 +213,19 @@ function cvs_confirm_diff() {
 ##################################################
 
 unset confirm
-if [ -d "$1" -a -e "$1/Recipe" ]
+if [ -d "$(Arg 1)" -a -e "$(Arg 1)/Recipe" ]
 then
-   recipedir=`readlink -f "$1"`
+   recipedir=`readlink -f "$(Arg 1)"`
 else
-   if [ "$2" ]
+   if [ "$(Arg 2)" ]
    then
-      fullname="$1 $2"
+      fullname="$(Arg 1) $(Arg 2)"
    else
-      fullname="$1"
+      fullname="$(Arg 1)"
       confirm=yes
    fi
    
-   recipedir=`FindPackage --no-web --type=recipe $1 $2 | head -n 1`
+   recipedir=`FindPackage --no-web --type=recipe $fullname | head -n 1`
    [ "$recipedir" ] || Die "Recipe for $fullname not found in local repositories."
 fi
 

@@ -24,7 +24,6 @@ scriptUsage="<recipe>"
 scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
-shift $parsedArguments
 
 if Is_Writable "$compileArchivesDir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
@@ -50,9 +49,8 @@ then
    Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
 fi
 
-[ "$1" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
-
-recipe="$1"
+recipe="$(Arg 1)"
+[ "$recipe" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
 . "$recipe"
 
 ##################################################

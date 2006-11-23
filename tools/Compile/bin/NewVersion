@@ -20,25 +20,24 @@ scriptExample='Allegro 4.1.12, NewVersion --source 0.9.7 Wine 0.9.14'
 Add_Option_Entry "s" "source" "Recipe version number to use as a base for the new version" ""
 Add_Option_Entry "n" "former-name" "App name of the Recipe to use as a base. Only necessary if it's different from the name of the new Recipe" ""
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf Compile.conf
 Import Compile
 
 unset packagename versionnumber
 
-if [ -z "$2" ]
+if [ -z "$(Arg 2)" ]
 then
    Die "Please specify a package and version number. See --help."
 fi
 
-app="$1"
-newversion="$2"
-newurl="$3"
+app="$(Arg 1)"
+newversion="$(Arg 2)"
+newurl="$(Arg 3)"
 
 if Is_Entry "former-name"
 then srcApp="`Entry "former-name"`"
-else srcApp="$1"
+else srcApp="$app"
 fi
 
 if Is_Entry "source"
