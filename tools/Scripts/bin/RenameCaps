@@ -228,6 +228,6 @@ Boolean "upper" && capFunction=upc_cap
 Boolean "lower" && capFunction=low_cap
 
 n=`Number_Of_Arguments`
-for (( i = 1; i < n; i++ ))
+for (( i = 1; i <= n; i++ ))
 do $capFunction "`Arg $i`"
 done
