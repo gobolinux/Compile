@@ -28,7 +28,9 @@ Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
         'keep', 'remove', 'ask' or 'cancel'." "ask"
 Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
-Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files"
+Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
+"from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
+Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files. Same as '--unmanaged skip' (deprecated)"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
 Parse_Options "$@"
@@ -41,10 +43,12 @@ then
     export goboInstall="$goboPrograms"
 fi
 
+unmanaged="--unmanaged $(Entry unmanaged)"
 Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
 Boolean "use-contrib"&& contrib=",contrib_package"
+Boolean "no-unmanaged" && unmanaged="--unmanaged skip"
 Is_Writable "${goboPrograms}" || Verify_Superuser
 Is_Writable "${goboInstall}"  || Verify_Superuser
 
@@ -67,13 +71,13 @@ then
 
       if mv ${goboTemp}/`basename $1` ${defaultLocalPackagesPaths[0]}/`basename $1` 
       then 
-         InstallPackage ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1`
+         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1`
       else
          Log_Error "Coud not move package."
-         InstallPackage ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
       fi
    else
-      InstallPackage ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+      InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
       Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
       rm -f -- ${goboTemp}/`basename $1`
    fi
@@ -98,7 +102,7 @@ then
          if [ "${found}" ]
          then 
             Log_Normal "Found package for $1 $2: ${found}"
-            InstallPackage ${noinstall} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for $1 $2 not found."
          fi
@@ -107,7 +111,7 @@ then
          if [ "${found}" ]
          then
             Ask_Continue "Installing ${found}"
-            InstallPackage ${noinstall} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for $1 not found."
          fi
@@ -305,21 +309,13 @@ then
     exit 0
 fi
 
-cd "${goboPrograms}/$packagename"
-if ! Boolean "no-unmanaged" && [ -f "$packageversion/Resources/UnmanagedFiles" ]
-then
-   Log_Normal "Installing UnmanagedFiles"
-   Install_Unmanaged_Files "$packageversion/Resources/UnmanagedFiles" "$packageversion/Resources/Unmanaged"
-fi
-Quiet cd -
-
 # Hack for updating Glibc
 if [ "$packagename" != "Glibc" ]
 then
    UpdateSettings "$packagename" "$packageversion"
 fi
 
-SymlinkProgram "$packagename" "$packageversion"
+SymlinkProgram ${unmanaged} "$packagename" "$packageversion"
 
 [ "$package_verified" = "true" ] && Run_PostInstall "$packagename" "$packageversion" "" ""
 

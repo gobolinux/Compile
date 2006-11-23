@@ -17,7 +17,7 @@ scriptNotes="This script 'disables' a program in the system, while keeping "\
 "it in the ${goboPrograms} hierarchy. To 're-enable' it, run SymlinkProgram(1) "\
 "again. If version is not specified, Current is assumed."
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
-"from package. Options available are \"ask\", \"remove\" and \"keep\". Default is \"ask\"" "ask"
+"from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
 Parse_Options "$@"
 shift $parsedArguments
 

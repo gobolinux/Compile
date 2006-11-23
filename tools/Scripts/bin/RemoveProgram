@@ -16,10 +16,9 @@ scriptUsage="<program> <version>"
 scriptExample="Qt 3.2.3"
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
-"from package. Options available are \"ask\", \"remove\" and \"keep\". Default is \"ask\"" "ask"
+"from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
 Parse_Options "$@"
 shift $parsedArguments
-
 
 ### Operation #################################################################
 
@@ -51,9 +50,9 @@ GrepReplace "./info/"    "./Manuals/info/" $filesdir
 GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
-if [ -f ./Resources/UnmanagedFiles -a ! `Is_Entry "unmanaged" "keep"` ]
+if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
-   { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$programname/$versionnumber-Disabled/Resources/UnmanagedFiles"
+   { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$program/$version/Resources/UnmanagedFiles"
 fi
 rm -rf -- ${goboPrograms}/${program}/${version}
 
