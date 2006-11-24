@@ -204,7 +204,7 @@ function Show_Help() {
       do
          case "${optionsTypeList[i]}" in
          "Entry")
-	    echo -n "  "
+	    echo -n "   "
 	    if [ ! -z "${optionsShortList[i]}" ]; then
 	       echo -n " -${optionsShortList[i]}"
 	    else
@@ -216,7 +216,6 @@ function Show_Help() {
 	    if [ ! -z "${optionsLongList[i]}" ]; then
 	       echo -n " --${optionsLongList[i]}"
 	    fi
-            #echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]} <entry>"
 	    echo $H2Mn " <entry>"
             echo -e "        ${optionsDescriptionList[i]}"
             if [ "${optionsStateList[i]}" != "#@unset@#" ]
@@ -226,7 +225,7 @@ function Show_Help() {
             $H2Mecho
             ;;
          "List")
-	    echo -n "  "
+	    echo -n "   "
 	    if [ ! -z "${optionsShortList[i]}" ]; then
 	       echo -n " -${optionsShortList[i]}"
 	    else
@@ -238,7 +237,6 @@ function Show_Help() {
 	    if [ ! -z "${optionsLongList[i]}" ]; then
 	       echo -n " --${optionsLongList[i]}"
 	    fi
-            #echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]} <entry>[:<entry>...]"
 	    echo $H2Mn " <entry>[:<entry>...]"
             echo -e "        ${optionsDescriptionList[i]}"
             if [ "${optionsStateList[i]}" != "#@unset@#" ]
@@ -248,7 +246,7 @@ function Show_Help() {
             $H2Mecho
             ;;
          "Boolean")
-	    echo -n "  "
+	    echo -n "   "
 	    if [ ! -z "${optionsShortList[i]}" ]; then
 	       echo -n " -${optionsShortList[i]}"
 	    else
@@ -260,7 +258,6 @@ function Show_Help() {
 	    if [ ! -z "${optionsLongList[i]}" ]; then
 	       echo -n " --${optionsLongList[i]}"
 	    fi
-	    #echo $H2Mn "    -${optionsShortList[i]}, --${optionsLongList[i]}"
 	    echo $H2Mn ""
             echo -e "        ${optionsDescriptionList[i]}"
             $H2Mecho
@@ -278,10 +275,10 @@ function Show_Help() {
       then
          echo "Examples:"
          $H2Mecho
-         echo -e "$H2Mtab$scriptName $scriptExample"
+         echo -e "$scriptExample" | while read line; do echo -e "$H2Mtab$scriptName $line"; done
          echo
       fi
-   } | fmt -w "$COLUMNS"
+   } | fmt -sw "$COLUMNS"
    exit 0
 }
 
