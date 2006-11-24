@@ -18,7 +18,6 @@ scriptNotes='
 scriptExample="\"*.c\" ..
     # Note the added quotes to avoid shell expansion."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Functions ########################################################
 
@@ -32,13 +31,16 @@ function is_path() {
 
 ### Operation ########################################################
 
-if full_expression "$@"
-then expression="$1"
-else expression="*$1*"
+expression="$(Arg 1)"
+path="$(Arg 2)"
+
+if full_expression "$expression"
+then expression="$expression"
+else expression="*$expression*"
 fi
 
-if is_path "$@"
-then modetype=path
+if is_path "$expression"
+then modetype=wholename
 else modetype=name
 fi
 
@@ -47,7 +49,7 @@ then mode=-$modetype
 else mode=-i$modetype
 fi
 
-if [ "$2" ]
-then find $2/. $mode "$expression" -print
+if [ "$path" ]
+then find $path/. $mode "$expression" -print
 else find . $mode "$expression" -print
 fi

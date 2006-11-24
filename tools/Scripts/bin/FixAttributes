@@ -19,7 +19,6 @@ Add_Option_Boolean "R" "recursive" "Recurses into subdirectories fixing permissi
 Add_Option_Entry "t" "true" "Sets permission <entry> if file is considered executable."
 Add_Option_Entry "f" "false" "Sets permission <entry> if file is considered not executable."
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf FixAttributes.conf
 
@@ -58,22 +57,18 @@ function flat_fixat() {
    fi
 }
 
-function fixat_loop() {
-   if Boolean "recursive"
-   then fixatfunction=rec_fixat
-   else fixatfunction=flat_fixat
-   fi
-   
-   while [ "$1" != "" ]
-   do
-      $fixatfunction "$1"
-      shift
-   done
-}
-
 [ "$fixatChmodTrue" ] || fixatChmodTrue=755
 [ "$fixatChmodFalse" ] || fixatChmodFalse=644
 Entry "t" && fixatChmodTrue=`Entry "t"`
 Entry "f" && fixatChmodFalse=`Entry "f"`
 
-fixat_loop "$@"
+if Boolean "recursive"
+then fixatfunction=rec_fixat
+else fixatfunction=flat_fixat
+fi
+
+n=$(Number_Of_Arguments)
+for (( i=1 ; i<=n ; i++))
+do
+   $fixatfunction "$(Arg ${i})"
+done

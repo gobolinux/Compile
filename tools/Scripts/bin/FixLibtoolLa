@@ -14,26 +14,27 @@ scriptUsage="<files...>"
 scriptExample="-b *.la"
 Add_Option_Boolean "b" "backup" "Keep a backup file of the original .la file."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 Is_Writable "$PWD" || exit 0
 
-for i in "$@"
+n=$(Number_Of_Arguments)
+for (( i=1 ; i<=n ; i++))
 do
-   [ "${i##*.}" != "la" ] && continue || Log_Verbose "Converting $i..."
+   current="$(Arg ${i})"
+   [ "${current##*.}" != "la" ] && continue || Log_Verbose "Converting ${current}..."
 
-   old="$i~"
+   old="${current}~"
    while [ -e "$old" ]
    do old="$old~"
    done
-   cp "$i" "$old"
+   cp "${current}" "$old"
    cat "$old" | sed '
 
 s%/Programs/[^ /]*/*[^ /]*/*lib/*%/System/Links/Libraries/%g;
 s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%/System/Links/Libraries/\1%g;
 
-' > "$i"
+' > "${current}"
 
    Boolean "backup" || rm -- "$old"
 

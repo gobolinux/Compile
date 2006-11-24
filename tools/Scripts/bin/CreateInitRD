@@ -12,8 +12,8 @@ Import File
 #scriptDescription="[[Create an initrd]]"
 scriptCredits="Copyright (C) 2005 Carlo J. Calica Released under the GNU GPL."
 #helpOnNoArguments=yes
-scriptUsage="<options> <extra_modules...>"
-scriptExample="-o /tmp/initrd libata /external/module.ko"
+scriptUsage="<options> -- <extra_modules...>"
+scriptExample="-o /tmp/initrd -- libata /external/module.ko"
 scriptNotes="In order to use an initrd, changes to your grub config are required.
 An example:
 
@@ -27,7 +27,9 @@ Add_Option_Entry "m" "module_dir" "Specify <module_base_dir>." "$goboModules/`un
 Add_Option_Entry "r" "rootdev" "Specify <root_device>." "/dev/sda1"
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Parse_Options "$@"
-shift $parsedArguments
+
+# hack to allow extra modules to be passed as $@
+while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
 
 # Global Defines
 initrd_path="/tmp/initrd"
