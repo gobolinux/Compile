@@ -19,7 +19,6 @@ scriptNotes="If no version is specified, Current is assumed. "
 Add_Option_Boolean "s" "store" "Store the information in Resources/BuildInformation. Default is standard output."
 
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Utility functions #################################################################
 
@@ -66,8 +65,8 @@ function path2programs() {
            -e '$_ =~ m@([# ]+.*)@ && print "$1 $2 $3 $4\n";'
 }
 
-package=`GuessProgramCase $1 $2`
-[ "$2" ] && version="$2" || version="Current"
+package=`GuessProgramCase $(Arg 1) $(Arg 2)`
+[ "$(Arg 2)" ] && version="$(Arg 2)" || version="Current"
 version=`Get_Version "$package" "$version"`
 Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
 Is_Empty "$version" && Die "Couldn't find a proper version for $package."

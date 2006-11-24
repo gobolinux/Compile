@@ -11,7 +11,6 @@ scriptDescription="Remakes the entries in the info 'dir' file."
 scriptCredits="Copyright (C) 2002-2003 Leandro Motta Barros. Released under the GNU GPL."
 Add_Option_Entry "m" "mode" "Operation mode: 'links', 'dir' or 'both'." "both"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 

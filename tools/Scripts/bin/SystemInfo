@@ -9,7 +9,6 @@ Import OptionParser
 
 scriptDescription="Display some basic system information. Useful for /etc/issue."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 

@@ -22,7 +22,6 @@ Add_Option_Boolean "l" "list" "List hash file, if any (generate if not present).
 Add_Option_Entry "u" "local-user" "Use <entry> as the user ID to sign with."
 Add_Option_Entry "r" "keyring" "GPG option to an additional the keyring location."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Utility functions #################################################################
 FileHash_loc="Resources/FileHash"
@@ -48,10 +47,10 @@ fi
 
 ### Parse options #######################################################################
 
-package=`GuessProgramCase $1 $2`
-if [ "$2" ]
+package=`GuessProgramCase $(Arg 1) $(Arg 2)`
+if [ "$(Arg 2)" ]
 then
-   version=`Get_Version "$package" "$2"`
+   version=`Get_Version "$package" "$(Arg 2)"`
 else
    version=`Get_Version "$package" "Current"`
 fi

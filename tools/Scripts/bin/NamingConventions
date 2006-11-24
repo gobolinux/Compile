@@ -10,21 +10,21 @@ helpOnNoArguments=yes
 scriptDescription="Heuristics to determine a capitalized, GoboLinux-like name."
 scriptUsage="<name>"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation loop ############################################################
 
-grep -i "^$1\$" "`Find_Conf NamesDatabase`" && exit 0
+name="$(Arg 1)"
+grep -i "^$name\$" "`Find_Conf NamesDatabase`" && exit 0
 
-if echo "$1" | grep -E "[[:upper:]]+" &> /dev/null
+if echo "$name" | grep -E "[[:upper:]]+" &> /dev/null
 then
-   echo "$1" | cut -b1 | tr "[:lower:]" "[:upper:]" | tr -d "\n"
-   echo "$1" | cut -b2-
+   echo "$name" | cut -b1 | tr "[:lower:]" "[:upper:]" | tr -d "\n"
+   echo "$name" | cut -b2-
    exit 0
 fi
 
 #awk
-echo "$1" | awk '
+echo "$name" | awk '
    function match_prefix(s,pfx) {
       if (substr(s,1,length(pfx))==tolower(pfx)) {
          return pfx capital(substr(s,length(pfx)+1))

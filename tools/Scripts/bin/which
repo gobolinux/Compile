@@ -15,15 +15,14 @@ helpOnNoArguments=yes
 scriptUsage="<executable>"
 scriptExample="ls"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
 export PATH="$savepath"
-fakepath=`type -p "$1"`
+fakepath=`type -p "$(Arg 1)"`
 if [ ! "$fakepath" ]
 then
-   Die "$1 not found, or it's not a program."
+   Die "$(Arg 1) not found, or it's not a program."
 fi
 
 readlink -f "$fakepath"

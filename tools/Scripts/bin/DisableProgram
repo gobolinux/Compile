@@ -19,18 +19,15 @@ scriptNotes="This script 'disables' a program in the system, while keeping "\
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
 "from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
 Is_Writable "${goboPrograms}" || Verify_Superuser
 
-programname=`GuessProgramCase $1 $2`
-if [ "$2" ]
-then
-   versionnumber="$2"
-else
-   versionnumber=`Get_Version "$programname" "Current"`
+programname=`GuessProgramCase $(Arg 1) $(Arg 2)`
+if [ "$(Arg 2)" ]
+then versionnumber="$(Arg 2)"
+else versionnumber=`Get_Version "$programname" "Current"`
 fi
 
 prefix="${goboPrograms}/$programname/$versionnumber"

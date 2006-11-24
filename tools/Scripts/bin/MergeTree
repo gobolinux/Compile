@@ -15,12 +15,11 @@ scriptUsage="<source> <destination>"
 scriptExample="/Programs/KOffice/Current /Programs/KDE/Current"
 Add_Option_Boolean "d" "delete" "On conflicts, overwrite original file."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #########################################################
 
-source=$1
-destination=$2
+source=$(Arg 1)
+destination=$(Arg 2)
 
 Boolean "delete" && flags="$flags --delete"
 Boolean "verbose" && flags="$flags --verbose"

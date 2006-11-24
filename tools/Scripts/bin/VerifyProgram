@@ -30,7 +30,6 @@ Add_Option_Entry "r" "keyring" "GPG option to an additional the keyring location
 Add_Option_Boolean "S" "no-signature" "Just verify FileHash.  Do not check GPG signature."
 Add_Option_Boolean "q" "quiet" "No output.  Check exit status for result."
 Parse_Options "$@"
-shift $parsedArguments
 
 ##### Run as original user
 Release_Superuser
@@ -38,12 +37,10 @@ Release_Superuser
 ### Utility functions ################################################################
 
 ### Parse options #######################################################################
-package=`GuessProgramCase $1 $2`
+package=`GuessProgramCase $(Arg 1) $(Arg 2)`
 if [ "$2" ]
-then
-   version=`Get_Version "$package" "$2"`
-else
-   version=`Get_Version "$package" "Current"`
+then version=`Get_Version "$package" "$(Arg 2)"`
+else version=`Get_Version "$package" "Current"`
 fi
 
 quiet=""
