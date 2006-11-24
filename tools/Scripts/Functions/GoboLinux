@@ -621,12 +621,12 @@ function Uninstall_Unmanaged_Files() {
    fi
 }
 
-function Get_Revision() {
+function String_Revision() {
    Parameters "$@" versionandrevision
    echo $versionandrevision | sed -n 's,.*-\(r[0-9]*p\?[0-9]*\),\1,p'
 }
 
-function Get_Version() {
+function String_Version() {
    Parameters "$@" versionandrevision
    echo $versionandrevision | sed -e 's/-r[0-9]*p\?[0-9]*$//g'
 }
