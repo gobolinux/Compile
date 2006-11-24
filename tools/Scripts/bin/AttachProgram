@@ -22,18 +22,17 @@ Add_Option_Boolean "f" "force" "Force, reattach even if installed."
 Add_Option_Boolean "r" "rootfs" "Move to RootFS."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
 Is_Writable "${goboPrograms}" || Verify_Superuser
 
-if Is_Directory "$3"
+if Is_Directory "$(Arg 3)"
 then
-   goboInstall="$3"
-elif Is_Directory "$2"
+   goboInstall="$(Arg 3)"
+elif Is_Directory "$(Arg 2)"
 then
-   goboInstall="$2"
+   goboInstall="$(Arg 2)"
    no_version="true"
 fi
 export goboInstall=`readlink -f $goboInstall`
@@ -44,12 +43,12 @@ then
 fi
 
 
-programname=`(export goboPrograms=$goboInstall; GuessProgramCase $1 $2)`
-if [ "$no_version" != "true" ] && [ "$2" ] 
+programname=`(export goboPrograms=$goboInstall; GuessProgramCase $(Arg 1) $(Arg 2))`
+if [ "$no_version" != "true" ] && [ "$(Arg 2)" ] 
 then
-   if Is_Directory "${goboInstall}/${programname}/$2"
+   if Is_Directory "${goboInstall}/${programname}/$(Arg 2)"
    then
-      versionnumber="$2"
+      versionnumber="$(Arg 2)"
    fi
 else
    versionnumber=`(cd ${goboInstall}/${programname}; GuessLatest \`find * -type d -maxdepth 0\`)`

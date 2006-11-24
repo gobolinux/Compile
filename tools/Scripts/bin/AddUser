@@ -28,13 +28,12 @@ Add_Option_Entry "p" "password" "Encoded user's password."
 Add_Option_Boolean "S" "skel" "Populate home directory with customized settings."
 
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
 Verify_Superuser
 
-name="$1"
+name="$(Arg 1)"
 
 if [ ! "$name" ]
 then
