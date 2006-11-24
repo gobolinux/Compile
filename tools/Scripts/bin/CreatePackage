@@ -24,7 +24,6 @@ Add_Option_Boolean "V" "no-verify" "Do not verify package"
 Add_Option_Entry   "t" "target-directory" "Create the package archive inside the passed directory (instead of '.')" ""
 
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation ############################################################
 
@@ -33,17 +32,17 @@ then
    Verify_Superuser
 fi 
 
-package=`basename "$1"`
-package=`GuessProgramCase $package $2`
+package=`basename "$(Arg 1)"`
+package=`GuessProgramCase $package $(Arg 2)`
 
 targetdir=`Entry "target-directory"`
 [ "$targetdir" ] || targetdir="`pwd`"
 
 cd ${goboPrograms}
 # TODO make it smarter
-if [ "$2" ]
+if [ "$(Arg 2)" ]
 then
-   versionnumber="$2"
+   versionnumber="$(Arg 2)"
 else
    currentversion=`Get_Version "$package" Current`
    if [ "$currentversion" ]

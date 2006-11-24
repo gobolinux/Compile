@@ -35,7 +35,6 @@ Add_Option_Boolean "t" "rootfs" "Copy program to rootfs if a symlink."
 
 
 Parse_Options "$@"
-shift $parsedArguments
 
 Is_Writable "$goboExecutables" || Verify_Superuser
 
@@ -91,16 +90,16 @@ function system_is_ok() {
 
 ################################################################################
 
-[ "$1" ] || Die "Argument missing: specify the program name or directory."
+[ "$(Arg 1)" ] || Die "Argument missing: specify the program name or directory."
 
 if ! system_is_ok
 then
    Log_Terse "System does not seems to be ok."
-   if [ "$2" ]
+   if [ "$(Arg 2)" ]
    then
-      p_path="$goboPrograms/`basename $1`/$2"
+      p_path="$goboPrograms/`basename $(Arg 1)`/$(Arg 2)"
    else
-      p_path="$goboPrograms/`basename $1`/Current"
+      p_path="$goboPrograms/`basename $(Arg 1)`/Current"
    fi
    Ask_Continue "About to call 'RescueSymlinkProgram ${p_path} ${goboLinks}'"
    RescueSymlinkProgram "${p_path}" "${goboLinks}"
@@ -109,8 +108,8 @@ then
 fi
 
 
-package="`basename $1 /`"
-package=`GuessProgramCase $package $2`
+package="`basename $(Arg 1) /`"
+package=`GuessProgramCase $package $(Arg 2)`
 
 packageDir="$goboPrograms/$package"
 
@@ -121,12 +120,12 @@ if ! Is_Directory "$packageDir"
 then Die "Directory $packageDir does not exist."
 fi
 
-if [ "$2" ]
+if [ "$(Arg 2)" ]
 then
-   vdir="$goboPrograms/$package/$2"
-   Is_Directory "$vdir" || Die "There is no version $2 for package $1."
-   [ "$version" != "$2" ] && ln -sfn `basename "$vdir"` "$current"
-   version="$2"
+   vdir="$goboPrograms/$package/$(Arg 2)"
+   Is_Directory "$vdir" || Die "There is no version $(Arg 2) for package $(Arg 1)."
+   [ "$version" != "$(Arg 2)" ] && ln -sfn `basename "$vdir"` "$current"
+   version="$(Arg 2)"
 fi
 
 if ! Exists "$current"

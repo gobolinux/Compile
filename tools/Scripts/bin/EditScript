@@ -17,16 +17,15 @@ scriptExample="$scriptName"
 scriptNotes="You will be prompted if you want to create the script "\
 "if it does not exist."
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
-if Is_Alias "$1"
+if Is_Alias "$(Arg 1)"
 then
-   script=`alias $1 | sed "s/.*'..//;s/'//"`
+   script=`alias $(Arg 1) | sed "s/.*'..//;s/'//"`
    echo $script
 else
-   script="$1"
+   script="$(Arg 1)"
 fi
 
 unset linkafteredit

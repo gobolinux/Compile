@@ -13,16 +13,15 @@ helpOnNoArguments=yes
 scriptUsage="<program> [<version>] | <version_directory>"
 Add_Option_Boolean "f" "files" "List files only (equivalent to -type f in 'find')"
 Parse_Options "$@"
-shift $parsedArguments
 
-if [ -d "$1" ]
+if [ -d "$(Arg 1)" ]
 then
-   cd "$1"
+   cd "$(Arg 1)"
 else
-   program=`GuessProgramCase "$1"`
-   if [ "$2" ]
+   program=`GuessProgramCase "$(Arg 1)"`
+   if [ "$(Arg 2)" ]
    then
-      version="$2"
+      version="$(Arg 2)"
    else
       version=$(readlink -f "$goboPrograms/$program/Current")
       [ ! "$version" ] && Die "Current not found and no version specified."
