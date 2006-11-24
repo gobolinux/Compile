@@ -62,7 +62,6 @@ Add_Option_Boolean "q" "quick"  "Quickly update, prompting only when there are c
 
 
 Parse_Options "$@"
-shift $parsedArguments
 
 if [ $parsedArguments -eq 0 ]; then
    Set_Boolean "update"
@@ -91,11 +90,11 @@ fi
 
 
 # Determine the directory and version of the program being updated
-appName="`GuessProgramCase $1`"
+appName="`GuessProgramCase $(Arg 1)`"
 pdir="${goboPrograms}/${appName}"
-if [ "$2" ]
+if [ "$(Arg 2)" ]
 then
-   version="$2"
+   version="$(Arg 2)"
 else
    version="Current"
 fi
