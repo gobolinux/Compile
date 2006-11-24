@@ -27,7 +27,6 @@ scriptUsage="<options> <AppName> <Version|ReleaseTag>"
 Add_Option_Boolean "l" "list" "List available releases"
 #Add_Option_Entry "e" "entry" "Specify <entry>." "default_value"
 Parse_Options "$@"
-shift $parsedArguments
 
 # Use this to parse attributions from
 # ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
@@ -43,8 +42,8 @@ export CVSROOT="$recipeRepository"
 #Uncomment this if the script is meant to be run with superuser privileges.
 #Verify_Superuser
 
-appname="$1"
-release="$2"
+appname="$(Arg 1)"
+release="$(Arg 2)"
 
 Setup_Workspace
 
@@ -109,5 +108,3 @@ fi
 
 # Clean up
 rm -rf $tmpDir
-
-

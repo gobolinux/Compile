@@ -24,7 +24,6 @@ scriptUsage="<options> <recipe_tarballs>"
 #Add_Option_Entry "e" "entry" "Specify <entry>." "default_value"
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf CVS.conf 
 

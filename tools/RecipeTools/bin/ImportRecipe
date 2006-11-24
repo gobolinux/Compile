@@ -27,7 +27,6 @@ Add_Option_Boolean "t" "tag" "Create a Release Tag"
 #Add_Option_Entry "e" "entry" "Specify <entry>." "default_value"
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf CVS.conf 
 
@@ -150,8 +149,8 @@ function tarball_into_cvs {
 
 Setup_Workspace
 
-for tarball in "$@"
+for (( i=1; i<=$(Number_Of_Arguments) ; i++ ))
 do
-   tarball_into_cvs $tarball
+   tarball_into_cvs $(Arg $i)
    : # stuff to do
 done
