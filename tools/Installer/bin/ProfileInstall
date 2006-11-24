@@ -57,7 +57,6 @@ Add_Option_Entry "s" "super-user" "Super-user's login." "gobo"
 
 
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
@@ -65,13 +64,12 @@ Verify_Superuser
 
 #superUser=gobo
 
-profile="$1"
-dest_dir="$2"
+profile="$(Arg 1)"
+dest_dir="$(Arg 2)"
 if [ ! $dest_dir ]
 then
      Log
 fi
-#normalStream=/dev/stderr
 
 #Is_Entry "profile" && profile="`Entry profile`"
 
