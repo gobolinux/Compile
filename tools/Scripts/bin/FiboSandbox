@@ -105,7 +105,7 @@ fiboprograms=(
    `which chgrp`
    `which chown`
    `which chmod`
-   `which depmod`
+   `which depmod 2> /dev/null`
 )
 
 c=0
