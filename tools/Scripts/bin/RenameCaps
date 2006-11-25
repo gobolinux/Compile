@@ -26,7 +26,6 @@ Add_Option_Boolean "i" "invert" "invert \"artist and track names\":
 Add_Option_Entry "a" "add" "add <entry> to the track number"
 Add_Option_Boolean "d" "dry-run" "do not rename files, just show what it would try to do."
 Parse_Options "$@"
-shift $parsedArguments
 
 ##############################################################################
 

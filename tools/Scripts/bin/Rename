@@ -12,19 +12,18 @@ scriptUsage="<changefrom> <changeto> <files...>"
 scriptCredits="Copyright (C) 2002-2003 Hisham Muhammad. Released under the GNU GPL."
 helpOnNoArguments=yes
 Parse_Options "$@"
-shift $parsedArguments
+#shift $parsedArguments
 
 ### Operation ##########################################################
 
-SEDFROM="$1"
-shift
-SEDTO="$1"
-shift
+SEDFROM="$(Arg 1)"
+SEDTO="$(Arg 2)"
 
 Boolean "verbose" && verbose=-v
 
-while [ "$1" ]
-do FROM=$1
+n=$(Number_Of_Arguments)
+for (( i=3 ; i<=n ; i++ ))
+do FROM=$(Arg $i)
    TO=`echo $FROM | sed "s/$SEDFROM/$SEDTO/g"`
    
    if [ "$FROM" != "$TO" ]

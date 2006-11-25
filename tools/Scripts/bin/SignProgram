@@ -24,7 +24,6 @@ Add_Option_Entry "u" "local-user" "Use <entry> as the user ID to sign with."
 Add_Option_Boolean "S" "no-signature" "Just create FileHash.  No GPG signing."
 
 Parse_Options "$@"
-shift $parsedArguments
 
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
@@ -35,9 +34,9 @@ then
 fi
 
 ########## Version ##########
-if [ -f "$1" ]
+if [ -f "$(Arg 1)" ]
 then
-   filepath=`readlink -f $1`
+   filepath=`readlink -f $(Arg 1)`
    bn=`basename $filepath`
    package=`Get_Token "$bn" "--" "0"`
    version=`Get_Token "$bn" "--" "1"`
@@ -49,10 +48,10 @@ then
    sudo_validate=""
    [ -d $prefix/$package/$version ] || Die "Error unpacking $filepath ($package $version)"
 else
-   package=`GuessProgramCase $1 $2`
-   if [ "$2" ]
+   package=`GuessProgramCase $(Arg 1) $(Arg 2)`
+   if [ "$(Arg 2)" ]
    then
-      version=`Get_Version "$package" "$2"`
+      version=`Get_Version "$package" "$(Arg 2)"`
    else
       version=`Get_Version "$package" "Current"`
    fi

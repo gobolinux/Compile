@@ -14,7 +14,6 @@ scriptCredits="Copyright (C) 2003 Hisham Muhammad. Released under the GNU GPL."
 scriptUsage=""
 scriptExample=""
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
