@@ -16,8 +16,8 @@ helpOnNoArguments=yes
 scriptUsage="<package_file>|<package_dir>"
 scriptExample="Gimp--2.0.5.tar.gz"
 scriptNotes="Default behavior for --same is 'cancel', for --old is 'keep'.
-   Notice that 'remove' may be dangerous for important system packages
-   as it can leave the system in an inconsistent state during installation."
+    Notice that 'remove' may be dangerous for important system packages
+    as it can leave the system in an inconsistent state during installation."
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
 Add_Option_Boolean ""  "use-contrib" "Look in contrib store as well."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
@@ -34,7 +34,6 @@ Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files. Same as '
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
@@ -57,29 +56,31 @@ Is_Writable "${goboInstall}"  || Verify_Superuser
 #  2 - Call InstallPackage on local file; 
 #  3 - Remove local file (if not '--keep').
 
-if Is_URL "$1"
+if Is_URL "$(Arg 1)"
 then
+   url=$(Arg 1)
+   filename=$(basename ${url})
    #rm -f ${goboTemp}/`basename $1`
-   Log_Normal "Downloading package to ${goboTemp}/`basename $1`."
-   wget -c $1 -O ${goboTemp}/`basename $1` || Die "Error downloading package."
+   Log_Normal "Downloading package to ${goboTemp}/${filename}."
+   wget -c ${url} -O ${goboTemp}/${filename} || Die "Error downloading package."
 
    if [ "${keep}" ]
    then   
       . "`Find_Conf GetAvailable.conf`" || Die "Couldn't read GetAvailable.conf"
       [ -d ${defaultLocalPackagesPaths[0]} ] || mkdir -p ${defaultLocalPackagesPaths[0]}
-      Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/`basename $1`."
+      Log_Normal "Moving package to ${defaultLocalPackagesPaths[0]}/${filename}."
 
-      if mv ${goboTemp}/`basename $1` ${defaultLocalPackagesPaths[0]}/`basename $1` 
+      if mv ${goboTemp}/${filename} ${defaultLocalPackagesPaths[0]}/${filename} 
       then 
-         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/`basename $1`
+         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/${filename}
       else
          Log_Error "Coud not move package."
-         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
+         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/${filename}
       fi
    else
-      InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/`basename $1`
-      Log_Normal "Removing downloaded package ${goboTemp}/`basename $1`."
-      rm -f -- ${goboTemp}/`basename $1`
+      InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/${filename}
+      Log_Normal "Removing downloaded package ${goboTemp}/${filename}."
+      rm -f -- ${goboTemp}/${filename}
    fi
    exit 0
 fi
@@ -88,57 +89,60 @@ fi
 #  1 - Try to find a package matching the exact version, or try to find any package for that program;
 #  2 - Calls InstallPackage passing the found url, or abort.
 
-if [ ! -e "$1" ]
+if [ ! -e "$(Arg 1)" ]
 then
    # checking if there is not a '/' in $1
-   if ! { echo "$1" | Quiet grep "/" ;} 
+   if ! { echo "$(Arg 1)" | Quiet grep "/" ;} 
    then
-      Log_Normal "Locating a binary package for $1 $2..."
+      name="$(Arg 1)"
+      version="$(Arg 2)"
+      Log_Normal "Locating a binary package for" ${name} ${version} "..."
       noweb=`Forward_Boolean_Entry "no-web"` 
       pkgType="-t local_package,official_package${contrib}"
-      if [ $2 ] 
+      if [ ${version} ] 
       then 
-         found=`FindPackage $noweb $pkgType $1 $2`
+         found=`FindPackage $noweb $pkgType ${name} ${version}`
          if [ "${found}" ]
          then 
-            Log_Normal "Found package for $1 $2: ${found}"
+            Log_Normal "Found package for ${name} ${version}: ${found}"
             InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
          else
-            Die_With $errorNotFound "Package for $1 $2 not found."
+            Die_With $errorNotFound "Package for ${name} ${version} not found."
          fi
       else
-         found=`FindPackage $noweb $pkgType $1`
+         found=$(FindPackage $noweb $pkgType ${name})
          if [ "${found}" ]
          then
             Ask_Continue "Installing ${found}"
             InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
          else
-            Die_With $errorNotFound "Package for $1 not found."
+            Die_With $errorNotFound "Package for ${name} not found."
          fi
       fi
       exit 0
    else
-      Die "$1 is not an existing file or directory."
+      Die "$(Arg 1) is not an existing file or directory."
    fi
 fi
 
 
 if [ "${noinstall}" ] 
 then
-   Log_Normal "Skipping instalation of $1."
+   Log_Normal "Skipping instalation of $(Arg 1)."
    exit 0
 fi
 
-if [ -d "$1" ] # $1 is a directory
+if [ -d "$(Arg 1)" ] # $1 is a directory
 then
-   if [ -L "$1/../Current" ]
+   dir=$(Arg 1)
+   if [ -L "${dir}/../Current" ]
    then
-      packagedir=`readlink -f "$1"`
-   elif [ -L "$1/Current" ]
+      packagedir=`readlink -f "${dir}"`
+   elif [ -L "${dir}/Current" ]
    then
-      packagedir=`readlink -f "$1/Current"`
+      packagedir=`readlink -f "${dir}/Current"`
    else
-      Die "$1 does not seem to be a valid GoboLinux package."
+      Die "${dir} does not seem to be a valid GoboLinux package."
    fi
 
    basedir=`echo "$packagedir" | sed 's/\(.*\)\/\([^\/].*\)\/\([^\/].*\)/\1/'`
@@ -153,13 +157,14 @@ then
    packagetype="directory"
 
 else # $1 is a file
-   if ! { echo "$1" | grep -- "--" &> /dev/null ;}
+   filename=$(Arg 1)
+   if ! { echo "${filename}" | grep -- "--" &> /dev/null ;}
    then
-      Die "$1 does not seem to be a valid GoboLinux package."
+      Die "${filename} does not seem to be a valid GoboLinux package."
    fi
 
    # Removing all possible extensions...
-   noext=`basename "$1"`
+   noext=`basename "${filename}"`
    for extension in ".gz" ".bz2" ".zip" ".tgz" ".tbz" ".tar"
    do
       noext=`basename "$noext" "$extension"`
@@ -176,7 +181,7 @@ else # $1 is a file
    packagetype="file"
 
    packageversion=`echo $packageversion | sed 's/-PersonalBackup//'`
-   archive=`readlink -f "$1"`
+   archive=`readlink -f "${filename}"`
 fi
 
 unset sameversion

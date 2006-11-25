@@ -19,7 +19,6 @@ It will change $GPG_gobo_keyring which should be commited to CVS."
 Add_Option_Boolean "i" "import" "Import key"
 Add_Option_Boolean "l" "list" "List public keys"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Utility functions #################################################################
 GPG_opts="--keyring ${GPG_gobo_keyring} --no-default-keyring"
@@ -32,9 +31,9 @@ GPG_opts="--keyring ${GPG_gobo_keyring} --no-default-keyring"
 if Boolean "import"
 then
 #   Verify_Superuser
-   [ -z "$1" ] && Die "Missing key parameter"
+   [ -z "$(Arg 1)" ] && Die "Missing key parameter"
    mkdir -p `dirname $GPG_gobo_keyring`
-   gpg ${GPG_opts} --import "$@"
+   gpg ${GPG_opts} --import "$(Arg 1)"
    chmod 644 $GPG_gobo_keyring
    exit 0
 fi
