@@ -420,7 +420,7 @@ function Parse_Options() {
             fi
          else
             # go through the string of short options
-            for (( k = 1; k <= ${#option} ; k++ ))
+            for (( k = 1; k < ${#option} ; k++ ))
             do
                opt=${option:$k:1} # the character number k in the string
                for j in `seq $optionsListSize`
