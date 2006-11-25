@@ -482,5 +482,5 @@ function Parse_Options() {
 }
 
 Add_Option_Boolean "h" "help" "Shows this help."
-Add_Option_Boolean "v" "version" "Show program version."
-Add_Option_Boolean "V" "verbose" "Enable verbose mode."
+Add_Option_Boolean "" "version" "Show program version."
+Add_Option_Boolean "v" "verbose" "Enable verbose mode."
