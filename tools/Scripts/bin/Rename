@@ -12,7 +12,6 @@ scriptUsage="<changefrom> <changeto> <files...>"
 scriptCredits="Copyright (C) 2002-2003 Hisham Muhammad. Released under the GNU GPL."
 helpOnNoArguments=yes
 Parse_Options "$@"
-#shift $parsedArguments
 
 ### Operation ##########################################################
 
