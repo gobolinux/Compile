@@ -22,9 +22,8 @@ if Boolean "recursive"
 then grep -HIr "$two" * .[^.]* 2> /dev/null
 else grep -HI "$two" "$@" 2> /dev/null
 fi
-} | cut -f 1 -d: | sort | uniq | while read i
+} | cut -f 1 -d: | sort | uniq | while read file
 do
-   Log_Verbose "$i"
-   cp "$i" "$i~"
-   sed "s/$two/$three/g" "$i~" > "$i"
+   Log_Verbose "$file"
+   sed -i\~ "s/$two/$three/g" "$file"
 done
