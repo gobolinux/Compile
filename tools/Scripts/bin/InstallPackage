@@ -171,7 +171,8 @@ else # $1 is a file
    done
 
    packagename=`Get_Token    "$noext" "--" "0"`
-   packageversion=`Get_Token "$noext" "--" "1"`
+   packageversionrevision=`Get_Token "$noext" "--" "1"`
+   packageversion=`String_Version $packageversionrevision`
    if echo "$noext" | Quiet grep ".*--.*--.*"
    then
       packagearch=`Get_Token "$noext" "--" "2"`
