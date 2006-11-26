@@ -65,7 +65,12 @@ then architecture=`cat "$archfile"`
 else architecture=`Get_Architecture`
 fi
 
-packagefile="$package--$versionnumber--$architecture.tar"
+revfile="$package/$versionnumber/Resources/Revision"
+if Exists "$revfile"
+then revstring="-`cat $revfile`"
+fi
+
+packagefile="${package}--${versionnumber}${revstring}--${architecture}.tar"
 Boolean "personal-backup" && packagefile="$package--$versionnumber-PersonalBackup--$architecture.tar"
 
 [ -e "$package/Settings" ] && anysettings="$package/Settings"
