@@ -24,6 +24,7 @@ hostSystemDependencies=(
    sh mv cp find grep
    python
    seq
+   wget
 )
 
 gnuSystemDependencies=(
@@ -47,13 +48,6 @@ fi
 ###############################################################################
 # Checking for required tools
 ###############################################################################
-
-# Note: wget is not required when running on a GoboLinux box
-if [ ! -e "/Programs/Scripts/Current" -a ! "`our_which wget`" ]
-then 
-    echo "Please install wget in order to run this script."
-    exit 1
-fi
 
 for app in "${hostSystemDependencies[@]}"
 do
