@@ -5,7 +5,7 @@
 # GuessLatest
 # Try to guess the most recent package version based on the version number
 
-import types
+import types, sys
 
 def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 	if not versions :
@@ -13,7 +13,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			return []
 		else :
 			return ""
-	
+
 	def extractVersion(s) :
 		if type(parameter) == types.TupleType :
 			l = parameter[0].split("/")
@@ -24,7 +24,7 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			return l[1]
 		else :
 			return l[0]
-		
+
 	def breakInSwitches(s) :
 		#breaks string when it switches from number to character 2a = [2,a], 3rc1 = [3,rc,1], and so on
 		from string import digits
@@ -38,15 +38,15 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 				w += c
 		toReturn.append(w)
 		return toReturn
-	
+
 	def versionWeight(version) :
 		unstable_dict = { 'rc':0.0001, 'pre':0.001, 'pr':0.001, 'beta':0.01, 'alpha':0.1 }
 		minors = []
-		
+
 		# if the version is cvs, must be the last choice.
 		if version.lower() == 'cvs' :
 			minors.append(-1)
-		
+
 		unstable = 0
 		for k in breakInSwitches(version) :
 			internalminors = []
@@ -65,21 +65,24 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			if internalminors :
 				minors.append(internalminors)
 		return minors,unstable
-	
+
 	def splitVersionAndRevision(version_with_revision) :
 		r = version_with_revision.split('-')[-1]
 		import re
-		rev_format = 'r([0-9]+)(p([0-9]+))?'
+		rev_format = 'r([0-9]+)(p([0-9]+))?\Z'
 		rev_format_c = re.compile(rev_format)
 		m = rev_format_c.match(r)
 		if m :
-			return version_with_revision[:-len(r)-1],[m.group(1),m.group(3)]
+			if m.group(3) :
+				return version_with_revision[:-len(r)-1],[int(m.group(1)), int(m.group(3))]
+			else :
+				return version_with_revision[:-len(r)-1],[int(m.group(1)), sys.maxint]
 		else :
-			return version_with_revision,[]
+			return version_with_revision,[sys.maxint, sys.maxint]
 
 	built_versions = []
 	built_versions_stable = []
-	
+
 	param_order=0
 	for parameter in versions :
 		version_with_revision = extractVersion(parameter)
@@ -92,10 +95,10 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 
 	built_versions_stable.sort()
 	built_versions.sort()
-	
+
 	bv  = [ i[-1] for i in built_versions        ]
 	sbv = [ i[-1] for i in built_versions_stable ]
-		
+
 	if returnList :
 		if stableOnly and sbv :
 			return sbv
@@ -109,19 +112,18 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 
 
 if __name__ == '__main__' :
-	import sys
 	try :
 		from optparse import OptionParser
-	
+
 		parser = OptionParser("usage: %prog [-s] <version1> [version2] ...\n \
 		Accepts package names, recipe names or version numbers as parameter ")
-	
+
 		parser.add_option("-s", "--stable", action="store_true", dest='stable',
 		                  default=False,  help="try to return a stable version as result")
-		
+
 		parser.add_option("-l", "--list", action="store_true", dest='return_list',
 		                  default=False,  help="returns a sorted list of versions")
-		
+
 		(options, args) = parser.parse_args()
 		just_stable = options.stable
 		return_list = options.return_list
@@ -129,11 +131,11 @@ if __name__ == '__main__' :
 		just_stable = 0
 		args = sys.argv[1:]
 		sys.exit(1)
-	
+
 	if len(args) < 1:
 		print "Please pass at least one version number"
                 sys.exit(1)
-	
+
 	r =  GuessLatest(args, just_stable, options.return_list)
 	if options.return_list :
 		r.reverse()
