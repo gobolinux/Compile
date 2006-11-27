@@ -7,7 +7,7 @@ PrioritiseUpdates 1.0 - order SuggestUpdates output
 
 EOF
 
-if [ -z "$1" ] ; then
+if [ -z "$1" -o "$1" = "--help" -o "$1" = "--version" ] ; then
   echo "Usage: $0 <Install-or-Compile-Scriptfile>"
   exit 127
 fi
