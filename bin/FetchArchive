@@ -77,25 +77,28 @@ fi
 Quiet pushd "$compileArchivesDir"
 for i in `seq 0 $[${#urls[@]}-1]`
 do
-   if Exists "${files[i]}"
+   file="${files[i]}"
+   file_size="${file_sizes[i]}"
+   file_md5="${file_md5s[i]}"
+   if Exists "$file"
    then
-      siz=`Get_Size "${files[i]}"`
-      md5=`Get_MD5 "${files[i]}"`
-      if [ -n "${file_sizes[i]}" ] && [ "${file_sizes[i]}" -eq "$siz" ]
+      siz=`Get_Size "$file"`
+      md5=`Get_MD5 "$file"`
+      if [ -n "$file_size" ] && [ "$file_size" -eq "$siz" ]
       then
-         if [ -z "${file_md5s[i]}" ]
+         if [ -z "$file_md5" ]
          then
             Log_Normal "Warning: no MD5 checksum in recipe."
-            Log_Normal "Assuming file is complete based only in size."
+            Log_Normal "Assuming "$file" is complete based only in size."
             continue
-         elif [ "${file_md5s[i]}" = "$md5" ]
+         elif [ "$file_md5" = "$md5" ]
          then
-            Log_Verbose "File is complete and matches MD5 checksum."
+            Log_Verbose "$file is complete and matches MD5 checksum."
             continue
          else
-            Log_Error "According to MD5 checksum in recipe, ${files[i]} is corrupted."
+            Log_Error "According to MD5 checksum in recipe, $file is corrupted."
             if Boolean "batch" || Ask "Remove and download again?"
-            then rm "${files[i]}"
+            then rm "$file"
             else continue
             fi
          fi
@@ -125,7 +128,7 @@ do
             locallength=`wc -c "$file" | cut -d" " -f1`
             if [ "$expectedlength" = "$locallength" ]
             then
-               Log_Normal "File is already fully retrieved."
+               Log_Normal "$file is already fully retrieved."
                return 0
             fi
          fi
@@ -137,9 +140,6 @@ do
 
    wget_url "$i" 0 || {
       Die "Could not fetch '$url'."
-      #if ! Exists "${files[i]}"
-      #then Die "Could not fetch '$url'."
-      #fi
    }
 done
 Quiet popd
