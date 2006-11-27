@@ -128,7 +128,7 @@ do
             locallength=`wc -c "$file" | cut -d" " -f1`
             if [ "$expectedlength" = "$locallength" ]
             then
-               Log_Normal "$file is already fully retrieved."
+               Log_Verbose "$file is already fully retrieved."
                return 0
             fi
          fi
