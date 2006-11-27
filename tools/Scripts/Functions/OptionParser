@@ -202,23 +202,21 @@ function Show_Help() {
       echo "Options:"
       for i in `seq $optionsListSize`
       do
+         echo -n "   "
+         if [ ! -z "${optionsShortList[i]}" ]
+         then
+            echo -n " -${optionsShortList[i]}"
+         fi
+         if [ ! -z "${optionsShortList[i]}" -a ! -z "${optionsLongList[i]}" ]
+         then
+            echo -n ","
+         fi
+         if [ ! -z "${optionsLongList[i]}" ]
+         then
+            echo -n " --${optionsLongList[i]}"
+         fi
          case "${optionsTypeList[i]}" in
          "Entry")
-            echo -n "   "
-            if [ ! -z "${optionsShortList[i]}" ]
-            then
-               echo -n " -${optionsShortList[i]}"
-            else
-               echo -n "    "
-            fi
-            if [ ! -z "${optionsShortList[i]}" -a ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n ","
-            fi
-            if [ ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n " --${optionsLongList[i]}"
-            fi
             echo $H2Mn " <entry>"
             echo -e "        ${optionsDescriptionList[i]}"
             if [ "${optionsStateList[i]}" != "#@unset@#" ]
@@ -228,21 +226,6 @@ function Show_Help() {
             $H2Mecho
             ;;
          "List")
-            echo -n "   "
-            if [ ! -z "${optionsShortList[i]}" ]
-            then
-               echo -n " -${optionsShortList[i]}"
-            else
-               echo -n "    "
-            fi
-            if [ ! -z "${optionsShortList[i]}" -a ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n ","
-            fi
-            if [ ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n " --${optionsLongList[i]}"
-            fi
             echo $H2Mn " <entry>[:<entry>...]"
             echo -e "        ${optionsDescriptionList[i]}"
             if [ "${optionsStateList[i]}" != "#@unset@#" ]
@@ -252,21 +235,6 @@ function Show_Help() {
             $H2Mecho
             ;;
          "Boolean")
-            echo -n "   "
-            if [ ! -z "${optionsShortList[i]}" ]
-            then
-               echo -n " -${optionsShortList[i]}"
-            else
-               echo -ne "    "
-            fi
-            if [ ! -z "${optionsShortList[i]}" -a ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n ","
-            fi
-            if [ ! -z "${optionsLongList[i]}" ]
-            then
-               echo -n " --${optionsLongList[i]}"
-            fi
             echo $H2Mn ""
             echo -e "        ${optionsDescriptionList[i]}"
             $H2Mecho
