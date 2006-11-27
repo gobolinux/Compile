@@ -69,3 +69,8 @@ tarball: version_check cleanup
 
 install: version_check
 	cp -a * $(DESTDIR)
+
+manuals:
+	mkdir -p man/man1
+	for i in `cd bin && grep -l Parse_Options *`; do bn=`basename $$i`; help2man --name=" " --source="GoboLinux" --no-info $$bn > man/man1/$$bn.1; done
+
