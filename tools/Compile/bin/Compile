@@ -49,6 +49,8 @@ Parse_Options "$@"
 Boolean "lazy" && Set_Boolean "no-web"
 Boolean "no-web" && noweb="--no-web"
 Boolean "batch" && batch="--batch"
+Boolean "verbose" && verbose="--verbose"
+Boolean "no-build" && Set_Boolean "keep"
 
 if Is_Entry "configure-options"
 then userconfigureoptions=(`Entry "configure-options"`)
@@ -458,6 +460,11 @@ fi
 app=`Get_Token "$bakedrecipedir" "/" "-2"`
 version=`Get_Token "$bakedrecipedir" "/" "-1"`
 
+ncapp=`NamingConventions $app`
+if [ "$ncapp" != "$app" ]
+then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
+fi
+
 recipedir="$bakedrecipedir"
 reciperesources="$recipedir/Resources"
 
@@ -731,7 +738,7 @@ then
       echo "Well done!"
    fi
 else
-   Boolean "no-web" || in_host FetchArchive $batch "$recipe" || Die "Error fetching archive(s)."
+   Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
    
    pfiles=`
       for i in "${files[@]}"
