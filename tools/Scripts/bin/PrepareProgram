@@ -83,7 +83,7 @@ programname="$(Arg 1)"
 Dir_Set Case && {
    # Respect capitalization passed, if any.
    if [ "$programname" = `echo "$programname" | tr '[:upper:]' '[:lower:]'` ]
-   then programname=`GuessProgramCase "$1"`
+   then programname=`GuessProgramCase "$programname"`
    fi
 }
 
