@@ -43,6 +43,10 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 		unstable_dict = { 'rc':0.0001, 'pre':0.001, 'pr':0.001, 'beta':0.01, 'alpha':0.1 }
 		minors = []
 
+		# empty strings and "Current" should be ignored
+		if version == "" or version == "Current" :
+			return [],0
+		
 		# if the version is cvs, must be the last choice.
 		if version.lower() == 'cvs' :
 			minors.append(-1)
