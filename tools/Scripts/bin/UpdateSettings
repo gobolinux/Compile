@@ -63,7 +63,8 @@ Add_Option_Boolean "q" "quick"  "Quickly update, prompting only when there are c
 
 Parse_Options "$@"
 
-if [ $parsedArguments -eq 0 ]; then
+if ! Boolean "list" && ! Boolean "check" && ! Boolean "report"
+then 
    Set_Boolean "update"
 fi
 
