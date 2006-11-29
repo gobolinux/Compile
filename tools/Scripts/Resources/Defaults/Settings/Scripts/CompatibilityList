@@ -1,13 +1,5 @@
 Glibc: UClibc Rootless
 GLib: Rootless
-LibGLEW: GLEW
-Mesa: Nvidia
-MesaLib: Mesa Nvidia
-Nvidia: Mesa Xorg XFree86
-Xorg: XFree86
-XFree86: Xorg
-DB: BerkeleyDB
-BerkeleyDB: DB
 Sendmail: Qmail Postfix
 Qmail: Sendmail Postfix
 Postfix: Qmail Sendmail
