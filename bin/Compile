@@ -97,7 +97,7 @@ function do_symlink() {
       *) break ;;
       esac # it still is.
    done
-   
+
    if ! [ "$nomake" = "yes" ]
    then
       unset allowleftovers
@@ -144,7 +144,7 @@ function do_symlink() {
    fi
 
    is_function_set pre_link && pre_link
- 
+
    if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2"
@@ -162,11 +162,12 @@ function do_symlink() {
 
 function install_extras() {
 
-   # TODO: Dependencies file of binary package is currently being copied from Recipe at install_extras
-   #       We sould adapt this dependency file, since dependencies for a binary package are usually
-   #       more 'strict' than those for recipes.
-
    [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
+
+   if [ "$app" = "$appname" ]
+   then
+      CheckDependencies --mode=convert $app $version recipe $recipedir > "$installprefix/Resources/Dependencies"
+   fi
 
    if [ "$app" ]
    then name=$app
@@ -192,7 +193,7 @@ function install_extras() {
 }
 
 function wrapup() {
-   if [ "$app" = "$appname" ] 
+   if [ "$app" = "$appname" ]
    then
       # Add information inside binary package Resources directory
       Quiet mkdir -p $target/Resources
@@ -236,8 +237,8 @@ function wrapup() {
       Log_Normal "Packing recipe directory..."
       GenRecipeStore "$app" "$version"
 
-      # experimental 'callback': you can create a script that automatically 
-      # uploads the recipe to somewhere, or asks for confirmation and sends 
+      # experimental 'callback': you can create a script that automatically
+      # uploads the recipe to somewhere, or asks for confirmation and sends
       # it to the a recipe-store mantainer
       which LocalRecipeCompiled &> /dev/null && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
    fi
@@ -419,15 +420,15 @@ if [ "$goboCrossCompiling" = "yes" ]
 then
    arch_conf=`Entry "cross-compile"`
    Log_Normal "Cross-Compiling for $arch_conf"
-   
+
    crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross/Cross-$arch_conf.conf
    [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
-   
+
    source ${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf
    source ${crossConfFile}
    source GoboPath
    Parse_Conf Directories.conf
-   
+
    # Extra arguments to be passed to 'make' and 'make install'
    cross_make_variables=(
       "CC=$CC"
@@ -441,7 +442,7 @@ then
    archsubdir=$bakedrecipedir/$arch
    archrecipe=$bakedrecipedir/$arch/Recipe
    compileSourcesDir="$compileDir/Sources-$arch_conf"
-   
+
    mkdir -p $compileSourcesDir
 
    export CC HOSTCC LD
@@ -740,22 +741,22 @@ then
    fi
 else
    Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
-   
+
    pfiles=`
       for i in "${files[@]}"
       do find "$compileArchivesDir" -name "$i"
       done
    `
    String_To_Array files "$pfiles"
-   
+
    Boolean "no-build" && exit 0
-   
+
    if [ "$uncompress" = "no" ]
    then
       [ "$dir" ] || dir=$appname
       [ "$unpack_files" ] || unpack_files=files_in_root
    fi
-   
+
    unpack=yes
    if [ -d "${dirs[0]}" ]
    then
@@ -778,7 +779,7 @@ else
       [Cc]) exit 0 ;;
       esac # esac is ridiculous.
    fi
-   
+
    tempdir="$appname.$versionnumber.Compile.temp"
    [ "$unpack" = "yes" ] && \
    for ((i=0; i < ${#files[@]}; i++))
@@ -1073,7 +1074,7 @@ then
       is_function_set post_install && post_install
       wrapup
    else
-      # Old Makefile.PL system 
+      # Old Makefile.PL system
       perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
       recipe_type="makefile"
    fi
