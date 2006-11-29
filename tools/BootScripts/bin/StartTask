@@ -18,7 +18,6 @@ helpOnNoArguments=yes
 scriptUsage="<task> <options>"
 scriptExample="Network start"
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Operation #################################################################
 
@@ -26,14 +25,14 @@ Verify_Superuser
 
 export PATH="$PATH:$goboTasks"
 
-taskname="$1"
-task="$goboTasks/$1"
-shift
+taskname="$(Arg 1)"
+task="$goboTasks/$taskname"
 
 if [ -x "$task" ]
 then
    export GraphicBoot=no
-   "$task" "start" "$@"
+   eval `Args_To_Array options 2`
+   "$task" "start" "${options[@]}"
    if [ "$?" -eq 0 ]
    then Log_Normal "$taskname: Returned code 0 => OK."
    else Log_Error "$taskname: Returned code $? => FAILED." 
