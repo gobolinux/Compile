@@ -11,12 +11,11 @@ Import Directories
 helpOnNoArguments=yes
 scriptDescription="Runs 'make install', using a sandbox environment."
 scriptCredits="Copyright (C) Hisham Muhammad, 2001-2005 - Released under the GNU GPL."
-scriptUsage="[<options>] <program_name> [<program_version>] [ -- <extra_arguments> ]"
+scriptUsage="[<options>] <program_name> <program_version> [ -- <extra_arguments> ]"
 scriptExample="--makefile makefile.unix --target install_shared WeirdSuperLib 2.4"
 scriptNotes="
 Normally you'll want to use Compile(1) instead.
 '$scriptName' is called by Compile(1).
-If no program version is specified, Current is assumed.
 "
 Add_Option_Entry "t" "target" "Makefile target to be used." "install"
 Add_Option_Entry "f" "makefile" "Specify which makefile to use." "Makefile"
@@ -30,9 +29,6 @@ Add_Option_Boolean "l" "allow-leftovers" "When using UnionFS, do not return a fa
 
 Parse_Options "$@"
 
-# hack to allow extra arguments to be passed as $@
-while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
-
 Dir_Set Sandbox || Set_Boolean "no-sandbox"
 
 if ! Boolean "no-sandbox"
@@ -45,7 +41,7 @@ fi
 # TODO: this code is copy-and-pasted from SymlinkProgram.
 # It should move into functions.
 
-[ "$(Arg 1)" -o "$(Arg 1)" = "--" ] || Die "Argument missing: specify the program name."
+[ "$(Arg 2)" ] || Die "Argument missing: specify program and version."
 
 unset unionsandbox
 
@@ -70,18 +66,14 @@ fi
 
 installPackageDir=`Get_Dir install "$package" ''`
 current="$packageDir/Current"
-version=$(basename $(readlink -f $current))
 
-if [ "$(Arg 2)" ]
-then
-   requested_version=$(Arg 2)
-   vdir=`Get_Dir runtime "$package" "$requested_version"`
-   if { ! Is_Directory "$vdir" ;} && { ! Boolean "no-sandbox" ;}
-   then Die "There is no version $requested_version for package $package."
-   fi
-   Dir_Set Current && [ "$version" != "$requested_version" ] && ln -sfn `basename "$vdir"` "$current"
-   version="$requested_version"
+requested_version=$(Arg 2)
+vdir=`Get_Dir runtime "$package" "$requested_version"`
+if { ! Is_Directory "$vdir" ;} && { ! Boolean "no-sandbox" ;}
+then Die "There is no version $requested_version for package $package."
 fi
+Dir_Set Current && [ "$version" != "$requested_version" ] && ln -sfn `basename "$vdir"` "$current"
+version="$requested_version"
 
 if Dir_Set Current && ! Exists "$current"
 then
@@ -141,11 +133,13 @@ then
     ln -s "${default_settings}" "${settings}"
 fi
 
+eval `Args_To_Array args 3`
+
 if Is_Entry "command"
 then
-   $sandbox `Entry "command"` "$@" || installation_failed
+   $sandbox `Entry "command"` "${args[@]}" || installation_failed
 else
-   $sandbox make -f "`Entry "makefile"`" "$@" "`Entry "target"`" || installation_failed
+   $sandbox make -f "`Entry "makefile"`" "${args[@]}" "`Entry "target"`" || installation_failed
 fi
 result="$?"
 

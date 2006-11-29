@@ -15,7 +15,7 @@ Import Array
 helpOnNoArguments=yes
 scriptDescription="prepares applications for instalation, running the 'configure' script."
 scriptCredits="Copyright (C) 2001-2005 Hisham Muhammad - Released under the GNU GPL."
-scriptUsage="<target_name> [<version_nr>] [ -- <additional_options> ]"
+scriptUsage="<target_name> <version_nr> [ -- <additional_options> ]"
 scriptExample="KDE 2.2"
 scriptNotes="The directory hierarchy for the program is only created with --tree."
 
@@ -32,9 +32,6 @@ Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf,
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
 
 Parse_Options "$@"
-
-# hack to allow extra arguments to configure to be passed as $@
-while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
 
 Is_Entry "configure" && export PATH="$PATH:."
 
@@ -87,12 +84,11 @@ Dir_Set Case && {
    fi
 }
 
-if [ "$(Arg 2)" -a "$(Arg 2)" != "--" ]
+if [ "$(Arg 2)" ]
 then
    versionnumber="$(Arg 2)"
 else
-   versionnumber=`Which_Version "${goboPrograms}/${programname}/Current"`
-   [ "$versionnumber" ] || Die "Please specify version."
+   Die "Please specify version."
 fi
 
 programname=`NamingConventions "$programname"`
@@ -257,7 +253,9 @@ else
    configure_options=()
 fi
 
+eval `Args_To_Array args 3`
+
 color_command "`Find_Conf configure.mtailrc`" \
-  "$configureprogram" "${configure_options[@]}" "$@" >&$normalFD || Die "configure failed."
+  "$configureprogram" "${configure_options[@]}" "${args[@]}" >&$normalFD || Die "configure failed."
 
 exit 0

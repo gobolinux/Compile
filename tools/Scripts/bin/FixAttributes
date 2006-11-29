@@ -70,5 +70,5 @@ fi
 n=$(Number_Of_Arguments)
 for (( i=1 ; i<=n ; i++))
 do
-   $fixatfunction "$(Arg ${i})"
+   $fixatfunction "$(Arg $i)"
 done

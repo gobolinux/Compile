@@ -57,31 +57,37 @@ function Add_Argument() {
    argumentsListSize=$[argumentsListSize+1]
 }
 
+# Usage:   eval `Args_To_Array <array_name> [<from> [<to>]]`
+# Example: eval `Args_To_Array myArray 5`
+#          Returns an array called myArray containing Args 5 and up.
+# Example: eval `Args_To_Array myArray`
+#          Returns an array called myArray with all non-option arguments.
+function Args_To_Array() {
+   name="$1"
+   if [ "$2" ]
+   then start="$2"
+   else start=1
+   fi
+   if [ "$3" ]
+   then length="$3"
+   else length=$[argumentsListSize-1]
+   fi
+   echo -n "$name=("
+   for (( i=$start ; i<=$length ; i++ ))
+   do
+      echo -n "\"${argumentsList[$i]}\" "
+   done
+   echo ")"
+}
+
 function Arg() {
    if [ -z "$1" ]
    then Die "You need to specify which argument"
    fi
-
-   if [ ! -z "$2" ]
-   then
-      if [ "$2" = "n" ]
-      then length=$[argumentsListSize-1]
-      else length=$2
-      fi
-      for (( i=$1 ; i<=$length ; i++ ))
-      do
-         echo -n "${argumentsList[$i]} "
-      done
-      echo
-      exit
-   fi
-   
    if [ $1 -lt 0 ] || [ $1 -ge $argumentsListSize ]
-   then
-      echo ""
-      exit
+   then echo ""
+   else echo ${argumentsList[$1]}
    fi
-   echo ${argumentsList[$1]}
 }
 
 function Number_Of_Arguments() {
@@ -349,12 +355,18 @@ function Parse_Options() {
          then # a double dash so it should be a long option
             if [ -z "${option:2:1}" ]
             then
-               # it's a lonely double dash '--'. Stop parsing!
+               # it's a lonely double dash '--'.
+               # Consume all and stop parsing.
+               for (( j = i+1; j <= $# ; j++ ))
+               do
+                  eval option=\${${j}}
+                  Add_Argument "$option"
+               done
                break
             fi
             if echo "$option" | grep -q = -
             then
-               # argument assignement with =
+               # argument assignment with =
                opt=`echo $option | cut -d= -f1`
             else
                opt=$option

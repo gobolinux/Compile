@@ -37,7 +37,6 @@ Add_Option_List "s" "spare" "Enter a colon-separated list of program names "\
 "that should not be killed by automatic kills. Entries for this list can also "\
 "be added in the killProcessSpare entry in the configuration file." ""
 Parse_Options "$@"
-shift $parsedArguments
 
 Parse_Conf Scripts/KillProcess.conf
 
@@ -132,5 +131,6 @@ if Boolean "cpu" || Boolean "memory"
 then
     kill_top_process
 else
-    kill_by_name "$@"
+    eval `Args_To_Array processes`
+    kill_by_name "${processes[@]}"
 fi

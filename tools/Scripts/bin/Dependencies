@@ -71,7 +71,6 @@ fi
 }
 
 function path2programs() {
-#   sed 's@/Programs/\([^/]*\)/\([^/]*\)/.*$@\1 \2@g'
 # The follow perl could/should be converted to sed.  Unfortunately I don't know sed.
 
 # I would be glad to convert this to sed, if I had the slightest idea of what this does. :) --hhm

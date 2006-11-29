@@ -32,9 +32,6 @@ Add_Option_Entry "d" "directory" "The program should be run at <entry>. "\
 Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted user has write access to." "."
 Parse_Options "$@"
 
-# hack to allow command with arguments to be passed as $@
-while [ "$1" != "--" -a ! -z "$1" ]; do shift; done; shift
-
 ### Operation #################################################################
 
 Verify_Superuser
@@ -121,12 +118,8 @@ chown 0 "${fiboprograms[@]}"
 chgrp fibo "${fiboprograms[@]}"
 chmod 4770 "${fiboprograms[@]}"
 
-#detsch, commented out apparently debug lines
-#echo ---------------------------------
-#ls -l "${fiboprograms[@]}"
-#echo ---------------------------------
-
-sudo -u fibo "$@"
+eval `Args_To_Array command`
+sudo -u fibo "${command[@]}"
 result=$?
 
 c=0

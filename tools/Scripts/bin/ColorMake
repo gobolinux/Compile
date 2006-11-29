@@ -12,7 +12,7 @@ elif [ -x /usr/bin/make ]
 then makecmd=/usr/bin/make
 fi
 
-for i in $@
+for i in "$@"
 do
     if [ "$i" = "menuconfig" ]
     then exec $makecmd "$@"

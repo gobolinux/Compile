@@ -10,17 +10,16 @@ scriptUsage="<from> <to> <files>"
 scriptExample="\"SimMcast\" \"simmcast\" *.java"
 Add_Option_Boolean "R" "recursive" "Perform change recursively in all files (overrides last parameter)."
 Parse_Options "$@"
-shift $parsedArguments
 
-two="`echo "$1" | sed 's%/%\\\\/%g'`"
-three="`echo "$2" | sed 's%/%\\\\/%g'`"
+two="`Arg 1 | sed 's%/%\\\\/%g'`"
+three="`Arg 2 | sed 's%/%\\\\/%g'`"
 
-shift 2
+eval `Args_To_Array files 2`
 
 {
 if Boolean "recursive"
 then grep -HIr "$two" * .[^.]* 2> /dev/null
-else grep -HI "$two" "$@" 2> /dev/null
+else grep -HI "$two" "${files[@]}" 2> /dev/null
 fi
 } | cut -f 1 -d: | sort | uniq | while read file
 do

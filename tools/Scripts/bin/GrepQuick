@@ -11,7 +11,6 @@ scriptCredits="Copyright (C) 2001-2002 Hisham Muhammad. Released under the GNU G
 helpOnNoArguments=yes
 scriptUsage="<pattern> [<files...>]"
 Add_Option_Boolean "r" "recursive" "Recursive."
-Add_Option_Boolean "s" "source" "Special mode for C/C++/Java sources: skips comments if FilterComments is available."
 Add_Option_Boolean "w" "whole-word" "Match whole words only."
 Add_Option_Boolean "C" "no-color" "Avoid coloring (for grep's that don't support it)."
 Add_Option_Boolean "b" "binaries" "Also search binary files."
@@ -25,7 +24,6 @@ If no files are specified, all files are selected (except in \"source\" mode, wh
 *.[CcHh]* is selected instead).
 "
 Parse_Options "$@"
-shift $parsedArguments
 
 ### Flags #####################################################################
 
@@ -33,38 +31,6 @@ Boolean "whole-word" && export whole="-w"
 Boolean "recursive" && export recursive='-r'
 color="--color=always"
 Boolean "no-color" && export color=
-
-### Special mode for source files #############################################
-
-Boolean "source" && {
-
-function source_grep() {
-   function fcat() {
-      if which FilterComments 2> /dev/null
-      then FilterComments < "$1"
-      else cat "$1"
-      fi
-   }
-   fcat "$1" |\
-   grep -n $whole --color=always "$2" |\
-   awk -v fil="$1" '
-      {
-         print fil ":" $0
-      }
-   '
-}
-
-pattern="$1"
-shift
-if [ "$*" ] 
-then for f in "$@"; do source_grep "$f" "$pattern"; done
-else for f in *.[CcHh]*; do source_grep "$f" "$pattern"; done
-fi
-
-exit 0
-}
-
-### Normal mode ###############################################################
 
 function all() {
    if [ -L share -a $(dirname $(dirname $PWD)) = "$goboPrograms" ]
@@ -82,15 +48,16 @@ function highlight() {
 nobins=-I
 Boolean "binaries" && nobins=
 
-pattern="$1"
-shift
+pattern="$(Arg 1)"
+
 Has_Uppercase "$pattern" || insensitive=-i
-if [ "$*" ]
-then 
-   hits=`grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "$@"`
+if [ `Number_Of_Arguments` -gt 1 ]
+then
+   eval `Args_To_Array files 2`
+   hits=`grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" "${files[@]}"`
    result=$?
 else
-   hits=`grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" \`all\``
+   hits=$(grep $insensitive $whole $recursive $color $nobins -snH --mmap -- "$pattern" `all`)
    result=$?
    hits=`echo "$hits" | grep -v ".svn/"`
 fi
