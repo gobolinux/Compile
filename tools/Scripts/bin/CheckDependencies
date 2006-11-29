@@ -437,6 +437,31 @@ def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 			
 	return ordered_rules, ordered_matches
 
+
+#
+# This function is used when mode == 'convert'
+#  simple implementation for now
+#
+def ConvertRecipeToBinary(p, v, r, t, u) :
+	global global_dependencies_blacklist
+	global_dependencies_blacklist = []
+	rules = get_rules_for(p, v, r, t, u, noWeb=True, no_compatlist=True)
+	goboPrograms = getGoboVariable('goboPrograms')
+	ret = ''
+	for rule in rules:
+		cmd='''
+. ScriptFunctions
+Import GoboLinux
+Get_Version %s Current'''%rule['program']
+		f = os.popen(cmd)
+		installed_version = f.read().strip()
+		f.close()
+		ret += rule['program'] + ' >= ' + installed_version
+		if rule['hiver'] :
+			ret += ', ' + (rule['hiincluded'] and '<= ' or '< ') + rule['hiver']
+		ret += '\n'
+	return ret
+
 #
 # This function is used when mode == 'list'
 #
@@ -465,7 +490,7 @@ def ListDependencies(p, v, r, t, u, mode = 'terminal', types=None, report_missin
 				if r['lover'] :
 					ss += ','
 				ss += ' ' + (rule['hiincluded'] and '<=' or '<') + ' ' + rule['hiver']
-		
+
 			if report_missing and rule in missing_dependencies :
 				ss += ' M' + (rule in missing_programs and 'P' or 'V')
 			if report_updating and rule in updating_dependencies :
@@ -625,6 +650,9 @@ Options:
                                     it they are already installed
                          list     - only list the dependencies, without printing
                                     matches
+                         convert  - convert a Dependencies file of a recipe to
+                                    the coresponding Dependencies file for the
+                                    compiled binary
 
  -W, --no-web         Do not access the internet.
 
@@ -663,6 +691,8 @@ Examples of usage:
 			v,r = '',''
 		if mode == 'list' :
 			print ListDependencies(p,v,r,t,u,types=types,recursive=recursive,hook=progress_hook,noWeb=noWeb)
+		elif mode == 'convert' :
+			print ConvertRecipeToBinary(p,v,r,t,u),
 		else :
 			rules, matches = get_all_dependencies_and_matches_for(p, v, r, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install, no_compatlist=no_compatlist)
 			if rules :
