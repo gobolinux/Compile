@@ -119,7 +119,7 @@ chgrp fibo "${fiboprograms[@]}"
 chmod 4770 "${fiboprograms[@]}"
 
 eval `Args_To_Array command`
-sudo -u fibo ${command[*]}
+sudo -u fibo "${command[@]}"
 result=$?
 
 c=0
