@@ -24,8 +24,7 @@ n=$(Number_Of_Arguments)
 for (( i=3 ; i<=n ; i++ ))
 do 
    FROM="$(Arg $i)"
-   TO=`echo $FROM | sed "s/$SEDFROM/$SEDTO/g"`
-   
+   TO="`echo "$FROM" | sed "s/$SEDFROM/$SEDTO/g"`"
    if [ "$FROM" != "$TO" ]
    then mv $verbose "$FROM" "$TO"
    fi
