@@ -48,22 +48,25 @@
 #ifndef PATH_MAX
 #define PATH_MAX 8192
 #endif
-#include <pwd.h>
 #include <sys/ioctl.h>
 #include "gobolinux.h"
+
+#include <locale.h>
+#include <libintl.h>
+
+#define _(message) gettext(message)
+
 
 /* Paranoia setting */
 #ifndef FIGOBOLINUX
 #define FIGOBOLINUX _IOW(0x00, 0x22, size_t) /* gobolinux-fs ioctl */
 #endif
 
-void usage (int status);
-
 static int show_help = 0;
 static int show_version = 0;
 
-const char shortopts[]  = "h:u:lf";
-struct option longopts[] = {
+static const char shortopts[]  = "h:u:lf";
+static struct option longopts[] = {
 	{"hide",     1, 0, 'h'},
 	{"unhide",   1, 0, 'u'},
 	{"list",     0, 0, 'l'},
@@ -75,28 +78,28 @@ struct option longopts[] = {
 
 /* The invocation name of the program */
 static char *program_name;
-const char version[] = "0.10";
+static const char version[] = "0.12";
 
 void
 usage (int status)
 {
 	if (status) { /* Show help */
-		fprintf (stdout, 
+		fprintf (stdout, _(
 		"%s: Hide/Unhide a directory\n\n"
 		"-h, --hide     Hide the directory\n"
 		"-u, --unhide   Unhide the directory\n"
 		"-l, --list     List the hidden directories\n"
 		"-f, --flush    Flush the hide list\n"
 		"    --version  Show the program version\n"
-		"    --help     Show this message\n", 
+		"    --help     Show this message\n"),
 		program_name);
 	} else {
-		fprintf (stdout,
-		"Copyright (C) 2002 CScience.ORG World Domination Inc.\n\n"
+		fprintf (stdout, _(
+		"Copyright (C) 2002-2006 CScience.ORG World Domination Inc.\n\n"
 		"This program is Free Software; you can redistributed it\n"
 		"and/or modify it under the terms of the GNU General Public\n"
 		"License as published by the Free Software Foundation.\n\n"
-		"%s version %s\n", program_name, version);
+		"%s version %s\n"), program_name, version);
 	}
 	exit (0);
 }
@@ -104,8 +107,8 @@ usage (int status)
 void
 err_quit (int status, char *file)
 {
-	fprintf (stderr, "%s is neither a directory "
-			 "nor a symbolic link\n", file);
+	fprintf (stderr, _("%s is neither a directory "
+			 "nor a symbolic link\n"), file);
 	exit (status);
 }
 
@@ -128,7 +131,8 @@ generic_ioctl (char *dir, int operation)
 			perror ("lstat");
 			exit (EXIT_FAILURE);
 		}
-		if (!S_ISLNK(stats.st_mode)) err_quit (1, dir);
+		if (!S_ISLNK(stats.st_mode))
+			err_quit (1, dir);
 		hide.symlink = 1;
 	} else {
 		/* We opened a directory, let's get its inode number */
@@ -136,7 +140,8 @@ generic_ioctl (char *dir, int operation)
 			perror ("fstat");
 			exit (EXIT_FAILURE);
 		}
-		if (!S_ISDIR(stats.st_mode)) err_quit (1, dir);
+		if (!S_ISDIR(stats.st_mode))
+			err_quit (1, dir);
 		hide.symlink = 0;
 	}
 
@@ -147,7 +152,6 @@ generic_ioctl (char *dir, int operation)
 	if (ioctl (fd, FIGOBOLINUX, &hide) == -1) {
 		perror ("ioctl");
 	}
-
 	close (fd);
 }
 
@@ -226,11 +230,11 @@ list_hidden (void)
 	
 	hide = get_stats ();
 	if (!hide) {
-		fprintf (stderr, "No inodes being hidden\n");
+		fprintf (stderr, _("No inodes being hidden\n"));
 		return;
 	}
 	
-	fprintf (stdout, "Hidden directories:\n");
+	fprintf (stdout, _("Hidden directories:\n"));
 	for (i = 0; i < hide->stats.filled_size; ++i) {
 		fprintf (stdout, "%s\n", hide->stats.hidden_list[i]);
 		free (hide->stats.hidden_list[i]);
@@ -282,6 +286,10 @@ main (int argc, char **argv)
 		}
 	}
 
+	setlocale(LC_ALL, "");
+	textdomain("gobohide");
+	bindtextdomain("gobohide", LOCALEDIR);
+
 	if (show_help)
 		usage (1);
 	if (show_version)
@@ -289,7 +297,7 @@ main (int argc, char **argv)
 
 	/* Only the superuser is allowed to execute further */
 	if (getuid () != 0) {
-		fprintf (stderr, "Must be superuser\n");
+		fprintf (stderr, _("Must be superuser\n"));
 		exit (EXIT_SUCCESS);
 	}
 	
@@ -300,10 +308,8 @@ main (int argc, char **argv)
 
 	switch (a) {
 		case -1:
-			fprintf (stderr, 
-					 "%s: You must specify at least one option!\n\n"
-				  	 "try '%s --help' for more information\n", 
-				  	 program_name, program_name);
+			fprintf(stderr, _("%s: You must specify at least one option!\n\n"
+				"try '%s --help' for more information\n"), program_name, program_name);
 			break;
 
 		case GETSTATSUID:
