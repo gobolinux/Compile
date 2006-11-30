@@ -144,7 +144,7 @@ Is_Entry_Set "directory" && newpwd=`Entry "directory"`
 echo "#!/bin/sh" >"${sandbox_mp}/.wrapper"
 echo "cd $newpwd" >>"${sandbox_mp}/.wrapper"
 Args_To_Array command >> "${sandbox_mp}/.wrapper"
-echo "exec \"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
+echo "exec \${command[*]}" >>"${sandbox_mp}/.wrapper"
 
 chmod a+x "${sandbox_mp}/.wrapper"
 
