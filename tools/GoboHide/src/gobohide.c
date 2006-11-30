@@ -7,32 +7,8 @@
  * and/or modify it under the terms of the GNU General Public
  * License as published by the Free Software Foundation.
  *
- * Author: Felipe W Damasio <felipewd@terra.com.br>
- * 
- * Changes:
- * 0.10 - Lucas C. Villa Real
- *        Handling multiple entries.
- *        
- * 0.09 - Lucas C. Villa Real
- *        We were passing (struct gobolinux_hide **) to ioctl(),
- *        changed to (struct gobolinux_hide *);
- *        Added an exit call after purge_list().
- *
- * 0.08a- Felipe W Damasio
- *        Added -f, --flush option to flush (delete all) the hide list.
- *
- * 0.08 - Felipe W Damasio
- *        Error-checking on "open" calls cleanup code.
- *        
- * 0.07 - Lucas C. Villa Real
- *        Added a valid file descriptor to be used on statistics ioctl calls.
- *        
- * 0.05 - Lucas C. Villa Real 
- *        Real path is now being handled, so the statistics can now 
- *        show something better than simple inode numbers.
- *
- * 0.04 - Lucas C. Villa Real 
- *        Added statistics support.
+ * Authors: Felipe W Damasio <felipewd@terra.com.br>
+ *          Lucas C. Villa Real <lucasvr@gobolinux.org>
  */
 
 #include <stdio.h>
