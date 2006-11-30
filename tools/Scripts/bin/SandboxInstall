@@ -139,7 +139,7 @@ if Is_Entry "command"
 then
    $sandbox `Entry "command"` "${args[@]}" || installation_failed
 else
-   $sandbox make -f "`Entry "makefile"`" "${args[@]}" "`Entry "target"`" || installation_failed
+   $sandbox make -f "`Entry "makefile"`" "${args[@]}" `Entry "target"` || installation_failed
 fi
 result="$?"
 
