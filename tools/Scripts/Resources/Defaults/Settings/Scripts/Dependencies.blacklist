@@ -3,5 +3,3 @@
 # Dependencies.blacklist is documented in detail at 
 #  http://wiki.gobolinux.org/Dependencies
 
-Glibc
-Nvidia
