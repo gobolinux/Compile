@@ -40,6 +40,7 @@ function finish() {
    else
       echo "Recipe looks sane."
       rm $report
+      exit 0
    fi
 }
 
