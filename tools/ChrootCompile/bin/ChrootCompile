@@ -17,6 +17,10 @@ Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with c
 Add_Option_Entry "X" "cross-compile" "Use a cross-compiler according to the configuration in Cross-<parameter>.conf." ""
 Parse_Options "$@"
 
+
+#############################################################################
+# Operation
+#############################################################################
 chrootcompileMode="gobo"
 [ -e "./Compile.conf" ] && chrootcompileCompileConf="./Compile.conf"
 
@@ -32,7 +36,7 @@ unset localrepository
 Boolean "local-repository" && localrepository=yes
 
 hostarch=`uname -m`
-case "$arch" in
+case "$hostarch" in
    i686|i585|i486|i386) hostarch=i686 ;;
 esac
 
@@ -46,8 +50,8 @@ then
     entry=`Entry "cross-compile"`
     crossopts="--cross-compile $entry"
     crossconf="/System/Settings/Compile/Cross/Cross-$entry.conf"
-
     [ ! -f $crossconf ] && Die "$crossconf: file not found."
+
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_kernel_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_toolchain_dir=" | sed 's/"//g'`
@@ -56,16 +60,15 @@ then
     crosskerneldir=$cross_kernel_dir
     crosstoolchaindir=$cross_toolchain_dir
     crossrepodir="$crossprefixdir/$goboPrograms"
-    arch=$cross_uname_m
 
-    case "$arch" in
+    case "$cross_uname_m" in
        arm*) recipesubdir=arm ;;
        *)    recipesubdir="$cross_uname_m"
     esac
 else
     case "$hostarch" in
        i686|i585|i486|i386) recipesubdir=i686 ;;
-       *)                   recipesubdir="$arch"
+       *)                   recipesubdir="$hostarch"
     esac
 fi
 
@@ -688,8 +691,8 @@ else
    fullroot=`readlink -f $root`
    cd $root/View
    mkdir -p $fullroot/../$putclean/
-   readlink -f $fullroot/../$putclean/$name--$version--$arch.tar.bz2
-   tar jcvpf $fullroot/../$putclean/$name--$version--$arch.tar.bz2 $name/$version
+   readlink -f $fullroot/../$putclean/$name--$version--$targetarch.tar.bz2
+   tar jcvpf $fullroot/../$putclean/$name--$version--$targetarch.tar.bz2 $name/$version
 fi
 
 # Remove the left over Area
