@@ -109,7 +109,7 @@ do
    #####################################################
    if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
    then
-      $sudo tar xjvf "$rawrecipe" -C "$getRecipeRecipeDir"  2> /dev/null >&$verboseFD
+      Verbose $sudo tar xjvf "$rawrecipe" -C "$getRecipeRecipeDir"
       echo "$getRecipeRecipeDir/$app/$version"
       exit 0
    fi
@@ -126,7 +126,7 @@ do
       then wget="wget --no-check-certificate"
       else wget="wget"
       fi
-      $wget -t 5 "$rawrecipe" -O - 2>&$verboseFD | $sudo tar xjvf - -C "$getRecipeRecipeDir" 2> /dev/null >&$verboseFD
+      Verbose $wget -t 5 "$rawrecipe" -O - | Verbose $sudo tar xjvf - -C "$getRecipeRecipeDir"
       #wget $rawrecipe -O - | $sudo tar xjvf - -C "$getRecipeRecipeDir"
       if [ -d "$getRecipeRecipeDir/$app/$version" ]
       then
