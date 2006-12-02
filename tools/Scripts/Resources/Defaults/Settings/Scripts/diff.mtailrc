@@ -21,5 +21,6 @@ colors:
     /^Only in/ brightred
 #New files
     /^dif.*/ brightbackground
+    /^Index.*/ brightbackground
 ansi:
     /brightbackground/[41;37;1m/
