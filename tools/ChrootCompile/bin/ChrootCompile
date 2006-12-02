@@ -1,19 +1,26 @@
 #!/bin/sh 
-#-e
 
-function die() {
-   echo "ChrootCompile: $*" >&2
-   exit 1
-}
+#############################################################################
+# Imports
+#############################################################################
+source ScriptFunctions
+Import GoboLinux
+Import OptionParser
+
 
 #############################################################################
 # Setting options
 #############################################################################
-export goboPrograms="/Programs"
+scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GNU GPL."
+Add_Option_Boolean "l" "local-repository" "Look at the local repository for recipes." ""
+Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with care)." ""
+Add_Option_Entry "X" "cross-compile" "Use a cross-compiler according to the configuration in Cross-<parameter>.conf." ""
+Parse_Options "$@"
+
 chrootcompileMode="gobo"
 [ -e "./Compile.conf" ] && chrootcompileCompileConf="./Compile.conf"
 
-# allows one to override any of the three above variables 
+# allows one to override any of the above variables 
 [ -e "./ChrootCompile.conf" ] && source "./ChrootCompile.conf"
 
 if [ "$UID" -ne 0 ]
@@ -21,15 +28,8 @@ then sudo=sudo
 else sudo=
 fi
 
-#############################################################################
-# '--local-repository' option: (to be used only on GoboLinux systems)
-#############################################################################
 unset localrepository
-if [ "$1" == "--local-repository" -o "$1" == "-l" ]
-then
-    localrepository=yes
-    shift
-fi
+Boolean "local-repository" && localrepository=yes
 
 hostarch=`uname -m`
 case "$arch" in
@@ -41,13 +41,13 @@ unset crossrepodir
 unset crossprefixdir
 unset crosskerneldir
 unset crosstoolchaindir
-if [ "$1" == "--cross-compile" -o "$1" == "-X" ]
+if Is_Entry "cross-compile"
 then
-    [ "$2" = "" ] && die "Expected architecture as a parameter."
-    crossopts="--cross-compile $2"
-    crossconf="/System/Settings/Compile/Cross/Cross-$2.conf"
+    entry=`Entry "cross-compile"`
+    crossopts="--cross-compile $entry"
+    crossconf="/System/Settings/Compile/Cross/Cross-$entry.conf"
 
-    [ ! -f $crossconf ] && die "$crossconf: file not found."
+    [ ! -f $crossconf ] && Die "$crossconf: file not found."
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_kernel_dir=" | sed 's/"//g'`
     eval `cat $crossconf | grep "cross_toolchain_dir=" | sed 's/"//g'`
@@ -62,8 +62,6 @@ then
        arm*) recipesubdir=arm ;;
        *)    recipesubdir="$cross_uname_m"
     esac
-
-    shift 2
 else
     case "$hostarch" in
        i686|i585|i486|i386) recipesubdir=i686 ;;
@@ -74,30 +72,11 @@ fi
 targetarch=$recipesubdir
 
 unset local_programs
-if [ "$1" == "--local-programs" -o "$1" == "-p" ]
-then
-    local_programs="$1"
-    shift
-fi
+Boolean "local-programs" && local_programs=yes
 
 unset verbose
-if [ "$1" == "--verbose" -o "$1" == "-v" ]
-then
-    verbose="$1"
-    shift
-fi
+Boolean "verbose" && verbose="--verbose"
 
-if [ "$1" == "--help" ]
-then
-    echo "Usage: $0 [options] <recipe dir>"
-    echo " "
-    echo "Available options are:"
-    echo "  -l, --local-repository:     use the repository at /Files/Compile (GoboLinux only)"
-    echo "  -X, --cross-compile <arch>: cross-compile to 'arch' (GoboLinux only)"
-    echo "  -p, --local-programs:       get packages from /Programs (EXPERIMENTAL)"
-    echo "  -v, --verbose:              verbose output"
-    exit 0
-fi
 
 #############################################################################
 # Verify our whereabouts
@@ -105,10 +84,11 @@ fi
 if [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
    if [ ! -z "`ls`" ]
-   then die "This doesn't look like a ChrootCompile environment directory. Rerun this script on an empty directory to build an environment."
+   then Die "This doesn't look like a ChrootCompile environment directory. Rerun this script on an empty directory to build an environment."
    fi
    SetupChrootEnv
 fi
+
 
 #############################################################################
 # Which packages are required to run Compile
@@ -153,13 +133,13 @@ export LANG=C
 export LC_ALL=C
 
 
-if [ -d "$1" -a -f "$1/Recipe" ]
+if [ -d "$(Arg 1)" -a -f "$(Arg 1)/Recipe" ]
 then
-   recipedir="$1"
+   recipedir="$(Arg 1)"
    name=$(basename $(dirname $recipedir))
    version=$(basename $recipedir)
 else
-   die "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
+   Die "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
 fi
 
 echo "ChrootCompile: Compiling $name $version..."
@@ -326,7 +306,7 @@ do
    && ! [ -d BaseDependencies/$dep -o -d $hostgetclean/$dep ] \
    && [ "$local_packages" -a ! -d "/Programs/$dep/Current/" ]
    then
-      die "Package $dep, needed for bootstrap, was not found."
+      Die "Package $dep, needed for bootstrap, was not found."
    fi
 done
 
@@ -346,7 +326,7 @@ function get_package_for() {
    for repo in $repositories
    do
       [ `ls $repo/$dep--* 2> /dev/null | wc -l` -gt 1 ] && {
-         die "More than one entry for $dep in $repo/ directory."
+         Die "More than one entry for $dep in $repo/ directory."
       } || true
       pkg=`ls $repo/$dep--* 2> /dev/null || true`
       [ "$pkg" ] && break
@@ -379,7 +359,7 @@ function unpack_package() {
       echo "Unpacking $pkg..." >&2
       tar xfj "$pkg" -C Unpacked/$arch
       unpacked=`ls -d Unpacked/$arch/$dep/* 2> /dev/null | filter_dir`
-      [ "$unpacked" ] || die "Error unpacking $pkg"
+      [ "$unpacked" ] || Die "Error unpacking $pkg"
    fi
    echo "$packagemd5" > Unpacked/$arch/_Checksums/$dep
    echo "$unpacked"
@@ -392,10 +372,10 @@ function load_dependency() {
    if [ "$local_programs" ]
    then
       unpacked="/Programs/$dep/Current/"
-      [ -d $unpacked ] || die "Dependency $dep could not be found."
+      [ -d $unpacked ] || Die "Dependency $dep could not be found."
    else
       local pkg=`get_package_for "$dep" "$repositories"`
-      [ ! "$pkg" ] && die "Dependency $dep could not be found. You may need to get the package and put it at Clean/$arch."
+      [ ! "$pkg" ] && Die "Dependency $dep could not be found. You may need to get the package and put it at Clean/$arch."
       unpacked=`unpack_package "$pkg" "$dep" "$arch"`
    fi
    if [ $dep = $name ]
@@ -565,9 +545,9 @@ function fetch_included_recipes() {
       pkg=`ls | grep -i "^$ipkg$"`
       popd &> /dev/null
       [ ! "$pkg" ] && continue
-      fetch_archive_off_recipe "$dir/$pkg/$ver" && return || die
+      fetch_archive_off_recipe "$dir/$pkg/$ver" && return || Die
    done
-   die "Can't find recipe for $ipkg"
+   Die "Can't find recipe for $ipkg"
 }
 
 function fetch_archive_off_recipe() {
@@ -579,7 +559,7 @@ function fetch_archive_off_recipe() {
       unset is_meta
       unset include
       [ "$verbose" ] && echo "Fetching files for $1/Recipe..."
-      [ -f "$1/Recipe" ] || die "Can't find $1/Recipe."
+      [ -f "$1/Recipe" ] || Die "Can't find $1/Recipe."
       source "$1/Recipe"
       if [ -f "$1/$recipesubdir/Recipe" ]
       then source "$1/$recipesubdir/Recipe"
@@ -597,18 +577,18 @@ function fetch_archive_off_recipe() {
          if [ "$url" ]
          then
             file=`basename "$url"`
-            [ ! -e "$file" ] && { $wget -c "$url" || die "Couldn't fetch $url" ;} || true
+            [ ! -e "$file" ] && { $wget -c "$url" || Die "Couldn't fetch $url" ;} || true
          fi
          if [ "${urls[*]}" ]
          then
             for url in "${urls[@]}"
             do
                file=`basename "$url"`
-               [ ! -e "$file" ] && { $wget -c "$url" || die "Couldn't fetch $url" ;} || true
+               [ ! -e "$file" ] && { $wget -c "$url" || Die "Couldn't fetch $url" ;} || true
             done
          fi
       fi
-   ) || die
+   ) || Die
 }
 
 [ "$chrootcompileCompileConf" ] || chrootcompileCompileConf="$root/$goboPrograms/Compile/Settings/Compile/Compile.conf"
@@ -657,13 +637,13 @@ function check_dependencies() {
          : # ok, skip
          ;;
       local_package)
-         in_chroot InstallPackage --no-web $depurl || die "Installation of dependency $depnam $depver failed ($depurl used)."
+         in_chroot InstallPackage --no-web $depurl || Die "Installation of dependency $depnam $depver failed ($depurl used)."
          ;;
       None)
-         die "ChrootCompile: Unresolved dependency: $depnam $depver"
+         Die "ChrootCompile: Unresolved dependency: $depnam $depver"
          ;;
       *)
-         die "ChrootCompile: Dependency not available as a package: $depnam $depver ($deptype found)."
+         Die "ChrootCompile: Dependency not available as a package: $depnam $depver ($deptype found)."
          ;;
       esac
    done
@@ -680,7 +660,7 @@ if [ "$failed" ]
 then
     echo "Compilation failed, invoking bash for debugging purposes."
     in_chroot /bin/bash
-    die "Finished with errors."
+    Die "Finished with errors."
 fi
 
 #############################################################################
@@ -701,7 +681,7 @@ function in_target() {
 if [ "$chrootcompileMode" = "gobo" ]
 then
    package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $version`
-   [ $? -ne 0 ] && die "Error on CreatePackage"
+   [ $? -ne 0 ] && Die "Error on CreatePackage"
    mkdir -p $putclean
    cp -v $root/$name--$version* $putclean
 else

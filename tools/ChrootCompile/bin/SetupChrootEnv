@@ -1,13 +1,24 @@
 #!/bin/bash
 
 #############################################################################
+# Imports
+#############################################################################
+source ScriptFunctions
+Import GoboLinux
+Import OptionParser
+
+#############################################################################
+# Setting options
+#############################################################################
+scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GNU GPL."
+Add_Option_Boolean "c" "complete" "Downloads all available packages from the repository"
+Parse_Options "$@"
+
+#############################################################################
 # Choosing between complete and base set of packages
 #############################################################################
 repository="chrootcompile-packages"
-if [ "$1" = "--complete" -o "$1" = "-c" ]
-then
-   repository="livecd-packages"
-fi
+Is_Entry_Set "complete" && repository="livecd-packages"
 
 #############################################################################
 # Download packages
