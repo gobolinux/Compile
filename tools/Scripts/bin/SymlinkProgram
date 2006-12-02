@@ -346,7 +346,7 @@ then
    then
       Log_Normal "Symlinking environment..."
       rm -f -- "$goboEnvironment/$package--"*
-      ln -sfv "$envfile" "$goboEnvironment/$package--$version" >&$verboseFD
+      Verbose ln -sfv "$envfile" "$goboEnvironment/$package--$version"
       Log_Verbose "Rebuilding environment cache..."
       cache="$goboEnvironment"/Cache
       Quiet rm -- "$cache"

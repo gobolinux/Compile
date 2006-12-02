@@ -251,7 +251,7 @@ else
    fi
 
    Log_Normal "Uncompressing to ${goboPrograms}..."
-   tar "$taroption" "$archive" -C ${goboPrograms} >&$verboseFD
+   Verbose tar "$taroption" "$archive" -C ${goboPrograms}
 fi
 
 verify_opts="--quiet"

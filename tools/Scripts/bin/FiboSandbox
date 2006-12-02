@@ -164,7 +164,7 @@ else
 
     # Restore owner and group
     Log_Verbose "Restoring owner..."
-    cat "$permfile" >&$verboseFD
+    Verbose cat "$permfile"
 
     . "$permfile"
 
@@ -173,7 +173,7 @@ fi
 
 # Restore setuid
 Log_Verbose "Restoring setuid permissions..."
-cat "$suidfile" >&$verboseFD
+Verbose cat "$suidfile"
 
 . "$suidfile"
 
