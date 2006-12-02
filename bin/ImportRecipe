@@ -46,12 +46,6 @@ if ! [ -r "$recipetarball" ]
 then Die "Could not read $recipetarball"
 fi
 
-# RecipeLint "$recipetarball"
-# recipestatus=$?
-# if [ "$recipestatus" -eq 2 ]
-# then Die "RecipeLint reported errors in the recipe. Not adding it."
-# fi
-
 recipename="`basename "$recipetarball"`"
 program="${recipename%%--*}"
 version="${recipename#*--}"

@@ -57,6 +57,27 @@ function publish_revision() {
       revision=1
    fi
    Log_Normal "Publishing revision: $program $version-r$revision"
+
+   recipetarball="$goboTemp/$program--$version--recipe.tar.bz2"
+   (
+      cd "$trunk"
+      Verbose tar cjvpf "$recipetarball" --exclude=.svn "$program/$version"
+   )
+   RecipeLint "$recipetarball"
+   recipestatus=$?
+   rm "$recipetarball"
+   if [ "$recipestatus" -eq 1 ]
+   then
+      Log_Error "RecipeLint reported errors in $program $version from trunk."
+      if ! Ask "Proceed and publish it anyway?"
+      then return
+      fi
+   elif [ "$recipestatus" -eq 2 ]
+   then
+      Log_Error "RecipeLint reported errors in $program $version from trunk. Not publishing it."
+      return
+   fi
+
    svn copy "$trunk/$program/$version" "$revisions/$program/$version-r$revision"
 }
 
