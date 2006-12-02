@@ -415,7 +415,7 @@ function Reverse_Link_Or_Expand() {
       if ! Is_Directory $rsource || Is_Empty_Directory $rsource
       then
          mv "$source" "$destination"
-         ln -vs "$destination/$bsource" "$dsource" >&$verboseFD
+         Verbose ln -vs "$destination/$bsource" "$dsource"
       else
          Make_Directory "$destination/$bsource"
          cd "$rsource"
@@ -436,8 +436,8 @@ function Reverse_Link_Or_Expand() {
          cd ..
       elif Is_Empty_Directory "$rsource"
       then
-         rmdir "$rsource" >&$verboseFD
-         ln -vs "$destination/$bsource" "$dsource" >&$verboseFD
+         Verbose rmdir "$rsource"
+         Verbose ln -vs "$destination/$bsource" "$dsource"
       else
          Log_Error "Conflict: $bsource already exists at $destination."
       fi
@@ -506,6 +506,13 @@ function Find_Conf() {
       fi
    done
    return 1
+}
+
+function Color_Output() {
+   if Quiet which mtail
+   then mtail --silent --config="`Find_Conf $1.mtailrc`"
+   else cat
+   fi
 }
 
 # Parse the script's configuration

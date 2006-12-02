@@ -59,6 +59,10 @@ function Log_Debug() {
     Log_Function "$*" "${colorRedWhite}" "${debugFD}"
 }
 
+function Quiet() { "$@" &> /dev/null ;}
+
+function Verbose() { "$@" 1>&$verboseFD 2>&$verboseFD ;}
+
 # Ask a question. If the answer is "n", quit.
 function Ask_Continue() {
     if [ "$logLevel" -lt "$logLevelNormal" ]

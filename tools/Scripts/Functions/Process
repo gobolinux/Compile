@@ -11,8 +11,6 @@ function Succeeded() { [ $? -eq 0 ] ;}
 
 function Failed() { [ $? -gt 0 ] ;}
 
-function Quiet() { "$@" &> /dev/null ;}
-
 function Run_If_Available() {
    unset -v have
    type $1 &> /dev/null
