@@ -9,37 +9,25 @@ source $TOP_DIR/.config
 source $TOP_DIR/functions/Platforms
 
 #
-# Fetch and install ChrootCompile in the private downloads dir
+# Checks for ChrootCompile
 #
-dirname="$TOP_DIR/downloads/ChrootCompile"
-if [ ! -d "$dirname" ]
-then
-    Log_Normal "Fetching ChrootCompile from the CVS..."
-    mkdir -p "$TOP_DIR/downloads"
-    pushd "$TOP_DIR/downloads" >& /dev/null
-    cvs_checkout ChrootCompile tools/ChrootCompile
-    popd >& /dev/null
-fi
+dirname="$goboPrograms/ChrootCompile"
+[ ! -d "$dirname" ] && Die "Please install ChrootCompile first"
 
 #
 # Create the chroot environment
 #
-dirname="$TOP_DIR/chroot/tools/ChrootCompile"
 got_glibc=`ls $TOP_DIR/chroot/BaseDependencies/Glibc--* 2> /dev/null`
-if [ ! -d "$dirname" -o ! "$got_glibc" ]
+if [ ! "$got_glibc" ]
 then
     Log_Normal "Creating the ChrootCompile environment..."
     mkdir -p "$TOP_DIR/chroot"
-    pushd "$TOP_DIR/chroot" >& /dev/null
-    ../downloads/ChrootCompile/SetupChrootEnv --quiet
-    popd >& /dev/null
+    Quiet pushd "$TOP_DIR/chroot"
+    SetupChrootEnv --quiet
+    Quiet popd
 
     got_glibc=`ls $TOP_DIR/chroot/BaseDependencies/Glibc--* 2> /dev/null`
-    if [ ! "$got_glibc" ]
-    then
-        Log_Error "Could not get files from rsync"
-        exit 1
-    fi
+    [ ! "$got_glibc" ] && Die "Could not get files from rsync"
 fi
 
 function check_consistency() {
@@ -60,38 +48,32 @@ function check_consistency() {
 
 #
 # Check for consistency between the host's cross conf files and
-# the ones fetched from the cvs by SetupChrootEnv.
+# the ones fetched by SetupChrootEnv.
 #
 if [ ! "$NATIVE_COMPILING" ]
 then
-    cvsdir=`readlink -f $TOP_DIR/chroot/tools/Compile/Resources/Defaults/Settings/Compile/Cross`
-    if [ ! -d "$cvsdir" ]
-    then
-        Log_Error "Error on SetupChrootEnv: $cvsdir not found."
-        exit 1
-    fi
-
     hostdir=$goboSettings/Compile/Cross
-    if [ ! -d "$hostdir" ]
-    then
-        Log_Error "$hostdir not found. Please update your Compile/Scripts packages."
-        exit 1
-    fi
+    [ ! -d "$hostdir" ] && Die "$hostdir not found. Please update your Compile/Scripts packages."
 
     # get the cross_cache_file variable
     target_arch=`get_chosen_arch`
     `cat $goboSettings/Compile/Cross/Cross-$target_arch.conf | grep "cross_cache_file=" | sed 's/\"//g'`
     
-    # check settings for /Programs/Compile and chroot/{tools/Compile,Unpacked/i686/Compile}
+    # check settings on /Programs/Compile and chroot/Unpacked/i686/Compile
     local_arch=`get_native_arch`
-    unpackeddir=$(readlink -f $TOP_DIR/chroot/Unpacked/$local_arch/Compile/*/Resources/Defaults/Settings/Compile/Cross)
-    for dir in "$cvsdir" "$unpackeddir"
-    do
-        # chroot/Unpacked may not exist yet
-        [ ! -d "$dir" ] && continue
-        check_consistency $hostdir/Cross-$target_arch.conf $dir/Cross-$target_arch.conf host
-        check_consistency $hostdir/Cross-Common.conf     $dir/Cross-Common.conf     host
-        check_consistency $hostdir/Cross-ResetEnv.conf   $dir/Cross-ResetEnv.conf   host
-        check_consistency $hostdir/$cross_cache_file     $dir/$cross_cache_file     biggest
-    done
+    unpackeddir="$TOP_DIR/chroot/Unpacked/$local_arch"
+    if [ ! -d "$unpackeddir/Compile" ]
+    then
+        mkdir -p "$unpackeddir"
+        Quiet pushd "$unpackeddir"
+        tarball=`readlink -f ../../BaseDependencies/Compile--*.tar.bz2`
+        aunpack --quiet "$tarball" || Die "Could not find Compile at $unpackeddir/../../BaseDependencies"
+        Quiet popd
+    fi
+
+    rsyncdir=`readlink -f $unpackeddir/Compile/*/Resources/Defaults/Settings/Compile/Cross`
+    check_consistency $hostdir/Cross-$target_arch.conf $rsyncdir/Cross-$target_arch.conf host
+    check_consistency $hostdir/Cross-Common.conf       $rsyncdir/Cross-Common.conf       host
+    check_consistency $hostdir/Cross-ResetEnv.conf     $rsyncdir/Cross-ResetEnv.conf     host
+    check_consistency $hostdir/$cross_cache_file       $rsyncdir/$cross_cache_file       biggest
 fi
