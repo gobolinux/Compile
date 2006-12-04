@@ -394,11 +394,11 @@ function load_dependency() {
 
 hostdeps=`{
    echo "${base_dependencies[*]} " | tr " " "\n" 
-   [ -e "$1/Resources/BuildDependencies" ] && cut -d" " -f1 "$1/Resources/BuildDependencies"
+   [ -e "$(Arg 1)/Resources/BuildDependencies" ] && cut -d" " -f1 "$(Arg 1)/Resources/BuildDependencies"
 } | sort -u | strings -n 1`
 
 targetdeps=`{
-   [ -e "$1/Resources/Dependencies" ] && cut -d" " -f1 "$1/Resources/Dependencies"
+   [ -e "$(Arg 1)/Resources/Dependencies" ] && cut -d" " -f1 "$(Arg 1)/Resources/Dependencies"
 } | sort -u | strings -n 1`
 
 targetroot=$root/$crossprefixdir
@@ -597,7 +597,7 @@ function fetch_archive_off_recipe() {
 [ "$chrootcompileCompileConf" ] || chrootcompileCompileConf="$root/$goboPrograms/Compile/Settings/Compile/Compile.conf"
 source "$chrootcompileCompileConf"
 
-fetch_archive_off_recipe "$1"
+fetch_archive_off_recipe "$(Arg 1)"
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
