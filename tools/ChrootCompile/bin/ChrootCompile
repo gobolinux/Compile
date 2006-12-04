@@ -15,17 +15,18 @@ scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GN
 Add_Option_Boolean "l" "local-repository" "Look at the local repository for recipes." ""
 Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with care)." ""
 Add_Option_Entry "X" "cross-compile" "Use a cross-compiler according to the configuration in Cross-<parameter>.conf." ""
+Add_Option_Entry "d" "use-directory" "Use specified directory as root for ChrootCompile." ""
 Parse_Options "$@"
 
 
 #############################################################################
 # Operation
 #############################################################################
-chrootcompileMode="gobo"
-[ -e "./Compile.conf" ] && chrootcompileCompileConf="./Compile.conf"
-
+Parse_Conf Compile.conf
 # allows one to override any of the above variables 
-[ -e "./ChrootCompile.conf" ] && source "./ChrootCompile.conf"
+Parse_Conf --mandatory ChrootCompile.conf
+
+Is_Entry "use-directory" && chrootCompileDir="$(Entry 'use-directory')"
 
 if [ "$UID" -ne 0 ]
 then sudo=sudo
@@ -80,16 +81,32 @@ Boolean "local-programs" && local_programs=yes
 unset verbose
 Boolean "verbose" && verbose="--verbose"
 
-
 #############################################################################
 # Verify our whereabouts
 #############################################################################
 if [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
    if [ ! -z "`ls`" ]
-   then Die "This doesn't look like a ChrootCompile environment directory. Rerun this script on an empty directory to build an environment."
+   then
+      if [ ! -z "${chrootCompileDir}" ]
+      then
+         cd "${chrootCompileDir}"
+         if [ ! -d BaseDependencies -a ! "$local_programs" ]
+         then
+            if [ ! -z "$(ls)" ]
+	    then
+               echo "Your ChrootCompile dir (${chrootCompileDir}) is corrupt. Please correct and then rerun ChrootCompile."
+            else
+               echo "No ChrootCompile environment found in ${chrootCompileDir}. Setting things up..."
+               SetupChrootEnv
+	    fi
+         fi
+      else
+         Die "This doesn't look like a ChrootCompile environment directory and \"chrootCompileDirectory\" is not set. Rerun this script on an empty directory or set \"chrootCompileDirectory\" in ChrootCompile.conf to build an environment."
+      fi
+   else
+      SetupChrootEnv
    fi
-   SetupChrootEnv
 fi
 
 
