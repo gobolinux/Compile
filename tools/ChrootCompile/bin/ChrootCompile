@@ -152,14 +152,20 @@ base_dependencies=(
 export LANG=C
 export LC_ALL=C
 
-
-if [ -d "$(Arg 1)" -a -f "$(Arg 1)/Recipe" ]
+if [ "$(Arg 2)" ]
 then
-   recipedir="$(Arg 1)"
+   name="$(Arg 1)"
+   version="$(Arg 2)"
+else
    name=$(basename $(dirname $recipedir))
    version=$(basename $recipedir)
+fi
+
+if [ -d "Recipes/${name}/${version}" -a -f "Recipes/${name}/${version}/Recipe" ]
+then
+   recipedir="Recipes/${name}/${version}"
 else
-   Die "Expected recipe directory as a parameter (example: Recipes/Bash/3.0)"
+   Die "No such recipe (${name} ${version}) in ChrootCompile environment"
 fi
 
 echo "ChrootCompile: Compiling $name $version..."
@@ -611,10 +617,7 @@ function fetch_archive_off_recipe() {
    ) || Die
 }
 
-[ "$chrootcompileCompileConf" ] || chrootcompileCompileConf="$root/$goboPrograms/Compile/Settings/Compile/Compile.conf"
-source "$chrootcompileCompileConf"
-
-fetch_archive_off_recipe "$(Arg 1)"
+fetch_archive_off_recipe "${recipedir}"
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
