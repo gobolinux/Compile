@@ -90,7 +90,7 @@ then
    then
       if [ ! -z "${chrootCompileDir}" ]
       then
-         Quiet pushd "${chrootCompileDir}"
+         cd "${chrootCompileDir}"
          if [ ! -d BaseDependencies -a ! "$local_programs" ]
          then
             if [ ! -z "$(ls)" ]
@@ -201,7 +201,6 @@ function cleanup() {
       unmount_dir $mp
    done
    rmdir Archives 2> /dev/null
-   [ "${chrootCompileDir}" ] && Quiet popd
 }
 
 trap cleanup TERM STOP HUP EXIT
