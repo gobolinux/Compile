@@ -104,7 +104,7 @@ fi
 
 # do not copy version-specific values
 leave_rows="/file_md5/d;/file_size/d;/# Recipe for version/d"
-sed "${switchurls};s:$oldversion[^\.]:$newversion[^\.]:g;$leave_rows" Recipe.old >> Recipe
+sed "${switchurls};s:$oldversion[^\.]:$newversion:g;$leave_rows" Recipe.old >> Recipe
 
 rm Recipe.old
 
