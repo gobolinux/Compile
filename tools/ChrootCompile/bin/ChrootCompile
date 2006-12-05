@@ -24,7 +24,7 @@ Parse_Options "$@"
 #############################################################################
 Parse_Conf Compile.conf
 # allows one to override any of the above variables 
-Parse_Conf --mandatory ChrootCompile.conf
+Parse_Conf ChrootCompile.conf
 
 Is_Entry "use-directory" && chrootCompileDir="$(Entry 'use-directory')"
 
@@ -90,7 +90,7 @@ then
    then
       if [ ! -z "${chrootCompileDir}" ]
       then
-         cd "${chrootCompileDir}"
+         Quiet pushd "${chrootCompileDir}"
          if [ ! -d BaseDependencies -a ! "$local_programs" ]
          then
             if [ ! -z "$(ls)" ]
@@ -201,6 +201,7 @@ function cleanup() {
       unmount_dir $mp
    done
    rmdir Archives 2> /dev/null
+   [ "${chrootCompileDir}" ] && Quiet popd
 }
 
 trap cleanup TERM STOP HUP EXIT
