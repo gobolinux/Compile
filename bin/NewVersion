@@ -113,7 +113,7 @@ for arch in $compileSupportedArchitectures
 do
    if [ -f $newrecipedir/$arch/Recipe ]
    then
-      sed -i "s:$oldversion[^.]:$newversion[^.]:g;$leave_rows" $arch/Recipe
+      sed -i "s:$oldversion:$newversion:g;$leave_rows" $arch/Recipe
    fi
 done
 
