@@ -630,10 +630,10 @@ function Uninstall_Unmanaged_Files() {
 
 function String_Revision() {
    Parameters "$@" versionandrevision
-   echo $versionandrevision | sed -n 's,.*-\(r[0-9]*p\?[0-9]*\),\1,p'
+   echo $versionandrevision | sed -nr 's,.*-(r[0-9]+(p[0-9]+)?)$,\1,p'
 }
 
 function String_Version() {
    Parameters "$@" versionandrevision
-   echo $versionandrevision | sed -e 's/-r[0-9]*p\?[0-9]*$//g'
+   echo $versionandrevision | sed -r 's/-r[0-9]+(p[0-9]+)?$//g'
 }
