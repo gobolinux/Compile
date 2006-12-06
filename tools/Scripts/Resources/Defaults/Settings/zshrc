@@ -36,14 +36,14 @@ export HISTSIZE=100
 export SAVEHIST=200
 export COLUMNS
 
-export MANPATH="${goboPrefix}/System/Links/Manuals:${MANPATH}"
-export INFOPATH="${goboPrefix}/System/Links/Manuals/info:${INFOPATH}"
-export LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries:${LD_LIBRARY_PATH}"
+export MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}"
+export INFOPATH="${goboPrefix}/System/Links/Manuals/info${INFOPATH:+:$INFOPATH}"
+export LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${C_INCLUDE_PATH:+:$C_INCLUDE_PATH}"
 export CPLUS_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${CPLUS_INCLUDE_PATH:+:$CPLUS_INCLUDE_PATH}"
 export TMPDIR="${goboPrefix}/System/Variable/tmp"
 
-export PATH="${goboPrefix}/System/Links/Executables:${PATH}:."
+export PATH="${goboPrefix}/System/Links/Executables${PATH:+:$PATH}:."
 path=("${goboPrefix}/System/Links/Executables" $path ".")
 fpath=("${goboPrefix}/System/Links/Shared/zsh/functions" "${goboUserPrefix}/.Settings/zsh/functions" $fpath)
 
