@@ -99,6 +99,11 @@ then
             else
                echo "No ChrootCompile environment found in ${chrootCompileDir}. Setting things up..."
                SetupChrootEnv
+	       if [ -z "$(Arg 1)" ]
+	       then
+	          echo "You now have a functional ChrootCompile environment in ${chrootCompileDir}. Call ChrootCompile with a recipe to use it."
+		  exit 0
+	       fi
 	    fi
          fi
       else
@@ -106,9 +111,17 @@ then
       fi
    else
       SetupChrootEnv
+      if [ -z "$(Arg 1)" ]
+      then
+         echo "You now have now a functional ChrootCompile environment. Call ChrootCompile with a recipe to use it."
+         exit 0
+      fi
    fi
 fi
 
+if [ -z "$(Arg 1)" ]
+then Die "You must specify a program to compile. Use '--help' for help."
+fi
 
 #############################################################################
 # Which packages are required to run Compile
