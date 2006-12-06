@@ -170,8 +170,8 @@ then
    name="$(Arg 1)"
    version="$(Arg 2)"
 else
-   name=$(basename $(dirname $recipedir))
-   version=$(basename $recipedir)
+   name=$(basename $(dirname $(Arg 1)))
+   version=$(basename $(Arg 1))
 fi
 
 if [ -d "Recipes/${name}/${version}" -a -f "Recipes/${name}/${version}/Recipe" ]
