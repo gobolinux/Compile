@@ -71,7 +71,7 @@ pack_recipe() {
       fi
       #remove backups
       find "$name/$version" | grep -E '~$' | xargs -i rm -f {}
-      Quiet tar cjvf "$tarball" "$name/$version" || return 1
+      Verbose tar cjvf "$tarball" --exclude=.svn "$name/$version" || return 1
       touch "$tarball" --reference="$name/$version/Recipe"
       return 0
    }
