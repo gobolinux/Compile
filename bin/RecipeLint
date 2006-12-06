@@ -120,8 +120,8 @@ echo "$recipetar" | grep -q " " && {
 }
 
 msg "Checking version number..."
-pureversion=`echo $version | sed 's/^\(.*\)-[0-9]*$/\1/'`
-revision=`echo $version | sed -n 's/^.*-\([0-9]*\)$/\1/p'`
+pureversion=`echo $version | sed 's/^\(.*\)-r[0-9]*$/\1/'`
+revision=`echo $version | sed -n 's/^.*-\(r[0-9]*\)$/\1/p'`
 echo "$pureversion" | egrep -q "^[0-9a-z_.]+$" || {
    ERROR "Version $pureversion contains invalid characters (only [0-9a-z._] allowed)."
 }
@@ -129,7 +129,8 @@ echo "$pureversion" | grep -q "[0-9]" || {
    WARN "Version $pureversion does not contain digits, may be incorrect."
 }
 [ "$revision" ] && {
-   [ "$revision" -gt 0 ] || {
+   purerevision="${revision#r}"
+   [ "$purerevision" -gt 0 ] || {
       ERROR "Invalid revision number $revision."
    }
 } || {
