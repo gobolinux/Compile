@@ -68,7 +68,7 @@ function publish_revision() {
    rm "$recipetarball"
    if [ "$recipestatus" -eq 1 ]
    then
-      Log_Error "RecipeLint reported errors in $program $version from trunk."
+      Log_Error "RecipeLint reported warnings in $program $version from trunk."
       if ! Ask "Proceed and publish it anyway?"
       then return
       fi
