@@ -56,6 +56,14 @@ function publish_revision() {
    else
       revision=1
    fi
+   
+   if [ `svn status "$trunk/$program/$version" | wc -l` -gt 0 ]
+   then
+      Log_Normal "Trunk has uncommitted changes for $program $version."
+      Log_Normal "Will not publish a new revision."
+      return
+   fi
+   
    Log_Normal "Publishing revision: $program $version-r$revision"
 
    recipetarball="$goboTemp/$program--$version--recipe.tar.bz2"
