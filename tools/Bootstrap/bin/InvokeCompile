@@ -63,16 +63,15 @@ function download_headers() {
     # download the headers package
     # TODO: Add multi-architecture support to FindPackage and use it instead of wget
 
-    kernel_version=2.6.16
-    download_dir="`readlink -f $TOP_DIR/downloads`"
+    mkdir -p $TOP_DIR/chroot/Clean/$recipe_arch
+
+    kernel_version=$KERNEL_HEADERS_VERSION
+    download_dir="`readlink -f $TOP_DIR/chroot/Clean/$recipe_arch`"
     filename=Linux-Headers--$kernel_version--$uname_m.tar.bz2
     pushd $download_dir >& /dev/null
     wget -nv -c $repository/$filename || exit 1
     popd >& /dev/null
     
-    mkdir -p $TOP_DIR/chroot/Clean/$recipe_arch
-    cp $filename $TOP_DIR/chroot/Clean/$recipe_arch
-     
     # uncompress it
     pushd "$prefix/$goboPrograms" >& /dev/null
     tar jxvf $download_dir/Linux-Headers--$kernel_version--$uname_m.tar.bz2
