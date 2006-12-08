@@ -127,6 +127,7 @@ fi
 # Which packages are required to run Compile
 #############################################################################
 base_dependencies=(
+    "Linux-Headers" # needed to bootstrap Glibc
     "Glibc"
     "Ncurses"    # needed by Bash
     "Readline"   # needed by Bash
