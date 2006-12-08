@@ -173,11 +173,18 @@ else
    version=$(basename $(Arg 1))
 fi
 
-if [ -d "Recipes/${name}/${version}" -a -f "Recipes/${name}/${version}/Recipe" ]
+if [ "$localrepository" ]
 then
-   recipedir="Recipes/${name}/${version}"
+   if [ -f "/Files/Compile/LocalRecipes/${name}/${version}/Recipe" ]
+   then recipedir="/Files/Compile/LocalRecipes/${name}/${version}"
+   elif [ "$localrepository" -a -f "/Files/Compile/Recipes/${name}/${version}/Recipe" ]
+   then recipedir="/Files/Compile/Recipes/${name}/${version}"
+   fi
 else
-   Die "No such recipe (${name} ${version}) in ChrootCompile environment"
+   if [ -f "Recipes/${name}/${version}/Recipe" ]
+   then recipedir="Recipes/${name}/${version}"
+   else Die "No such recipe (${name} ${version}) in ChrootCompile environment"
+   fi
 fi
 
 echo "ChrootCompile: Compiling $name $version..."
