@@ -1,10 +1,5 @@
 #!/bin/sh (source)
 
-
-#
-# 10/09/2004 - [detsch] Changed logging functions (FD instead of stream), 
-#              following David Smith sugestion
-
 Import Terminal
 
 logLevelError=10
@@ -33,9 +28,9 @@ function Question_Line() {
 }
 
 function Log_Function() {
-    Parameters "$@" message color FD 
+    Parameters "$@" message color FD
     [ $FD == $questionFD ] && Question_Line
-    echo -e "${colorGray}${scriptName}:${colorNormal} ${color}$message${colorNormal}" >&$FD 
+    echo -e "${colorGray}${scriptName}:${colorNormal} ${color}$message${colorNormal}" >&$FD
     echo "$scriptName: $message" >&$logFD
 }
 
@@ -68,23 +63,23 @@ function Ask_Continue() {
     if [ "$logLevel" -lt "$logLevelNormal" ]
     then return 0
     fi
-    
+
     if [ "$1" ]
-    then Log_Question "$1" 
+    then Log_Question "$1"
     fi
-    
+
     Log_Question "Press Enter to continue or Ctrl-C to cancel."
     read
-    
+
     if [ "$REPLY" = "n" ]
     then
        exit 1
     fi
-    
+
     if [ "$?" != "0" ]
     then
        exit $?
-    fi 
+    fi
 }
 
 function Log_Question() {
@@ -92,9 +87,9 @@ function Log_Question() {
 }
 
 function Ask_Option() {
-    Log_Question "$*" 
+    Log_Question "$*"
 
-    # detsch, maybe this loop should be continued until some valid 
+    # detsch, maybe this loop should be continued until some valid
     #  response is received
     while true
     do
@@ -105,11 +100,11 @@ function Ask_Option() {
           break
        fi
     done
-         
+
     if [ "$?" != "0" ]
     then
        exit $?
-    fi 
+    fi
 }
 
 function Ask() {

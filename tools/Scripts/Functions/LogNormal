@@ -1,31 +1,12 @@
 #!/bin/sh (source)
-# This is not meant to be executed directly, only sourced.
-# The magic line above is given only to enable syntax highlighting.
 
 export logMode="Normal"
 export logLevel=${logLevelNormal}
 
-#keeping streams due to compatibility
-export verboseStream=/dev/null
-export normalStream=${goboStatus}/self/fd/2
-#export terseStream=${goboStatus}/self/fd/2
-#export errorStream=${goboStatus}/self/fd/2
-#export debugStream=/dev/null
-#export logStream=/dev/null
-#[ $questionStream ] || export questionStream=$normalStream
-
-if [ "$questionStream" ]
-then
-   eval "exec $questionFD>$questionStream"
-else
-   eval "exec $questionFD<&2"
-   #export questionStream=$normalStream
-fi
-
+eval "exec $questionFD<&2"
 eval "exec $verboseFD>/dev/null"
 eval "exec $normalFD<&2"
 eval "exec $terseFD<&2"
 eval "exec $errorFD<&2"
 eval "exec $debugFD>/dev/null"
 eval "exec $logFD>/dev/null"
-
