@@ -126,8 +126,7 @@ do
       then wget="wget --no-check-certificate"
       else wget="wget"
       fi
-      $wget -t 5 "$rawrecipe" -O - | Verbose $sudo tar xjvf - -C "$getRecipeRecipeDir"
-      #wget $rawrecipe -O - | $sudo tar xjvf - -C "$getRecipeRecipeDir"
+      $wget -t 5 "$rawrecipe" -O - -q | Verbose $sudo tar xjvf - -C "$getRecipeRecipeDir"
       if [ -d "$getRecipeRecipeDir/$app/$version" ]
       then
          echo "$getRecipeRecipeDir/$app/$version"
