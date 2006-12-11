@@ -45,6 +45,7 @@ files: stdin
    colors:
       /^.*$/ white
       /^make.*:.*$/    brightblue
+      /^make.*:.* Error [0-9]*$/    brightred
       /[ \t]-o [^ ]*/           cyan
       /.*: In function .*/ brightred
       /[A-Za-z0-9.]*:[0-9]*: .*/ brightred
