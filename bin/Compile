@@ -237,7 +237,7 @@ function wrapup() {
          fi
       fi
       Log_Normal "Packing recipe directory..."
-      GenRecipeStore "$app" "$version"
+      PackRecipe "$app" "$version"
 
       # experimental 'callback': you can create a script that automatically
       # uploads the recipe to somewhere, or asks for confirmation and sends
