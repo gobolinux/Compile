@@ -26,6 +26,8 @@ Import Compile
 
 unset packagename versionnumber
 
+[ -w "$genRecipeRecipeDir" ] || Verify_Superuser
+
 if [ -z "$(Arg 2)" ]
 then
    Die "Please specify a package and version number. See --help."
@@ -63,7 +65,8 @@ then packagename="$app"
 else packagename=`Get_Token "$bakedrecipedir" "/" "-2"`
 fi
 
-oldversion=`Get_Token "$bakedrecipedir" "/" "-1"`
+oldversionandrevision=`Get_Token "$bakedrecipedir" "/" "-1"`
+oldversion=`String_Version "$oldversionandrevision"`
 
 oldrecipedir="$bakedrecipedir"
 
@@ -72,7 +75,7 @@ then
    Die "Current version is already $newversion."
 fi
 
-Log_Normal "Creating recipe for $packagename $newversion based on $oldversion."
+Log_Normal "Creating recipe for $packagename $newversion based on $oldversionandrevision."
 
 destinationDir=$genRecipeRecipeDir
 newrecipedir="$destinationDir/$packagename/$newversion"
