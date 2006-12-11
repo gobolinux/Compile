@@ -19,6 +19,7 @@ scriptNotes="If no version is given, all versions in trunk are checked."
 #Add_Option_Boolean "b" "bool" "A boolean option."
 #Add_Option_Entry "r" "rename" "Rename program to <entry>."
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
+Add_Option_Entry "u" "username"  "User name used for commiting changes at svn server."
 Parse_Options "$@"
 
 # Use this to parse attributions from
@@ -29,6 +30,9 @@ Parse_Conf CompileSubversion.conf
 
 trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
 revisions=`Get_Local_Revisions` || Die "Could not find a valid svn revisions tree."
+
+username=`Entry username`
+[ "$username" ] && username="--username $username" 
 
 ### Operation #################################################################
 
@@ -60,8 +64,10 @@ function publish_revision() {
    if [ `svn status "$trunk/$program/$version" | wc -l` -gt 0 ]
    then
       Log_Normal "Trunk has uncommitted changes for $program $version."
-      Log_Normal "Will not publish a new revision."
-      return
+      if Ask "Commit the changes at $trunk/$program/$version?"
+      then svn ci $username "$trunk/$program/$version" || Die "Error commiting $trunk/$program/$version"
+      else return
+      fi
    fi
    
    Log_Normal "Publishing revision: $program $version-r$revision"
@@ -87,6 +93,17 @@ function publish_revision() {
    fi
 
    svn copy "$trunk/$program/$version" "$revisions/$program/$version-r$revision"
+   
+   Log_Normal "Listing $revisions/$program/$version-r$revision"
+   find $revisions/$program/$version-r$revision | grep -v '\.svn'
+   if ! Ask "Ok to commit revision?"
+   then 
+      rm -rf $revisions/$program/$version-r$revision
+      return
+   fi
+   
+   Log_Normal "Commiting..."
+   svn ci $username --message "Commiting revision $revision" $revisions/$program/$version-r$revision
 }
 
 ### Operation #################################################################
@@ -98,7 +115,7 @@ programintrunk=`ls "$trunk" | grep -i "^$program$"`
 [ "$programintrunk" ] || echo "Could not find $program in trunk."
 [ `echo "$programintrunk" | wc -l` -eq 1 ] || Die "More than one capitalization for $program found in trunk. Please check."
 program="$programintrunk"
-
+svn update "$revisions/$program"
 if [ "$version" ]
 then
    publish_revision "$program" "$version"
