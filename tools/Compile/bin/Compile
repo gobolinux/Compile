@@ -221,7 +221,7 @@ function wrapup() {
       fi
    fi
    # Some additional actions for LocalRecipes (adding info inside Resources, packing)
-   if Starts_With "$genRecipeRecipeDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   if Starts_With "$compileLocalRecipesDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
       if [ "$app" = "$appname" ]
       then
@@ -242,7 +242,7 @@ function wrapup() {
       # experimental 'callback': you can create a script that automatically
       # uploads the recipe to somewhere, or asks for confirmation and sends
       # it to the a recipe-store mantainer
-      which LocalRecipeCompiled &> /dev/null && LocalRecipeCompiled "$app" "$version" "$genRecipeStoreDir/$app--$version--recipe.tar.bz2"
+      which LocalRecipeCompiled &> /dev/null && LocalRecipeCompiled "$app" "$version" "$compilePackedRecipesDir/$app--$version--recipe.tar.bz2"
    fi
    cleanup
 }
@@ -354,7 +354,7 @@ done
 assert_dir "$compileDependenciesDir"
 assert_dir "$compileArchivesDir"
 assert_dir "$compileSourcesDir"
-assert_dir "$genRecipeStoreDir"
+assert_dir "$compilePackedRecipesDir"
 
 ##################################################
 # Checking Scripts package version

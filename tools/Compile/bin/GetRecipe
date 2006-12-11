@@ -28,7 +28,7 @@ scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
 scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #scriptNotes="A full path to a recipe [that can be an url, a compressed local" \
 #"recipe or an uncompressed one] is received, and the recipe is placed in" \
-#"$getRecipeRecipeDir"
+#"$compileGetRecipeDir"
 #Add_Option_Boolean "C" "nocvs" "Do not find CVS based recipes (TODO)"
 
 Parse_Options "$@"
@@ -37,9 +37,9 @@ Parse_Options "$@"
 # Prepare Environment
 ##################################################
 
-assert_dir "$getRecipeRecipeDir"
+assert_dir "$compileGetRecipeDir"
 
-if Is_Writable "$getRecipeRecipeDir" || [ "$compileDisableSudo" = "yes" ]
+if Is_Writable "$compileGetRecipeDir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
@@ -97,9 +97,9 @@ do
       # Case #2: recipe is a local directory, but not at $compileRecipeDirs[@]
       #####################################################
    
-      $sudo mkdir -p "$getRecipeRecipeDir/$app/"
-      $sudo cp -R "$rawrecipe" "$getRecipeRecipeDir/$app/"
-      echo "$getRecipeRecipeDir/$app/$version"
+      $sudo mkdir -p "$compileGetRecipeDir/$app/"
+      $sudo cp -R "$rawrecipe" "$compileGetRecipeDir/$app/"
+      echo "$compileGetRecipeDir/$app/$version"
       exit 0
    fi
    
@@ -109,8 +109,8 @@ do
    #####################################################
    if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
    then
-      Verbose $sudo tar xjvf "$rawrecipe" -C "$getRecipeRecipeDir"
-      echo "$getRecipeRecipeDir/$app/$version"
+      Verbose $sudo tar xjvf "$rawrecipe" -C "$compileGetRecipeDir"
+      echo "$compileGetRecipeDir/$app/$version"
       exit 0
    fi
    
@@ -126,10 +126,10 @@ do
       then wget="wget --no-check-certificate"
       else wget="wget"
       fi
-      $wget -t 5 "$rawrecipe" -O - -q | Verbose $sudo tar xjvf - -C "$getRecipeRecipeDir"
-      if [ -d "$getRecipeRecipeDir/$app/$version" ]
+      $wget -t 5 "$rawrecipe" -O - -q | Verbose $sudo tar xjvf - -C "$compileGetRecipeDir"
+      if [ -d "$compileGetRecipeDir/$app/$version" ]
       then
-         echo "$getRecipeRecipeDir/$app/$version"
+         echo "$compileGetRecipeDir/$app/$version"
          exit 0
       fi
    fi

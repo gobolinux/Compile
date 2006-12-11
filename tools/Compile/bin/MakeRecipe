@@ -25,7 +25,7 @@ unset packagename versionnumber
 Import Compile
 Parse_Conf Compile.conf
 
-if Is_Writable "$genRecipeRecipeDir/$packagename" 
+if Is_Writable "$compileLocalRecipesDir/$packagename" 
 then sudo=
 else sudo="sudo -u #0"
 fi
@@ -37,7 +37,7 @@ fi
 
 [ "$PAGER" ] || PAGER=less
 
-assert_dir $genRecipeRecipeDir
+assert_dir "$compileLocalRecipesDir"
 
 if [ "$(Arg 3)" ]
 then
@@ -138,7 +138,7 @@ then
    fi
 fi
 
-recipedir="$genRecipeRecipeDir/$packagename/$versionnumber"
+recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
 
 $sudo mkdir -p $recipedir
 [ "$sudo" ] && $sudo chown $USER $recipedir
@@ -240,7 +240,7 @@ elif grep -q "Makefile.PL$" "$file_contents" || grep -q "Build.PL$" "$file_conte
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
    echo "recipe_type=perl" >> "$recipedir/Recipe"
-   perlprefixed="$genRecipeRecipeDir/Perl-$packagename"
+   perlprefixed="$compileLocalRecipesDir/Perl-$packagename"
    notprefixed=$(readlink -f "$recipedir/..")
    if [ -e "$perlprefixed" ]
    then 
