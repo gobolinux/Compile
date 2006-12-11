@@ -315,8 +315,3 @@ fi
 rm -f "$file_contents"
 
 Log_Verbose "Done creating recipe template for $packagename $versionnumber."
-
-if [ "$makeRecipeLog" ]
-then
-   echo "$packagename $versionnumber" >> "$makeRecipeLog"
-fi
