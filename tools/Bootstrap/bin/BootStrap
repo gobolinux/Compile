@@ -11,12 +11,18 @@ if [ "$NATIVE_COMPILING" = "y" ]
 then export arch_conf="Native"
 else export arch_conf=`get_chosen_arch`
 fi
-
-source $goboSettings/Compile/Cross/Cross-$arch_conf.conf
+        
+eval `grep cross_prefix_dir= $goboSettings/Compile/Cross/Cross-$arch_conf.conf`
 prefix="$cross_prefix_dir"
 
 case "$1" in
     [sS]tart)
+        #
+        # Checks for 'alias make=ColorMake'.
+        # This is known to break menuconfig-driven interfaces on Bootstrap.
+        #
+        Quiet bash --login -c "alias make" && Die "Please run 'unalias make' before running this script!"
+
         mkdir -p $prefix/$goboStatus $prefix/$goboDevices
         [ ! -e $prefix/$goboStatus/self ]  && mount -o bind $goboStatus  $prefix/$goboStatus
         [ ! -e $prefix/$goboDevices/kmem ] && mount -o bind $goboDevices $prefix/$goboDevices
