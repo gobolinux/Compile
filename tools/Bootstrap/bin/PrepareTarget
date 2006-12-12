@@ -47,7 +47,8 @@ fi
 
 
 #
-# Since we have $goboDevices bind-mounted, unmount and mount it afterwards
+# Since we have $goboDevices bind-mounted, unmount and mount it after
+# populating the target dir.
 #
 umount $prefix/$goboDevices 2> /dev/null
 
@@ -114,14 +115,14 @@ then
     mkdir -p $dirname/$version/lib
     ln -sf $version $dirname/Current
 
-    pushd $dirname/Current/lib >& /dev/null
+    Quiet pushd $dirname/Current/lib
     cp -a $gcclibdir/libgcc* .
     for i in *
     do
         # get rid of eventual directories copied together
         [ -d $i ] && rm -Rf $i
     done
-    popd >&/dev/null
+    Quiet popd
 
     SymlinkProgram $symlink_options LibGCC >& /dev/null
 fi
