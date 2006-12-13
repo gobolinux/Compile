@@ -41,8 +41,8 @@ Import Compile
 # Prepare Environment
 ##################################################
 
-assert_dir "$compilePackedRecipesDir"
-assert_dir "$compileLocalRecipesDir"
+Check_Dir_Variable compilePackedRecipesDir
+Check_Dir_Variable compileLocalRecipesDir
 
 ##################################################
 # Operation
