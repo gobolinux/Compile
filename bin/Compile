@@ -346,22 +346,16 @@ function export_marked() {
 # Prepare Environment
 ##################################################
 
-function check_dir_variable() {
-   var="$1"
-   eval [ "\$$var" ] || Die "Variable \\\$$var is not set. Please update your Compile.conf."
-   eval assert_dir "\$$var"
-}
-
-check_dir_variable compileDir
+Check_Dir_Variable compileDir
 [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
 for compileRecipeDir in "${compileRecipeDirs[@]}"
 do
-   assert_dir "$compileRecipeDir"
+   Assert_Dir "$compileRecipeDir"
 done
-check_dir_variable compileDependenciesDir
-check_dir_variable compileArchivesDir
-check_dir_variable compileSourcesDir
-check_dir_variable compilePackedRecipesDir
+Check_Dir_Variable compileDependenciesDir
+Check_Dir_Variable compileArchivesDir
+Check_Dir_Variable compileSourcesDir
+Check_Dir_Variable compilePackedRecipesDir
 
 ##################################################
 # Checking Scripts package version

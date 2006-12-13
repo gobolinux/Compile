@@ -37,7 +37,7 @@ fi
 
 [ "$PAGER" ] || PAGER=less
 
-assert_dir "$compileLocalRecipesDir"
+Check_Dir_Variable compileLocalRecipesDir
 
 if [ "$(Arg 3)" ]
 then

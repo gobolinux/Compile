@@ -41,7 +41,7 @@ fi
 # Prepare Environment
 ##################################################
 
-assert_dir "$compileGetRecipeDir"
+Check_Dir_Variable compileGetRecipeDir
 
 ##################################################
 # Operation
