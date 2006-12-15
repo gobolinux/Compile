@@ -980,7 +980,8 @@ class ManagerUIImpl(ManagerUI) :
 		
 		for ((p,v),kind) in zip(pvs,types) :
 			assert kind in ['local_package', 'official_package', 'contrib_package']
-			path = self.availables[kind]['programs'][p][v][0][0]
+			r = GuessLatest(self.availables[kind]['programs'][p][v].keys())
+			path = self.availables[kind]['programs'][p][v][r][0]
 			self.addCommandsForDependencies(p,v,kind,path, cmds,apps, justDownload)
 			self.addCommandsForInstallPackage(p,v,kind,path, cmds,apps, justDownload)
 			
