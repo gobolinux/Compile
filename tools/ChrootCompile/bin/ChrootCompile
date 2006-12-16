@@ -20,10 +20,15 @@ Parse_Options "$@"
 
 
 #############################################################################
+# Default options
+#############################################################################
+chrootcompileMode=gobo
+
+
+#############################################################################
 # Operation
 #############################################################################
 Parse_Conf Compile.conf
-# allows one to override any of the above variables 
 Parse_Conf ChrootCompile.conf
 
 Is_Entry "use-directory" && chrootCompileDir="$(Entry 'use-directory')"
@@ -84,39 +89,12 @@ Boolean "verbose" && verbose="--verbose"
 #############################################################################
 # Verify our whereabouts
 #############################################################################
+[ "$chrootCompileDir" ] && cd "$chrootCompileDir"
 if [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
-   if [ ! -z "`ls`" ]
-   then
-      if [ ! -z "${chrootCompileDir}" ]
-      then
-         cd "${chrootCompileDir}"
-         if [ ! -d BaseDependencies -a ! "$local_programs" ]
-         then
-            if [ ! -z "$(ls)" ]
-	    then
-               echo "Your ChrootCompile dir (${chrootCompileDir}) is corrupt. Please correct and then rerun ChrootCompile."
-            else
-               echo "No ChrootCompile environment found in ${chrootCompileDir}. Setting things up..."
-               SetupChrootEnv
-	       if [ -z "$(Arg 1)" ]
-	       then
-	          echo "You now have a functional ChrootCompile environment in ${chrootCompileDir}. Call ChrootCompile with a recipe to use it."
-		  exit 0
-	       fi
-	    fi
-         fi
-      else
-         Die "This doesn't look like a ChrootCompile environment directory and \"chrootCompileDirectory\" is not set. Rerun this script on an empty directory or set \"chrootCompileDirectory\" in ChrootCompile.conf to build an environment."
-      fi
-   else
-      SetupChrootEnv
-      if [ -z "$(Arg 1)" ]
-      then
-         echo "You now have now a functional ChrootCompile environment. Call ChrootCompile with a recipe to use it."
-         exit 0
-      fi
-   fi
+    [ ! -z "`ls`" ] && Die "Your ChrootCompile dir ($chrootCompileDir) is corrupt. Please correct and then rerun ChrootCompile."
+    Log_Normal "No ChrootCompile environment found in $chrootCompileDir. Setting things up..."
+    SetupChrootEnv
 fi
 
 if [ -z "$(Arg 1)" ]
