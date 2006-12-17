@@ -576,18 +576,13 @@ function fetch_included_recipes() {
 
 function fetch_archive_off_recipe() {
    (
-      if wget --help | grep -q no-check-certificate
-      then local wget="wget --no-check-certificate"
-      else local wget="wget"
+      FetchArchive --save-to "$root/Files/Compile/Archives" "$1/Recipe"
+      if [ -f "$1/$recipesubdir/Recipe" ] && grep -q "^url" "$1/$recipesubdir/Recipe"
+      then FetchArchive --save-to "$root/Files/Compile/Archives" "$1/$recipesubdir/Recipe"
       fi
       unset is_meta
       unset include
-      [ "$verbose" ] && echo "Fetching files for $1/Recipe..."
-      [ -f "$1/Recipe" ] || Die "Can't find $1/Recipe."
       source "$1/Recipe"
-      if [ -f "$1/$recipesubdir/Recipe" ]
-      then source "$1/$recipesubdir/Recipe"
-      fi
       if [ "$is_meta" = "yes" ]
       then
          for pkgver in "${include[@]}"
@@ -596,21 +591,6 @@ function fetch_archive_off_recipe() {
             ver="${pkgver#*--}"
             fetch_included_recipes "$1" "$ipkg" "$ver"
          done
-      else
-         cd "$root/Files/Compile/Archives"
-         if [ "$url" ]
-         then
-            file=`basename "$url"`
-            [ ! -e "$file" ] && { $wget -c "$url" || Die "Couldn't fetch $url" ;} || true
-         fi
-         if [ "${urls[*]}" ]
-         then
-            for url in "${urls[@]}"
-            do
-               file=`basename "$url"`
-               [ ! -e "$file" ] && { $wget -c "$url" || Die "Couldn't fetch $url" ;} || true
-            done
-         fi
       fi
    ) || Die
 }
