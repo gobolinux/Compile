@@ -238,11 +238,6 @@ function wrapup() {
       fi
       Log_Normal "Packing recipe directory..."
       PackRecipe "$noweb" "$app" "$versionandrevision"
-
-      # experimental 'callback': you can create a script that automatically
-      # uploads the recipe to somewhere, or asks for confirmation and sends
-      # it to the a recipe-store mantainer
-      which LocalRecipeCompiled &> /dev/null && LocalRecipeCompiled "$app" "$version" "$compilePackedRecipesDir/$app--$version--recipe.tar.bz2"
    fi
    cleanup
 }
