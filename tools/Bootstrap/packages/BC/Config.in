@@ -1,0 +1,2 @@
+config PKG_BC
+    bool "BC - An arbitrary precision calculator language"
