@@ -627,7 +627,7 @@ test_recipe() {
          }
          vname="${1%%=*}"
          echo "$vname" | egrep -q "^[A-Za-z_][A-Za-z0-9_]*$" || {
-            ERROR "Entry '$vname' in $aname does not look like a variable name."
+            WARN "Entry '$vname' in $aname does not look like a variable name."
          }
          shift
       done
