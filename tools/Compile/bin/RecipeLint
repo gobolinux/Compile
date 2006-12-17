@@ -685,9 +685,9 @@ test_resources() {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
       missing_deps() {
-         CheckDependencies --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist --no-compatlist $name $version recipe $PWD | while read d_program d_version d_type d_url;
+         CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist --no-compatlist $name $version recipe $PWD | while read d_program d_version d_type d_url;
          do
-            if [ $d_type = "None" ]
+            if [ "$d_type" = "None" ]
             then
                if [ "$d_version" != "None" ]
                then echo \"$d_program $d_version\"
@@ -707,7 +707,12 @@ test_resources() {
          nothname="${noth% *}"
          if [ "$progname" = "$nothname" ]
          then
-            ERROR "Dependency $prog not available."
+            if Boolean "no-web"
+	    then
+		WARN "Dependency $prog not available locally (web access disabled)."
+	    else
+		ERROR "Dependency $prog not available."
+	    fi
             j=$[j+1]
          else
             WARN "Dependency $prog has no recipe."
