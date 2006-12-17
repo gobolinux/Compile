@@ -224,6 +224,9 @@ do
         case "$REPLY" in
             n|N)  # compile it
                   ;;
+            y|Y)  # skip it
+                  continue
+                  ;;
             sa|SA) # skip all
                   skip_all=1
                   continue
