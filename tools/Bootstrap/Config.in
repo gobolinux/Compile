@@ -35,7 +35,7 @@ config CROSS_ARM_SOFT_FLOAT
 	---help---
 	  Run a toolchain to generate a distribution suitable for ARM processors
 	  based on GCC's soft-float library. Use this if you have a working
-	  Cross-ARM-SoftFloat.conf file and your platform doesn't have a FPU.
+	  Cross-ARM-SoftFP.conf and your platform doesn't have a FPU.
 
 config CROSS_SH4
 	prompt "SH-4 target"
@@ -138,10 +138,10 @@ comment ""
 
 config KERNEL_HEADERS_VERSION
 	string "Kernel version for Linux-Headers package"
-	default "2.6.16.18"
+	default "2.6.19"
 	---help---
-	  Specifies which kernel version to use to create the Linux-Headers
-	  package.
+	  Specifies which kernel version to use for Linux-Headers package
+	  generation.
 
 config NEW_HOSTNAME
     string "Hostname"
@@ -191,6 +191,7 @@ endmenu
 menu "Development"
 #############################################
 source "packages/LibTool/Config.in"
+source "packages/Make/Config.in"
 #source "packages/GMP/Config.in"
 #source "packages/GCC/Config.in"
 #source "packages/TCC/Config.in"
@@ -277,6 +278,10 @@ source "packages/Lirc/Config.in"
 source "packages/ReiserFSProgs/Config.in"
 source "packages/Shared-Mime-INFO/Config.in"
 source "packages/Htop/Config.in"
+source "packages/M4/Config.in"
+source "packages/Flex/Config.in"
+source "packages/Bison/Config.in"
+source "packages/BC/Config.in"
 comment ""
 source "packages/A2PS/Config.in"
 comment ""
