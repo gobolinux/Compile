@@ -53,6 +53,8 @@ else
    fi
 fi
 
+versionnumber=`String_Version $versionnumber`
+
 Is_Directory "${goboPrograms}/$package/$versionnumber" || Die "Package $package version $versionnumber does not exist."
 Is_Link "${goboPrograms}/$package/$versionnumber" && tree_symlinked=yes
 
