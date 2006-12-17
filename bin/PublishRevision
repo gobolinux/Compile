@@ -64,8 +64,8 @@ function publish_revision() {
    if [ `svn status "$trunk/$program/$version" | wc -l` -gt 0 ]
    then
       Log_Normal "Trunk has uncommitted changes for $program $version."
-      if Ask "Commit the changes at $trunk/$program/$version?"
-      then svn ci $username "$trunk/$program/$version" || Die "Error commiting $trunk/$program/$version"
+      if Ask "Commit the changes at $trunk/$program?"
+      then svn ci $username "$trunk/$program" || Die "Error commiting $trunk/$program"
       else return
       fi
    fi
@@ -103,7 +103,7 @@ function publish_revision() {
    fi
    
    Log_Normal "Commiting..."
-   svn ci $username --message "Commiting revision $revision" $revisions/$program/$version-r$revision
+   svn ci $username --message "Commiting revision $revision" $revisions/$program
 }
 
 ### Operation #################################################################
