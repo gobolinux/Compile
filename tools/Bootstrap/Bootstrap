@@ -1,0 +1,7 @@
+#!/bin/sh
+
+#
+# We need to run this script with make aliases off.
+#
+\make menuconfig
+\make

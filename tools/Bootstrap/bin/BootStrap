@@ -17,12 +17,6 @@ prefix="$cross_prefix_dir"
 
 case "$1" in
     [sS]tart)
-        #
-        # Checks for 'alias make=ColorMake'.
-        # This is known to break menuconfig-driven interfaces on Bootstrap.
-        #
-        Quiet bash --login -c "alias make" && Die "Please run 'unalias make' before running this script!"
-
         mkdir -p $prefix/$goboStatus $prefix/$goboDevices
         [ ! -e $prefix/$goboStatus/self ]  && mount -o bind $goboStatus  $prefix/$goboStatus
         [ ! -e $prefix/$goboDevices/kmem ] && mount -o bind $goboDevices $prefix/$goboDevices
