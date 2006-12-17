@@ -207,7 +207,9 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 			# detsch, 12/11/2004: quick fix -> if not requireCurrent, assuming it is looking for recipes
 			if not requireCurrent :
 				v, r = Split_Version_Revision(v)
-				u = directory+'/'+p+'/'+v+'-'+r
+				u = directory+'/'+p+'/'+v
+				if r :
+					u += '-'+r
 				if not os.access(u+'/'+'Recipe', os.R_OK) :
 					continue
 			else :
@@ -374,7 +376,6 @@ def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, avai
 		for compileRecipeDir in compileRecipeDirs :
 			availables['recipe']['programs'] = getPackedLocalPackages(compileRecipeDir, availables['recipe']['programs'])
 			availables['recipe']['programs'] = getUnpackedLocalPackages(compileRecipeDir,  False, availables['recipe']['programs'])
-
 		if accessWeb :
 			i=0
 			for getRecipeStore in getRecipeStores :
