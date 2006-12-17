@@ -205,16 +205,15 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 
 		for v in versions:
 			# detsch, 12/11/2004: quick fix -> if not requireCurrent, assuming it is looking for recipes
-			if not requireCurrent and not os.access(directory+'/'+p+'/'+v+'/'+'Recipe', os.R_OK) :
-				continue
-
-			u = directory+'/'+p+'/'+v
-
 			if not requireCurrent :
 				v, r = Split_Version_Revision(v)
+				u = directory+'/'+p+'/'+v+'-'+r
+				if not os.access(u+'/'+'Recipe', os.R_OK) :
+					continue
 			else :
-				if os.access(directory+'/'+p+'/'+v+'/'+'Resources/Revision', os.R_OK) :
-					f = open(directory+'/'+p+'/'+v+'/'+'Resources/Revision')
+				u = directory+'/'+p+'/'+v
+				if os.access(u+'/'+'Resources/Revision', os.R_OK) :
+					f = open(u+'/'+'Resources/Revision')
 					r = f.read().strip()
 					f.close()
 				else :
