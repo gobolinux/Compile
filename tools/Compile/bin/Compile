@@ -476,11 +476,11 @@ then
    Log_Normal "Checking dependencies..."
    selecteddeps=`Temporary_File`
    CheckDependencies --types=recipe --mode=missing \
-     $noweb --quiet-progress  "$app" "$version" \
+     $noweb --quiet-progress  "$app" "$versionandrevision" \
      "recipe" "$recipedir" > $selecteddeps || Die "Aborted."
    for d_url in `awk '{ print $4 }' < $selecteddeps`
    do
-      Compile $batch --no-dependencies $d_url || {
+      Compile $compileoptions --no-dependencies $d_url || {
          ret=$?
          rm $selecteddeps
          exit $ret
