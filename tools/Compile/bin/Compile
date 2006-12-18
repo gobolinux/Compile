@@ -539,6 +539,10 @@ if [ "$versionnumber" = "CVS" -o "$versionnumber" = "cvs" ]
 then versionnumber=`date +%Y%m%d`"-CVS"
 fi
 
+if [ "$versionnumber" = "SVN" -o "$versionnumber" = "svn" ]
+then versionnumber=`date +%Y%m%d`"-SVN"
+fi
+
 target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
@@ -685,7 +689,7 @@ elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${appname}-svn"
+      dir="${appname}-${versionnumber}"
    fi
 fi
 
