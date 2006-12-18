@@ -228,6 +228,7 @@ function create_root() {
    mkdir -p $rootdir/System/Variable
    mkdir -p $rootdir/System/Variable/tmp
    mkdir -p $rootdir/System/Variable/log
+   mkdir -p $rootdir/System/Variable/lock
    mkdir -p $rootdir/System/Kernel
    mkdir -p $rootdir/System/Kernel/Boot
    mkdir -p $rootdir/System/Kernel/Objects
