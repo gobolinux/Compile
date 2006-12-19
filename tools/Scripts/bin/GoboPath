@@ -4,15 +4,13 @@
 
 #export goboPrefix=
 
-if [ "$ROOTLESS_GOBOLINUX" ]
-then
-   export goboUserSettings=${goboPrefix}/.Settings
-else
+if [ ! "$ROOTLESS_GOBOLINUX" ]
    if [ "$goboCrossCompiling" = "yes" ]
    then export goboPrefix="$cross_prefix_dir"
    fi
-   export goboUserSettings=$HOME/.Settings
 fi
+
+export goboUserSettings=$HOME/.Settings
 
 export goboUsers=${goboPrefix}/Users
 export goboMount=${goboPrefix}/Mount
