@@ -26,11 +26,9 @@ Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compi
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
 
-if Is_Entry "save-to"
-then compileArchivesDir=`Entry "save-to"`
-fi
+savedir=`Entry "save-to"`
 
-if Is_Writable "$compileArchivesDir" || [ "$compileDisableSudo" = "yes" ]
+if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
 fi
@@ -79,7 +77,7 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-Quiet pushd "$compileArchivesDir"
+Quiet pushd "$savedir"
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
