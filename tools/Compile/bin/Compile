@@ -843,8 +843,8 @@ else
 
       Log_Normal "Unpacking file ${files[i]}..."
       if [ "$uncompress" = "no" ]
-      then Verbose cp -v "${files[i]}" "${tempdir}" || Die "Could not copy '$f'."
-      else Verbose aunpack --extract-to="${tempdir}" -f "${files[i]}" || Die "Could not unpack '$f'."
+      then Verbose cp -v "${files[i]}" "${tempdir}" || Die "Could not copy '${files[i]}'."
+      else Verbose aunpack --extract-to="${tempdir}" -f "${files[i]}" || Die "Could not unpack '${files[i]}'."
       fi
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
