@@ -5,6 +5,7 @@
 #export goboPrefix=
 
 if [ ! "$ROOTLESS_GOBOLINUX" ]
+then
    if [ "$goboCrossCompiling" = "yes" ]
    then export goboPrefix="$cross_prefix_dir"
    fi
