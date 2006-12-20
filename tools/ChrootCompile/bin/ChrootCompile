@@ -140,6 +140,10 @@ base_dependencies=(
     "Compile"
 )
 
+cross_blacklist=(
+    "GCC"
+)
+
 export LANG=C
 export LC_ALL=C
 
@@ -414,6 +418,14 @@ function load_dependency() {
    $sudo MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $params
 }
 
+function is_blacklisted() {
+   for crossdep in "${cross_blacklist[@]}"
+   do
+      [ "$crossdep" = "$1" ] && return 0
+   done
+   return 1
+}
+
 hostdeps=`{
    echo "${base_dependencies[*]} " | tr " " "\n" 
    [ -e "$(Arg 1)/Resources/BuildDependencies" ] && cut -d" " -f1 "$(Arg 1)/Resources/BuildDependencies"
@@ -460,6 +472,8 @@ do
       [ -d $targetroot/$goboPrograms/$dep ] && continue
       if [ "$hostarch" = "$targetarch" ]
       then echo Installing \"$dep\"...
+      elif is_blacklisted $dep
+      then continue
       else echo Installing \"$dep\" for $targetarch...
       fi
       load_dependency "$dep" "$targetrepository" "$targetarch"
@@ -575,10 +589,17 @@ function fetch_included_recipes() {
    Die "Can't find recipe for $ipkg"
 }
 
+function recipe_has_url() {
+    grep -q "^url=\|^urls=\|^cvs=\|^svn=" "$1" && return 0
+    return 1
+}
+
 function fetch_archive_off_recipe() {
    (
-      FetchArchive --save-to "$root/Files/Compile/Archives" "$1/Recipe"
-      if [ -f "$1/$recipesubdir/Recipe" ] && grep -q "^url" "$1/$recipesubdir/Recipe"
+      if recipe_has_url "$1/Recipe"
+      then FetchArchive --save-to "$root/Files/Compile/Archives" "$1/Recipe"
+      fi
+      if [ -f "$1/$recipesubdir/Recipe" ] && recipe_has_url "$1/$recipesubdir/Recipe"
       then FetchArchive --save-to "$root/Files/Compile/Archives" "$1/$recipesubdir/Recipe"
       fi
       unset is_meta
