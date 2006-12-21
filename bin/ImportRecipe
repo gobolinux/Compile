@@ -88,8 +88,6 @@ then
 
    Log_Normal "Updating local subversion copy..."
    svn update "$trunk/$program"
-   revisionsdir="`Get_Local_Revisions`/$program"
-   [ -d "$revisionsdir" ] && svn update "$revisionsdir"
 
    latestexisting=$(GuessLatest $(ls "$trunk/$program"))
 
@@ -104,6 +102,7 @@ then
       Log_Terse "Latest version in trunk is already $version."
       Ask_Continue "Will display differences."
       diff -Naur --exclude=".svn" "$oldrecipedir" "$unpackrecipedir" | Color_Output diff
+      echo "ret=$?"
       Ask_Continue "Proceed and overwrite with given recipe?"
    elif [ $(GuessLatest $latestexisting $version) != $version ]
    then
