@@ -43,6 +43,9 @@ function publish_revision() {
    if ! [ -d "$revisions/$program" ]
    then
       svn mkdir "$revisions/$program"
+   else
+      Log_Normal "Updating local subversion copy..."
+      svn update "$revisions/$program"
    fi
    prefix="$version-r"
    if ls -d "$revisions/$program/$prefix"* &> /dev/null
