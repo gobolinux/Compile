@@ -73,7 +73,18 @@ fi
 
 ### Find a basis recipe in trunk ##############################################
 
+unset checkedout
 trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
+existingprogram=`ls "$trunk" | grep -i "^$program$"`
+if [ ! "$existingprogram" ]
+then
+   Log_Normal "Trying to checkout $program..."
+   Quiet pushd $trunk
+   svn checkout "$compileSubversion/trunk/$program"
+   Quiet popd
+   checkedout=yes
+fi
+
 existingprogram=`ls "$trunk" | grep -i "^$program$"`
 if [ "$existingprogram" ]
 then
@@ -86,8 +97,11 @@ then
       program="$existingprogram"
    fi
 
-   Log_Normal "Updating local subversion copy..."
-   svn update "$trunk/$program"
+   if [ ! "$checkedout" ]
+   then
+      Log_Normal "Updating local subversion copy..."
+      svn update "$trunk/$program"
+   fi
 
    latestexisting=$(GuessLatest $(ls "$trunk/$program"))
 
