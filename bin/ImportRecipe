@@ -85,6 +85,12 @@ then
       mv "$unpackdir/$program" "$unpackdir/$existingprogram"
       program="$existingprogram"
    fi
+
+   Log_Normal "Updating local subversion copy..."
+   svn update "$trunk/$program"
+   revisionsdir="`Get_Local_Revisions`/$program"
+   [ -d "$revisionsdir" ] && svn update "$revisionsdir"
+
    latestexisting=$(GuessLatest $(ls "$trunk/$program"))
 
    unpackrecipedir="$unpackdir/$program/$version"
