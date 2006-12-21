@@ -99,10 +99,15 @@ then
 
    if [ $latestexisting = $version ]
    then
+      diff -Naur --exclude=".svn" "$oldrecipedir" "$unpackrecipedir" >& /dev/null
+      if [ $? != 0 ]
+      then
+         Log_Terse "Version in trunk matches exactly with the given recipe"
+         exit 0
+      fi
       Log_Terse "Latest version in trunk is already $version."
       Ask_Continue "Will display differences."
       diff -Naur --exclude=".svn" "$oldrecipedir" "$unpackrecipedir" | Color_Output diff
-      echo "ret=$?"
       Ask_Continue "Proceed and overwrite with given recipe?"
    elif [ $(GuessLatest $latestexisting $version) != $version ]
    then
