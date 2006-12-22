@@ -1,0 +1,2 @@
+config PKG_E2FSPROGS
+    bool "Ext2 Filesystem Programs"
