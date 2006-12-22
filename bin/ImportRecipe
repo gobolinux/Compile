@@ -61,7 +61,6 @@ fi
 ### Unpack recipe #############################################################
 
 unpackdir=`Temporary_Dir` || Die "Could not create temporary directory."
-
 Verbose aunpack --extract-to="$unpackdir" "$recipetarball"
 
 if Is_Entry_Set "rename"
@@ -152,7 +151,7 @@ then
       svn add "$entry"
    done
 
-   if Ask "View differences in new version?"
+   if [ $latestexisting != $version ] && Ask "View differences in new version?"
    then Subversion_Diff "$newrecipedir"
    fi
 
