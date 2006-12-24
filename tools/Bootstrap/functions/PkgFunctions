@@ -37,7 +37,7 @@ function cvs_make_install() {
 	
     mkdir -p "$app_dir/$version_dir"
 
-    [ "$cross_compiling" ] && source "$goboSettings/Compile/Cross-$arch_conf.conf"
+    [ "$cross_compiling" ] && source "$goboSettings/Compile/Cross/Cross-$arch_conf.conf"
     
     pushd "$module" >& /dev/null
     make CC=$CC "$@" || exit 1
@@ -56,19 +56,41 @@ function cvs_make_install() {
     popd >& /dev/null
 }
 
+function BinUtils_hook() {
+    [ ! "$cross_compiling" ] && return
+    ( 
+        source "$goboSettings/Compile/Cross/Cross-$arch_conf.conf"
+        $STRIP --version | head -n1 | awk {'print $3'}
+    )
+}
+
 function DirectFB_hook() {
     [ ! "$cross_compiling" ] && return
     [ "$cross_kernel_arch" = "sh" ] && echo "CVS"
 }
 
+function FreeType_hook() {
+    # Xorg 7.1 depends on FreeType < 2.2
+    echo 2.1.10
+}
+
+function GCC_hook() {
+    [ ! "$cross_compiling" ] && return
+    ( 
+        source "$goboSettings/Compile/Cross/Cross-$arch_conf.conf"
+        $CC --version | head -n1 | awk {'print $3'}
+    )
+}
+
 function Glibc_hook() {
     [ ! "$cross_compiling" ] && return
     [ "$cross_kernel_arch" = "sh" ]  && echo 2.3.6
-    [ "$cross_kernel_arch" = "arm" ] && echo 2.4
+    [ "$cross_kernel_arch" = "arm" ] && echo 2.3.6
 }
 
 function GTK_hook() {
     [ ! "$cross_compiling" ] && return
+    grep -q "^PKG_CAIRO=y" $TOPDIR/.config && return
     # use a version which doesn't depend on Cairo
     echo "2.6.10"
 }
