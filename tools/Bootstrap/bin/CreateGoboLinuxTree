@@ -3,7 +3,7 @@
 # use the standard $goboPrefixes
 unset goboCrossCompiling
 
-source GoboPath
+source ScriptFunctions
 
 #
 # Prepares the GoboLinux tree for a fresh installation from scratch
@@ -61,9 +61,9 @@ function create_tree() {
     ln -s "$goboShared" "$1"/usr/share
     ln -s "$goboSettings" "$1"/usr/etc
 
-    pushd "$1"/"$goboLibraries" >& /dev/null
+    Quiet pushd "$1"/"$goboLibraries"
     ln -s . .libs
-    popd >& /dev/null
+    Quiet popd
 
     #
     # Fix permissions
@@ -75,7 +75,7 @@ function create_tree() {
     #
     # Creates the symlink to the root fs (eg: /System/SH4 -> /)
     #
-    pushd "$1" >& /dev/null
+    Quiet pushd "$1"
 
     # count how many levels we have in $prefix (/System/SH4 == 2)
     num_levels=`echo "$1" | sed 's/\//\n/g' | grep -v ^$ | wc -l`
@@ -89,7 +89,7 @@ function create_tree() {
     # make a symlink ($PWD/System/SH4 -> ..)
     ln -s .. `echo "$1" | cut -d"/" -f2-`
     
-    popd >& /dev/null
+    Quiet popd
 }
 
 [ -z "$1" ] && target="." || target="$1"

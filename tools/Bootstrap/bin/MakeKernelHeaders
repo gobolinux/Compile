@@ -1,6 +1,7 @@
 #!/bin/sh
 
 TOP_DIR=..
+source ScriptFunctions
 
 version="$1"
 kernel_arch="$2"
@@ -14,33 +15,33 @@ rm  -f "$TOP_DIR/downloads/headers"
 
 echo "Downloading the LFS headers script..."
 
-pushd "$TOP_DIR/downloads" >& /dev/null
+Quiet pushd "$TOP_DIR/downloads"
 wget --quiet http://ftp.jg555.com/headers/headers
 GrepReplace "\--quiet" "" headers && rm -f headers~
 chmod +x headers
 ./headers "$version"
-popd >& /dev/null
+Quiet popd
 
 echo "Configuring headers for the $kernel_arch platform..."
-pushd "$TOP_DIR/downloads/linux-headers-$version/include" >& /dev/null
+Quiet pushd "$TOP_DIR/downloads/linux-headers-$version/include"
 for i in asm-*
 do
     [ "$i" = "asm-$kernel_arch" -o "$i" = "asm-generic" ] && continue
     rm -Rf "$i"
 done
-popd >& /dev/null
+Quiet popd
 
 echo "Installing headers on $dest_dir..."
-pushd "$TOP_DIR/downloads" >& /dev/null
+Quiet pushd "$TOP_DIR/downloads"
 mkdir -p $dest_dir
 mv linux-headers-$version/* $dest_dir
-popd >& /dev/null
+Quiet popd
 
 mkdir -p $dest_dir/include
-pushd $dest_dir/include >& /dev/null
+Quiet pushd $dest_dir/include
 ln -nfs $version $dest_dir/../Current
 ln -nfs "asm-$kernel_arch" asm
-popd >& /dev/null
+Quiet popd
 
 # for some reason, 'headers' is removing compiler.h from the package.
 # let's reintroduce it.

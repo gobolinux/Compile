@@ -39,7 +39,7 @@ echo
 dirname="$prefix/$goboPrograms/TinyScripts"
 if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
 then
-    pushd "$TOP_DIR/downloads" >& /dev/null
+    Quiet pushd "$TOP_DIR/downloads"
     Log_Normal "Installing the Tiny Scripts package..."
     rm -Rf tools/TinyScripts
     cvs_checkout TinyScripts tools/TinyScripts
@@ -48,7 +48,7 @@ then
     cvs_make_install TinyScripts "$dirname" "$version"
     UpdateSettings TinyScripts "$version"
     SymlinkProgram -c overwrite TinyScripts
-    popd >& /dev/null
+    Quiet popd
 elif [ -d "$dirname" ]
 then
     SymlinkProgram -c overwrite TinyScripts

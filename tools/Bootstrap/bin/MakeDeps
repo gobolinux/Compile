@@ -36,7 +36,7 @@ function gen_pkg_names() {
 #
 dependency_list=`Temporary_File`
 
-pushd "$TOPDIR"/packages >& /dev/null
+Quiet pushd "$TOPDIR"/packages
 dot_config="$1"
 for entry in `cat "$dot_config" | grep ^PKG | cut -d"=" -f1`
 do
@@ -66,7 +66,7 @@ do
     Log_Normal "Parsing dependency file $dependencies"
     gen_pkg_names "$dependencies" "$dot_config" >> $dependency_list
 done
-popd >& /dev/null
+Quiet popd
 
 #
 # Replaces '# PKG_NAME is not set' by 'PKG_NAME=y' on .config
