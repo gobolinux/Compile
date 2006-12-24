@@ -18,16 +18,13 @@ and to the Cross-ARM.conf and Cross-SH4.conf examples for
 further explanations about cross compiling scripts and
 their mandatory entries.
 
-Bootstrap usage is then pretty simple. Just issue
-'make menuconfig' to select which packages you want to have
-on your target system, among other questions such as your 
-super-user's name and selecting your target's architecture.
-Finished with that, (optionally) run 'make deps'. This command
-will check dependencies for each chosen program, and will add
-them into the list of packages that Bootstrap needs to compile,
-too. Finally, 'make' will perform the generation of the GoboLinux
-tree inside the chosen prefix and will spawn Compile for
-each of these packages. 
+Bootstrap usage is then pretty simple. Just type ./Bootstrap
+to select which packages you want to have on your target system,
+among other questions such as your super-user's name and selecting
+your target's architecture. Finished with that, the script will
+automatically call 'make', which will generate the GoboLinux
+tree inside the chosen prefix and will spawn Compile for each 
+package you selected previously.
 
 Full documentation to this tool can be found at [2].
 
