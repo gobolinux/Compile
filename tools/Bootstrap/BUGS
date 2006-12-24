@@ -31,3 +31,45 @@
 # Interesting packages that should be considered for the embedded:
 Tremor (fixed-point OGG)
 http://audacious-media-player.org/Downloads (based on libmad)
+
+# Broken dependencies:
+- Xorg 7.1
+    GCC 4.1.1 [!cross]
+- LibUSB 0.1.12
+    GCC 4.1.1 [!cross]
+- GPM 1.20.1
+    Ncurses 5.4 [!cross]
+
+# Packages with missing descriptions (DescribeProgram):
+ALSA-Lib
+ALSA-Utils
+BusyBox
+Cairo
+Dbus
+FFmpeg-Motion
+GQmpeg
+Gnokii
+GoboHide
+LibGCC
+LibOIL
+Linux-Fusion
+Linux-Headers
+Listener
+MTD-Utils
+Matchbox
+Minimo
+Module-Init-Tools
+Motion
+Mowitz
+Mrxvt
+NSPR
+Nano-X
+OpenVPN
+Pentagram
+ReiserFSProgs
+Shared-Mime-INFO
+Siag
+Swfdec
+TiMidity++
+Tremor
+UClibc
