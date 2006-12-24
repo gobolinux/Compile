@@ -39,9 +39,9 @@ function make_headers() {
     latest_kernel_version=`cat /tmp/finger_banner | head -n1 | cut -d: -f2 | awk {'print $1'}`
     rm -f /tmp/finger_banner
 
-    pushd "$TOP_DIR/bin" >& /dev/null
+    Quiet pushd "$TOP_DIR/bin"
     ./MakeKernelHeaders "$latest_kernel_version" $kernelArch $dirname
-    popd >& /dev/null
+    Quiet popd
 
     export goboCrossCompiling=yes
     SymlinkProgram $symlink_options Linux-Headers
@@ -68,14 +68,14 @@ function download_headers() {
     kernel_version=$KERNEL_HEADERS_VERSION
     download_dir="`readlink -f $TOP_DIR/chroot/Clean/$recipe_arch`"
     filename=Linux-Headers--$kernel_version--$uname_m.tar.bz2
-    pushd $download_dir >& /dev/null
+    Quiet pushd $download_dir
     wget -nv -c $repository/$filename || exit 1
-    popd >& /dev/null
+    Quiet popd
     
     # uncompress it
-    pushd "$prefix/$goboPrograms" >& /dev/null
+    Quiet pushd "$prefix/$goboPrograms"
     tar jxvf $download_dir/Linux-Headers--$kernel_version--$uname_m.tar.bz2
-    popd >& /dev/null
+    Quiet popd
      
     # symlink it
     export goboCrossCompiling=yes
@@ -126,7 +126,7 @@ function chroot_compile() {
     Log_Normal "Running 'ChrootCompile $common_options $local_recipe'"
     echo
     
-    pushd "$TOP_DIR/chroot" >& /dev/null
+    Quiet pushd "$TOP_DIR/chroot"
     
     if [ "$verbose_build" = "1" ]
     then ChrootCompile $common_options --verbose $local_recipe || exit 1
@@ -147,7 +147,7 @@ function chroot_compile() {
     SymlinkProgram $pkg_name $pkg_version
     unset goboCrossCompiling && Parse_Conf Directories.conf
     
-    popd >& /dev/null
+    Quiet popd
 }
 
 function cleanup() {
@@ -156,7 +156,7 @@ function cleanup() {
     exit 0
 }
 
-trap cleanup TERM INT STOP HUP
+trap cleanup TERM INT STOP HUP EXIT
 
 # the verbose flag and the keywords which are going to be filtered from stdout
 [ "$CC" = "" ] && CC=gcc
@@ -195,7 +195,7 @@ export cross_compiling=yes
 # tells SandboxInstall to ignore the usage of UnionFS
 export NO_UNIONFS=yes
 
-pushd $subdir >& /dev/null
+Quiet pushd $subdir
 skip_all=0
 
 for entry in `cat $dot_config | grep ^PKG_`
@@ -231,15 +231,14 @@ do
                   skip_all=1
                   continue
                   ;;
-            *)    Log_Error "Invalid option"
-                  exit 1
+            *)    Die "Invalid option"
                   ;;
         esac
     fi
  
     recipe=`FindPackage -t recipe $pkg_name $pkg_version`
     echo $recipe | grep -q "^http" && local_recipe=`GetRecipe $recipe` || local_recipe=$recipe
-    [ -z "$local_recipe" ] && Log_Error "Could not find recipe for $pkg_name" && exit 1
+    [ -z "$local_recipe" ] && Die "Could not find a recipe for $pkg_name $pkg_version"
 
     # Create the Linux-Headers package, as it's needed by Glibc
     if [ "$pkg_name" = "Glibc" ]
@@ -248,4 +247,4 @@ do
     chroot_compile $local_recipe
 done
 
-popd >& /dev/null
+Quiet popd
