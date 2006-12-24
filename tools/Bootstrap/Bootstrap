@@ -1,7 +1,18 @@
 #!/bin/sh
 
 #
-# We need to run this script with make aliases off.
+# Check if descriptions were already fetched
+#
+packages=`ls packages/*/Config.in | wc -l`
+descriptions=`grep help--- packages/*/Config.in | wc -l`
+num=$(( packages / descriptions ))
+if [ $num -gt 1 ]
+then
+    make descriptions
+fi
+
+#
+# We need to run this script with the 'make' alias off.
 #
 \make menuconfig
 \make

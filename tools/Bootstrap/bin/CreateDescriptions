@@ -1,0 +1,58 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import File
+
+space="    "
+cd packages
+for i in *
+do
+    [ "$i" = "CVS" ] && continue
+
+	description=`DescribeProgram --mode=ascii $i`
+	if [ -z "$description" ] 
+    then
+        Log_Terse "Package $i has no description, skipping it"
+        continue
+    fi
+
+    Log_Normal "Processing package $i..."
+    tmpfile=`Temporary_File`
+
+    # process everything in a subshell
+    (
+    cat $i/Config.in | while read line
+    do
+        echo "$line" | grep -q "help---" && break
+        if echo "$line" | grep -q "^config PKG_" 
+        then echo "$line"
+        else echo "${space}${line}"
+        fi
+    done
+
+    unset found
+    echo -e "${space}---help---"
+    echo "$description" | while read line
+    do
+        [ ! "$found" ] && ! echo "$line" | grep -q "^\[Description\]" && continue
+        if [ ! "$found" ] 
+        then
+            line=`echo "$line" | cut -b15- | sed "s,^\( \)*,,g"`
+            found=yes
+        fi
+
+        if echo "$line" | grep -q "^\[Homepage\]"
+        then
+            url=`echo "$line" | cut -b11- | tr -d " " | sed 's,/$,,g'`
+            [ -z "$url" ] && continue
+            echo -e "\n${space}  See "$url" for more information."
+        elif echo "$line" | grep -q "^\[\(.*\)\]"
+        then
+            continue
+        else
+            echo -e "${space}  $line"
+        fi
+    done
+    ) | fmt -sw 70 > $tmpfile
+    [ -f $tmpfile ] && mv $tmpfile $i/Config.in
+done

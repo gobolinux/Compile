@@ -56,24 +56,26 @@ TARGETS_SOURCE:=$(patsubst %,%-source,$(TARGETS))
 
 help:
 	@echo 'Automatic dependency selection:'
-	@echo '  dep         - Selects all packages marked as a dependency for the chosen ones'
+	@echo '  dep          - Selects all packages marked as a dependency for the chosen ones'
 	@echo ''
 	@echo 'Cleaning targets:'
-	@echo '  clean       - Remove most generated files but keep the config'
+	@echo '  clean        - Remove most generated files but keep the config'
 	@echo ''
 	@echo 'Configuration targets:'
-	@echo '  menuconfig  - Update current config utilising a menu based program'
+	@echo '  menuconfig   - Update current config utilising a menu based program'
 	@echo ''
 	@echo 'Creating virtual disks:'
-	@echo '  ramdisk     - Creates an image from the filesystem for usage as a ramdisk'
+	@echo '  ramdisk      - Creates an image from the filesystem for usage as a ramdisk'
 	@echo ''
 	@echo ''
 	@echo 'Other generic targets:'
-	@echo '  all         - Build all targets marked with [*]'
+	@echo '  all          - Build all targets marked with [*]'
 	@echo ''
-	@echo '  shrink      - Performs a cleanup on the generated tree'
+	@echo '  shrink       - Performs a cleanup on the generated tree'
 	@echo ''
-	@echo '  make V=0|1  - Quiet or verbose build (default)'
+	@echo '  descriptions - Update package descriptions'
+	@echo ''
+	@echo '  make V=0|1   - Quiet or verbose build (default)'
 	@echo ''
 	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
 	@echo 'For further info see the ./README file'
@@ -91,6 +93,9 @@ dep: deps
 
 shrink:
 	@cd bin; ./Shrink
+
+descriptions:
+	@bin/CreateDescriptions
 
 ramdisk:
 	@bin/CreateRamdisk $(DIR) $(SIZE)
