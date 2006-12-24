@@ -1,5 +1,3 @@
 config PKG_DIRECTFB
     bool "DirectFB"
-	default n
-	---help---
-	  Say Y to include the DirectFB library.
+    default n

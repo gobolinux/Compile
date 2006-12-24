@@ -1,6 +1,3 @@
 config PKG_NCURSES
     bool "Ncurses"
     default y
-    ---help---
-      This library is needed by many console-based applications. Say Y, unless
-	  you're creating an embedded system with no legacy app requirements.

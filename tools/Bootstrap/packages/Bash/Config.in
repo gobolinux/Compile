@@ -1,6 +1,3 @@
 config PKG_BASH
     bool "Bash"
-	default y
-	---help---
-	  This package is needed by many shell scripts based on Bash extensions.
-	  The GoboLinux Compile tool and Scripts package rely on its existence.
+    default y

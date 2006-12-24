@@ -1,6 +1,2 @@
 config PKG_UCLIBC
     bool "uClibc"
-    ---help---
-      This selects the uClibc library, a replacement to Glibc, the GNU C library.
-      If you want to priorize space against performance or you're generating the
-      distribution to be used on an embedded system, say Y here.

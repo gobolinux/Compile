@@ -1,7 +1,3 @@
 config PKG_BUSYBOX
     bool "BusyBox"
     default y
-    ---help---
-      This selects a lot of useful tools that you're going to need if you're
-      creating a small system. Unless you are creating a system for the 
-      desktop, say Y here.

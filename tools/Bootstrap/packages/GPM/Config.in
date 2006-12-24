@@ -1,4 +1,2 @@
 config PKG_GPM
     bool "GPM"
-    ---help---
-      Mouse driver for console.

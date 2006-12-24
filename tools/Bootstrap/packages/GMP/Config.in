@@ -1,14 +1,4 @@
 config PKG_GMP
     bool "GMP arbitrary precision arithmetic library"
-	depends on CONFIG_TARGET_EMBEDDED=n
-	default n
-	---help---
-	  GMP is a free library for arbitrary precision arithmetic, 
-	  operating on signed integers, rational numbers, and floating
-	  point numbers. There is no practical limit to the precision
-	  except the ones implied by the available memory in the machine
-	  GMP runs on. GMP has a rich set of functions, and the functions 
-	  have a regular interface.
-	  
-	  Say Y if you want to include that, or if you want to compile
-	  the GCC suite of compilers.
+    depends on CONFIG_TARGET_EMBEDDED=n
+    default n

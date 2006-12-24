@@ -1,2 +1,3 @@
 config PKG_LIBVORBIS
     bool "LibVorbis"
+    default n if TARGET_EMBEDDED

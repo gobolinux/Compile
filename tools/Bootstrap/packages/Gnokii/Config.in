@@ -1,2 +1,2 @@
 config PKG_GNOKII
-	bool "Gnokii"
+    bool "Gnokii"
