@@ -72,6 +72,7 @@ function publish_revision() {
    
    Log_Normal "Publishing revision: $program $version-r$revision"
 
+   unset publishrecipe
    recipetarball="$goboTemp/$program--$version--recipe.tar.bz2"
    (
       cd "$trunk"
@@ -86,6 +87,7 @@ function publish_revision() {
       if ! Ask "Proceed and publish it anyway?"
       then return
       fi
+      publishrecipe=yes
    elif [ "$recipestatus" -eq 2 ]
    then
       Log_Error "RecipeLint reported errors in $program $version from trunk. Not publishing it."
@@ -96,7 +98,7 @@ function publish_revision() {
    
    Log_Normal "Listing $revisions/$program/$version-r$revision"
    find $revisions/$program/$version-r$revision | grep -v '\.svn'
-   if ! Ask "Ok to commit revision?"
+   if [ ! "$publishrecipe" ] && ! Ask "Ok to commit revision?"
    then 
       rm -rf $revisions/$program/$version-r$revision
       return
