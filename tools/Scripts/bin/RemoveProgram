@@ -71,11 +71,13 @@ rm -- $filesdir
 
 Log_Normal "Rebuilding environment cache..."
 cache="$goboEnvironment"/Cache
-rm -- "$cache"
-for linkedfile in "$goboEnvironment"/*
+echo -e "source GoboPath\n" > "$cache"
+for linkedfile in "$goboEnvironment"/*--*
 do
    [ -f "$linkedfile" ] && cat "$linkedfile" >> "$cache"
    echo >> "$cache"
 done
+unsetvars=`grep export $goboExecutables/GoboPath | awk {'print $1 " " $2'} | grep "^export" | sed -e 's,=.*,,g' -e 's,export,unset,g'`
+echo -e "$unsetvars\n" >> "$cache"
 
 Log_Normal "${program} ${version} removed."
