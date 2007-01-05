@@ -712,18 +712,20 @@ function in_target() {
 }
 
 # FIXME: Should be based on Directories.conf
+date=`date +%Y%m%d`
+finalversion=`echo $version | sed -e "s,^cvs-r.*,$date-CVS,1" -e "s,^svn-r.*,$date-SVN,1"`
 if [ "$chrootcompileMode" = "gobo" ]
 then
-   package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $version`
+   package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $finalversion`
    [ $? -ne 0 ] && Die "Error on CreatePackage"
    mkdir -p $putclean
-   cp -v $root/$name--$version* $putclean
+   cp -v $root/$name--$finalversion* $putclean
 else
    fullroot=`readlink -f $root`
    cd $root/View
    mkdir -p $fullroot/../$putclean/
-   readlink -f $fullroot/../$putclean/$name--$version--$targetarch.tar.bz2
-   tar jcvpf $fullroot/../$putclean/$name--$version--$targetarch.tar.bz2 $name/$version
+   readlink -f $fullroot/../$putclean/$name--$finalversion--$targetarch.tar.bz2
+   tar jcvpf $fullroot/../$putclean/$name--$finalversion--$targetarch.tar.bz2 $name/$finalversion
 fi
 
 # Remove the left over Area
