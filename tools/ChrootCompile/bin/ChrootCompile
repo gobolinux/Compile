@@ -53,9 +53,9 @@ unset crosskerneldir
 unset crosstoolchaindir
 if Is_Entry "cross-compile"
 then
-    entry=`Entry "cross-compile"`
-    crossopts="--cross-compile $entry"
-    crossconf="/System/Settings/Compile/Cross/Cross-$entry.conf"
+    arch_conf=`Entry "cross-compile"`
+    crossopts="--cross-compile $arch_conf"
+    crossconf="/System/Settings/Compile/Cross/Cross-$arch_conf.conf"
     [ ! -f $crossconf ] && Die "$crossconf: file not found."
 
     eval `cat $crossconf | grep "cross_prefix_dir=" | sed 's/"//g'`
