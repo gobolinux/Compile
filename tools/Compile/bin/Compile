@@ -736,33 +736,16 @@ fi
 ##################################################
 # Get & Unpack sources
 ##################################################
+savedir="--save-to $compileSourcesDir"
 if [ "$cvs" ]
 then
-   if ! Boolean "no-web"
-   then
-      cd "$compileSourcesDir"
-      [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
-      echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
-
-      login_method=`echo ${cvs} | cut -b-5`
-      [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
-      [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
-      cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
-   else
-      # Sources are already fetched, do not patch again
-      if [ -d "$compileSourcesDir/$cvs_module" ]
-      then skippatching=yes
-      fi
-   fi
+   # If sources were already fetched, do not patch again
+   [ -d "$compileSourcesDir/$cvs_module" ] && skippatching=yes
+   ! Boolean "no-web" && in_host FetchArchive $verbose $batch $savedir "$recipe"
 elif [ "$svn" ]
 then
-   if ! Boolean "no-web"
-   then
-      cd "$compileSourcesDir"
-      echo "Fetching ${appname} from $svn"
-      svn co $svn "${dir}"
-      echo "Well done!"
-   fi
+   [ "$dir" -a -d "$compileSourcesDir/$dir" ] && skippatching=yes
+   ! Boolean "no-web" && in_host FetchArchive $verbose $batch $savedir "$recipe"
 else
    Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
 
