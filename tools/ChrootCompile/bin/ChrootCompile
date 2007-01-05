@@ -596,11 +596,22 @@ function recipe_has_url() {
 
 function fetch_archive_off_recipe() {
    (
+      rawversion=`echo $version | sed -e 's,^cvs-r.*,cvs,1' -e 's,^svn-r.*,svn,1'`
+      if [ "$rawversion" = "cvs" -o "$rawversion" = "svn" ]
+      then
+         if Is_Entry "cross-compile" 
+         then savedir="$root/Files/Compile/Sources-$arch_conf"
+         else savedir="$root/Files/Compile/Sources"
+         fi
+         [ "$localrepository" ] && savedir=`echo $savedir | sed "s,^$root,,g"`
+      else
+         savedir="$root/Files/Compile/Archives"
+      fi
       if recipe_has_url "$1/Recipe"
-      then FetchArchive --save-to "$root/Files/Compile/Archives" "$1/Recipe"
+      then FetchArchive --save-to "$savedir" "$1/Recipe"
       fi
       if [ -f "$1/$recipesubdir/Recipe" ] && recipe_has_url "$1/$recipesubdir/Recipe"
-      then FetchArchive --save-to "$root/Files/Compile/Archives" "$1/$recipesubdir/Recipe"
+      then FetchArchive --save-to "$savedir" "$1/$recipesubdir/Recipe"
       fi
       unset is_meta
       unset include
