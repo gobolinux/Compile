@@ -61,8 +61,10 @@ then
     touch $resolv_conf_file
 fi
 
-# NetworkSettings will exist by default, so we always overwrite its contents.
-network_task_file=$prefix/$goboSettings/NetworkSettings
+#
+# Overwrite NetworkSettings according to the configuration selected
+# by the user in the menuconfig interface.
+#
 if [ "$NETWORK_STATIC" = "y" ]
 then
     NetworkInterfacesOnBoot="lo eth0"
@@ -76,7 +78,8 @@ else # NETWORK_DISABLED
     GatewayInterface=
 fi
     
-cat << EOF > $network_task_file
+network_task_file=`readlink -f $prefix/$goboSettings/NetworkSettings`
+[ -f "$network_task_file" ] && cat << EOF > $network_task_file
 NetworkInterfacesOnBoot="$NetworkInterfacesOnBoot"
 
 lo_IP=127.0.0.1
