@@ -1,4 +1,4 @@
-PREFIX ?= /Programs/TinyScripts/1.0
+PREFIX ?= /Programs/TinyScripts/Current
 
 all:
 	make -C src
