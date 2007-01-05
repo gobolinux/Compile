@@ -12,7 +12,7 @@ all: SymlinkProgram.o LinkOrExpandAll.o List.o RemoveBroken.o
 	$(CC) $(LDFLAGS) List.o -o List
 	$(CC) $(LDFLAGS) RemoveBroken.o -o RemoveBroken
 	mv $(TARGETS) ../bin && chmod +x ../bin/*
-	ln -s List ../bin/l
+	ln -sf List ../bin/l
 
 clean:
 	rm -Rf *.o *~ tools/ LinkOrExpandAll.c  List.c  List.h
@@ -23,7 +23,7 @@ LinkOrExpandAll.o: LinkOrExpandAll.c
 	$(CC) $(CFLAGS) -c LinkOrExpandAll.c -std=c99
 
 List.c LinkOrExpandAll.c:
-	@cvs -z3 -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co $(CVS_FILES)
+	@cvs -d:pserver:anonymous@cvs.savannah.nongnu.org:/sources/goboscripts co $(CVS_FILES)
 	@mv $(CVS_DIR)/*.c $(CVS_DIR)/*.h .
 	@rm -Rf tools/
 
