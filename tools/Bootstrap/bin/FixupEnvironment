@@ -34,27 +34,6 @@ export goboCrossCompiling=yes
 echo
 
 #
-# Install the Tiny Scripts package
-#
-dirname="$prefix/$goboPrograms/TinyScripts"
-if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
-then
-    Quiet pushd "$TOP_DIR/downloads"
-    Log_Normal "Installing the Tiny Scripts package..."
-    rm -Rf tools/TinyScripts
-    cvs_checkout TinyScripts tools/TinyScripts
-
-    version="`date +%Y%m%d`-CVS"
-    cvs_make_install TinyScripts "$dirname" "$version"
-    UpdateSettings TinyScripts "$version"
-    SymlinkProgram -c overwrite TinyScripts
-    Quiet popd
-elif [ -d "$dirname" ]
-then
-    SymlinkProgram -c overwrite TinyScripts
-fi
-
-#
 # Create some system files
 #
 CreateFiles $prefix $SUPER_USER_NAME
