@@ -117,6 +117,7 @@ function download_meta() {
 
 function chroot_compile() {
     local_recipe="$1"
+    symlink_options="$2"
 
     # check if needs to download meta recipes
     download_meta $local_recipe
@@ -145,7 +146,7 @@ function chroot_compile() {
     fi
     
     UpdateSettings --quick $pkg_name $pkg_version
-    SymlinkProgram $pkg_name $pkg_version
+    SymlinkProgram $symlink_options $pkg_name $pkg_version
     unset goboCrossCompiling && Parse_Conf Directories.conf
     
     Quiet popd
@@ -254,7 +255,7 @@ then
     pkg_name=TinyScripts
     local_recipe=`GetRecipe $pkg_name`
     [ -z "$local_recipe" ] && Die "Could not find a recipe for $pkg_name"
-    chroot_compile $local_recipe
+    chroot_compile $local_recipe "--conflict overwrite"
 fi
 
 Quiet popd
