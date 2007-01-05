@@ -60,8 +60,25 @@ recipe="$(Arg 1)"
 # Get sources
 ##################################################
 
-if ! [ -n "$url${urls[*]}" ]
-then Die "Missing URL in recipe '$recipe'."
+if [ "$cvs" ]
+then
+   cd "$savedir"
+   [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
+   echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
+
+   login_method=`echo ${cvs} | cut -b-5`
+   [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
+   [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
+   cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
+   exit $?
+elif [ "$svn" ]
+then
+   cd "$savedir"
+   svn co $svn "${dir}"
+   exit $?
+elif ! [ -n "$url${urls[*]}" ]
+then
+   Die "Missing URL in recipe '$recipe'."
 fi
 
 for var in url mirror_url file file_size file_md5
