@@ -140,7 +140,9 @@ if Starts_With "http:" $url
 then
    Quiet pushd "$compileArchivesDir"
    Log_Normal "Checking URL '$url'..."
-   if ! wget -t 5 --spider "$url" &> "$verboseStream"
+   quietflag="--quiet"
+   Boolean "verbose" && unset quietflag
+   if ! wget -t 5 $quietflag --spider "$url"
    then
       Log_Terse "URL may be invalid. Please check."
    fi
