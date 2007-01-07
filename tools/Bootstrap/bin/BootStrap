@@ -22,9 +22,14 @@ case "$1" in
         [ ! -e $prefix/$goboDevices/kmem ] && mount -o bind $goboDevices $prefix/$goboDevices
         ;;
     [sS]top)
-        umount $prefix/$goboStatus 2> /dev/null  || Log_Error "Failed to unmount binded proc filesystem"
-        umount $prefix/$goboDevices 2> /dev/null || Log_Error "Failed to unmount binded dev filesystem"
-        [ "$NATIVE_COMPILING" != "y" ] && rm -Rf $TOPDIR/chroot/Area-*
+        unset failed
+        mount | grep "$prefix/$goboStatus"  && { umount $prefix/$goboStatus  || failed=yes; }
+        mount | grep "$prefix/$goboDevices" && { umount $prefix/$goboDevices || failed=yes; }
+        if [ "$NATIVE_COMPILING" != "y" ]
+        then
+            [ "$failed" ] && Die "Skipping removal of $TOPDIR/chroot/Area-*"
+            rm -Rf $TOPDIR/chroot/Area-*
+        fi
         ;;
 esac
 
