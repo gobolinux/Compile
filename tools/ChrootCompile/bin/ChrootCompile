@@ -687,7 +687,6 @@ function check_dependencies() {
 # check_dependencies
 
 echo "ChrootCompile: Will run Compile..."
-export NO_UNIONFS=1
 unset failed
 in_chroot Compile --batch --no-web --no-sign $crossopts $name $version || failed=yes
 if [ "$failed" ]
