@@ -47,7 +47,7 @@ unset unionsandbox
 
 if ! Boolean "no-sandbox"
 then
-   if [ "$NO_UNIONFS" -o `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] 
+   if [ "$NO_UNIONFS" -o `cat /proc/filesystems | grep unionfs |wc -l` = "0" ] 
    then
       Log_Terse "unionfs is unavailable.  Fallback to FiboSandbox!"
    else

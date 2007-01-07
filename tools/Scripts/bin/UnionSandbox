@@ -41,7 +41,7 @@ Parse_Conf Directories.conf
 Verify_Superuser
 
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
-[ `cat $goboStatus/filesystems | grep unionfs |wc -l` = "0" ] && Die "unionfs is unavailabe on this system."
+[ `cat /proc/filesystems | grep unionfs |wc -l` = "0" ] && Die "unionfs is unavailabe on this system."
 
 [ "${unionSandbox[0]}" = "" ] && Die "Please set unionSandbox in Settings/Scripts/Directories.conf"
 [ "$unionSandboxMP" = "" ] && Die "Please set unionSandboxMP in Settings/Scripts/Directories.conf"
