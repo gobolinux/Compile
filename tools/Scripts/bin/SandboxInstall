@@ -156,6 +156,7 @@ then
    Quiet pushd $sandbox_rw
    rm -f Programs/Glibc/Settings/ld.so.cache
    rm -rf System/Variable/tmp/{*,.*} &> /dev/null
+   rm -f System/Kernel/Devices/null
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
    Quiet popd
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
