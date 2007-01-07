@@ -128,7 +128,6 @@ then
    # we have a bind-mount from the host's /Files/Compile
    unionSandbox=( ${unionSandbox[@]} /Files/Compile )
 fi
-echo unionSandbox=${unionSandbox[@]}
 For_Each unionSandbox 'mount_union $each'
 
 # Bind mount writable areas
