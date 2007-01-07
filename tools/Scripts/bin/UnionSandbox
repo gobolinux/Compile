@@ -67,14 +67,14 @@ function cleanup() {
 #    Log_Verbose "Undoing the sandbox..."
 
     # Unmount everythin under $sandbox_mp
-    cat $goboStatus/mounts |tac |cut -d' ' -f2 |grep $sandbox_mp | \
+    cat /proc/mounts |tac |cut -d' ' -f2 | grep $sandbox_mp | sort -r | \
     while read mp
     do
         umount $mp
     done
 
     # Clean up unionfs mountpoints
-    For_Each unionSandbox 'rmdir ${sandbox_mp}${each}
+    For_Each unionSandbox 'Quiet rmdir ${sandbox_mp}${each}
         Quiet rmdir ${sandbox_rw}${each} '
 
     # Clean up legacy links
@@ -118,6 +118,17 @@ trap "sandbox_die 'Interrupted...'" SIGHUP SIGINT SIGTERM
 Log_Verbose "Preparing the sandbox..."
 
 # Mount unionfs
+
+# unionfs doesn't follow bind-mounts, so we must mount everyone sitted on the top of /Programs
+bindprograms="`cat /proc/mounts | grep "^/dev/root /Programs" | grep -v union_mp.tmp | awk {'print $2'} | sed 's,.*Area-.*\(/\)\(.*/\)\(.*/\)\(.*\),/\2\3\4,g'`"
+unionSandbox=( ${unionSandbox[@]} $bindprograms )
+
+if `cat /proc/mounts | grep -q "^/dev/root /Files/Compile"`
+then
+   # we have a bind-mount from the host's /Files/Compile
+   unionSandbox=( ${unionSandbox[@]} /Files/Compile )
+fi
+echo unionSandbox=${unionSandbox[@]}
 For_Each unionSandbox 'mount_union $each'
 
 # Bind mount writable areas
