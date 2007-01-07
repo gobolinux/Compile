@@ -194,9 +194,6 @@ export recipe_arch=`get_recipe_arch`
 export uname_m="$cross_uname_m"
 export cross_compiling=yes
 
-# tells SandboxInstall to ignore the usage of UnionFS
-export NO_UNIONFS=yes
-
 Quiet pushd $subdir
 skip_all=0
 
