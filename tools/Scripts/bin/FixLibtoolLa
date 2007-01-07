@@ -29,12 +29,12 @@ do
    do old="$old~"
    done
    cp "${current}" "$old"
-   cat "$old" | sed '
+   cat "$old" | sed "
 
-s%/Programs/[^ /]*/*[^ /]*/*lib/*%/System/Links/Libraries/%g;
-s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%/System/Links/Libraries/\1%g;
+s%/Programs/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
+s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
 
-' > "${current}"
+" > "${current}"
 
    Boolean "backup" || rm -- "$old"
 
