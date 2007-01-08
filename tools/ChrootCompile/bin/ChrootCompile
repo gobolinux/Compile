@@ -691,9 +691,10 @@ unset failed
 in_chroot Compile --batch --no-web --no-sign $crossopts $name $version || failed=yes
 if [ "$failed" ]
 then
-    echo "Compilation failed, invoking bash for debugging purposes."
-    in_chroot /bin/bash
-    Die "Finished with errors."
+   echo -en "\007"    
+   echo "Compilation failed, invoking bash for debugging purposes."
+   in_chroot /bin/bash
+   Die "Finished with errors."
 fi
 
 #############################################################################
