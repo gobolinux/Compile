@@ -1034,7 +1034,7 @@ fi
 if [ "$recipe_type" = "perl" ]
 then
    [ "$PERL5LIB" ] || {
-      export PERL5LIB="$goboLibraries/perl5/site_perl/$(basename $(readlink -f /Programs/Perl/Current))/"
+      export PERL5LIB="${goboLibraries}/perl5/site_perl/$(basename $(readlink -f ${goboPrograms}/Perl/Current))/"
    }
 
    # Quick hack: won't add these to the dependencies list because
