@@ -996,7 +996,7 @@ build_python_options() {
 
 if [ "$recipe_type" = "python" ]
 then
-   [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:/System/Links/Libraries/python2.3/site-packages'."
+   [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:$goboLibraries/python2.3/site-packages'."
    build_tree_if "true"
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
    mkdir -p "$sitepackages"
@@ -1034,7 +1034,7 @@ fi
 if [ "$recipe_type" = "perl" ]
 then
    [ "$PERL5LIB" ] || {
-      export PERL5LIB="/System/Links/Libraries/perl5/site_perl/$(basename $(readlink -f /Programs/Perl/Current))/"
+      export PERL5LIB="$goboLibraries/perl5/site_perl/$(basename $(readlink -f /Programs/Perl/Current))/"
    }
 
    # Quick hack: won't add these to the dependencies list because
