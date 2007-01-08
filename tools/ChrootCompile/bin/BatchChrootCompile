@@ -1,0 +1,39 @@
+#!/bin/sh
+#############################################################################
+# Imports
+#############################################################################
+source ScriptFunctions
+Import GoboLinux
+Import OptionParser
+
+#############################################################################
+# Setting options
+#############################################################################
+scriptCredits="Copyright (C) 2006 Andre Detsch. Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="<packages_list_file>"
+Add_Option_Entry "s" "start-at" "Start at a given package from the list." ""
+
+Parse_Options "$@"
+
+# Save stdin in fd 6
+exec 6<&0
+
+startat="$(Entry start-at)"
+cat $(Arg 1) | while read i; do
+   j=`echo $i | cut -f1 -d' '`
+   [ "$startat" = "$j" ] && startat=
+   [ "$startat" -o ! "$j" -o "$j" = "#" ] && continue
+   [ "$j" = "exit" ] && break
+
+   if ls Clean/i686/$j--* 2> /dev/null
+   then 
+      echo "Skipping $j (`ls Clean/i686/$j--*`)"
+   else 
+      echo "Processing $i..."
+      time nice -20 ChrootCompile -l `GetRecipe $i` 0<&6 || break
+   fi
+done
+
+# Restore stdin from fd 6
+exec 0<&6 6<&-
