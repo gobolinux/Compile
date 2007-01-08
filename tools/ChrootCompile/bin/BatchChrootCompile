@@ -10,17 +10,30 @@ Import OptionParser
 # Setting options
 #############################################################################
 scriptCredits="Copyright (C) 2006 Andre Detsch. Released under the GNU GPL."
-helpOnNoArguments=yes
-scriptUsage="<packages_list_file>"
+scriptUsage="[packages_list_file]"
+scriptNotes="Default package list file is "`readlink -f "$scriptPath/../Data/PackagesList"`
 Add_Option_Entry "s" "start-at" "Start at a given package from the list." ""
 
 Parse_Options "$@"
+
+Parse_Conf ChrootCompile.conf
+
+if [ "$(Arg 1)" ]
+then
+   listfile="$(Arg 1)"
+else
+   listfile=`readlink -f "$scriptPath/../Data/PackagesList"`
+fi
+
+[ -f "$listfile" ] || Die "'$listfile' is not an existing file."
+
+[ "$chrootCompileDir" ] && cd "$chrootCompileDir"
 
 # Save stdin in fd 6
 exec 6<&0
 
 startat="$(Entry start-at)"
-cat $(Arg 1) | while read i; do
+cat "$listfile" | while read i; do
    j=`echo $i | cut -f1 -d' '`
    [ "$startat" = "$j" ] && startat=
    [ "$startat" -o ! "$j" -o "$j" = "#" ] && continue
