@@ -21,7 +21,7 @@ CoreUtils
 DiffUtils
 File
 FindUtils
-# Gawk # needs safe
+Gawk
 Grep
 Gzip
 Make
