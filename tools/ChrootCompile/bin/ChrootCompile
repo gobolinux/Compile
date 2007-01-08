@@ -609,10 +609,10 @@ function fetch_archive_off_recipe() {
          savedir="$root/Files/Compile/Archives"
       fi
       if recipe_has_url "$1/Recipe"
-      then FetchArchive --save-to "$savedir" "$1/Recipe"
+      then FetchArchive --save-to "$savedir" "$1/Recipe" || Die "Error fetching archive."
       fi
       if [ -f "$1/$recipesubdir/Recipe" ] && recipe_has_url "$1/$recipesubdir/Recipe"
-      then FetchArchive --save-to "$savedir" "$1/$recipesubdir/Recipe"
+      then FetchArchive --save-to "$savedir" "$1/$recipesubdir/Recipe" || Die "Error fetching archive."
       fi
       unset is_meta
       unset include
