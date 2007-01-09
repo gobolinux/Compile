@@ -176,6 +176,7 @@ endchoice
 source "packages/Module-Init-Tools/Config.in"
 source "packages/BusyBox/Config.in"
 source "packages/LibGCC/Config.in"
+source "packages/LibStdC++/Config.in"
 source "packages/ZLib/Config.in"
 source "packages/GPM/Config.in"
 source "packages/GoboHide/Config.in"

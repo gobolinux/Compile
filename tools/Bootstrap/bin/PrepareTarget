@@ -126,3 +126,30 @@ then
 
     SymlinkProgram $symlink_options LibGCC >& /dev/null
 fi
+
+
+#
+# Create a LibStdC++ package to satisfy packages with 
+# dependencies on libstdc++.so
+#
+dirname="$prefix/$goboPrograms/LibStdC++"
+if [ "$PKG_LIBSTDC" = "y" -a ! -d "$dirname" ]
+then
+    Log_Normal "Creating the LibStdC++ package..."
+    version=`$CC --version | head -n 1 | awk {'print $3'}`
+    gcclibdir=$cross_gcc_libdir
+
+    mkdir -p $dirname/$version/lib
+    ln -sf $version $dirname/Current
+
+    Quiet pushd $dirname/Current/lib
+    cp -a $gcclibdir/libstdc++* .
+    for i in *
+    do
+        # get rid of eventual directories copied together
+        [ -d $i ] && rm -Rf $i
+    done
+    Quiet popd
+
+    SymlinkProgram $symlink_options LibStdC++ >& /dev/null
+fi
