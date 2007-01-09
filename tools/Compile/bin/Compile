@@ -164,6 +164,7 @@ function do_symlink() {
 function install_extras() {
 
    [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
+   [ -d "$archreciperesources" ] && $sudo cp -R "$archreciperesources" "$installprefix"
    [ "$revision" ] && echo "$revision" > "$installprefix/Resources/Revision"
 
    if [ "$app" = "$appname" ]
@@ -465,6 +466,7 @@ fi
 
 recipedir="$bakedrecipedir"
 reciperesources="$recipedir/Resources"
+archreciperesources="$archsubdir/Resources"
 
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
