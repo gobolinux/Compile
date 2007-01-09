@@ -23,7 +23,7 @@ Parse_Conf CompileSubversion.conf
 ### Operation #################################################################
 
 mkdir -p /Files/Recipe-Store
-rsync --delete -avz gobolinux@gobolinux.org:gobolinux.org/recipe-store /Files/Recipe-Store/
+rsync --delete -avz gobolinux@gobolinux.org:gobolinux.org/recipe-store/ /Files/Recipe-Store/
 
 # Loop 1: create tarballs not yet generated
 cd "$compileLocalRevisions"
@@ -58,7 +58,7 @@ bzip2 -f -k MANIFEST
 tarballs="$tarballs MANIFEST MANIFEST.bz2"
 
 if [ "$program" ]
-then rsync -avz $tarballs gobolinux@gobolinux.org:gobolinux.org/recipe-store
+then rsync -avz $tarballs gobolinux@gobolinux.org:gobolinux.org/recipe-store/
 elif Boolean "all"
-then rsync --delete -avz ./ gobolinux@gobolinux.org:gobolinux.org/recipe-store
+then rsync --delete -avz ./ gobolinux@gobolinux.org:gobolinux.org/recipe-store/
 fi
