@@ -61,11 +61,12 @@ function publish_revision() {
       revision=1
    fi
    
-   if [ `svn status "$trunk/$program/$version" | wc -l` -gt 0 ]
+   appdir="$trunk/$program/$version"
+   if [ `svn status "$appdir" | wc -l` -gt 0 ]
    then
       Log_Normal "Trunk has uncommitted changes for $program $version."
-      if Ask "Commit the changes at $trunk/$program?"
-      then svn commit $username "$trunk/$program" || Die "Error commiting $trunk/$program"
+      if Ask "Commit the changes at $appdir?"
+      then svn commit $username "$appdir" || Die "Error commiting $appdir"
       else return
       fi
    fi
@@ -94,18 +95,19 @@ function publish_revision() {
       return
    fi
 
-   svn copy "$trunk/$program/$version" "$revisions/$program/$version-r$revision"
+   revdir=$revisions/$program/$version-r$revision
+   svn copy "$appdir" "$revdir"
    
-   Log_Normal "Listing $revisions/$program/$version-r$revision"
-   find $revisions/$program/$version-r$revision | grep -v '\.svn'
+   Log_Normal "Listing $revdir"
+   find $revdir | grep -v '\.svn'
    if [ ! "$publishrecipe" ] && ! Ask "Ok to commit revision?"
    then 
-      rm -rf $revisions/$program/$version-r$revision
+      rm -rf $revdir
       return
    fi
    
    Log_Normal "Commiting..."
-   svn commit $username --message "Commiting revision $revision" $revisions/$program
+   svn commit $username --message "Commiting revision $revision" $revdir
 }
 
 ### Operation #################################################################
