@@ -29,10 +29,8 @@ then
    for i in $readelf_result
    do
       if [ ! -h $goboLibraries/$i ]
-      then
-         echo "# *Warning*: Unresolved library $i"
-      else
-        readlink -f "$goboLibraries/$i" | sed "s%$cross_prefix_dir%%g"
+      then echo "# *Warning*: Unresolved library $i"
+      else readlink -f "$goboLibraries/$i" | sed "s%$cross_prefix_dir%%g"
       fi
    done
 else
@@ -44,10 +42,7 @@ else
 
    echo -n "$lddresult"  | grep -v "not found" | awk '{ print $3 }' | while read i
    do
-      if [ ! "$i" ]
-      then
-         echo "here" "->" "$lddresult"
-      fi
+      [ ! "$i" ] && echo "here" "->" "$lddresult"
       readlink -f "$i"
    done
 fi
@@ -85,7 +80,7 @@ fi
 
 if [ "$prefix" ]
 then
-{
+report=`{
    Progress_Start "Generating dependency report. Please wait: "
    {
       if Boolean "all"
@@ -106,5 +101,7 @@ then
       Progress_Move
    done
    Progress_End
-} | path2programs | sort | uniq | grep -v "^$package "
+}`
+deplist=`echo "$report" | path2programs | sort | uniq | grep -v "^$package "`
+[ "$deplist" ] && echo "$deplist" || true
 fi
