@@ -250,7 +250,7 @@ function undo_mounts() {
    if Is_Entry "cross-compile" && grep -q unionfs /proc/filesystems
    then Quiet umount $cross_libc_libdir $goboDevices $goboStatus
    fi
-   [ -z "$1" ] && exit 1
+   [ "$1" = "--dont-exit" ] && return || exit 1
 }
 
 function wrap_fail() {
@@ -262,7 +262,7 @@ function wrap_fail() {
       Quiet rmdir -p "$settings_target"
       Quiet rmdir -p "$variable_target"
    fi
-   undo_mounts `Entry cross-compile`
+   undo_mounts "--dont-exit"
    Die "$1"
 }
 
@@ -277,7 +277,7 @@ function cleanup() {
    fi
    Boolean "remove-archive" && Map remove_archives "${files[@]}"
    Boolean "remove-sources" && Map remove_source_dir "${dirs[@]}"
-   undo_mounts `Entry cross-compile`
+   undo_mounts "--dont-exit"
    exit 0
 }
 
