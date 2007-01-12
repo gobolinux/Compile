@@ -164,6 +164,23 @@ then
 # This task must be run only once, after the first boot
 #
 
+# Allows the loader to find the libraries in the first attempt
+mach=`uname -m`
+if [ "$mach" = armv5tel -a ! -d $goboLibraries/v5l ]
+then
+    mkdir -p $goboLibraries/v5l/fast-mult
+    ln -s $goboLibraries $goboLibraries/v5l/fast-mult/half
+
+    # Do the same inside every entry at $goboPrograms
+    cd $goboPrograms
+    for i in *
+    do
+        [ -d $i/Current/lib -o -d $i/Current/lib/v5l ] && continue
+        mkdir -p $i/Current/lib/v5l/fast-mult
+        ln -s $goboLibraries $i/Current/lib/v5l/fast-mult/half
+    done
+fi
+
 # Ensures that we have a fresh ld.so.cache
 if [ -d $goboPrograms/Glibc ]
 then ldconfig
@@ -176,7 +193,7 @@ fi
 
 # Creates an index of FreeType font files
 if [ -d $goboPrograms/Fontconfig ]
-then fc-cache -f -v /Files/fonts
+then fc-cache -f -v /Files/Fonts/*
 fi
 
 # Creates index files for Pango
