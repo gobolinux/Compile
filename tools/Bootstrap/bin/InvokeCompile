@@ -140,10 +140,9 @@ function chroot_compile() {
     package=`ls -t Clean/$recipe_arch/$pkg_name*.bz2 | head -n 1`
     tar jxf $package -C $prefix/$goboPrograms
     if [ -z "$pkg_version" ] 
-    then
-        pkg_version=`echo $package | sed -e "s,Clean/$recipe_arch/${pkg_name}--,,g" -e "s,--.*,,g"`
-        pkg_version=`echo $pkg_version | sed "s,\(.*CVS\|SVN\)-r.*,\1,g"`
+    then pkg_version=`echo $package | sed -e "s,Clean/$recipe_arch/${pkg_name}--,,g" -e "s,--.*,,g"`
     fi
+    pkg_version=`echo $pkg_version | sed "s,\(.*CVS\|SVN\)*-r.*,\1,g"`
     
     UpdateSettings --quick $pkg_name $pkg_version
     SymlinkProgram $symlink_options $pkg_name $pkg_version
@@ -157,6 +156,9 @@ function cleanup() {
     ./BootStrap stop
     exit 0
 }
+
+# temporary workaround; cross-compiling is not doing fine with UnionSandbox
+export NO_UNIONFS=1
 
 trap cleanup TERM INT STOP HUP EXIT
 
