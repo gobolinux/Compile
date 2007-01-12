@@ -23,8 +23,10 @@ case "$1" in
         ;;
     [sS]top)
         unset failed
-        mount | grep "$prefix/$goboStatus"  && { umount $prefix/$goboStatus  || failed=yes; }
-        mount | grep "$prefix/$goboDevices" && { umount $prefix/$goboDevices || failed=yes; }
+        cat /proc/mounts | grep -q "$prefix/$goboStatus"  && { umount $prefix/$goboStatus  || failed=yes; }
+        cat /proc/mounts | grep -q "$prefix/$goboDevices" && { umount $prefix/$goboDevices || failed=yes; }
+        cat /proc/mounts | grep -q chroot && failed=yes
+
         if [ "$NATIVE_COMPILING" != "y" ]
         then
             [ "$failed" ] && Die "Skipping removal of $TOPDIR/chroot/Area-*"
