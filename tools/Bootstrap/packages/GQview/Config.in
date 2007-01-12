@@ -1,0 +1,2 @@
+config PKG_GQVIEW
+    bool "GQview"

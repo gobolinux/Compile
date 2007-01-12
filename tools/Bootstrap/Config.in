@@ -231,6 +231,8 @@ source "packages/OpenVPN/Config.in"
 source "packages/Links/Config.in"
 source "packages/Minicom/Config.in"
 source "packages/PPP/Config.in"
+source "packages/BitchX/Config.in"
+source "packages/Gaim/Config.in"
 endmenu
 
 #############################################
@@ -255,6 +257,7 @@ source "packages/SDL_mixer/Config.in"
 source "packages/SVGALib/Config.in"
 source "packages/IMLib/Config.in"
 source "packages/FFmpeg-Motion/Config.in"
+source "packages/GQview/Config.in"
 endmenu
 
 #############################################
@@ -284,6 +287,9 @@ source "packages/M4/Config.in"
 source "packages/Flex/Config.in"
 source "packages/Bison/Config.in"
 source "packages/BC/Config.in"
+source "packages/LibGPG-Error/Config.in"
+source "packages/LibGCrypt/Config.in"
+source "packages/GnuTLS/Config.in"
 comment ""
 source "packages/A2PS/Config.in"
 comment ""
@@ -309,6 +315,12 @@ source "packages/RXVT/Config.in"
 source "packages/Mrxvt/Config.in"
 source "packages/Siag/Config.in"
 source "packages/Swfdec/Config.in"
+endmenu
+
+#############################################
+menu "Games"
+#############################################
+source "packages/Pentagram/Config.in"
 endmenu
 
 

@@ -1,0 +1,2 @@
+config PKG_LIBGCRYPT
+    bool "LibGCrypt"

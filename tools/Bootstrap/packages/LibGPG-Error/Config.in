@@ -1,0 +1,2 @@
+config PKG_LIBGPG_ERROR
+    bool "LibGPG-Error"
