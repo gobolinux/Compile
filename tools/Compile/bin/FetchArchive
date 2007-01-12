@@ -74,7 +74,7 @@ then
 elif [ "$svn" ]
 then
    cd "$savedir"
-   svn co $svn "${dir}"
+   svn co $svn
    exit $?
 elif ! [ -n "$url${urls[*]}" ]
 then
