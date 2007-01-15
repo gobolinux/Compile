@@ -396,20 +396,22 @@ then
    Log_Normal "Using passed recipe $rawrecipes"
 else
    app="$(Arg 1)"
-   versionadrevision="$(Arg 2)"
+   versionandrevision="$(Arg 2)"
+   version="`String_Version "$versionandrevision"`"
+
    # Find recipe:
-   Log_Normal "Locating a recipe for $app $version..."
-   String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
+   Log_Normal "Locating a recipe for $app $versionandrevision..."
+   String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$versionandrevision" 2> /dev/null`"
    [ "${rawrecipes[*]}" ] || {
       FindPackage $noweb --type=recipe "$app" &> /dev/null && {
-         Log_Terse "Could not find recipe for $app $version."
+         Log_Terse "Could not find recipe for $app $versionandrevision."
          { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
          } && NewVersion $app $version  && {
             String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
          }
       }
-   } || Die_With $errorNotFound "Could not find recipe for $app $version"
-   Log_Normal "Found recipe for $app $version"
+   } || Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
+   Log_Normal "Found recipe for $app $versionandrevision"
 fi
 
 bakedrecipedir=`in_host GetRecipe "${rawrecipes[@]}"`
