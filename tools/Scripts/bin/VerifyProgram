@@ -71,7 +71,8 @@ fi
 ########## Operations ##########
 
 result=0
-if Is_Executable "`which gpgv`"
+gpgv=`(which gpgv2 || which gpgv) 2> /dev/null`
+if Is_Executable "$gpgv"
 then
    if Exists "${FileHash_sig}" && ! Boolean "no-signature"
    then
@@ -89,7 +90,7 @@ then
       result=4
    fi
 else
-   Log_Error "GnuPG 1.4.x not installed."
+   Log_Error "GnuPG not installed."
    result=2
 fi
 

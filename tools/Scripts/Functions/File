@@ -130,14 +130,16 @@ function Gen_FileHash() {
 
 # Verifies gpg is installed and user has private key
 function Can_Sign() {
-   Quiet gpg -n --list-secret-keys
+   gpg=`(which gpg2 || which gpg) 2> /dev/null`
+   Quiet $gpg -n --list-secret-keys
    [ "$?" = "0" ]
 }
 
 function Sign_File() {
    Parameters "$@" file sig
 
-   output="`gpg ${GPG_opts} --armor --output - --detach-sig "$file"`"
+   gpg=`(which gpg2 || which gpg) 2> /dev/null`
+   output="`$gpg ${GPG_opts} --armor --output - --detach-sig "$file"`"
    result="$?"
 
    Quiet $sudo_exec rm -f "$sig"
@@ -148,7 +150,8 @@ function Sign_File() {
 
 function Check_FileSig() {
    Parameters "$@" file sig
-   gpgv ${GPG_opts} "$sig" "$file"
+   gpgv=`(which gpgv2 || which gpgv) 2> /dev/null`
+   $gpgv ${GPG_opts} "$sig" "$file"
 }
 
 function Check_FileHash() {

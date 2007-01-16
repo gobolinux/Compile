@@ -27,13 +27,13 @@ GPG_opts="--keyring ${GPG_gobo_keyring} --no-default-keyring"
 ### Parse options #######################################################################
 
 ### --import: import key################################################
-
+gpg=`(which gpg2 || which gpg) 2> /dev/null`
 if Boolean "import"
 then
 #   Verify_Superuser
    [ -z "$(Arg 1)" ] && Die "Missing key parameter"
    mkdir -p `dirname $GPG_gobo_keyring`
-   gpg ${GPG_opts} --import "$(Arg 1)"
+   $gpg ${GPG_opts} --import "$(Arg 1)"
    chmod 644 $GPG_gobo_keyring
    exit 0
 fi
@@ -42,7 +42,7 @@ fi
 
 if Boolean "list"
 then
-   gpg ${GPG_opts} --list-keys
+   $gpg ${GPG_opts} --list-keys
    exit 0
 fi
 

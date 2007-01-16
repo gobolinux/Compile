@@ -89,8 +89,8 @@ fi
 if Boolean "sign"
 then
    Gen_FileHash "$package" "$prefix" "$FileHash_loc"
-
-   gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee "${FileHash_sig}"
+   gpg=`(which gpg2 || which gpg) 2> /dev/null`
+   $gpg ${GPG_opts} --output -  --detach-sig "${FileHash_loc}" | Quiet $sudo tee "${FileHash_sig}"
    
    exit 0
 fi
