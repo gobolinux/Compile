@@ -17,11 +17,12 @@ s_name='([A-Za-z0-9][-A-Za-z0-9_+]*)'
 s_operand='(<|>|<=|>=|=)'
 s_version='([0-9a-z._\-]+)'
 
-new_format = s_name +s_blank+ s_operand +s_blank+ s_version + '('+s_blank+ ',' +s_blank+ s_operand +s_blank+ s_version+')?'
+s_cross='(\['+s_blank+'(cross|!cross)'+s_blank+'\])'
 
+new_format = s_name +s_blank+ s_operand +s_blank+ s_version + '('+s_blank+ ',' +s_blank+ s_operand +s_blank+ s_version+')?'+s_blank+s_cross+'?'
 new_format_c = re.compile(new_format)
 
-old_format = s_name+s_blank+s_version+'?'
+old_format = s_name+s_blank+s_version+'?'+s_blank+s_cross+'?'
 old_format_c = re.compile(old_format)
 
 global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True)
@@ -66,7 +67,7 @@ def add_compatible_dependencies(rule) :
 			rule = compatible_rule # linked list of compatible_rules
 
 # Notice that type may be required since dependencies(recipe(p)) != dependencies(package(p))
-def get_rules_for(p, v, r, t, u=None, noWeb=False, no_compatlist=False, no_builddeps=False) :
+def get_rules_for(p, v, r, t, u=None, noWeb=False, no_compatlist=False, no_builddeps=False, cross_compile=False) :
 	depfiles = find_dependencies_files(p, v, r, t, u, noWeb=False, no_builddeps=no_builddeps)
 	toReturn = []
 	for depfile in depfiles :
@@ -76,7 +77,7 @@ def get_rules_for(p, v, r, t, u=None, noWeb=False, no_compatlist=False, no_build
 				options=line.split("|")
 				last_rule = None
 				for o in options :
-					rule = interpret_dependency_line(o,t) # todo: add exception handling
+					rule = interpret_dependency_line(o,t, cross_compile=cross_compile) # todo: add exception handling
 					if last_rule :
 						last_rule['option'] = rule
 						last_rule = rule
@@ -163,17 +164,20 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 	sys.stderr.write('Dependencies for %s %s %s %s %s not found\n'%(p,v,r,t,u))
 	return []
 
-def interpret_dependency_line(line, t=None) :
+def interpret_dependency_line(line, t=None, cross_compile=False) :
 	line = line.split('#')[0].strip()
 	if not line :
 		return
 
 	global global_dependencies_blacklist
-
+	
 	m = new_format_c.match(line)
 	if m :
 		if (m.group(1).lower() in global_dependencies_blacklist) :
 			return
+		if ((m.group(8) == 'cross' and not cross_compile) or (m.group(8) == '!cross' and cross_compile)) :
+			return
+		
 		ret = {'program'    : m.group(1),
 		       'loincluded' : True,
 		       'lover'      : '',
@@ -195,6 +199,9 @@ def interpret_dependency_line(line, t=None) :
 		if m :
 			if (m.group(1).lower() in global_dependencies_blacklist) :
 				return
+			if ((m.group(4) == 'cross' and not cross_compile) or (m.group(4) == '!cross' and cross_compile)) :
+				return
+			
 			ret = {'program'    : m.group(1),
 			       'lover'      : m.group(2),
 			       'loincluded' : True,
@@ -337,7 +344,8 @@ def ask_if_install(match) :
 #
 def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
-	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, all_matches = None, no_compatlist=False):
+	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, 
+	                                    all_matches = None, no_compatlist=False, cross_compile=False):
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
 
@@ -368,7 +376,7 @@ def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 		all_matches.append(self_match)
 		p,v,r,t,u = self_match
 
-	all_rules = get_rules_for(p, v, r, t, u, noWeb=noWeb, no_compatlist=no_compatlist)
+	all_rules = get_rules_for(p, v, r, t, u, noWeb=noWeb, no_compatlist=no_compatlist, cross_compile=cross_compile)
 	# optimization only:
 	#all_rules  = [ rule for rule in all_rules if not any(pp == rule['program'] for pp,vv,tt,uu in all_matches) ]
 	missing_dependencies = [ rule for rule in all_rules if not find_matching_package(rule, ['installed'], noWeb=noWeb) ]
@@ -449,11 +457,11 @@ Get_Version %s Current'''%rule['program']
 #
 # This function is used when mode == 'list'
 #
-def ListDependencies(p, v, r, t, u, mode = 'terminal', types=None, report_missing=False, report_updating=False, recursive=True, hook=None, noWeb=False) :
+def ListDependencies(p, v, r, t, u, mode = 'terminal', types=None, report_missing=False, report_updating=False, recursive=True, hook=None, noWeb=False, cross_compile=False) :
 	if not types :
 		types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
 
-	all_rules, all_matches = get_all_dependencies_and_matches_for(p,v,r,t,u, types, recursive=recursive, hook=hook, mode='all', noWeb=noWeb)
+	all_rules, all_matches = get_all_dependencies_and_matches_for(p,v,r,t,u, types, recursive=recursive, hook=hook, mode='all', noWeb=noWeb, cross_compile=cross_compile)
 
 	if report_missing :
 		missing_dependencies      = [ rule for rule in all_rules if not find_matching_package(rule, ['installed'], noWeb=noWeb)[3] ]
@@ -471,7 +479,7 @@ def ListDependencies(p, v, r, t, u, mode = 'terminal', types=None, report_missin
 			if rule['lover'] :
 				ss += ' ' + (rule['loincluded'] and '>=' or '>') + ' ' + rule['lover']
 			if rule['hiver'] :
-				if r['lover'] :
+				if rule['lover'] :
 					ss += ','
 				ss += ' ' + (rule['hiincluded'] and '<=' or '<') + ' ' + rule['hiver']
 
@@ -562,7 +570,7 @@ if __name__ == '__main__' :
 		try :
 			if not sys.argv[1:] :
 				sys.argv[1:] = [ '--help' ]
-			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBCh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'help'])
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBCh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'cross-compile', 'help'])
 		except getopt.GetoptError, detail :
 			print sys.argv[0].split('/')[-1]+': '+str(detail)
 			sys.exit(1)
@@ -575,6 +583,7 @@ if __name__ == '__main__' :
 		add_self='if_required'
 		progress_hook=consoleProgressHook
 		no_compatlist = False
+		cross_compile = False
 		for o, a in opts :
 			if o in ['--types','--type', '-t'] :
 				types = a.split(',')
@@ -600,6 +609,8 @@ if __name__ == '__main__' :
 				global_dependencies_blacklist = []
 			elif o in ['--no-compatlist', '-C'] :
 				no_compatlist = True
+			elif o in ['--cross-compile'] :
+				cross_compile = True
 			elif o in ['--help', '-h'] :
 				print """
 CheckDependencies
@@ -648,6 +659,8 @@ Options:
 
  --quiet-progress     Do not show progress indicator
 
+ --cross-compile      Check dependencies for cross compilation
+
 Examples of usage:
  CheckDependencies kde-libs 3.5.0
  CheckDependencies kde-libs 3.5.0 recipe
@@ -674,11 +687,12 @@ Examples of usage:
 		else :
 			v,r = '',''
 		if mode == 'list' :
-			print ListDependencies(p,v,r,t,u,types=types,recursive=recursive,hook=progress_hook,noWeb=noWeb)
+			print ListDependencies(p,v,r,t,u,types=types,recursive=recursive,hook=progress_hook,noWeb=noWeb,cross_compile=cross_compile)
 		elif mode == 'convert' :
 			print ConvertRecipeToBinary(p,v,r,t,u),
 		else :
-			rules, matches = get_all_dependencies_and_matches_for(p, v, r, t, u, types, mode=mode, recursive=recursive, noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install, no_compatlist=no_compatlist)
+			rules, matches = get_all_dependencies_and_matches_for(p, v, r, t, u, types, mode=mode, recursive=recursive,
+			                     noWeb=noWeb, hook=progress_hook, add_self=add_self, ask_hook=ask_if_install, no_compatlist=no_compatlist, cross_compile=cross_compile)
 			if rules :
 				for rule,match in zip(rules,matches):
 					pp,vv,rr,tt,uu=match
