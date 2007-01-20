@@ -218,6 +218,7 @@ source "packages/LibOGG/Config.in"
 source "packages/LibVorbis/Config.in"
 source "packages/LibID3Tag/Config.in"
 source "packages/Madplay/Config.in"
+source "packages/SGmixer/Config.in"
 source "packages/GQmpeg/Config.in"
 endmenu
 
@@ -226,6 +227,10 @@ menu "Networking and Communications"
 #############################################
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
+source "packages/GnuTLS/Config.in"
+source "packages/NSPR/Config.in"
+source "packages/NSS/Config.in"
+source "packages/LibIDL/Config.in"
 source "packages/LZO/Config.in"
 source "packages/OpenVPN/Config.in"
 source "packages/Links/Config.in"
@@ -233,6 +238,7 @@ source "packages/Minicom/Config.in"
 source "packages/PPP/Config.in"
 source "packages/BitchX/Config.in"
 source "packages/Gaim/Config.in"
+source "packages/RealVNC/Config.in"
 endmenu
 
 #############################################
@@ -289,14 +295,12 @@ source "packages/Bison/Config.in"
 source "packages/BC/Config.in"
 source "packages/LibGPG-Error/Config.in"
 source "packages/LibGCrypt/Config.in"
-source "packages/GnuTLS/Config.in"
 comment ""
 source "packages/A2PS/Config.in"
 comment ""
 source "packages/Mowitz/Config.in"
 source "packages/LibART_LGPL/Config.in"
 source "packages/LibOIL/Config.in"
-source "packages/LibIDL/Config.in"
 comment ""
 source "packages/Gnokii/Config.in"
 source "packages/Motion/Config.in"
@@ -321,6 +325,7 @@ endmenu
 menu "Games"
 #############################################
 source "packages/Pentagram/Config.in"
+source "packages/Snes9x/Config.in"
 endmenu
 
 
