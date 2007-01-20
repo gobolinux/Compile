@@ -1,0 +1,2 @@
+config PKG_SNES9X
+    bool "Snes9x"
