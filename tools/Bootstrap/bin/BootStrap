@@ -23,6 +23,7 @@ case "$1" in
         ;;
     [sS]top)
         unset failed
+        mount | grep Area | awk {'print $3'} | sort -r | xargs umount 2> /dev/null
         cat /proc/mounts | grep -q "$prefix/$goboStatus"  && { umount $prefix/$goboStatus  || failed=yes; }
         cat /proc/mounts | grep -q "$prefix/$goboDevices" && { umount $prefix/$goboDevices || failed=yes; }
         cat /proc/mounts | grep -q chroot && failed=yes
