@@ -1,0 +1,12 @@
+#!/bin/sh
+
+for i in compile_et mk_cmds uuidgen
+do rm -f bin/$i
+done
+
+for i in filefrag blkid debugfs dumpe2fs e2image findfs logsave
+do rm -f sbin/$i
+done
+
+rm -f lib/e2initrd_helper
+rm -rf Shared
