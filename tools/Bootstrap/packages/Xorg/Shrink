@@ -1,0 +1,13 @@
+#!/bin/sh
+
+#
+# There's probably more work to do here. Contributions are welcome.
+#
+
+for i in Xprt Xvfb bdftruncate ccmakedep cleanlinks cvt cxpm gccmakedep getconfig getconfig.pl \
+		 gtf imake makeg makestrs mergelib mkdirhier mkhtmlindex pcitweak revpath ucs2any \
+		 xft-config xmkmf
+do rm -f bin/$i
+done
+
+rm -rf include
