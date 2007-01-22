@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Removes skeleton files
+rm -Rf Shared
