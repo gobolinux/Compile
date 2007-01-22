@@ -196,6 +196,7 @@ source "packages/Make/Config.in"
 #source "packages/GMP/Config.in"
 #source "packages/GCC/Config.in"
 #source "packages/TCC/Config.in"
+source "packages/GDB/Config.in"
 source "packages/Strace/Config.in"
 endmenu
 
@@ -326,6 +327,7 @@ menu "Games"
 #############################################
 source "packages/Pentagram/Config.in"
 source "packages/Snes9x/Config.in"
+source "packages/Snes9express/Config.in"
 endmenu
 
 
