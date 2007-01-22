@@ -1,0 +1,5 @@
+#!/bin/sh
+
+ls bin | grep -v "^gettext$" | xargs rm -f 2> /dev/null
+rm -rf lib/gettext
+rm -rf Shared
