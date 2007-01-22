@@ -589,7 +589,7 @@ test_recipe() {
       build_target=configure,makefile,xmkmf,python
       install_target=configure,makefile,xmkmf,python
       do_build=makefile,python
-      do_install=makefile,xmkmf,python
+      do_install=configure,makefile,xmkmf,python
       needs_build_directory=configure
       manifest=manifest
       without=perl
