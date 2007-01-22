@@ -135,6 +135,17 @@ do
     find . | RemoveBroken >& /dev/null
 
     popd > /dev/null
+    
+    #
+    # The package is possibly empty now. Remove it if that's true.
+    #
+    has_files=`find $i/Current/ -type f | grep -v /Resources/`
+    if [ ! "$has_files" ]
+    then
+        Log_Terse "Removing empty package $i"
+        rm -rf $i
+    fi
+
     Log_Terse "Done."
 done
 
@@ -239,4 +250,4 @@ fi
 # Remove broken links
 #
 Log_Normal "Removing broken links..."
-find $prefix | RemoveBroken >& /dev/null
+find $prefix/$goboLinks $prefix/$goboSettings | RemoveBroken >& /dev/null
