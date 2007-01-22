@@ -21,10 +21,10 @@ then
     popd >& /dev/null
 
     pushd Shared/terminfo/l >& /dev/null
-    ls | grep -v linux$ | xargs rm
+    ls | grep -v linux$ | xargs rm -f 2> /dev/null
     popd >& /dev/null
 
     pushd Shared/terminfo/x >& /dev/null
-    ls | grep -v xterm$ | grep -v xterm-color$ | xargs rm
+    ls | grep -v xterm$ | grep -v xterm-color$ | xargs rm -f 2> /dev/null
     popd >& /dev/null
 fi
