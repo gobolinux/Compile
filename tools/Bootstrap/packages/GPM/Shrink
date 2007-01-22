@@ -1,0 +1,5 @@
+#!/bin/sh
+
+for i in mev disable-paste hltest mouse-test
+do rm -f bin/$i
+done
