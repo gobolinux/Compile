@@ -3,6 +3,7 @@
 if [ -d lib/pango/*/modules ]
 then
     pushd lib/pango/*/modules >& /dev/null
+    rm -f *.la
     $STRIP $STRIP_OPT *
     popd >& /dev/null
 fi
