@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rm -Rf lib/gtk-2.0/include
+rm -Rf Shared/themes/Emacs
