@@ -19,29 +19,29 @@ Parse_Options "$@"
 
 ### Operation #################################################################
 
-recipe=$(Arg 1)
+recipedir=$(Arg 1)
+program=`basename $recipedir`
 
 # Ensures that we're not referencing old versions or CVS snapshots of the Compile tool
-for i in `find $recipe -name Recipe`
+for i in `find $recipedir -name Recipe`
 do
     cat $i | sed 's,compile_version=.*,compile_version=1.8.0,g' > x && mv x $i
 done
 
 # Create a tarball and store it at /Files/Compile/PackedRecipes
-PackRecipe $recipe || exit 1
+PackRecipe $program || exit 1
 
-for tarball in `ls -t ${compilePackedRecipesDir}/${recipe}*`
+for tarball in `ls -t ${compilePackedRecipesDir}/${program}*`
 do
-    version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
-
     # Merge the recipe into the local trunk
     ImportRecipe $tarball || exit 1
 
     # Commit the trunk and/or the revision tree.
-    PublishRevision --skip-lint $recipe $version || exit 1
+    version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
+    PublishRevision --skip-lint $program $version || exit 1
 done
 
 # Copy the recipe to the store
 if ! Boolean "skip-store"
-then UpdateRecipeStore $recipe
+then UpdateRecipeStore $program
 fi
