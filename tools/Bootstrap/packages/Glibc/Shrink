@@ -1,13 +1,38 @@
 #!/bin/sh
 
+source $TOPDIR/.config
+
 # leave only binaries for ldd and ldconfig
 ls bin/  | grep -v ldd$      | while read i; do rm -f bin/$i; done
 ls sbin/ | grep -v ldconfig$ | while read i; do rm -f sbin/$i; done
 
 rm -f  lib/*.o
 rm -f  lib/*.a
-rm -Rf lib/gconv
 rm -Rf lib/locale
+
+if [ -d lib/gconv ]
+then
+    pushd lib/gconv >& /dev/null
+    [ ! "$NLS_ISO8859_1" ] && rm -f ISO8859-1.*
+    [ ! "$NLS_ISO8859_2" ] && rm -f ISO8859-2.*
+    [ ! "$NLS_ISO8859_3" ] && rm -f ISO8859-3.*
+    [ ! "$NLS_ISO8859_4" ] && rm -f ISO8859-4.*
+    [ ! "$NLS_ISO8859_5" ] && rm -f ISO8859-5.*
+    [ ! "$NLS_ISO8859_6" ] && rm -f ISO8859-6.*
+    [ ! "$NLS_ISO8859_7" ] && rm -f ISO8859-7.*
+    [ ! "$NLS_ISO8859_8" ] && rm -f ISO8859-8.*
+    [ ! "$NLS_ISO8859_9" ] && rm -f ISO8859-9.*
+    [ ! "$NLS_ISO8859_10" ] && rm -f ISO8859-10.*
+    [ ! "$NLS_ISO8859_11" ] && rm -f ISO8859-11.*
+    [ ! "$NLS_ISO8859_12" ] && rm -f ISO8859-12.*
+    [ ! "$NLS_ISO8859_13" ] && rm -f ISO8859-13.*
+    [ ! "$NLS_ISO8859_14" ] && rm -f ISO8859-14.*
+    [ ! "$NLS_ISO8859_15" ] && rm -f ISO8859-15.*
+    [ ! "$NLS_ISO8859_16" ] && rm -f ISO8859-16.*
+    [ ! "$NLS_KOI8_R" ] && rm -f KOI8*
+    [ ! "$NLS_JISX0201" ] && rm -f *JIS*
+    popd >& /dev/null
+fi
 
 rm -Rf Shared
 rm -Rf include
