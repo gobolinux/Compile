@@ -2,7 +2,6 @@
 
 #
 # A simple InstallPackage script
-#
 # Written by Lucas Correia Villa Real <lucasvr@gobolinux.org>
 #
 
@@ -15,8 +14,8 @@ then
 fi
 
 tarball="$1"
-program=`echo $tarball | sed 's/--.*//g'`
-version=`echo $tarball | sed "s%$program--%%g" | sed 's/--.*//g'`
+program=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\1,1'`
+version=`basename $tarball | sed -e 's,\(.*\)--\(.*\)--.*,\2,1' -e 's,-r.*,,1'`
 target="$goboPrograms/$program/$version"
 settings_target="$goboPrograms/$program/Settings"
 
