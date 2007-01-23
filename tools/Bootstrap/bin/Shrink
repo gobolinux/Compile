@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TOPDIR="$PWD/.."
+export TOPDIR="$PWD/.."
 
 source GoboPath
 source ScriptFunctions
@@ -215,6 +215,24 @@ then
     remove_fonts "*8859-9.*"
 fi
 
+if [ ! "$NLS_ISO8859_10" ]
+then
+    Log_Normal "Removing ISO8859-10 fonts..."
+    remove_fonts "*8859-10.*"
+fi
+
+if [ ! "$NLS_ISO8859_11" ]
+then
+    Log_Normal "Removing ISO8859-11 fonts..."
+    remove_fonts "*8859-11.*"
+fi
+
+if [ ! "$NLS_ISO8859_12" ]
+then
+    Log_Normal "Removing ISO8859-12 fonts..."
+    remove_fonts "*8859-12.*"
+fi
+
 if [ ! "$NLS_ISO8859_13" ]
 then
     Log_Normal "Removing ISO8859-13 fonts..."
@@ -231,6 +249,12 @@ if [ ! "$NLS_ISO8859_15" ]
 then
     Log_Normal "Removing ISO8859-15 fonts..."
     remove_fonts "*8859-15.*"
+fi
+
+if [ ! "$NLS_ISO8859_16" ]
+then
+    Log_Normal "Removing ISO8859-16 fonts..."
+    remove_fonts "*8859-16.*"
 fi
 
 if [ ! "$NLS_KOI8_R" ]
