@@ -216,6 +216,7 @@ source "packages/ALSA-Lib/Config.in"
 source "packages/ALSA-Utils/Config.in"
 source "packages/LibMad/Config.in"
 source "packages/LibOGG/Config.in"
+#source "packages/Tremor/Config.in"
 source "packages/LibVorbis/Config.in"
 source "packages/LibID3Tag/Config.in"
 source "packages/Madplay/Config.in"
@@ -239,6 +240,10 @@ source "packages/Minicom/Config.in"
 source "packages/PPP/Config.in"
 source "packages/BitchX/Config.in"
 source "packages/Gaim/Config.in"
+source "packages/Sylpheed/Config.in"
+source "packages/Claws-Mail/Config.in"
+#source "packages/Dillo/Config.in"
+source "packages/Firefox/Config.in"
 source "packages/RealVNC/Config.in"
 endmenu
 
@@ -452,7 +457,7 @@ config SHRINK_STRIP_IGNORE
 
 endchoice
 
-menu "Native language support"
+menu "Languages, Fonts and Encodings"
 config NLS_ISO8859_1
     prompt "ISO8859-1 (Western European Languages)"
     bool
@@ -522,6 +527,28 @@ config NLS_ISO8859_9
       the rarely needed Icelandic letters in Latin 1 with the Turkish ones.
       Useful in Turkey.
 
+config NLS_ISO8859_10
+    prompt "ISO8859-10 (Nordic)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Latin 6 character set, a variation of
+      Latin-4 which covers the Nordic area.
+
+config NLS_ISO8859_11
+    prompt "ISO8859-11 (Thai)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the Thai language's character set.
+
+config NLS_ISO8859_12
+    prompt "ISO8859-11 (ISCII Indian)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the ISCII Indian's character set.
+
 config NLS_ISO8859_13
     prompt "ISO8859-13 (Baltic)"
     bool
@@ -553,6 +580,13 @@ config NLS_ISO8859_15
       characters and instead adds support for Estonian, corrects the support for
       French and Finnish, and adds the new Euro character.
       If unsure, say Y.
+
+config NLS_ISO8859_16
+    prompt "ISO8859-16 (Romanian)"
+    bool
+    default n
+    ---help---
+      Say Y here to keep support for the new Romanian language's encoding.
 
 config NLS_KOI8_R
     prompt "KOI8-R (Russian)"
