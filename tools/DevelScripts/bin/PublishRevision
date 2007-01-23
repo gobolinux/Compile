@@ -16,7 +16,7 @@ helpOnNoArguments=yes
 scriptUsage="<program> [<version>]"
 scriptExample="Glibc 2.5"
 scriptNotes="If no version is given, all versions in trunk are checked."
-#Add_Option_Boolean "b" "bool" "A boolean option."
+Add_Option_Boolean "S" "skip-lint" "Don't run RecipeLint."
 #Add_Option_Entry "r" "rename" "Rename program to <entry>."
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Add_Option_Entry "u" "username"  "User name used for commiting changes at svn server."
@@ -83,20 +83,24 @@ function publish_revision() {
       cd "$trunk"
       Verbose tar cjvpf "$recipetarball" --exclude=.svn "$program/$version"
    )
-   RecipeLint "$recipetarball"
-   recipestatus=$?
-   rm "$recipetarball"
-   if [ "$recipestatus" -eq 1 ]
+
+   if ! Boolean "skip-lint"
    then
-      Log_Error "RecipeLint reported warnings in $program $version from trunk."
-      if ! Ask "Proceed and publish it anyway?"
-      then return
+      RecipeLint "$recipetarball"
+      recipestatus=$?
+      rm "$recipetarball"
+      if [ "$recipestatus" -eq 1 ]
+      then
+         Log_Error "RecipeLint reported warnings in $program $version from trunk."
+         if ! Ask "Proceed and publish it anyway?"
+         then return
+         fi
+         publishrecipe=yes
+      elif [ "$recipestatus" -eq 2 ]
+      then
+         Log_Error "RecipeLint reported errors in $program $version from trunk. Not publishing it."
+         return
       fi
-      publishrecipe=yes
-   elif [ "$recipestatus" -eq 2 ]
-   then
-      Log_Error "RecipeLint reported errors in $program $version from trunk. Not publishing it."
-      return
    fi
 
    svn copy "$appdir" "$revisions/$program/$version-r$revision"
