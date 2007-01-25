@@ -123,7 +123,7 @@ Log_Verbose "Preparing the sandbox..."
 bindprograms="`cat /proc/mounts | grep " /Programs" | grep -v union_mp.tmp | cut -d' ' -f2 | sed 's,.*Area-.*\(/\)\(.*/\)\(.*/\)\(.*\),/\2\3\4,g'`"
 unionSandbox=( ${unionSandbox[@]} $bindprograms )
 
-if `cat /proc/mounts | grep -q "^/dev/root /Files/Compile"`
+if `cat /proc/mounts | grep -q " /Files/Compile"`
 then
    # we have a bind-mount from the host's /Files/Compile
    unionSandbox=( ${unionSandbox[@]} /Files/Compile )
