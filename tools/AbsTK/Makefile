@@ -1,11 +1,11 @@
 VERSION=
-
-PROGRAM_NAME=AbsTK
+PROGRAM=AbsTK
 
 PACKAGE_DIR=$(HOME)
-PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM_NAME)
+PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PACKAGE_NAME)--$(VERSION)--$(shell uname -m).tar.bz2
+CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
 PYTHON_VERSION=2.4
 PYTHON_LIBS=cwizard qtwizard wizard
@@ -31,7 +31,8 @@ dist: version_check all
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
 	find * -not -path "*/CVS" -and -not -path "*/CVS/*" -and -not -path "*.py[oc]" -and -not -path "*~" | cpio -p $(PACKAGE_BASE)
-	cd $(PACKAGE_DIR); tar cvp $(PROGRAM_NAME) | bzip2 > $(PACKAGE_FILE)
+	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
-	echo "Package at $(PACKAGE_FILE)"
+	@echo; echo "Package at $(PACKAGE_FILE)"
+	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
 

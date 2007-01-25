@@ -5,6 +5,7 @@ PACKAGE_DIR=$(HOME)
 PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
+CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
 LANG_TEMP_DIR=Data/Language/.Temp
 
@@ -42,6 +43,7 @@ dist: version_check cleanup verify all
 	ListProgramFiles $(PROGRAM) | cpio -p $(PACKAGE_BASE)
 	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
-	@echo; echo "Package at $(PACKAGE_FILE)"; echo
+	@echo; echo "Package at $(PACKAGE_FILE)"
+	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
 	! { cvs up 2>&1 | grep "^M" ;}
 

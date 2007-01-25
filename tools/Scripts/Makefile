@@ -9,6 +9,7 @@ TARBALL_BASE=$(PROGRAM)-$(VERSION)
 TARBALL_ROOT=$(PACKAGE_DIR)/$(TARBALL_BASE)
 TARBALL_FILE=$(PACKAGE_DIR)/$(PROGRAM)-$(VERSION).tar.gz
 DESTDIR=/Programs/Scripts/$(VERSION)/
+CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
 PYTHON_VERSION=2.3
 PYTHON_LIBS=FindPackage GetAvailable GuessLatest CheckDependencies DescribeProgram
@@ -54,7 +55,8 @@ dist: version_check cleanup verify all
 	ListProgramFiles $(PROGRAM) | cpio -p $(PACKAGE_VDIR)
 	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
-	@echo; echo "Package at $(PACKAGE_FILE)"; echo
+	@echo; echo "Package at $(PACKAGE_FILE)"
+	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
 	! { cvs up -dP 2>&1 | grep "^M" | grep -v CreateRootlessEnvironment ;}
 
 tarball: version_check cleanup
