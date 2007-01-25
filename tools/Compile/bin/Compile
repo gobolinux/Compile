@@ -241,7 +241,7 @@ function wrapup() {
          fi
       fi
       Log_Normal "Packing recipe directory..."
-      PackRecipe "$noweb" "$app" "$versionandrevision"
+      PackRecipe $noweb "$app" "$versionandrevision"
    fi
    cleanup
 }
