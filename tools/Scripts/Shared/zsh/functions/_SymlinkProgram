@@ -1,3 +1,0 @@
-#compdef SymlinkProgram
-
-_files -W ${goboPrefix}/Programs

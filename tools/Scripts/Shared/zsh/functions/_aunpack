@@ -1,3 +1,0 @@
-#compdef aunpack
-
-_files -g '*.(rpm|gz|bz2|tgz|tar|tgz|zip|jar|rar|shar)'

@@ -1,8 +1,0 @@
-#!/bin/env python
-
-import sys
-from wizard import AbsTranslator
-
-a = AbsTranslator(sys.argv[2], sys.argv[3])
-print a.tr(sys.argv[1].strip())
-

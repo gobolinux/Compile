@@ -1,5 +1,0 @@
-[Name] MPGEDIT
-[Summary] An MP3 editor for CBR/VBR encoded files.
-[License] GNU General Public License (GPL)
-[Description] mpgedit is an MPEG 1 layer 1/2/3 (MP3), MPEG 2, and MPEG 2.5 audio file editor that is capable of processing both Constant Bit Rate (CBR) and Variable Bit Rate (VBR) encoded files. mpgedit can cut an input MPEG file into one or more output files, as well as join one or more input MPEG files into a single output file. Since no decoding or encoding occurs during editing, there is no audio quality loss when editing with mpgedit. mpgedit features command line, curses-based, and graphical interfaces. The curses and graphical versions feature an interactive playback mode for fast selection and verification of edit begin and end times.
-[Homepage] http://www.mpgedit.org/

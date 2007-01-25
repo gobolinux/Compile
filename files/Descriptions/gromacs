@@ -1,6 +1,0 @@
-[Name]  gromacs
-[Summary]  Molecular dynamics package
-[Description]  GROMACS is a versatile and extremely well optimized package to perform molecular dynamics computer simulations and subsequent trajectory analysis. It is developed for biomolecules like proteins, but the extremely high performance means it is used also in several other field like polymer chemistry and solid state physics. This version has the dynamic libs and executables; to hack new utility programs you also need the headers and static libs in gromacs-dev. Linux kernel 2.4 or later is STRONGLY recommended on Pentium III and later processors since GROMACS then can use assembly loops with SSE instructions.
-[Suse Category]  Productivity/Scientific/Chemistry
-[License]  GPL
-[Homepage]  http://www.gromacs.org

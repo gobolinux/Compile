@@ -1,5 +1,0 @@
-[Name] Tix
-[Summary] A library of widgets for TCL/Tk and Python.
-[License] BSD License (original)
-[Description] Tix is a library of widgets for TCL/Tk and Python. The new widgets include Hierarchical Listbox, Tabular Listbox, Grid (spreadsheet), Paned Window, Tabbed Notebook, and many more.
-[Homepage] http://tix.sourceforge.net/

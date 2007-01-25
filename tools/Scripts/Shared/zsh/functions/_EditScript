@@ -1,3 +1,0 @@
-#compdef EditScript
-
-_files -W ${goboPrefix}/Programs/Scripts/Current/bin
