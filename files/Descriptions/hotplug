@@ -1,6 +1,0 @@
-[Name]  hotplug
-[Summary]  Automatic configuration of hotplugged devices
-[Description]  Hotplugging is a feature of Linux, with the goal of letting you plug in new devices and use them immediately. That means that users won't need to learn as much system administration. Systems will, at least partially, be autoconfiguring themselves. Initially, it includes support for USB and PCI (Cardbus) devices, and can automatically configure network interfaces. Now that basic USB and Cardbus hotplugging seems to behave properly, upcoming work will likely involve integration with other Linux subsystems such as input, pcmcia_cs, 1394, disk/storage (starting with SCSI), networking, printing, power management such as APM and ACPI, and more. Kernel 2.5 work will improve autoconfiguration support for Linux, likely including more unified support for stable device names and user mode device management tools.
-[Suse Category]  Hardware/Other
-[License]  GPL
-[Homepage]  http://linux-hotplug.sourceforge.net/

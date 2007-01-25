@@ -1,2 +1,0 @@
-config PKG_SNES9EXPRESS
-    bool "Snes9express"

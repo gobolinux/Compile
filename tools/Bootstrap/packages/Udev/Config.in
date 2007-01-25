@@ -1,3 +1,0 @@
-config PKG_UDEV
-    bool "Udev"
-    default y

@@ -1,5 +1,0 @@
-[Name] ickle
-[Summary] An ICQ2000 client using the GTK-- graphical toolkit.
-[License] GNU General Public License (GPL)
-[Description] ickle is an ICQ2000 client using the GTK-- graphical toolkit. It aims to bring all the useful features of ICQ2000 to non-Windows users. It supports message/URL/SMS sending/receiving (including SMS delivery reports), status changes, reading away messages, and fetching advanced user info from a server. History browsing and lots of configurability in Settings are available.
-[Homepage] http://ickle.sourceforge.net/

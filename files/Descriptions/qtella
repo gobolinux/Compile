@@ -1,8 +1,0 @@
-[Description] Qtella is a client for the Gnet with many useful
-features. It is written in C++, uses the Qt
-libraries, and is available for Linux.  Qtella's
-advantages over other clients include the fact
-that it is very fast (since it uses C++ instead of
-Java), it available for multiple platforms (since
-it uses Qt), and it is not spyware.
-[Homepage] http://www.qtella.net/

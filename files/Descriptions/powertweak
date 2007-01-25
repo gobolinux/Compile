@@ -1,6 +1,0 @@
-[Name]  powertweak
-[Summary]  A program to tune systems to their optimal performance
-[Description]  Powertweak is a utility for tweaking your Linux system to peak performance. It can tune the following parts of your system: - Tunes PCI devices to use optimal settings. - Enables performance enhancing features. - Kernel parameters - CPU registers - Chipset register settings - Sony VAIO backlight To make use of all the features of this program, you need to have a Linux kernel which supports the /proc/bus/pci interface.
-[Suse Category]  System/Base
-[License]  GPL
-[Homepage]  http://powertweak.sourceforge.net

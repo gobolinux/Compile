@@ -1,6 +1,0 @@
-[Name]  fortune
-[Summary]  Talk big.
-[Description]  Fortune displays a random text string from a set of files in a certain format. This occurs each time you start a login shell. To get this feature just uncomment the respective lines in the user's .profile.
-[Suse Category]  Amusements/Toys/Other
-[License]  BSD
-[Homepage]  
