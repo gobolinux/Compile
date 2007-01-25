@@ -268,7 +268,8 @@ cat Recipe | perl -e '
       cvs_rsh => "string",
       svn => "string",
       unmanaged_files => "array",
-      perl_options => "array"
+      perl_options => "array",
+      part_of => "string"
    );
    sub check_array_name {
       my ($name, $num) = @_;
@@ -674,6 +675,15 @@ test_recipe() {
 
 test_resources() {
    msg "Checking resources..."
+   if [ "$part_of" ]
+   then
+      if [ "$noweb" ]
+      then meta=`FindPackage --type recipe "$part_of" &> /dev/null`
+      else meta=`GetRecipe "$part_of"`
+      fi
+      [ $? != 0 ] && ERROR "Meta-recipe $part_of not found in repository."
+      Quiet pushd $meta
+   fi
    [ -d Resources ] || {
       ERROR "No Resources directory."
    }
@@ -721,6 +731,7 @@ test_resources() {
    else
       ERROR "No $depfile file."
    fi
+   [ "$part_of" ] && Quiet popd
    [ -f Resources/Description ] || {
       WARN "No Resources/Description file."
    }
