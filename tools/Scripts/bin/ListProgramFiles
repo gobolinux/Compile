@@ -31,7 +31,7 @@ else
 fi
 
 unset type
-Boolean "files" && type="-type f"
+Boolean "files" && type="-xtype f"
 
 find * \( -path "CVS" \
       -or -path "*/CVS" \
