@@ -41,7 +41,8 @@ do
     ImportRecipe $tarball || exit 1
 
     Quiet pushd $compileLocalTrunk/$program/$version
-    Quiet svn diff --non-interactive && continue
+    contextlines=`svn diff --non-interactive | wc -l`
+    [ $contextlines -eq 0 ] && continue
     Quiet popd
 
     # Commit the trunk and/or the revision tree.
