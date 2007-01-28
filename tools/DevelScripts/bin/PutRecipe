@@ -6,6 +6,7 @@ source ScriptFunctions
 Import GoboLinux
 Import OptionParser
 source $goboSettings/Compile/Compile.conf
+source $goboSettings/Compile/CompileSubversion.conf
 
 ### Options ###################################################################
 
@@ -31,17 +32,24 @@ done
 # Create a tarball and store it at /Files/Compile/PackedRecipes
 PackRecipe $program || exit 1
 
+unset hasupdates
 for tarball in `ls -t ${compilePackedRecipesDir}/${program}*`
 do
+    version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
+
     # Merge the recipe into the local trunk
     ImportRecipe $tarball || exit 1
 
+    Quiet pushd $compileLocalTrunk/$program/$version
+    Quiet svn diff --non-interactive && continue
+    Quiet popd
+
     # Commit the trunk and/or the revision tree.
-    version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
     PublishRevision --skip-lint $program $version || exit 1
+    hasupdates=yes
 done
 
 # Copy the recipe to the store
-if ! Boolean "skip-store"
+if [ "$hasupdates" ] && ! Boolean "skip-store"
 then UpdateRecipeStore $program
 fi
