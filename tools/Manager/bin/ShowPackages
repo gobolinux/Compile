@@ -66,6 +66,48 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 			if report_missing :
 				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
 	return toReturn
+
+def print_help() :
+	print """
+ShowPackages
+ Lists packages according a given rule.
+ 
+Usage
+ ShowPackages <types_set> <operand> <types_set> 
+
+Valid types:
+ installed, recipe, local_package, official_package, contrib_package
+
+Valid operands:
+  Any concatenation of the characters '>', '<' and '='. Notice that quotes are usually 
+  required. 
+  
+  or
+  
+  -ge, -gt, -eq, -le, -lt
+
+Options:
+ -m, --report-missing  report programs that match the first set of types, but do not 
+                       match the second set of types
+ 
+ --local-dirs=[d1,..]  where to look for local binary packages. Defaults defined at 
+                       Scripts/GetAvailable.conf 
+
+ --force-update        downloads packages/recipes lists even if there is a
+                       local cached copy newer than one hour.
+
+ -W, --no-web          do not try to download anything and don't lists 
+                       remote recipes and packages (if not explicitly listed
+                       in '--types='). Overrides '--force-update'
+
+Examples of usage:
+ ShowPackages installed '<' recipe,official_package,local_package
+ # list installed program that can be updated with some package or recipe
+  
+ ShowPackages recipe '<' tracked
+ #recipes that can be updated (NewVersion) because there exists a newer version 
+ # for that program.
+ """
 			 
 if __name__ == '__main__' :
 	import sys
@@ -91,50 +133,18 @@ if __name__ == '__main__' :
 		elif o in ['--report-missing', '-m'] :
 			reportmissing = True
 		elif o in ['--help', '-h'] :
-			print """
-ShowPackages
- Lists packages according a given rule.
- 
-
-Options:
- -m, --report-missing  prints a message for each program that has a match to the 
-                       left side of the operand does not has a match to the types
-                       at rhe right side of the operand
-
- --local-dirs=[d1,..]  where to look for local binary packages. By default,
-                       ., /Mount/Cloop/Programs, /Mount/CD-ROM/Depot/Packages/, 
-                       /Depot/Packages
-
- --force-update        downloads required packages list even if there is a
-                       local copy (cached in ~/.Settings/cache/) newer than one hour.
-
- -W, --no-web          do not try to download anything and don't lists 
-                       remote recipes and packages (if not explicitly listed
-                       in '--types='). Overrides '--force-update'
-
-Examples of usage:
- ShowPackages installed '<' recipe,official_package,local_package
- #lists packages where the higher installed version is lower than the higher 
- # available recipe, official or local package.
-  
- ShowPackages --report-missing installed '>' official_package,contrib_package
- #lists packages where the higher installed version is higher than the higher 
- # available official or contrib package (aka, packages that could be 
- # contributed).
- 
- ShowPackages recipe '<' tracked
- #recipes that can be updated (NewVersion) because there exists a new version 
- # for that program.
- """
-			sys.exit(0)
-
+			print_help()
+			sys.exit(1)
 	import sys
 	if len (args) < 3 :
-		print '3 arguments, please'
-		print "Example:\n ShowPackages installed '<' recipe,official_package"
+		print_help()
 		sys.exit(1)
 	
 	filter_rule = args[:3]
+	
+	operands_conversions = [ ('-lt', '<'), ('-le', '<='), ('-eq', '='), ('-gt', '>'), ('-ge', '>=') ]
+	for (op1, op2) in operands_conversions:
+		filter_rule[1] = filter_rule[1].replace(op1, op2)
 	
 	#['recipe', '<', 'installed']
 	filter_rule[0] = filter_rule[0].split(',')
