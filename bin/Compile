@@ -980,7 +980,9 @@ then
          PrepareProgram $batch ${prepareoptions[*]} "$appname" "$versionnumber" "--" "${config[@]}" || wrap_fail "Preparation step failed."
       ) || exit 1
    fi
-   $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
+   if ! [ "$do_build" = "no" ]
+   then $make $build_target "${buildmerged[@]}" -f $makefile || wrap_fail "Build process failed."
+   fi
    Boolean "no-install" && exit
    build_tree_if "$create_dirs_first" != "yes"
    is_function_set pre_install && pre_install
