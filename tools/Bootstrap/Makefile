@@ -64,17 +64,14 @@ help:
 	@echo 'Configuration targets:'
 	@echo '  menuconfig   - Update current config utilising a menu based program'
 	@echo ''
-	@echo 'Creating virtual disks:'
+	@echo 'Creating images:'
 	@echo '  ramdisk      - Creates an image from the filesystem for usage as a ramdisk'
-	@echo ''
+	@echo '  iso          - Creates a Rocket-Ridge/Joliet ISO image from the filesystem'
 	@echo ''
 	@echo 'Other generic targets:'
 	@echo '  all          - Build all targets marked with [*]'
-	@echo ''
 	@echo '  shrink       - Performs a cleanup on the generated tree'
-	@echo ''
 	@echo '  descriptions - Update package descriptions'
-	@echo ''
 	@echo '  make V=0|1   - Quiet or verbose build (default)'
 	@echo ''
 	@echo 'Execute "make" or "make all" to build all targets marked with [*]'
@@ -98,7 +95,10 @@ descriptions:
 	@bin/CreateDescriptions
 
 ramdisk:
-	@bin/CreateRamdisk $(DIR) $(SIZE)
+	@bin/CreateImage ramdisk $(DIR) $(SIZE)
+
+iso:
+	@bin/CreateImage iso $(DIR)
 
 world: $(TARGETS)
 	@cd bin; ./BootStrap start                || { echo "argh!"; ./BootStrap stop; exit 1; }
