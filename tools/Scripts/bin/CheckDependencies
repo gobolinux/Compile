@@ -301,6 +301,10 @@ def ask_if_install(match) :
 		Log_Terse('%s\nUnable to fulfill the dependency.'%(reason), 'CheckDependencies')
 		return
 
+	if install_optional == 'never' :
+		Log_Terse('%s'%(reason))
+		return
+
 	if global_always_do :
 		if global_always_do=='install/compile' :
 			if t == 'recipe' :
@@ -570,7 +574,7 @@ if __name__ == '__main__' :
 		try :
 			if not sys.argv[1:] :
 				sys.argv[1:] = [ '--help' ]
-			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:WRBCh', ['add-self=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'cross-compile', 'help'])
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:i:WRBCh', ['add-self=','install-optional=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'cross-compile', 'help'])
 		except getopt.GetoptError, detail :
 			print sys.argv[0].split('/')[-1]+': '+str(detail)
 			sys.exit(1)
@@ -582,6 +586,7 @@ if __name__ == '__main__' :
 		noWeb = False
 		add_self='if_required'
 		progress_hook=consoleProgressHook
+		install_optional = 'ask'
 		no_compatlist = False
 		cross_compile = False
 		for o, a in opts :
@@ -603,6 +608,10 @@ if __name__ == '__main__' :
 				progress_hook=None
 			elif o in ['--add-self','-s'] :
 				add_self=a
+			elif o in ['--install-optional','-i'] :
+				install_optional=a
+				if install_optional == 'always' :
+					global_always_do = 'install/compile'
 			elif o in ['--no-web', '-W'] :
 				noWeb = True
 			elif o in ['--no-blacklist', '-B'] :
@@ -634,8 +643,7 @@ Options:
                                        as paramater (default)
 
  -i
- -install-optional=   Install optional dependencies? 'always', 'never', 'ask'
-                      (by now, all depencies are considered optional)
+ --install-optional=  Install optional dependencies? 'always', 'never', 'ask'
 
  -m, --mode=          Can be set to:
                          missing  - report matches only for missing packages
