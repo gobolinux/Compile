@@ -12,7 +12,6 @@ source GoboPath
 BootScriptsDir=/Programs/BootScripts/Current/
 source ${goboSettings}/BootOptions
 source ${BootScriptsDir}/Functions/BootScripts
-source ${goboEnvironment}/Cache
 
 ### Variables ###
 
