@@ -909,9 +909,6 @@ fi
 # Gather common options from the recipe
 ##################################################
 
-unset makevars
-makevars=$(merge_array "make_variables")
-
 unset buildmerged
 eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables`
 ! [ "$install_target" ] && install_target="install"
