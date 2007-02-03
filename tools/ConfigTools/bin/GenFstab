@@ -53,72 +53,81 @@ echo
 # Hard Disk Drives
 ################################################################################
 
+unset fat
+unset win
 function gen_config() {
-   fdisk -l "$realdev" 2>&1 | grep "^/" | awk -v "root=$root" -v "drive=${upper[drive]}" \
-         -v "devicetype=$1" '
-   BEGIN {
-      lastpart=1
-      win=1
-      dos=1
-   }
-   {
-      part=$1
-      if ($1 == "") {
-         exit
-      }
-      if ($2 == "*")
-         n = 3
-      else
-         n = 2
-      n += 3
+   lastpart=1
+   devicetype="$1"
+   drive="${upper[drive]}"
 
-      if ($1 == root) {
-         print "# Root partition."
-         print $1 " / auto defaults 1 0" 
-         print ""
-      } else if ($(n) == "1" || $(n) == "4" || $(n) == "6") {
-         print "# DOS partition."
-         if (dos == 1)
-            print $1 " /Mount/DOS msdos defaults 1 0" 
+   result=`fdisk -l "$realdev" 2>&1 | grep "^/"`
+   partlist=`echo "$result" | awk {'print $1'} | tr "\n" " "`
+   for part in $partlist
+   do
+      [ "$part" = "" ] && continue
+
+      bootableflag=`echo "$result" | awk {'print $2'}`
+      if [ "$bootableflag" = "*" ]
+      then n=`echo "$result" | awk {'print $6'}`
+      else n=`echo "$result" | awk {'print $5'}`
+      fi
+
+      if [ "$part" = "$root" ]
+      then
+         echo "# Root partition."
+         echo $part " / auto defaults 1 0" 
+         echo
+      elif [ "$n" = "1" -o "$n" = "4" -o "$n" = "6" -o "$n" = "b" -o "$n" = "c" -o "$n" = "e" ]
+      then
+         mountname="FAT"
+         mountopts="umask=000"
+         if mount $part /Mount 2> /dev/null
+         then
+            if ls /Mount/ | grep -qi "^windows$"
+            then
+                mountname="Windows"
+                mountopts="defaults"
+            fi
+            umount /Mount
+         fi
+         echo "# $mountname partition."
+         if [ "$win" = "1" ]
+         then
+            echo "$part /Mount/${mountname}${win} vfat $mountopts 1 0"
+            echo
+            if [ "$win" ]
+            then let win=win+1
+            else win=2
+            fi
          else
-            print $1 " /Mount/DOS" dos " msdos umask=000 1 0" 
-         print ""
-         dos++
-      } else if ($(n) == "b" || $(n) == "c") {
-         print "# Windows partition."
-         if (win == 1)
-            print $1 " /Mount/Windows vfat defaults 1 0" 
+            echo "$part /Mount/${mountname}${fat} vfat $mountopts 1 0"
+            echo
+            if [ "$fat" ]
+            then let fat=fat+1
+            else fat=2
+            fi
+         fi
+      elif [ "$n" = "82" ]
+      then
+         echo "# Swap partition."
+         echo "$part none swap pri=1 0 0" 
+         echo
+      elif [ "$n" != "5" ]
+      then
+         partnum=`echo $part | cut -b${#part}-`
+         # so that hda10 does not become HDA0
+         if [ $lastpart -gt $partnum ]
+         then
+            let lastpart=lastpart+1
+            partnum=$lastpart
          else
-            print $1 " /Mount/Windows" win " vfat umask=000 1 0" 
-         print ""
-         win++
-      } else if ($(n) == "e") {
-         print "# Windows partition."
-         if (win == 1)
-            print $1 " /Mount/Windows msdos defaults 1 0" 
-         else
-            print $1 " /Mount/Windows" win " msdos umask=000 1 0" 
-         print ""
-         win++
-      } else if ($(n) == "82") {
-         print "# Swap partition."
-         print $1 " none swap pri=1 0 0" 
-         print ""
-      } else if ($(n) != "5") {
-         partnum=substr($1, length($1))
-         // so that hda10 does not become HDA0
-         if (lastpart > int(partnum)) {
-            lastpart++
-            partnum = lastpart
-         } else {
-            lastpart = int(partnum)
-         }
-         print "# Additional partition."
-         print $1 " /Mount/" devicetype drive partnum " auto defaults 1 0" 
-         print ""
-      }
-   }
-   '
+            lastpart=$partnum
+         fi
+         echo "# Additional partition."
+         echo $part " /Mount/${devicetype}${drive}${partnum} auto defaults 1 0" 
+         echo
+      fi
+  done
 }
 
 ################################################################################
