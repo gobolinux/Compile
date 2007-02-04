@@ -1,6 +1,0 @@
-[Name]  libgail-gnome
-[Summary]  GNOME Accessibility implementation library
-[Description]  This package contains an implementation of ATK interfaces for GNOME widgets.
-[Suse Category]  Development/Libraries/GNOME
-[License]  GPL
-[Homepage]  http://www.gnome.org

@@ -1,2 +1,0 @@
-config PKG_LINUX_FUSION
-    bool "Linux-Fusion"

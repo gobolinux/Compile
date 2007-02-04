@@ -1,5 +1,0 @@
-#!/bin/sh
-
-rm -Rf Shared
-rm -Rf man
-rm -Rf doc

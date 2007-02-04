@@ -1,5 +1,0 @@
-[Name] Firebird
-[Summary] A relational database offering many ANSI SQL-92 features.
-[License] Mozilla Public License (MPL)
-[Description] Firebird is a relational database offering many ANSI SQL-92 features that runs on Linux, Windows, and a variety of Unix platforms. It offers excellent concurrency, high performance, and powerful language support for stored procedures and triggers.
-[Homepage] http://firebird.sourceforge.net/

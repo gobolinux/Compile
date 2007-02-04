@@ -1,6 +1,0 @@
-[Name]  gnome2-user-docs
-[Summary]  GNOME 2.x Desktop Documentation
-[Description]  This package contains documents which will be packaged together and shipped as gnome-user-docs in the core GNOME distribution. They are documents targeted for GNOME end-users.
-[Suse Category]  Documentation/Other
-[License]  GPL
-[Homepage]  http://www.gnome.org

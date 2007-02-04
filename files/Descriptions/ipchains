@@ -1,5 +1,0 @@
-[Name] ipchains
-[Summary] Linux packet filter control utility (replaces ipfwadm for kernels 2.1.102+).
-[License] GNU General Public License (GPL)
-[Description] ipchains is the user-space portion of the new Linux packet filter code, which was introduced into the mainstream kernel in version 2.1.102. Included is an extensive HOWTO, man pages and the ipchains source.
-[Homepage] http://netfilter.samba.org/ipchains/

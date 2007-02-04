@@ -1,5 +1,0 @@
-[Name] calc
-[Summary] C-style arbitrary precision calculator
-[License] GNU Lesser General Public License (LGPL)
-[Description] Calc is arbitrary precision arithmetic system that uses a C-like language. It's useful as a calculator, an algorithm prototype, and as a mathematical research tool. More importantly, calc provides a machine-independent means of computation. Calc comes with a rich set of builtin mathematical and programmatic functions.
-[Homepage] http://www.isthe.com/chongo/tech/comp/calc/
