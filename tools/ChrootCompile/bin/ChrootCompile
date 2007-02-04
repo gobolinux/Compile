@@ -15,8 +15,10 @@ scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GN
 scriptUsage="[options] <path_to_recipe>"
 Add_Option_Boolean "l" "local-repository" "Look at the local repository for recipes." ""
 Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with care)." ""
+Add_Option_Boolean "s" "setup-environment" "Creates the chroot environment by calling SetupChrootEnv" ""
 Add_Option_Entry "X" "cross-compile" "Use a cross-compiler according to the configuration in Cross-<parameter>.conf." ""
 Add_Option_Entry "d" "use-directory" "Use specified directory as root for ChrootCompile." ""
+scriptExample="--local-repository /Files/Compile/LocalRecipes/Foo/1.0"
 helpOnNoArguments=yes
 Parse_Options "$@"
 
@@ -92,10 +94,17 @@ Boolean "verbose" && verbose="--verbose"
 # Verify our whereabouts
 #############################################################################
 [ "$chrootCompileDir" ] && cd "$chrootCompileDir"
-if [ ! -d BaseDependencies -a ! "$local_programs" ]
+
+if Boolean "setup-environment" || [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
-    [ ! -z "`ls`" ] && Die "Your ChrootCompile dir ($chrootCompileDir) is corrupt. Please correct and then rerun ChrootCompile."
-    Log_Normal "No ChrootCompile environment found in $chrootCompileDir. Setting things up..."
+    if [ ! -z "`ls`" ]
+    then Die "Your ChrootCompile dir is not empty. Please correct and then rerun ChrootCompile."
+    fi
+    if [ "$chrootCompileDir" ]
+    then dirname="$chrootCompileDir"
+    else dirname="$PWD"
+    fi
+    Log_Normal "No ChrootCompile environment found in $dirname. Setting things up..."
     SetupChrootEnv
 fi
 
