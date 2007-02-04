@@ -1045,8 +1045,8 @@ then
    then
       build_python_options $install_target
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
-      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       sandboxopts=$(merge_array "sandbox_options")
+      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
