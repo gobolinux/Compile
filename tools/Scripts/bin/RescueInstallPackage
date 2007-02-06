@@ -4,7 +4,7 @@
 # RescueInstallPackage
 #  A minimal functionality InstallPackage that can be used when the original script is not working
 #  
-#  Does not relly on python, sed, awk, grep, find or on any script from Scripts package despite 'RescueSymlinkProgram'
+#  Does not rely on python, sed, awk, grep, find or on any script from Scripts package despite 'RescueSymlinkProgram'
 #
 #  Depends only on Bash, CoreUtils tools (dirname, basename, ln, cp, mkdir, cut, ...), wget (if url) and tar (if .tar.bz2)
 #
