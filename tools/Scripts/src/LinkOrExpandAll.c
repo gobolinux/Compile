@@ -301,7 +301,7 @@ static void Link_Or_Expand(char* new) {
 
    // 1: new is a broken link
    if (access(realnew, R_OK) != OK) {
-      Log_Debug("Skipping %s because it is a broken link under %s.", new, goboPrograms, realnew);
+      Log_Debug("Skipping %s because it is a broken link under %s.", new, goboPrograms);
       // TODO: Do nothing by now. I'm not sure what is the correct behavior
       goto leave;
    }
