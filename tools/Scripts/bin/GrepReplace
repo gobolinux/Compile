@@ -14,7 +14,7 @@ Parse_Options "$@"
 two="`Arg 1 | sed 's%/%\\\\/%g'`"
 three="`Arg 2 | sed 's%/%\\\\/%g'`"
 
-eval `Args_To_Array files 2`
+eval `Args_To_Array files 3`
 
 {
 if Boolean "recursive"
