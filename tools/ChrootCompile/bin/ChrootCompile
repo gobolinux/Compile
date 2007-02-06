@@ -518,14 +518,16 @@ function sudo_rm_if_e() {
    fi
 }
 
-sudo_rm_if_e $root/System/Settings/passwd
-cat <<EOF > $root/System/Settings/passwd
+settingsdir=/System/Settings
+
+sudo_rm_if_e $root/$settingsdir/passwd
+cat <<EOF > $root/$settingsdir/passwd
 root:x:0:0:Gobo:/Users/root:/bin/bash
 fibo:x:21:21:Fibo:/tmp:/bin/bash
 EOF
 
-sudo_rm_if_e $root/System/Settings/group
-cat <<EOF > $root/System/Settings/group
+sudo_rm_if_e $root/$settingsdir/group
+cat <<EOF > $root/$settingsdir/group
 root:x:0:root
 bin:x:1:
 sys:x:2:root
@@ -534,8 +536,8 @@ fibo:x:21:fibo
 EOF
 
 hostname=`hostname`
-sudo_rm_if_e $root/System/Settings/hosts
-cat <<EOF > $root/System/Settings/hosts
+sudo_rm_if_e $root/$settingsdir/hosts
+cat <<EOF > $root/$settingsdir/hosts
 127.0.0.1 localhost $hostname
 EOF
 
@@ -549,11 +551,11 @@ sudo chmod 755 $root/$goboPrograms/Sudo/Settings
 $sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
 $sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
 sudo_rm_if_e $root/System/Settings/sudoers
-ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/System/Settings/sudoers
-touch $root/System/Settings/fstab
+ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/$settingsdir/sudoers
+touch $root/$settingsdir/fstab
 
 # This should limit network access inside the chroot
-#cp /etc/resolv.conf $root/System/Settings/resolv.conf
+#cp /etc/resolv.conf $root/$settingsdir/resolv.conf
 
 #############################################################################
 # Binding /dev, /proc and ./Archives inside root directory
