@@ -15,7 +15,7 @@ if [ ! "$1" -o "$1" = "--help" ]
 then
    echo "MiniSymlinkProgram" 1>&2
    echo "A minimal functionality SymlinkProgram" 1>&2
-   echo "Usage:   `basename $0` [--verbose] <program_path> <root> [cross prefix dir]" 1>&2 
+   echo "Usage:   `basename $0` [--verbose] [--new-names] <program_path> <root> [cross prefix dir]" 1>&2 
    echo "Example: `basename $0` /Programs/Glibc/Current /Mount/Disk" 1>&2 
    echo "         `basename $0` /Programs/Glibc/Current /Mount/Disk /System/ARM" 1>&2 
    exit 1
@@ -28,10 +28,21 @@ then
     shift
 fi
 
+unset newnames
+if [ "$1" = "--new-names" ]
+then
+    newnames=yes
+    shift
+fi
+
 crossprefixdir="$3"
 full_path="$1"
 root="`readlink -f $2`"
-gobolinks="$crossprefixdir/System/Links"
+
+if [ "$newnames" ]
+then gobolinks="$crossprefixdir/System/Index"
+else gobolinks="$crossprefixdir/System/Links"
+fi
 
 [ "$verbose" ] && echo " MiniSymlinkProgram: Linking ${full_path} inside ${gobolinks}" 1>&2
 
@@ -58,13 +69,18 @@ function do_link() {
    fi
 }
 
-do_link ${full_path}/bin ${gobolinks}/Executables
-do_link ${full_path}/sbin ${gobolinks}/Executables
-do_link ${full_path}/Resources/Wrappers ${gobolinks}/Executables
-do_link ${full_path}/lib ${gobolinks}/Libraries
-do_link ${full_path}/include ${gobolinks}/Headers
+if [ "$newnames" ]
+then
+   UnionSymlinkProgram ${full_path}
+else
+   do_link ${full_path}/bin ${gobolinks}/Executables
+   do_link ${full_path}/sbin ${gobolinks}/Executables
+   do_link ${full_path}/Resources/Wrappers ${gobolinks}/Executables
+   do_link ${full_path}/lib ${gobolinks}/Libraries
+   do_link ${full_path}/include ${gobolinks}/Headers
+   do_link ${full_path}/Shared ${gobolinks}/Shared
+fi
 do_link ${full_path}/../Settings ${gobolinks}/../Settings
-do_link ${full_path}/Shared ${gobolinks}/Shared
 
 ln -nfs $(basename ${full_path}) $root/$(dirname ${full_path})/Current
 

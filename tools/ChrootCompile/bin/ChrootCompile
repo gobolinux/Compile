@@ -7,13 +7,13 @@ source ScriptFunctions
 Import GoboLinux
 Import OptionParser
 
-
 #############################################################################
 # Setting options
 #############################################################################
 scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GNU GPL."
 scriptUsage="[options] <path_to_recipe>"
 Add_Option_Boolean "l" "local-repository" "Look at the local repository for recipes." ""
+Add_Option_Boolean "n" "new-names" "Compile using new names from /System/Index hierarchy." ""
 Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with care)." ""
 Add_Option_Boolean "s" "setup-environment" "Creates the chroot environment by calling SetupChrootEnv" ""
 Add_Option_Entry "X" "cross-compile" "Use a cross-compiler according to the configuration in Cross-<parameter>.conf." ""
@@ -232,18 +232,30 @@ function create_root() {
    local prefix="$2"
    local rootdir="$1/$2"
    mkdir -p $rootdir
-   mkdir -p $rootdir/System/Links/Executables
-   mkdir -p $rootdir/System/Links/Environment
-   mkdir -p $rootdir/System/Links/Libraries
-   mkdir -p $rootdir/System/Links/Headers
-   mkdir -p $rootdir/System/Links/Manuals
-   mkdir -p $rootdir/System/Links/Shared
-   mkdir -p $rootdir/System/Links/Tasks
+   if Boolean "new-names"
+   then
+      mkdir -p $rootdir/System/Index/bin
+      mkdir -p $rootdir/System/Index/sbin
+      mkdir -p $rootdir/System/Index/lib
+      mkdir -p $rootdir/System/Index/include
+      mkdir -p $rootdir/System/Index/share
+      mkdir -p $rootdir/System/Index/var
+      mkdir -p $rootdir/System/Index/var/tmp
+      mkdir -p $rootdir/System/Index/var/log
+      mkdir -p $rootdir/System/Index/var/lock
+   else
+      mkdir -p $rootdir/System/Links/Executables
+      mkdir -p $rootdir/System/Links/Libraries
+      mkdir -p $rootdir/System/Links/Headers
+      mkdir -p $rootdir/System/Links/Manuals
+      mkdir -p $rootdir/System/Links/Shared
+      mkdir -p $rootdir/System/Variable/tmp
+      mkdir -p $rootdir/System/Variable/log
+      mkdir -p $rootdir/System/Variable/lock
+   fi
    mkdir -p $rootdir/System/Settings
-   mkdir -p $rootdir/System/Variable
-   mkdir -p $rootdir/System/Variable/tmp
-   mkdir -p $rootdir/System/Variable/log
-   mkdir -p $rootdir/System/Variable/lock
+   mkdir -p $rootdir/System/Links/Environment
+   mkdir -p $rootdir/System/Links/Tasks
    mkdir -p $rootdir/System/Kernel
    mkdir -p $rootdir/System/Kernel/Boot
    mkdir -p $rootdir/System/Kernel/Objects
@@ -265,21 +277,45 @@ function create_root() {
    ln -nfs $prefix/System/Kernel/Objects $rootdir/sys
    ln -nfs $prefix/System/Kernel/Devices $rootdir/dev
    ln -nfs $prefix/System/Kernel/Status $rootdir/proc
-   ln -nfs $prefix/System/Variable $rootdir/var
-   ln -nfs $prefix/System/Variable/tmp $rootdir/tmp
-   ln -nfs $prefix/System/Links/Libraries $rootdir/lib
    ln -nfs $prefix/System/Settings $rootdir/etc
-   ln -nfs $prefix/System/Links/Executables $rootdir/bin
-   ln -nfs $prefix/System/Links/Executables $rootdir/sbin
+
+   if Boolean "new-names"
+   then
+      ln -nfs $prefix/System/Index/var $rootdir/var
+      ln -nfs $prefix/System/Index/var/tmp $rootdir/tmp
+      ln -nfs $prefix/System/Index/lib $rootdir/lib
+      ln -nfs $prefix/System/Index/bin $rootdir/bin
+      ln -nfs $prefix/System/Index/sbin $rootdir/sbin
+   
+      ln -nfs $prefix/System/Index/bin $rootdir/usr/bin
+      ln -nfs $prefix/System/Index/include $rootdir/usr/include
+      ln -nfs $prefix/System/Index/lib $rootdir/usr/lib
+      ln -nfs $prefix/System/Index/man $rootdir/usr/man
+      ln -nfs $prefix/System/Index/sbin $rootdir/usr/sbin
+      ln -nfs $prefix/System/Index/share $rootdir/usr/share
+
+      # compatibility links
+      ln -nfs $prefix/System/Index/bin $rootdir/System/Links/Executables
+      ln -nfs $prefix/System/Index/lib $rootdir/System/Links/Libraries
+      ln -nfs $prefix/System/Index/share $rootdir/System/Links/Shared
+      ln -nfs $prefix/System/Index/var $rootdir/System/Variable
+   else
+      ln -nfs $prefix/System/Variable $rootdir/var
+      ln -nfs $prefix/System/Variable/tmp $rootdir/tmp
+      ln -nfs $prefix/System/Links/Libraries $rootdir/lib
+      ln -nfs $prefix/System/Links/Executables $rootdir/bin
+      ln -nfs $prefix/System/Links/Executables $rootdir/sbin
+   
+      ln -nfs $prefix/System/Links/Executables $rootdir/usr/bin
+      ln -nfs $prefix/System/Links/Headers $rootdir/usr/include
+      ln -nfs $prefix/System/Links/Libraries $rootdir/usr/lib
+      ln -nfs $prefix/System/Links/Manuals $rootdir/usr/man
+      ln -nfs $prefix/System/Links/Executables $rootdir/usr/sbin
+      ln -nfs $prefix/System/Links/Shared $rootdir/usr/share
+   fi
 
    ln -nfs . $rootdir/usr/X11R6
    ln -nfs . $rootdir/usr/local
-   ln -nfs $prefix/System/Links/Executables $rootdir/usr/bin
-   ln -nfs $prefix/System/Links/Headers $rootdir/usr/include
-   ln -nfs $prefix/System/Links/Libraries $rootdir/usr/lib
-   ln -nfs $prefix/System/Links/Manuals $rootdir/usr/man
-   ln -nfs $prefix/System/Links/Executables $rootdir/usr/sbin
-   ln -nfs $prefix/System/Links/Shared $rootdir/usr/share
 
    if [ ! -z "$prefix" ]
    then
@@ -293,7 +329,11 @@ function create_root() {
        ln -s /System/Settings/Scripts $rootdir/System/Settings/
    fi
 
-   chmod 777 $rootdir/System/Variable/tmp # Fibo also wants to write temp files
+   # Fibo also wants to write temp files
+   if Boolean "new-names"
+   then chmod 777 $rootdir/System/Index/var/tmp
+   else chmod 777 $rootdir/System/Variable/tmp
+   fi
 }
 
 create_root $root
@@ -426,7 +466,9 @@ function load_dependency() {
    then params=""
    else params=$crossprefixdir
    fi
-   $sudo MiniInstallPackage $realcopy $verbose "$unpacked" "$root" $params
+   unset usenewnames
+   Boolean "new-names" && usenewnames="--new-names"
+   $sudo MiniInstallPackage $realcopy $verbose $usenewnames "$unpacked" "$root" $params
 }
 
 function is_blacklisted() {
@@ -647,7 +689,13 @@ fetch_archive_off_recipe "${recipedir}"
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
 #############################################################################
-export LD_LIBRARY_PATH=/System/Links/Libraries
+if Boolean "new-names"
+then
+   export LD_LIBRARY_PATH=/System/Index/lib
+   export PATH=$PATH:/System/Index/bin:/System/Index/sbin
+else
+   export LD_LIBRARY_PATH=/System/Links/Libraries
+fi
 
 function in_chroot() {
    $sudo chroot $root "$@"
