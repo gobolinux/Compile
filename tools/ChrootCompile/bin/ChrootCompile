@@ -147,6 +147,7 @@ base_dependencies=(
     "Util-Linux" # needed by Compile (mount)
     "DiffUtils"  # needed by Compile (diff)
     "Texinfo"    # needed by packages that generate info pages (makeinfo)
+    "Unionfs-Apps" # needed for /System/Index
     "Scripts"
     "Compile"
 )
@@ -445,6 +446,8 @@ function unpack_package() {
    echo "$unpacked"
 }
 
+unset hostdirs
+unset targetdirs
 function load_dependency() {
    local dep="$1"
    local repositories="$2"
@@ -463,8 +466,12 @@ function load_dependency() {
    else realcopy=""
    fi
    if [ "$arch" = "$hostarch" ]
-   then params=""
-   else params=$crossprefixdir
+   then
+       params=""
+       hostdirs="$unpacked=ro:$hostdirs"
+   else
+       params=$crossprefixdir
+       targetdirs="$unpacked=ro:$targetdirs"
    fi
    unset usenewnames
    Boolean "new-names" && usenewnames="--new-names"
@@ -543,6 +550,15 @@ do
       done
    done
 done
+   
+hostdirs=`echo $hostdirs | sed 's,:$,,g'`
+targetdirs=`echo $targetdirs | sed 's,:$,,g'`
+rwdir=`Temporary_Dir`
+mount -t unionfs -o dirs=$rwdir=rw:$hostdirs none $root/System/Index
+if [ ! -z "$targetdirs" ]
+then
+   mount -t unionfs -o dirs=$rwdir=rw:$targetdirs none $targetroot/System/Index
+fi
 
 #############################################################################
 # Creating files at $root/System/Settings/ 
@@ -792,4 +808,5 @@ fi
 
 # Remove the left over Area
 cleanup
+rm -rf "$rwdir"
 [ -d "$root" ] && rm -rf "$root"
