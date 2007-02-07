@@ -188,8 +188,6 @@ result=$?
 # Remove wrapper
 rm "$sandbox_mp/.wrapper"
        
-mount --move ${sandbox_mp}${dir} ${dir}
-
 # Cleanup
 cleanup
 
