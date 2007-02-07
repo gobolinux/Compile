@@ -117,8 +117,17 @@ function mount_union() {
     Assert_Dir ${sandbox_rw}${dir}
 	[ ! -h ${goboDevices}/root ] && ln -s / ${goboDevices}/root
     if [ "$dir" = "$goboIndex" ]
-    then uniondirs=${sandbox_rw}${dir}=rw:${unionfsPackageDir}=rw:${dir}=ro
-    else uniondirs=${sandbox_rw}${dir}=rw:${dir}=ro
+    then
+       unset programs
+       for i in /Programs/*
+       do 
+          thisprog=`readlink -f $i/Current`
+          [ "$thisprog" = "$unionfsPackageDir" ] && continue
+          programs="$thisprog=ro:$programs"
+       done
+       uniondirs="${sandbox_rw}${dir}=rw:${unionfsPackageDir}=rw:$programs"
+    else
+       uniondirs=${sandbox_rw}${dir}=rw:${dir}=ro
     fi
     mount -t unionfs -o dirs=$uniondirs none ${sandbox_mp}${dir}
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
@@ -178,9 +187,8 @@ result=$?
 
 # Remove wrapper
 rm "$sandbox_mp/.wrapper"
-
-# Postprocess $sandbox_rw
-
+       
+mount --move ${sandbox_mp}${dir} ${dir}
 
 # Cleanup
 cleanup
