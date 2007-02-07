@@ -550,14 +550,18 @@ do
       done
    done
 done
-   
-hostdirs=`echo $hostdirs | sed 's,:$,,g'`
-targetdirs=`echo $targetdirs | sed 's,:$,,g'`
-rwdir=`Temporary_Dir`
-mount -t unionfs -o dirs=$rwdir=rw:$hostdirs none $root/System/Index
-if [ ! -z "$targetdirs" ]
+
+if Boolean "new-names"
 then
-   mount -t unionfs -o dirs=$rwdir=rw:$targetdirs none $targetroot/System/Index
+   hostdirs=`echo $hostdirs | sed 's,:$,,g'`
+   targetdirs=`echo $targetdirs | sed 's,:$,,g'`
+   rwdir="$root/System/Index"
+   mount -t unionfs -o dirs=$rwdir=rw:$hostdirs none $rwdir
+   if [ ! -z "$targetdirs" ]
+   then
+      rwdir="$targetroot/System/Index"
+      mount -t unionfs -o dirs=$rwdir=rw:$targetdirs none $rwdir
+   fi
 fi
 
 #############################################################################
@@ -808,5 +812,4 @@ fi
 
 # Remove the left over Area
 cleanup
-rm -rf "$rwdir"
 [ -d "$root" ] && rm -rf "$root"
