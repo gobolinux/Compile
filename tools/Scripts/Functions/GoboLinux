@@ -477,7 +477,7 @@ function Strip_Gobo_Programs() {
 
 # Inspect to which package a linked file points to
 function Which_Package() {
-   readlink -f "$1" | Strip_Gobo_Programs | cut -d/ -f1
+   which "$1" | Strip_Gobo_Programs | cut -d/ -f1
 }
 
 # Inspect the version of the package a linked file points to
