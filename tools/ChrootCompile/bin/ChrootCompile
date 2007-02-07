@@ -192,6 +192,9 @@ hostgetclean=Clean/$hostarch
 targetgetclean=Clean/$targetarch
 putclean=Clean/$targetarch
 
+mkdir -p $hostgetclean
+mkdir -p $targetgetclean
+
 echo "ChrootCompile: Preparing $root..."
 
 #############################################################################
@@ -358,7 +361,7 @@ then
     [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile inside $root"
     $sudo mount --bind /Files/Compile $root/Files/Compile
 
-    if [ ! -z "$crosskerneldir" ]
+    if [ -d "$crosskerneldir" ]
     then
         [ "$verbose" ] && echo "ChrootCompile: bind-mounting $crosskerneldir inside $root"
         mkdir -p $root/$crosskerneldir
@@ -636,7 +639,9 @@ then
     goboModules="/System/Kernel/Modules"
     mkdir -p $root/$crosstoolchaindir
     $sudo mount --bind $crosstoolchaindir $root/$crosstoolchaindir
-    $sudo mount --bind $cross_prefix_dir/$goboModules $root/$cross_prefix_dir/$goboModules
+    if [ -d "$cross_prefix_dir/$goboModules" ]
+    then $sudo mount --bind $cross_prefix_dir/$goboModules $root/$cross_prefix_dir/$goboModules
+    fi
 fi
 
 #############################################################################
