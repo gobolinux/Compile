@@ -20,6 +20,10 @@ Parse_Options "$@"
 
 ### Operation #################################################################
 
+# Disabled for now, until unionfs 2.x branch implements dynamic bindings again.
+# The trick is done now in ChrootCompile itself.
+exit 0
+
 if [ -z "$goboIndex" ]
 then Die "You don't seem to have the /System/Index hierarchy. Use SymlinkProgram instead."
 fi
