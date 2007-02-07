@@ -33,7 +33,6 @@ Add_Option_Boolean "r" "relative" "Use relative paths to link files from ${goboP
 #TODO: check those 'R'/'r' options
 Add_Option_Boolean "t" "rootfs" "Copy program to rootfs if a symlink."
 
-
 Parse_Options "$@"
 
 Is_Writable "$goboExecutables" || Verify_Superuser
@@ -133,6 +132,10 @@ then
    youngestdir=`ls --sort=time "$packageDir" | grep -v -e "Settings" -e "Variable" -e "Current" | head -n 1`
    ln -sf "$youngestdir" "$current"
    version="$youngestdir"
+fi
+
+if [ "$goboIndex" ]
+then exec UnionSymlinkProgram $package $version
 fi
 
 Log_Normal "Symlinking ${package} ${version}."
@@ -291,7 +294,11 @@ fi
 
 ################################################################################
 
-if [ "$linkshared" != "no" ]
+if [ "$linkshared" != "no" -a ! -z "$goboIndex" ]
+then
+   Log_Normal "Symlinking shared..."
+   link_directory "$current/share" "$goboShared"
+elif [ "$linkshared" != "no" ]
 then
    Log_Normal "Symlinking shared..."
    cd "$current"

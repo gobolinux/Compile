@@ -75,6 +75,9 @@ fi
 Dir_Set Current && [ "$version" != "$requested_version" ] && ln -sfn `basename "$vdir"` "$current"
 version="$requested_version"
 
+# exports to UnionSandbox
+export unionfsPackageDir="$installPackageDir/$version"
+
 if Dir_Set Current && ! Exists "$current"
 then
    youngestdir=`ls --sort=time "$packageDir" | head -n 1`
@@ -159,6 +162,11 @@ then
    rm -f System/Kernel/Devices/null
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
    Quiet popd
+   if [ "$goboIndex" -a -d "$sandbox_rw/$goboIndex" ]
+   then
+      rm -rf "$sandbox_rw/$goboIndex"
+      rmdir "$sandbox_rw/System" 2> /dev/null
+   fi
    leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
    [ "$leftovers" ] && {
       Log_Normal "Left over files:\n$leftovers"

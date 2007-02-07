@@ -64,7 +64,13 @@ result=0
 # Called at end of script and by signal handler
 function cleanup() {
     Log_Normal "Cleaning up."
-#    Log_Verbose "Undoing the sandbox..."
+
+    if [ "$goboIndex" ]
+    then
+        Quiet pushd ${unionfsPackageDir}
+        find . -name "*__dir_opaque" | xargs rm -f
+        Quiet popd
+    fi
 
     # Unmount everythin under $sandbox_mp
     cat /proc/mounts |tac |cut -d' ' -f2 | grep $sandbox_mp | sort -r | \
@@ -97,6 +103,7 @@ function cleanup() {
 
     exit $result
 }
+
 function sandbox_die() {
     message=$1
     Log_Error $message
@@ -109,7 +116,11 @@ function mount_union() {
     Assert_Dir ${sandbox_mp}${dir}
     Assert_Dir ${sandbox_rw}${dir}
 	[ ! -h ${goboDevices}/root ] && ln -s / ${goboDevices}/root
-    mount -t unionfs -o dirs=${sandbox_rw}${dir}=rw:${dir}=ro none ${sandbox_mp}${dir}
+    if [ "$dir" = "$goboIndex" ]
+    then uniondirs=${sandbox_rw}${dir}=rw:${unionfsPackageDir}=rw:${dir}=ro
+    else uniondirs=${sandbox_rw}${dir}=rw:${dir}=ro
+    fi
+    mount -t unionfs -o dirs=$uniondirs none ${sandbox_mp}${dir}
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 }
 
@@ -123,10 +134,12 @@ Log_Verbose "Preparing the sandbox..."
 bindprograms="`cat /proc/mounts | grep " /Programs" | grep -v union_mp.tmp | cut -d' ' -f2 | sed 's,.*Area-.*\(/\)\(.*/\)\(.*/\)\(.*\),/\2\3\4,g'`"
 unionSandbox=( ${unionSandbox[@]} $bindprograms )
 
+# check if we have a bind-mount from the host's /Files/Compile
 if `cat /proc/mounts | grep -q " /Files/Compile"`
-then
-   # we have a bind-mount from the host's /Files/Compile
-   unionSandbox=( ${unionSandbox[@]} /Files/Compile )
+then unionSandbox=( ${unionSandbox[@]} /Files/Compile )
+fi
+if [ "$goboIndex" ]
+then unionSandbox=( ${unionSandbox[@]} "$goboIndex" )
 fi
 For_Each unionSandbox 'mount_union $each'
 

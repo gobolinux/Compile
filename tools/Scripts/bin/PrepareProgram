@@ -138,7 +138,7 @@ then
       fi
    fi
 
-   if Dir_Set Shared
+   if Dir_Set Shared && [ ! "$goboIndex" ]
    then
       [ -L "$programdir/share" ]  && rm -- "$programdir/share"
       [ -d "$programdir/Shared" ] && ln -nsf "$programdir/Shared" "$programdir/share"
@@ -164,7 +164,7 @@ then
    $dirop "$programdir/Resources/Defaults/Settings"
    $dirop "$programdir/Resources/Daemons"
    $dirop "$programdir/Resources/Tasks"
-   if Dir_Set Shared
+   if Dir_Set Shared && [ ! "$goboIndex" ]
    then $dirop "$programdir/Shared"
    else $dirop "$programdir/share"
    fi
@@ -192,7 +192,7 @@ then
       $linkop `Get_Dir installVariable "$programname" "$versionnumber"`
    fi
 
-   if Dir_Set Shared
+   if Dir_Set Shared && [ ! "$goboIndex" ]
    then
       if Boolean "tree"
       then
@@ -219,6 +219,13 @@ Log_Normal "Preparing..."
 rm -f config.cache
 
 Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
+   
+if [ "$goboIndex" ]
+then configureprefix="$goboIndex"
+else configureprefix="$programdir"
+fi
+configurevariable="$goboVariable"
+configuresettings="$settingsdir"
 
 if Boolean "no-default-options"
 then
@@ -227,9 +234,9 @@ elif config_is_autoconf
 then
    Log_Normal "Autoconf configure script detected."
    configure_options=(
-      --prefix="$programdir"
-      --sysconfdir="$settingsdir"
-      --localstatedir="$variabledir"
+      --prefix="$configureprefix"
+      --sysconfdir="$configuresettings"
+      --localstatedir="$configurevariable"
    )
    if [ "$goboCrossCompiling" = "yes" ]
    then
@@ -247,14 +254,16 @@ elif config_accepts_prefix
 then
    Log_Normal "Non-autoconf configure script detected (accepts --prefix)."
    configure_options=(
-      --prefix="$programdir"
+      --prefix="$configureprefix"
    )
 else
    configure_options=()
 fi
 
 eval `Args_To_Array args 3`
-
+if [ "$goboIndex" ]
+then args=(`echo ${args[@]} | sed "s,$programdir,$goboIndex,g"`)
+fi
 color_command "`Find_Conf configure.mtailrc`" \
   "$configureprogram" "${configure_options[@]}" "${args[@]}" >&$normalFD || Die "configure failed."
 

@@ -18,25 +18,33 @@ export goboMount=${goboPrefix}/Mount
 export goboPrograms=${goboPrefix}/Programs
 export goboSystem=${goboPrefix}/System
 
-#if [ "$goboInstall" = "" ]
-#then
-#    export goboInstall="$goboPrograms"
-#fi
-
 export goboScripts=${goboPrograms}/Scripts/Current/bin
 
-export goboLinks=${goboSystem}/Links
+if [ -d ${goboSystem}/Index ]
+then
+   export goboIndex=${goboSystem}/Index
+   export goboExecutables=${goboIndex}/bin
+   export goboLibraries=${goboIndex}/lib
+   export goboHeaders=${goboIndex}/include
+   export goboShared=${goboIndex}/share
+   export goboManuals=${goboIndex}
+   # still needed for Tasks and Environment
+   export goboLinks=${goboSystem}/Links
+else
+   export goboLinks=${goboSystem}/Links
+   export goboExecutables=${goboLinks}/Executables
+   export goboLibraries=${goboLinks}/Libraries
+   export goboHeaders=${goboLinks}/Headers
+   export goboShared=${goboLinks}/Shared
+   export goboManuals=${goboLinks}/Manuals
+fi
+
 export goboVariable=${goboSystem}/Variable
 export goboSettings=${goboSystem}/Settings
 export goboKernel=${goboSystem}/Kernel
 
-export goboExecutables=${goboLinks}/Executables
 export goboDaemons=${goboLinks}/Daemons
 export goboTasks=${goboLinks}/Tasks
-export goboLibraries=${goboLinks}/Libraries
-export goboHeaders=${goboLinks}/Headers
-export goboManuals=${goboLinks}/Manuals
-export goboShared=${goboLinks}/Shared
 export goboEnvironment=${goboLinks}/Environment
 
 export goboTemp=${goboVariable}/tmp
