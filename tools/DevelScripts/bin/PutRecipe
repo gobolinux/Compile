@@ -28,7 +28,7 @@ do
    # Ensures that we're not referencing old versions or CVS snapshots of the Compile tool
    for i in `find $entry -name Recipe`
    do
-      cat $i | sed 's,compile_version=.*,compile_version=1.8.1,g' > x && mv x $i
+      cat $i | sed 's,compile_version=.*,compile_version=1.8.2,g' > x && mv x $i
    done
 
    # Create a tarball and store it at /Files/Compile/PackedRecipes
