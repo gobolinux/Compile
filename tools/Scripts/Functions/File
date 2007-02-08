@@ -177,7 +177,7 @@ for line in sys.stdin:
    line = line.rstrip()
    try:
       good_sum = file_checksums[line]
-      test_sum = re.split('\s+', os.popen('sha1sum %s'%line).read().rstrip())[0]
+      test_sum = re.split('\s+', os.popen('sha1sum \"%s\"'%line).read().rstrip())[0]
       del file_checksums[line]
       if good_sum != test_sum:
          print line, 'has been modified!'
