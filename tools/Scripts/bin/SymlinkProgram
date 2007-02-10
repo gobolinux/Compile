@@ -134,10 +134,6 @@ then
    version="$youngestdir"
 fi
 
-if [ "$goboIndex" ]
-then exec UnionSymlinkProgram $package $version
-fi
-
 Log_Normal "Symlinking ${package} ${version}."
 
 ################################################################################
@@ -294,7 +290,7 @@ fi
 
 ################################################################################
 
-if [ "$linkshared" != "no" -a ! -z "$goboIndex" ]
+if [ "$linkshared" != "no" -a "$goboIndex" ]
 then
    Log_Normal "Symlinking shared..."
    link_directory "$current/share" "$goboShared"

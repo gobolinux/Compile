@@ -25,21 +25,6 @@ then
    Die "$(Arg 1) not found, or it's not a program."
 fi
 
-if [ "$goboIndex" ]
-then
-   result=`unionctl "$fakepath" --query 2> /dev/null`
-   if [ "$result" ]
-   then
-      lastname=`readlink -f "$fakepath" | sed 's,/System/Index,,g'`
-      comesfrom=`echo "$result" | awk {'print $2'} || readlink -f "$fakepath"`
-      if echo "$comesfrom" | grep -q "^$goboPrograms"
-      then echo "$comesfrom"
-      elif echo "$comesfrom" | grep -q "/Unpacked/"
-      then echo "$goboPrograms/`echo $comesfrom | sed 's,.*/Unpacked/[0-9a-zA-Z_-]*/\(.*\),\1,g'`$lastname"
-      fi
-      exit 0
-   fi
-fi
 readlink -f "$fakepath"
 
 exit 0
