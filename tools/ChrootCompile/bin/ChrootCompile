@@ -147,7 +147,6 @@ base_dependencies=(
     "Util-Linux" # needed by Compile (mount)
     "DiffUtils"  # needed by Compile (diff)
     "Texinfo"    # needed by packages that generate info pages (makeinfo)
-    "Unionfs-Apps" # needed for /System/Index
     "Scripts"
     "Compile"
 )
@@ -449,8 +448,6 @@ function unpack_package() {
    echo "$unpacked"
 }
 
-unset hostdirs
-unset targetdirs
 function load_dependency() {
    local dep="$1"
    local repositories="$2"
@@ -469,12 +466,8 @@ function load_dependency() {
    else realcopy=""
    fi
    if [ "$arch" = "$hostarch" ]
-   then
-       params=""
-       hostdirs="$unpacked=ro:$hostdirs"
-   else
-       params=$crossprefixdir
-       targetdirs="$unpacked=ro:$targetdirs"
+   then params=""
+   else params=$crossprefixdir
    fi
    unset usenewnames
    Boolean "new-names" && usenewnames="--new-names"
@@ -553,19 +546,6 @@ do
       done
    done
 done
-
-if Boolean "new-names"
-then
-   hostdirs=`echo $hostdirs | sed 's,:$,,g'`
-   targetdirs=`echo $targetdirs | sed 's,:$,,g'`
-   rwdir="$root/System/Index"
-   mount -t unionfs -o dirs=$rwdir=rw:$hostdirs none $rwdir
-   if [ ! -z "$targetdirs" ]
-   then
-      rwdir="$targetroot/System/Index"
-      mount -t unionfs -o dirs=$rwdir=rw:$targetdirs none $rwdir
-   fi
-fi
 
 #############################################################################
 # Creating files at $root/System/Settings/ 

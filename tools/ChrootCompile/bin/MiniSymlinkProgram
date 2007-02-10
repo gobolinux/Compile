@@ -64,14 +64,22 @@ function do_link() {
    if [ -d "$root/$1" ]
    then
       cd $root/$2
-      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative
+      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative --always-expand
       cd - &> /dev/null
    fi
 }
 
 if [ "$newnames" ]
 then
-   UnionSymlinkProgram ${full_path}
+   do_link ${full_path}/bin ${gobolinks}/bin
+   do_link ${full_path}/sbin ${gobolinks}/sbin
+   do_link ${full_path}/Resources/Wrappers ${gobolinks}/bin
+   do_link ${full_path}/lib ${gobolinks}/lib
+   do_link ${full_path}/include ${gobolinks}/include
+   if [ -h ${full_path}/share ]
+   then do_link ${full_path}/Shared ${gobolinks}/share
+   else do_link ${full_path}/share  ${gobolinks}/share
+   fi
 else
    do_link ${full_path}/bin ${gobolinks}/Executables
    do_link ${full_path}/sbin ${gobolinks}/Executables
