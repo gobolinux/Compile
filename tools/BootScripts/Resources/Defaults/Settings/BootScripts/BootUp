@@ -21,7 +21,7 @@ Exec "Setting hostname to $HostName..."       hostname "$HostName"
 [ "${UserDefinedModules[*]}" ] && \
 Exec "Loading user-defined kernel modules..." LoadModules
 
-Exec "Creating utmp and wtmp..."              CreateChmod 644 $goboVariable/run/{u,w}tmp
+Exec "Creating utmp and wtmp..."              CreateChmod 644 $goboVariable/{run/utmp,log/wtmp}
 Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastboot /forcefsck
 
 #Exec "Starting PCMCIA daemon..."             PCMCIA Start
