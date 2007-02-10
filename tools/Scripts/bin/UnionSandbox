@@ -117,7 +117,6 @@ function mount_union() {
     Assert_Dir ${sandbox_rw}${dir}
 	[ ! -h ${goboDevices}/root ] && ln -s / ${goboDevices}/root
     uniondirs=`echo "${sandbox_rw}${dir}=rw:${dir}=ro" | sed "s,$unionfsPackageDir=ro,$unionfsPackageDir=rw,g"`
-    echo mount -t unionfs -o dirs=$uniondirs none ${sandbox_mp}${dir}
     mount -t unionfs -o dirs=$uniondirs none ${sandbox_mp}${dir}
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 }
