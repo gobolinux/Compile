@@ -37,7 +37,7 @@ do
                    -e 's,is_meta=yes,recipe_type=meta,g' \
                    -e 's,is_scons=yes,recipe_type=scons,g' \
                    -e 's,is_manifest=yes,recipe_type=manifest,g' \
-                   > x && mv x $i; done
+                   > x && mv x $i
    done
 
    # Create a tarball and store it at /Files/Compile/PackedRecipes
