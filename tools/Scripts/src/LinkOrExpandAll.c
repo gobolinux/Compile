@@ -33,6 +33,7 @@ static char* relativeGoboPrograms = NULL;
 static bool overwrite = false;
 static bool relative = false;
 static bool nofollow = false;
+static bool alwaysexpand = false;
 
 inline static void os_write(int fd, ...) {
    va_list ap;
@@ -306,8 +307,12 @@ static void Link_Or_Expand(char* new) {
       goto leave;
    }
    
+   bool realnewIsDir = os_path_isdir(realnew);
+
    // 2: name of new is not being used
    if (*realold == '\0') {
+	  if (alwaysexpand && realnewIsDir)
+		  goto create_expanded;
       Log_Verbose("Creating link: %s", bn);
       Log_Debug("symlink1 %s ./%s", realnew, bn);
       create_single_link(realnew, bn);
@@ -328,7 +333,6 @@ static void Link_Or_Expand(char* new) {
    }
 
    bool bnIsDir = os_path_isdir(bn);
-   bool realnewIsDir = os_path_isdir(realnew);
 
    // 4: name of new was being used by an directory (probably with links)
    if ((!bnIsLink) && bnIsDir && realnewIsDir) {
@@ -340,6 +344,7 @@ static void Link_Or_Expand(char* new) {
    
    // 5: name of new was being used by an link to a directory
    if (bnIsLink && realoldIsDir && realnewIsDir) {
+  create_expanded:
       Log_Normal("Creating expanded directory '%s'...", bn);
       unlink(bn);
       mkdir(bn, 0777);
@@ -399,7 +404,7 @@ int main(int argc, char** argv) {
       lenGoboPrograms--;
    realpath(goboPrograms, realpathGoboPrograms);
    if (argc < 2 || strcmp(argv[1], "--help") == 0) {
-      fprintf(stderr, "Usage: %s <dir> [--overwrite] [--relative] [--no-follow]\n", argv[0]);
+      fprintf(stderr, "Usage: %s <dir> [--overwrite] [--relative] [--no-follow] [--always-expand]\n", argv[0]);
       exit(1);
    }
    while (argc > 2) {
@@ -410,6 +415,8 @@ int main(int argc, char** argv) {
          overwrite = true;
       } else if (strcmp(argv[argc], "--no-follow") == 0) {
          nofollow = true;
+      } else if (strcmp(argv[argc], "--always-expand") == 0) {
+         alwaysexpand = true;
       }
    }
 
