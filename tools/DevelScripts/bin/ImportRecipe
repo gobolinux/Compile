@@ -26,6 +26,7 @@ Parse_Options "$@"
 # ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
 Parse_Conf CompileSubversion.conf
+Parse_Conf $goboSettings/Compile/Compile.conf
 
 ### Cleanup ###################################################################
 
@@ -73,8 +74,23 @@ fi
 ### Find a basis recipe in trunk ##############################################
 
 unset checkedout
-trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
-existingprogram=`ls "$trunk" | grep -i "^$program$"`
+if ! trunk=`Get_Local_Trunk`
+then 
+   if Ask "You don't seem to have a copy of the svn trunk/revisions tree. Fetch it?"
+   then
+      Log_Normal "Calling 'svn checkout'. This is going to take a lot of time."
+      Quiet pushd $compileDir
+      svn checkout $compileSubversion Subversion || Die "Error doing the svn checkout."
+      Quiet popd
+      Log_Normal "Checkout finished."
+      checkedout=yes
+   fi
+   if ! trunk=`Get_Local_Trunk` || [ ! "$checkedout" ]
+   then Die "Could not find a valid svn trunk."
+   fi
+fi
+
+existingprogram=`ls "$trunk" 2> /dev/null | grep -i "^$program$"`
 if [ ! "$existingprogram" ]
 then
    Log_Normal "Trying to checkout $program..."
@@ -84,7 +100,7 @@ then
    checkedout=yes
 fi
 
-existingprogram=`ls "$trunk" | grep -i "^$program$"`
+existingprogram=`ls "$trunk" 2> /dev/null | grep -i "^$program$"`
 if [ "$existingprogram" ]
 then
    [ `echo "$existingprogram" | wc -l` -eq 1 ] || Die "More than one capitalization for $program found in trunk. Please check."
