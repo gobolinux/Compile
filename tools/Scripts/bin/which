@@ -22,7 +22,8 @@ export PATH="$savepath"
 fakepath=`type -p "$(Arg 1)"`
 if [ ! "$fakepath" ]
 then
-   Die "$(Arg 1) not found, or it's not a program."
+   echo "$(Arg 1) not found, or it's not a program." >&2
+   exit 1
 fi
 
 readlink -f "$fakepath"
