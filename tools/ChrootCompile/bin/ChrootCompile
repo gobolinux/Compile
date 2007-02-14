@@ -132,6 +132,7 @@ base_dependencies=(
     "Bzip2"      # needed by Atool
     "Gzip"       # needed by Atool
     "Tar"        # needed by Atool
+    "Unzip"      # needed by Atool
     "Perl"       # needed by Atool
     "Atool"      # needed by Compile
     "ZLib"       # needed by File
@@ -780,7 +781,7 @@ function in_target() {
 
 # FIXME: Should be based on Directories.conf
 date=`date +%Y%m%d`
-finalversion=`echo $version | sed -e "s,^cvs-r.*,$date-CVS,1" -e "s,^svn-r.*,$date-SVN,1"`
+finalversion=`echo $version | sed -e "s,^cvs.*,$date-CVS,1" -e "s,^svn.*,$date-SVN,1"`
 if [ "$chrootcompileMode" = "gobo" ]
 then
    package=`in_target in_chroot CreatePackage --no-sign --no-verify $name $finalversion`
