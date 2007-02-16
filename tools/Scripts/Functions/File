@@ -1,4 +1,4 @@
-#!/bin/sh (source)
+#!/bin/bash (source)
 
 # Some utility functions for common tests
 function Make_Directory() { mkdir -p "$@" ;}

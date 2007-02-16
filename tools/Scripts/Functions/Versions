@@ -1,4 +1,4 @@
-#!/bin/sh "Do not execute. Shebang line exists for syntax highlighting."
+#!/bin/bash "Do not execute. Shebang line exists for syntax highlighting."
 
 
 # A file containing simple functions used in determining version numbers of 

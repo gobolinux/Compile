@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # FixAttributes - Fix attributes from files based on its contents

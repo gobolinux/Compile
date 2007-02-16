@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 #   bash_completion - some programmable completion functions for bash 2.05a
 #
-#   $Id: completion.bash,v 1.3 2006-06-14 23:45:18 drmoose Exp $
+#   $Id: completion.bash,v 1.4 2007-02-16 13:02:29 lucasvr Exp $
 #
 #   Copyright (C) Ian Macdonald <ian@caliban.org>
 #

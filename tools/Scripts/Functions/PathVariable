@@ -1,4 +1,4 @@
-#!/bin/sh (magic line added for syntax highlighting only)
+#!/bin/bash (magic line added for syntax highlighting only)
 
 # Usage: Path_Contains <variable> <path>
 # Returns 0 (success) if <path> is a substring of $<variable>

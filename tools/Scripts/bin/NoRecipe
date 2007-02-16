@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 cat <<EOF
 NoRecipe 1.0a - check for installed packages which need recipes

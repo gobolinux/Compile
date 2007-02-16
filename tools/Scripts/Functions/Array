@@ -1,4 +1,4 @@
-#!/bin/sh (source)
+#!/bin/bash (source)
 
 function Break_Into_Array() {
    local colonlist="$1"

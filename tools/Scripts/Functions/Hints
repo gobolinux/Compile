@@ -1,4 +1,4 @@
-#!/bin/sh "Do not execute. Shebang line exists for syntax highlighting."
+#!/bin/bash "Do not execute. Shebang line exists for syntax highlighting."
 
 
 # A file containing the code that parses hints files. This was mostly written

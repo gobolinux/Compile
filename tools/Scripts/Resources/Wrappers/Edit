@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 [ "$EDITOR"        ] && exec $EDITOR "$@"
 [ "`which mcedit 2> /dev/null`" ] && exec mcedit "$@"
 [ "`which nano 2> /dev/null`"   ] && exec nano "$@"
