@@ -26,7 +26,7 @@ Parse_Options "$@"
 # ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
 Parse_Conf CompileSubversion.conf
-Parse_Conf $goboSettings/Compile/Compile.conf
+Parse_Conf Compile/Compile.conf
 
 ### Cleanup ###################################################################
 
