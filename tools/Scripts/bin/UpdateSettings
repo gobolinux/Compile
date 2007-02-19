@@ -244,7 +244,6 @@ function update_one_file() {
    local num difftype file opts_requested opts_available hints hint instruction
   
    Parameters "$@" num difftype cur default
-   local repeat=yes
    local file_to_show=${cur:-$default}
    local file="${file_to_show}"
 
@@ -348,7 +347,7 @@ function update_one_file() {
             Log_Terse "Unsupported instruction '${instruction}'"
             ACTION=s
             ;;
-      esac # riiculous
+      esac # ridiculous
    
       attempt_action "$num" "$difftype" "$cur" "$default" "${ACTION}"
       local result="$?"
@@ -518,6 +517,7 @@ function auto_merge() {
 
 function attempt_action() {
    Parameters "$@" num difftype cur default action
+   local repeat=no
    
    case "$action" in
       s) if [ "${lastSuccessfulMerge}" = "${cur}" ]; then
@@ -546,6 +546,7 @@ function attempt_action() {
          ;;
          
       m) merge_and_edit "$cur" "$default"
+         repeat=yes
          ;;
          
       d) if Exists "$cur"; then
@@ -572,6 +573,9 @@ function attempt_action() {
          repeat=yes
          ;;
    esac
+   if [ "$repeat" = "yes" ]
+   then attempt_action $@
+   fi
 }
 
 function update_files()
