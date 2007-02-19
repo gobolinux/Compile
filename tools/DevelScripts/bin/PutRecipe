@@ -41,8 +41,18 @@ do
                    > x && mv x $i
    done
 
-   # Create a tarball and store it at /Files/Compile/PackedRecipes
+   # Removes revisions from submitted recipes
    program=`basename $entry`
+   for version in $entry/*
+   do
+      if echo "$version" | grep -q "\-r"
+      then
+         newversion=`echo $version | sed 's,/\(.*\)-r.*,/\1,g'`
+         mv "$version" "$newversion"
+      fi
+   done
+   
+   # Create a tarball and store it at /Files/Compile/PackedRecipes
    PackRecipe $program || exit 1
 
    for tarball in `ls -t ${compilePackedRecipesDir}/${program}*`
