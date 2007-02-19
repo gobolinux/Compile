@@ -5,8 +5,9 @@
 source ScriptFunctions
 Import GoboLinux
 Import OptionParser
-source $goboSettings/Compile/Compile.conf
-source $goboSettings/Compile/CompileSubversion.conf
+
+Parse_Conf Compile/Compile.conf
+Parse_Conf CompileSubversion.conf
 
 ### Options ###################################################################
 
