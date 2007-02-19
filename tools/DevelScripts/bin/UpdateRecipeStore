@@ -46,7 +46,7 @@ function update_recipe() {
    done
    Quiet popd
 
-   # Loop 2: remove revision tarballs which doesn't exist no more in the svn.
+   # Loop 2: remove revision tarballs which doesn't exist anymore in the svn.
    Quiet pushd /Files/Recipe-Store
    for i in *
    do
