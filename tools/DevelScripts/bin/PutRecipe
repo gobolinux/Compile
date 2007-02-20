@@ -14,7 +14,7 @@ Parse_Conf CompileSubversion.conf
 scriptDescription="Put a recipe in the svn trunk/revision tree and upload it to the store."
 scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="<recipe dirs>"
+scriptUsage="[<recipe dirs>|<tarballs>]"
 scriptExample="/Files/Compile/LocalRecipes/Firefox"
 Add_Option_Boolean "S" "skip-store" "Don't upload to the recipe store"
 Parse_Options "$@"
@@ -22,10 +22,16 @@ Parse_Options "$@"
 ### Operation #################################################################
 
 unset programlist
-eval `Args_To_Array recipedirs`
+eval `Args_To_Array suppliedrecipes`
 
-for entry in ${recipedirs[@]}
+for entry in ${suppliedrecipes[@]}
 do
+   # Uncompress the file if it's a tarball
+   if `file $entry | grep -q bzip2`
+   then 
+      entry=`aunpack $entry --extract-to=$compileLocalRecipesDir | cut -d/ -f1 | head -n 1`
+   fi
+
    # Enforce new declaration style and ensure that a new version of Compile is set.
    for i in `find $entry -name Recipe`
    do
