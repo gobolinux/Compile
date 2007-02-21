@@ -30,6 +30,7 @@ Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
 "from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
+Add_Option_Boolean "S" "no-sign-check" "Do not check the signature."
 Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files. Same as '--unmanaged skip' (deprecated)"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
@@ -254,28 +255,34 @@ else
    Verbose tar "$taroption" "$archive" -C ${goboPrograms}
 fi
 
-verify_opts="--quiet"
-package_verified="false"
-Boolean "verbose" && verify_opts="--verbose"
-VerifyProgram $verify_opts "$packagename" "$packageversion"
-result="$?"
-if [ $result -eq 0 ]
+if Boolean "no-sign-check"
 then
-   Log_Normal "Package Signature Verified"
+   Log_Normal "Skipping package's signature verification."
    package_verified="true"
-elif [ $result -eq 2 ]
-then
-   Log_Question "GnuPG not installed.  Unable to verify signature"
-   Ask_Continue "Continue install?"
-elif [ $result -eq 4 ] || [ $result -eq 5 ] 
-then
-   Log_Question "No signature.  Unable to verify package"
-   Ask_Continue "Continue install?"
-elif [ $result -eq 1 ] || [ $result -eq 3 ] 
-then
-   Log_Error "Invalid signature.  Package has been modified"
-   Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
-   exit 1
+else
+   verify_opts="--quiet"
+   package_verified="false"
+   Boolean "verbose" && verify_opts="--verbose"
+   VerifyProgram $verify_opts "$packagename" "$packageversion"
+   result="$?"
+   if [ $result -eq 0 ]
+   then
+      Log_Normal "Package Signature Verified"
+      package_verified="true"
+   elif [ $result -eq 2 ]
+   then
+      Log_Question "GnuPG not installed.  Unable to verify signature"
+      Ask_Continue "Continue install?"
+   elif [ $result -eq 4 ] || [ $result -eq 5 ] 
+   then
+      Log_Question "No signature.  Unable to verify package"
+      Ask_Continue "Continue install?"
+   elif [ $result -eq 1 ] || [ $result -eq 3 ] 
+   then
+      Log_Error "Invalid signature.  Package has been modified"
+      Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
+      exit 1
+   fi
 fi
 
 # Hack for updating Glibc
