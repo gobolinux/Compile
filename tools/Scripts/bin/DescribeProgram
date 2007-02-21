@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 # (C) 2004 Andre Detsch. Released under the GNU GPL.
 
