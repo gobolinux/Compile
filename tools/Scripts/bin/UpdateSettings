@@ -240,6 +240,7 @@ function merge_and_edit()
 # attempt is made based on a hints file. In --interactive mode (and in --quick
 # mode in the case of conflicts), the user is prompted for an action with the
 # input_action function
+repeatQuestion=no
 function update_one_file() {
    local num difftype file opts_requested opts_available hints hint instruction
   
@@ -351,6 +352,7 @@ function update_one_file() {
    
       attempt_action "$num" "$difftype" "$cur" "$default" "${ACTION}"
       local result="$?"
+      [ "$repeatQuestion" = yes ] && repeatQuestion=no && update_one_file $@
       [ "$result" = "$SKIP_ALL_MAGIC_NUMBER" ] && return 1
       [ "$result" = 0 ] && return 0
    done
@@ -418,7 +420,6 @@ function input_action()
    done
    ACTION=$action
 }
-
 
 function auto_merge() {
    Parameters "$@" num difftype cur default action
@@ -517,7 +518,6 @@ function auto_merge() {
 
 function attempt_action() {
    Parameters "$@" num difftype cur default action
-   local repeat=no
    
    case "$action" in
       s) if [ "${lastSuccessfulMerge}" = "${cur}" ]; then
@@ -546,7 +546,7 @@ function attempt_action() {
          ;;
          
       m) merge_and_edit "$cur" "$default"
-         repeat=yes
+         repeatQuestion=yes
          ;;
          
       d) if Exists "$cur"; then
@@ -560,22 +560,19 @@ function attempt_action() {
       vn)out "Viewing $default..."
          out "-------------------------------------------------"
          $PAGER "$default" <&$stdinFD >&$stdoutFD
-         repeat=yes
+         repeatQuestion=yes
          ;;
          
       vc) out "Viewing $cur...."
          out "-------------------------------------------------"
          $PAGER "$cur" <&$stdinFD >&$stdoutFD
-         repeat=yes
+         repeatQuestion=yes
          ;;
          
       l) list_diffs -s >&$questionFD
-         repeat=yes
+         repeatQuestion=yes
          ;;
    esac
-   if [ "$repeat" = "yes" ]
-   then attempt_action $@
-   fi
 }
 
 function update_files()
