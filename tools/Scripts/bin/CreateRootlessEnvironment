@@ -154,7 +154,9 @@ then
    [ -e "${goboPrefix}/System/Settings/bashrc" ] && . "${goboPrefix}/System/Settings/bashrc"
 fi
 
-export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages:$PYTHONPATH
+export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages:${PYTHONPATH:+:$PYTHONPATH}
+
+export PKG_CONFIG_PATH=${goboPrefix}/System/Links/Libraries/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}}
 
 # Without calling cd, prompt does not display ~, but ${HOME}
 { [ `readlink -f ${PWD}` = `readlink -f ${HOME}` ] && cd; } 2> /dev/null
