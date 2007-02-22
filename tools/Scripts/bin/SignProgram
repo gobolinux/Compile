@@ -36,7 +36,7 @@ fi
 ########## Version ##########
 if [ -f "$(Arg 1)" ]
 then
-   filepath=`readlink -f $(Arg 1)`
+   filepath=`readlink -f $goboPrograms/$(Arg 1)`
    bn=`basename $filepath`
    package=`Get_Token "$bn" "--" "0"`
    version=`Get_Token "$bn" "--" "1"`
