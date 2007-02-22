@@ -250,6 +250,10 @@
         <translation>Superuser Einstellungen</translation>
     </message>
     <message>
+        <source>Invalid username</source>
+        <translation>Benutzername ungültig</translation>
+    </message>
+    <message>
         <source>Passwords typed do not match</source>
         <translation>Eingegebene Kennwörter stimmen nicht überein</translation>
     </message>

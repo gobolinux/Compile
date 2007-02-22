@@ -374,6 +374,10 @@ Você está pronto para proceder com a instalação.</translation>
         <translation type="unfinished">Você agora pode reiniciar o sistema e aproveitar todas as vantagens do GoboLinux :)</translation>
     </message>
     <message>
+        <source>Invalid username</source>
+        <translation type="unfinished">Nome de usuário inválido</translation>
+    </message>
+    <message>
         <source>Passwords typed do not match</source>
         <translation type="unfinished">Senhas digitadas não conferem</translation>
     </message>
