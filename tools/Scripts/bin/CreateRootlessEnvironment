@@ -60,7 +60,7 @@ done
 
 for app in "${gnuSystemDependencies[@]}"
 do
-   if ! { $app --version 2> /dev/null | grep -q GNU ;}
+   if ! { $app --version 2> /dev/null | grep -qi "GNU\|Free Software Foundation" ;}
    then
       echo "Rootless GoboLinux requires the GNU version of $app in your \$PATH."
       exit 1
