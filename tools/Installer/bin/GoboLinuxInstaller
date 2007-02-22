@@ -585,7 +585,7 @@ addedUsers = {}
 def addUser() :
 	l,v = installer.getValue('Users')
 	newLogin = installer.getValue('NewUserLogin')
-	p = re.compile('[a-z_][a-z0-9_-]*$')
+	p = re.compile('[a-z_][a-z0-9_-]*[$]?$')
 	if not p.match(newLogin) :
 		installer.showMessageBox(tr('Invalid username'), ['Ok'])
 		installer.setValue('NewUserPasswordRetyped', '')
