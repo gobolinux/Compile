@@ -21,9 +21,11 @@ function our_which() {
 
 CURRENT_SCRIPTS_VERSION= # This variable is automatically set by Make
 hostSystemDependencies=(
-   sh mv cp find grep
+   sh
+   sed
+   mv cp chmod chown md5sum readlink seq sha1sum
+   find grep
    python
-   seq
    wget
 )
 
