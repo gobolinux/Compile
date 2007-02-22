@@ -66,7 +66,7 @@ function WriteAtStatus() {
 ##########
 
 STATUS_START=8
-let STATUS_SIZE=(ROWS-STATUS_START-2)/2
+STATUS_SIZE=$(( (ROWS-STATUS_START-2)/2 ))
 
 ColorTop="echo -en \\033[0;36m"
 ColorStatus="echo -en \\033[0;44;37m"
