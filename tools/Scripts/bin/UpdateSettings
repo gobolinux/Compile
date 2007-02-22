@@ -161,14 +161,14 @@ function list_diffs()
 
    if Is_Directory Settings && ! Is_Directory $version/Resources/Defaults/Settings; then
 
-      find Settings -wholename '*CVS' -prune -o -print \
+      find Settings -name '*CVS' -prune -o -print \
          | sed 's,^,del: ,'\
          | cat -n\
          | sed 's/^ \{4\}//;s/   / /'
 
    elif ! Is_Directory Settings && Is_Directory $version/Resources/Defaults/Settings; then
 
-      find $version/Resources/Defaults/Settings -wholename '*CVS' -prune -o -print \
+      find $version/Resources/Defaults/Settings -name '*CVS' -prune -o -print \
          | sed 's,^,new: ,'\
          | cat -n\
          | sed 's/^ \{4\}//;s/   / /'
@@ -610,14 +610,14 @@ function update_files()
 curdir="$pdir/Settings"
 defaultdir="$pdir/$version/Resources/Defaults/Settings"
 
-if find "$curdir" -not -type d -and -not -path "*CVS/*" -quit 2> /dev/null
+if find "$curdir" -not -type d -and -not -path "*CVS/*" &> /dev/null
 then
    has_current=yes;
 else
    has_current=no;
 fi
 
-if find "$defaultdir" -not -type d -and -not -path "*CVS/*" -quit 2> /dev/null
+if find "$defaultdir" -not -type d -and -not -path "*CVS/*" &> /dev/null
 then
    has_default=yes;
 else

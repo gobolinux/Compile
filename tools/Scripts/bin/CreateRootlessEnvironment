@@ -76,6 +76,7 @@ done
 # default goboPrefix is ${HOME}
 if [ "$1" ] 
 then
+   mkdir -p "$1"
    export goboPrefix="`readlink -f $1`"
 else
    export goboPrefix=${HOME}
