@@ -143,7 +143,11 @@ function Sign_File() {
    Parameters "$@" file sig
 
    gpg=`(which gpg2 || which gpg) 2> /dev/null`
-   output="`$gpg ${GPG_opts} --armor --output - --detach-sig "$file"`"
+   unset gpgpasswd
+   if [ -f "$HOME/.gnupg/passphrase" ]
+   then gpgpasswd="--passphrase-file $HOME/.gnupg/passphrase"
+   fi
+   output="`$gpg ${GPG_opts} $gpgpasswd --armor --output - --detach-sig "$file"`"
    result="$?"
 
    Quiet $sudo_exec rm -f "$sig"
