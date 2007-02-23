@@ -44,6 +44,8 @@ do
                    -e 's,is_meta=yes,recipe_type=meta,g' \
                    -e 's,is_scons=yes,recipe_type=scons,g' \
                    -e 's,is_manifest=yes,recipe_type=manifest,g' \
+                   -e 's,$target/../Settings,$settings_target,g' \
+                   -e 's,$target/../Variable,$variable_target,g' \
                    > x && mv x $i
    done
 
