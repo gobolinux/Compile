@@ -160,6 +160,7 @@ then
    rm -f Programs/Glibc/Settings/ld.so.cache
    rm -f System/Kernel/Devices/null
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
+   find -type f -name "*__dir_opaque" | xargs rm -f &> /dev/null
    if [ "$goboIndex" ]
    then
       # Sometimes writes to symlinks let files appear in a previous directory of the same program.
