@@ -36,10 +36,13 @@ fi
 ########## Version ##########
 if [ -f "$(Arg 1)" ]
 then
-   filepath=`readlink -f $goboPrograms/$(Arg 1)`
+   if echo $(Arg 1) | grep -q tar.bz2
+   then filepath=`readlink -f $(Arg 1)`
+   else filepath=`readlink -f $goboPrograms/$(Arg 1)`
+   fi
    bn=`basename $filepath`
    package=`Get_Token "$bn" "--" "0"`
-   version=`Get_Token "$bn" "--" "1"`
+   version=`Get_Token "$bn" "--" "1" | sed 's,\(.*\)-r.*,\1,g'`
    prefix=$goboTemp
    [ -d $prefix/$package/$version ] && rm -rf $prefix/$package/$version
    Log_Normal "Unpacking $filepath at $prefix..."
