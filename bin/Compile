@@ -33,6 +33,7 @@ Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
+Add_Option_Boolean "U" "no-update-settings" "Do not UpdateSettings."
 Add_Option_Boolean "S" "no-symlink" "Do not symlink."
 Add_Option_Boolean "T" "no-strip" "Do not strip executables."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
@@ -157,7 +158,7 @@ function do_symlink() {
       PrepareProgram --tree-cleanup $batch "$1" "$2"
    else
       if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
-      then UpdateSettings "$1" "$2"
+      then ! Boolean "no-update-settings" && UpdateSettings "$1" "$2"
       fi
       [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
