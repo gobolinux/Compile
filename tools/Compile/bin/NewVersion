@@ -155,6 +155,21 @@ then
    Log_Normal "This recipe contains patches. Please check if they still apply."
 fi
 
+if [ "$url" ]
+then
+   Log_Normal "Downloading source code..."
+   if ! FetchArchive "$newrecipedir/Recipe"
+   then
+      rm -rf "$newrecipedir"
+      Die "Could not download source code, aborting."
+   fi
+   file="`basename $url`"
+   filesize="`Get_Size $compileArchivesDir/$file`"
+   filemd5="`Get_MD5 $compileArchivesDir/$file`"
+   tmpfile=`Temporary_File`
+   cat "$newrecipedir/Recipe" | sed "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" > $tmpfile && mv $tmpfile "$newrecipedir/Recipe"
+fi
+
 Log_Normal "Recipe template for $packagename $newversion created"
 Log_Normal "Printing result ($newrecipedir/Recipe):"
 cat "$newrecipedir/Recipe"
