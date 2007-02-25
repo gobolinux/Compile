@@ -36,7 +36,7 @@ startat="$(Entry start-at)"
 cat "$listfile" | while read i; do
    j=`echo $i | cut -f1 -d' '`
    [ "$startat" = "$j" ] && startat=
-   [ "$startat" -o ! "$j" -o "$j" = "#" ] && continue
+   echo "$j" | grep -q "^#" || [ "$startat" -o ! "$j" ] && continue
    [ "$j" = "exit" ] && break
 
    if ls Clean/i686/$j--* 2> /dev/null
