@@ -71,8 +71,8 @@ do
 
       Quiet pushd $compileLocalTrunk/$program/$version
       contextlines=`svn diff --non-interactive | wc -l`
-      [ $contextlines -eq 0 ] && continue
       Quiet popd
+      [ $contextlines -eq 0 ] && continue
     
       # Commit the trunk and/or the revision tree.
       PublishRevision --skip-lint $program $version || exit 1
