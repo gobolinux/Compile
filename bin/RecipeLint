@@ -233,6 +233,7 @@ cat Recipe | perl -e '
       file_md5 => "string",
       file_sizes => "array",
       file_md5s => "array",
+      uncompress => "string",
       unpack_files => "string",
       docs => "array",
       dir => "string",
