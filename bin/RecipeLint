@@ -730,7 +730,7 @@ test_resources() {
          fi
       done
    else
-      ERROR "No $depfile file."
+      [ ! "$part_of" ] && ERROR "No $depfile file."
    fi
    [ "$part_of" ] && Quiet popd
    [ -f Resources/Description ] || {
