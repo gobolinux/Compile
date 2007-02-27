@@ -29,9 +29,11 @@ then
 fi
 
 unset newnames
+unset alwaysexpand
 if [ "$1" = "--new-names" ]
 then
     newnames=yes
+    alwaysexpand="--always-expand"
     shift
 fi
 
@@ -64,7 +66,7 @@ function do_link() {
    if [ -d "$root/$1" ]
    then
       cd $root/$2
-      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative --always-expand
+      goboPrefix=$root goboPrograms=$root/Programs LinkOrExpandAll $root/$1 --relative $alwaysexpand
       cd - &> /dev/null
    fi
 }
