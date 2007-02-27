@@ -302,8 +302,11 @@ static void Link_Or_Expand(char* new) {
 
    // 1: new is a broken link
    if (access(realnew, R_OK) != OK) {
-      Log_Debug("Skipping %s because it is a broken link under %s.", new, goboPrograms);
-      // TODO: Do nothing by now. I'm not sure what is the correct behavior
+      // link it anyway, as it can become a valid link inside the chroot
+      Log_Verbose("Creating (broken) link: %s", bn);
+      char buf[PATH_MAX];
+      readlink(new, buf, sizeof(buf));
+      create_single_link(buf, bn);
       goto leave;
    }
    
@@ -311,8 +314,8 @@ static void Link_Or_Expand(char* new) {
 
    // 2: name of new is not being used
    if (*realold == '\0') {
-	  if (alwaysexpand && realnewIsDir)
-		  goto create_expanded;
+      if (alwaysexpand && realnewIsDir)
+         goto create_expanded;
       Log_Verbose("Creating link: %s", bn);
       Log_Debug("symlink1 %s ./%s", realnew, bn);
       create_single_link(realnew, bn);
