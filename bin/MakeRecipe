@@ -276,7 +276,8 @@ else
       makevars=()
       for var in BASEDIR DESTDIR PREFIX basedir destdir prefix
       do
-         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*=" &> /dev/null
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*="  &> /dev/null || \
+            cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*?=" &> /dev/null
          then
             makevars=("${makevars[@]}" "\"$var=\$target\"")
             Log_Normal "Detected Makefile variable $var."
@@ -284,7 +285,8 @@ else
       done
       for var in sysconfdir
       do
-         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*=" &> /dev/null
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*="  &> /dev/null || \
+            cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*?=" &> /dev/null
          then
             makevars=("${makevars[@]}" "\"$var=\$settings_target\"")
             Log_Normal "Detected Makefile variable $var."
