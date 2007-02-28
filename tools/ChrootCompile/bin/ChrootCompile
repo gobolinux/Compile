@@ -678,7 +678,7 @@ function fetch_archive_off_recipe() {
       unset is_meta
       unset include
       source "$1/Recipe"
-      if [ "$is_meta" = "yes" ]
+      if [ "$is_meta" = "yes" -o "$recipe_type" = "meta" ]
       then
          for pkgver in "${include[@]}"
          do
