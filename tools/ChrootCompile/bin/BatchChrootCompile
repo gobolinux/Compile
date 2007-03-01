@@ -34,8 +34,8 @@ exec 6<&0
 
 startat="$(Entry start-at)"
 cat "$listfile" | while read i; do
-   name=`echo $i | cut -f1 -d' '`
-   version=`echo $i | cut -f2 -d' '`
+   name=`echo $i | awk {'print $1'}`
+   version=`echo $i | awk {'print $2'}`
    if echo "${version:0:1}" | grep -q "^#"
    then unset version
    fi
