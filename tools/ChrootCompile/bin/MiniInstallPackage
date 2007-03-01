@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 [ "$goboPrograms" ] || {
    echo "Please set goboPrograms variable before running this script."
