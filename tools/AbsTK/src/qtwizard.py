@@ -32,24 +32,35 @@ class AbsQtWizard(AbsWizard) :
 		self.qwizard.show()
 		return self.app.exec_loop()
 
-	def addScreen(self, absQtScreen) :
-		self.screens.append(absQtScreen)
-		self.qwizard.addPage(absQtScreen.widget, absQtScreen.widget.caption())
+	def addScreen(self, absQtScreen, pos = 0) :
+		# Add the screen at the end
+		if pos == 0 :
+			self.screens.append(absQtScreen)
+			self.qwizard.addPage(absQtScreen.widget, absQtScreen.widget.caption())
+			if self.lastScreen :
+				#more than one page yet
+				self.qwizard.setFinishEnabled(self.lastScreen.widget, 0)
+				self.qwizard.finishButton().setText("&Finish")
+				self.qwizard.backButton().show()
+			else :
+				#just one page yet
+				self.qwizard.finishButton().setText("&Ok")
+				self.qwizard.backButton().hide()
+			
+			self.qwizard.helpButton().hide()
+			self.lastScreen = absQtScreen
+			self.qwizard.setFinishEnabled(self.lastScreen.widget, 1)
+		# Add the screen right after the current one
+		elif pos == -1 :
+			pos = self.qwizard.indexOf(self.qwizard.currentPage()) + 1
+			self.screens.insert(pos, absQtScreen)
+			self.qwizard.insertPage(absQtScreen.widget, absQtScreen.widget.caption(), pos)
+		# Add the screen at a specific possition
+		else :
+			self.screens.insert(pos,absQtScreen)
+			self.qwizard.insertPage(absQtScreen.widget, absQtScreen.widget.caption(),pos)
 		self.qwizard.connect(self.qwizard.finishButton(), SIGNAL('released()'), self.__finish)
 		self.qwizard.connect(self.qwizard.cancelButton(), SIGNAL('released()'), self.__cancel)
-		if self.lastScreen :
-			#more than one page yet
-			self.qwizard.setFinishEnabled(self.lastScreen.widget, 0)
-			self.qwizard.finishButton().setText("&Finish")
-			self.qwizard.backButton().show()
-		else :
-			#just one page yet
-			self.qwizard.finishButton().setText("&Ok")
-			self.qwizard.backButton().hide()
-			
-		self.qwizard.helpButton().hide()
-		self.lastScreen = absQtScreen
-		self.qwizard.setFinishEnabled(self.lastScreen.widget, 1)
 
 	def clear(self, newName = '') :
 		lastName = self.qwizard.caption()

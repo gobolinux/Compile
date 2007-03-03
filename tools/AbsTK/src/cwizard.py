@@ -154,8 +154,16 @@ class AbsCursesWizard(AbsWizard) :
 				elif k == 27 :
 					return 0
 
-	def addScreen(self, screen) :
-		self.screens.append(screen)
+	def addScreen(self, screen, pos = 0) :
+		# Add the screen at the end
+		if pos == 0 :
+			self.screens.append(screen)
+		# Add the screen right after the current one
+		elif pos == -1 :
+			self.screens.insert(self.currentScreen + 1, screen)
+		# Add the screen at a specific possition
+		else :
+			self.screens.insert(pos,screen)
 		if self.currentScreen == -1 :
 			self.currentScreen = 0
 
