@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Maps the usual /dev hard disk names to GRUB's format

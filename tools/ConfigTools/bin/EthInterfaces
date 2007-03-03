@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 for i in `seq 0 9`;
 do
     ifconfig eth${i} &> /dev/null && echo eth${i} || break

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 kbd_to_grub() {
    case "$1" in
