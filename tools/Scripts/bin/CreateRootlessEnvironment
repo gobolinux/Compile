@@ -141,7 +141,7 @@ else
    rootlessPrefix="${goboPrefix}"
 fi
 
-echo -n '#!/bin/sh (source)
+echo -n '#!/bin/bash (source)
 export ROOTLESS_GOBOLINUX=1
 alias SymlinkProgram="SymlinkProgram --relative"
 

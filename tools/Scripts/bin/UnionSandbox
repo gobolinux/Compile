@@ -161,7 +161,7 @@ cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var "$sandbox_mp"
 # Create wrapper
 newpwd="$PWD"
 Is_Entry_Set "directory" && newpwd=`Entry "directory"`
-echo "#!/bin/sh" >"${sandbox_mp}/.wrapper"
+echo "#!/bin/bash" >"${sandbox_mp}/.wrapper"
 echo "cd $newpwd" >>"${sandbox_mp}/.wrapper"
 Args_To_Array command >> "${sandbox_mp}/.wrapper"
 echo "exec \"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
