@@ -1,4 +1,5 @@
 #!/bin/bash
+. GoboPath
 
 #
 # RescueInstallPackage
@@ -47,14 +48,14 @@ fi
   
 if [ ! "$goboprograms" ]
 then
-	echo "RescueInstallPackage: Assuming /Programs as goboPrograms directory." 2> /dev/stderr
-	goboprograms=/Programs
+	echo "RescueInstallPackage: Assuming ${goboPrograms} as goboPrograms directory." 2> /dev/stderr
+	goboprograms=${goboPrograms}
 fi
  
 if [ ! "$gobolinks" ]
 then
-	echo "RescueInstallPackage: Assuming /System/Links as goboLinks directory." 2> /dev/stderr
-	gobolinks=/System/Links
+	echo "RescueInstallPackage: Assuming ${goboLinks} as goboLinks directory." 2> /dev/stderr
+	gobolinks=${goboLinks}
 fi
 
 if [ ! -d $goboprograms ] 

@@ -21,10 +21,32 @@ Parse_Options "$@"
 source=$(Arg 1)
 destination=$(Arg 2)
 
+if [ ! "${source}" -o ! "${destination}" ]
+then
+   Show_Help
+   exit 1
+fi
+
+if [ ! -d "${source}" ]
+then
+   Die "Source directory (${source}) does not exist"
+fi
+
+if [ ! -d "${destination}" ]
+then
+   Die "Destination directory (${destination}) does not exist"
+fi
+
 Boolean "delete" && flags="$flags --delete"
 Boolean "verbose" && flags="$flags --verbose"
 
 cd $source
+
+if [ ! -d "${destination}" ]
+then
+   Die "${destination} is not reachable from ${source}. You have to use absolute paths for destination directory."
+fi
+
 for file in *
 do
    if [ "$file" != "*" ]
