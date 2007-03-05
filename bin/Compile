@@ -711,18 +711,9 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-if [ "$cvs_module" ]
+if [ "${cvs_module}" -o "${svn}" ] && [ -z "${dir}" ]
 then
-   if ! [ "$dir" ]
-   then
-      dir="${appname}-${version}"
-   fi
-elif [ "$svn" ]
-then
-   if ! [ "$dir" ]
-   then
-      dir="${appname}-${version}"
-   fi
+   dir="${appname}-${version}"
 fi
 
 if [ "$dir" ]
