@@ -275,67 +275,6 @@ function List_Options() {
    exit 0
 }
 
-function Parse_Options_Old() {
-   local i
-   export parsedArguments=0
-   savedOptions=("$@")
-   if [ "$1" = "--help" -o "$1" = "-h" ] || [ "$helpOnNoArguments" -a -z "$*" ]
-   then Show_Help
-   fi
-   if [ "$1" = "--version" -o "$1" = "-v" ] || [ "$helpOnNoArguments" -a -z "$*" ]
-   then Show_Version
-   fi
-   if [ "$1" = "--list-options" ]
-   then List_Options
-   fi
-   while true
-   do
-      [ "$1" ] || break
-      if [ "$1" = "--" ]
-      then
-         export parsedArguments=$[parsedArguments+1]
-         shift
-         break
-      fi
-      for i in `seq $optionsListSize`
-      do
-         if [ "$1" = "-${optionsShortList[i]}" -o "$1" = "--${optionsLongList[i]}" ]
-         then
-            export parsedArguments=$[parsedArguments+1]
-            local flag="$1"
-            shift
-            case "${optionsTypeList[i]}" in
-            "Boolean")
-               optionsStateList[i]="on"
-               ;;
-            "Entry"|"List")
-               if [ "${#@}" == 0 ]
-               then
-                  Log_Error "Unknown option: $flag requires an argument."
-                  Show_Help
-                  exit 1
-               fi
-               optionsStateList[i]="$1"
-               export parsedArguments=$[parsedArguments+1]
-               shift
-               ;;
-            esac # esac is ridiculous.
-            continue 2
-         fi
-      done
-      if [ "${1:0:1}" = "-" ]
-      then
-         Log_Error "Unknown option: $1"
-         Show_Help
-         exit 1
-      fi
-      break
-   done
-   Boolean "verbose" && {
-      Import LogVerbose
-   }
-}
-
 function Parse_Options() {
    Add_Argument "$0"
 
