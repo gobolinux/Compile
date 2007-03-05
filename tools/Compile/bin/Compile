@@ -715,13 +715,13 @@ if [ "$cvs_module" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${cvs_module}-cvs"
+      dir="${appname}-${version}"
    fi
 elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${appname}-svn"
+      dir="${appname}-${version}"
    fi
 fi
 
@@ -768,15 +768,15 @@ fi
 ##################################################
 # Get & Unpack sources
 ##################################################
-savedir="--save-to $compileSourcesDir"
+savedir="--save-to $(dirname ${dir}) --save-directory $(basename ${dir})"
 if [ "$cvs" ]
 then
    # If sources were already fetched, do not patch again
-   [ -d "$compileSourcesDir/$cvs_module" ] && skippatching=yes
+   [ -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" || Die "Error fetching CVS snapshot."
 elif [ "$svn" ]
 then
-   [ "$dir" -a -d "$compileSourcesDir/$dir" ] && skippatching=yes
+   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" || Die "Error fetching SVN snapshot."
 else
    Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."

@@ -22,11 +22,13 @@ helpOnNoArguments=yes
 scriptDescription="Given a recipe, download the files required to compile it."
 scriptUsage="<recipe>"
 scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
+Add_Option_Entry   "d" "save-directory" "Rename the directory into which the archive is unpacked/files checked out." ""
 Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compileArchivesDir"
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
 
-savedir=`Entry "save-to"`
+savedir=$(Entry "save-to")
+sourcedir=$(Entry save-directory)
 
 if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
@@ -69,14 +71,14 @@ then
    login_method=`echo ${cvs} | cut -b-5`
    [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
    [ "$login_method" != ":ext:" ] && cvs -d${cvs} login
-   cvs -d${cvs} ${cvs_opts} ${cvs_options} co ${cvs_checkout_options} ${cvs_module}
+   cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$sourcedir" ${cvs_checkout_options} ${cvs_module}
    exit $?
 elif [ "$svn" ]
 then
    cd "$savedir"
    if [ "$svn_username" ] 
-   then svn co $svn "${dir}" --username "$svn_username" --password "$svn_password"
-   else svn co $svn "${dir}"
+   then svn checkout $svn "${sourcedir}" --username "$svn_username" --password "$svn_password"
+   else svn checkout $svn "${sourcedir}"
    fi
    exit $?
 elif ! [ -n "$url${urls[*]}" ]
