@@ -546,7 +546,6 @@ function attempt_action() {
          ;;
          
       m) merge_and_edit "$cur" "$default"
-         repeatQuestion=yes
          ;;
          
       d) if Exists "$cur"; then
