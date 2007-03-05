@@ -354,7 +354,7 @@ SymlinkProgram Rootless
 # Preparing Rootless startup on next sessions
 ###############################################################################
 
-for f in .bash_profile .zshrc
+for f in .bashrc .zshrc
 do
    file="${HOME}/${f}"
    line=". ${goboPrefix}/Programs/Rootless/Current/bin/StartRootless"
