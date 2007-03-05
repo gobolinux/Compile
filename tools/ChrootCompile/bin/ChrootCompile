@@ -647,7 +647,7 @@ function fetch_included_recipes() {
       pkg=`ls | grep -i "^$ipkg$"`
       popd &> /dev/null
       [ ! "$pkg" ] && continue
-      fetch_archive_off_recipe "$dir/$pkg/$ver" && return || Die
+      fetch_archive_off_recipe "`GuessLatest $dir/$pkg/$ver*`" && return || Die
    done
    Die "Can't find recipe for $ipkg"
 }
