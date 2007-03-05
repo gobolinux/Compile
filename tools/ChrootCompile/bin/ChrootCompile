@@ -106,6 +106,7 @@ then
     fi
     Log_Normal "No ChrootCompile environment found in $dirname. Setting things up..."
     SetupChrootEnv
+    [ -z "$(Arg 1)" ] && exit 0
 fi
 
 if [ -z "$(Arg 1)" ]
