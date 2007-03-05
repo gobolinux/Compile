@@ -1,10 +1,27 @@
 #!/bin/bash
 
 # (C) 2004-2006 Andre Detsch. Released under the GNU GPL.
-
 # GuessProgramCase
-# Try to guess the case of a program based on the installed packages
 
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+
+##################################################
+# Options and configuration
+##################################################
+
+helpOnNoArguments=yes
+scriptDescription="Try to guess the case of a program based on the installed packages."
+scriptCredits="(C)2003-2007 by Andre Detsch et al. Released under the GNU GPL."
+scriptUsage="<program> [<version>]"
+scriptNotes="If no version is specified, Current is assumed. "
+
+Parse_Options "$@"
 
 if [ $# -lt 1 -o "$1" = "--help" -o  "$1" = "-h" ]
 then
@@ -12,10 +29,8 @@ then
 	exit 1
 fi
 
-program="$1"
-version="$2"
-
-. GoboPath
+program="$(Arg 1)"
+version="$(Arg 2)"
 
 if [ -e "$goboPrograms/$program/$version" ]
 then
