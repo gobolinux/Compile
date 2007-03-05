@@ -68,7 +68,7 @@ then
    cvs_server="$source_url"
    cvs_module="$(Arg 4)"
    cvs_server=`echo "$cvs_server" | sed 's,anonymous@,anonymous:@,g'`
-elif [ "$versionnumber" = "svn" ]
+elif [ "$versionnumber" = "svn" -o "$versionnumber" = "SVN" ]
 then
    svn=yes
    svn_uri="$source_url"
