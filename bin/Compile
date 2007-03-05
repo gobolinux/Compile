@@ -393,8 +393,8 @@ fi
 ##################################################
 
 #unset directrecipe
-# suport for direct recipe passing
-if [ -d "$(Arg 1)" -o "`echo $(Arg 1) | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$(Arg 1)"
+# support for direct recipe passing
+if [ -f "$(Arg 1)/Recipe" -o "`echo $(Arg 1) | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$(Arg 1)"
 then
    #directrecipe=yes
    rawrecipes="$(Arg 1)"
@@ -715,13 +715,13 @@ if [ "$cvs_module" ]
 then
    if ! [ "$dir" ]
    then
-      dir="$cvs_module"
+      dir="${cvs_module}-cvs"
    fi
 elif [ "$svn" ]
 then
    if ! [ "$dir" ]
    then
-      dir="${appname}-${versionnumber}"
+      dir="${appname}-svn"
    fi
 fi
 
