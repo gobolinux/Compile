@@ -171,14 +171,14 @@ fi
 
 if [ "$localrepository" ]
 then
-   if [ -f "/Files/Compile/LocalRecipes/${name}/${version}/Recipe" ]
-   then recipedir="/Files/Compile/LocalRecipes/${name}/${version}"
-   elif [ "$localrepository" -a -f "/Files/Compile/Recipes/${name}/${version}/Recipe" ]
-   then recipedir="/Files/Compile/Recipes/${name}/${version}"
+   if Quiet ls /Files/Compile/LocalRecipes/${name}/${version}*/Recipe
+   then recipedir="`GuessLatest /Files/Compile/LocalRecipes/${name}/${version}*`"
+   elif Quiet ls /Files/Compile/Recipes/${name}/${version}*/Recipe
+   then recipedir="`GuessLatest /Files/Compile/Recipes/${name}/${version}*`"
    fi
 else
-   if [ -f "Recipes/${name}/${version}/Recipe" ]
-   then recipedir="Recipes/${name}/${version}"
+   if Quiet ls Recipes/${name}/${version}*/Recipe
+   then recipedir="`GuessLatest Recipes/${name}/${version}*`"
    else Die "No such recipe (${name} ${version}) in ChrootCompile environment"
    fi
 fi
