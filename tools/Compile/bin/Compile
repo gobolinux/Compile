@@ -711,9 +711,15 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-if [ "${cvs_module}" -o "${svn}" ] && [ -z "${dir}" ]
+if [ "${cvs}" -o "${svn}" ]
 then
-   dir="${appname}-${version}"
+   if [ -z "${dir}" ]
+   then
+      dir="${appname}-${version}"
+      save_directory="${dir}"
+   else
+      save_directory="${dir%%/*}"
+   fi
 fi
 
 if [ "$dir" ]
@@ -759,16 +765,18 @@ fi
 ##################################################
 # Get & Unpack sources
 ##################################################
-savedir="--save-to $(dirname ${dir}) --save-directory $(basename ${dir})"
+savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
 if [ "$cvs" ]
 then
    # If sources were already fetched, do not patch again
    [ -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" || Die "Error fetching CVS snapshot."
+   Boolean "no-build" && exit 0
 elif [ "$svn" ]
 then
    [ "${dir}" -a -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" || Die "Error fetching SVN snapshot."
+   Boolean "no-build" && exit 0
 else
    Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
 
