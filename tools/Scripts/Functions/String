@@ -45,6 +45,32 @@ for part in parts:
 " "$1"
 }
 
+# Split_String
+# splits a string into an array and places the result in the varable specified
+# if <token> is ommitted whitespace is used
+# Usage:
+# eval $(Split_String <name of variable> <string> [<token>])
+function Split_String {
+   string_name=$1
+   string=$2
+   token=$3
+   if [ -z "$token" ]
+   then
+      token=" "
+      string=$(echo "${string}" | sed -r 's/\s+/ /g')
+   fi
+
+   echo -n "${string_name}=("
+   while index=$(expr index "${string}" "${token}")
+         [ $index -gt 0 ]
+   do
+      echo -n "\"${string:0:((index-1))}\" "
+      string="${string:index}"
+   done
+   echo -n "\"${string}\""
+   echo ")"
+}
+
 # obsolete?
 #function Split() {
 #   python -c "
