@@ -673,7 +673,7 @@ function fetch_archive_off_recipe() {
          fi
          if [ -z "$dir" ]
          then save_directory="--save-directory ${name}-${version}"
-         else save_directory="--save-directory ${dir}"
+         else save_directory="--save-directory $(dirname ${dir})"
          fi
          [ "$localrepository" ] && savedir=`echo $savedir | sed "s,^$root,,g"`
       else
