@@ -142,6 +142,9 @@ function Can_Sign() {
 function Sign_File() {
    Parameters "$@" file sig
 
+   if echo "$file" | grep -q "\$.*$"
+   then file=`echo $file | sed 's,\$,\\$,g'`
+   fi
    gpg=`(which gpg2 || which gpg) 2> /dev/null`
    output="`$gpg ${GPG_opts} --armor --output - --detach-sig "$file"`"
    result="$?"
