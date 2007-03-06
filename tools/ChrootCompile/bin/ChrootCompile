@@ -169,6 +169,7 @@ else
    version=$(basename $(Arg 1))
 fi
 
+[ "${name}" == "$(Downcase ${name})" ] && name=$(NamingConventions ${name})
 if [ "$localrepository" ]
 then
    if Quiet ls /Files/Compile/LocalRecipes/${name}/${version}*/Recipe
