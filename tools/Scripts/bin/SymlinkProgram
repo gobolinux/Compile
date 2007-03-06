@@ -318,7 +318,7 @@ then
             Quiet ln -snf "$goboShared" share
          fi
       fi
-      link_directory "Shared" "$goboShared"
+      link_directory "$current/Shared" "$goboShared"
    fi
    if ! Is_Real_Directory "Shared" && Is_Link "share"
    then
