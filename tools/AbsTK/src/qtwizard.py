@@ -62,6 +62,10 @@ class AbsQtWizard(AbsWizard) :
 		self.qwizard.connect(self.qwizard.finishButton(), SIGNAL('released()'), self.__finish)
 		self.qwizard.connect(self.qwizard.cancelButton(), SIGNAL('released()'), self.__cancel)
 
+	def removeScreen(self, absQtScreen) :
+		self.screens.remove(absQtScreen)
+		self.qwizard.removePage(absQtScreen.widget)
+
 	def clear(self, newName = '') :
 		lastName = self.qwizard.caption()
 		if not newName :

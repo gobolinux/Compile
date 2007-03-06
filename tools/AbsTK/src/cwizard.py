@@ -167,6 +167,8 @@ class AbsCursesWizard(AbsWizard) :
 		if self.currentScreen == -1 :
 			self.currentScreen = 0
 
+	def removeScreen(self, screen) :
+		self.screens.remove(screen)
 
 class CursesWidget :
 
