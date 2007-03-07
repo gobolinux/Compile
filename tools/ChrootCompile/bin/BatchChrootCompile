@@ -33,7 +33,7 @@ fi
 exec 6<&0
 
 startat="$(Entry start-at)"
-[ -z "${startat}" ] || [ -z "$(grep -i ${startat} ${listfile})" ] && Die "${startat} not found in ${listfile}"
+[ ! -z "${startat}" ] && [ -z "$(grep -i ${startat} ${listfile})" ] && Die "${startat} not found in ${listfile}"
 cat "$listfile" | while read i; do
    name=`echo $i | awk {'print $1'}`
    version=`echo $i | awk {'print $2'}`
