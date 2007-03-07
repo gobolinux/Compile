@@ -19,7 +19,7 @@ function Is_Process() { pidof "$1" &> /dev/null ;}
 
 function Is_Readable() { [ -e "$1" -a -r "$1" ] ;}
 
-function Is_Writable() { [ \( -e "$1" -a -w "$1" \) -o \( ! -e "$1" -a -w `dirname "$1"` \) ] ;}
+function Is_Writable() { [ \( -e "$1" -a -w "$1" \) -o \( ! -e "$1" -a -w $(dirname "$1") \) ] ;}
 
 function Is_Link() { [ -L "$1" -a -e "$1" ] ;}
 
@@ -32,13 +32,13 @@ function Make_Directory() {
 
 function Is_Empty_Directory() {
    local anyfiles
-   anyfiles=`ls "$1" 2> /dev/null`
+   anyfiles=$(ls "$1" 2> /dev/null)
    ! test "$anyfiles"
 }
 
 function Is_Nonempty_Directory() {
    local anyfiles
-   anyfiles=`ls "$1" 2> /dev/null`
+   anyfiles=$(ls "$1" 2> /dev/null)
    [ -d "$1" -a -n "$anyfiles" ]
 }
 
@@ -182,7 +182,7 @@ function Check_FileHash() {
    $sudo_exec ListProgramFiles --files "$program" "$version" | grep -v "$hash_file" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
-hashfile='$file'
+hashfile='$hash_file'
 
 file_checksums={}
 errors=0
