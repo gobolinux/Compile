@@ -59,10 +59,13 @@ function update_recipe() {
 mkdir -p /Files/Recipe-Store
 rsync --delete -avz gobolinux@gobolinux.org:gobolinux.org/recipe-store/ /Files/Recipe-Store/
 
-eval `Args_To_Array recipes`
+if Boolean "all"
+then recipes=( `ls $compileLocalTrunk` )
+else eval `Args_To_Array recipes`
+fi
 for i in ${recipes[@]}
 do
-    update_recipe "$i"
+   update_recipe "$i"
 done
 
 cd /Files/Recipe-Store
@@ -75,3 +78,5 @@ then rsync -avz $tarballs gobolinux@gobolinux.org:gobolinux.org/recipe-store/
 elif Boolean "all"
 then rsync --delete -avz ./ gobolinux@gobolinux.org:gobolinux.org/recipe-store/
 fi
+
+wget -nv http://gobolinux.org/tools/updaterecipe.php -O /dev/null
