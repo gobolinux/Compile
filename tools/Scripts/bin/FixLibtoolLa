@@ -31,8 +31,8 @@ do
    cp "${current}" "$old"
    cat "$old" | sed "
 
-s%/Programs/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
-s%/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
+s%$goboPrefix/Programs/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
+s%$goboPrefix/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
 
 " > "${current}"
 
