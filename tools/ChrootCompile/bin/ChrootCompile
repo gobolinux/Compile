@@ -485,14 +485,14 @@ function is_blacklisted() {
    return 1
 }
 
-hostdeps=`{
+hostdeps=$({
    echo "${base_dependencies[*]} " | tr " " "\n" 
-   [ -e "$(Arg 1)/Resources/BuildDependencies" ] && cut -d" " -f1 "$(Arg 1)/Resources/BuildDependencies"
-} | sort -u | strings -n 1`
+   [ -e "${recipedir}/Resources/BuildDependencies" ] && cut -d" " -f1 "${recipedir}/Resources/BuildDependencies" | sed '/^#.*/d'
+} | sort -u | strings -n 1)
 
-targetdeps=`{
-   [ -e "$(Arg 1)/Resources/Dependencies" ] && cut -d" " -f1 "$(Arg 1)/Resources/Dependencies"
-} | sort -u | strings -n 1`
+targetdeps=$({
+   [ -e "${recipedir}/Resources/Dependencies" ] && cut -d" " -f1 "${recipedir}/Resources/Dependencies" | sed '/^#.*/d'
+} | sort -u | strings -n 1)
 
 targetroot=$root/$crossprefixdir
 if [ "$crossopts" ]
