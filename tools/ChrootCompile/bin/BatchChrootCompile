@@ -33,7 +33,7 @@ fi
 
 # Save stdin in fd 6
 exec 6<&0
-succeeded_apps=""
+succeededapps=""
 
 startat="$(Entry start-at)"
 [ ! -z "${startat}" ] && [ -z "$(grep -i ${startat} ${listfile})" ] && Die "${startat} not found in ${listfile}"
@@ -63,13 +63,13 @@ while read i; do
          echo -en "\007"; 
          Ask_Continue "Compilation of $name failed. Proceed to next program?" 0<&6 
       else
-         succeeded_apps=(${succeeded_apps[@]} "${name}--${versionandrevision}")
+         succeededapps=(${succeededapps[@]} "${name}--${versionandrevision}")
       fi
    fi
 done < ${listfile}
 
-! Boolean "no-sign" && [ ! -z "${succeeded_apps}" ] && {
-for app in ${succeeded_apps[@]}
+! Boolean "no-sign" && [ ! -z "${succeededapps}" ] && {
+for app in ${succeededapps[@]}
 do
    SignProgram Clean/i686/$app--i686.tar.bz2
 done
