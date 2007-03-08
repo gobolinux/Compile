@@ -30,6 +30,7 @@ mkdir ${goboTemp}/setup
 dialog --title "Language"  --menu "Choose your language"  10 46 3  \
      "en_US" "English"    \
      "pt_BR" "Português"  \
+     "hu_HU" "Magyar"  \
      "de_DE" "Deutsch" 2> ${goboTemp}/setup/language
 
 language=`cat ${goboTemp}/setup/language`
@@ -55,6 +56,7 @@ if [ -d "${goboPrograms}/KDE-Base" ]
 then
    case "$LANG" in
    pt_BR) kdecountry=br; kdelanguage=pt_BR ;;
+   hu_HU) kdecountry=hu; kdelanguage=hu_HU ;;
    de_DE) kdecountry=de; kdelanguage=de ;;
    esac
    if [ "$kdecountry" ]

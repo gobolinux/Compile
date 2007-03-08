@@ -10,6 +10,7 @@ MimeType=
 Name=Install GoboLinux
 Name[en_US]=Install GoboLinux
 Name[pt_BR]=Instalar o GoboLinux
+Name[hu_HU]=A GoboLinux telepítése
 Path=
 ServiceTypes=
 SwallowExec=
