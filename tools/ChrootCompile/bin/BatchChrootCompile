@@ -57,13 +57,13 @@ while read i; do
       echo "Skipping ${name} ($(ls Clean/i686/${name}--${versionandrevision}*))"
    else 
       echo "Processing ${name} ${versionandrevision}..."
-      time nice -20 ChrootCompile -lS ${recipe}
+      time nice -20 ChrootCompile --local-repository --no-sign ${recipe}
       if [ $? -gt 0 ]
       then
          echo -en "\007"; 
          Ask_Continue "Compilation of $name failed. Proceed to next program?" 0<&6 
       else
-         succeeded_apps=(${succeeded_apps[@]} ${name}--${versionandrevision})
+         succeeded_apps=(${succeeded_apps[@]} "${name}--${versionandrevision}")
       fi
    fi
 done < ${listfile}
