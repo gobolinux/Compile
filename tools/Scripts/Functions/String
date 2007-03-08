@@ -51,9 +51,9 @@ for part in parts:
 # Usage:
 # eval $(Split_String <name of variable> <string> [<token>])
 function Split_String {
-   string_name=$1
-   string=$2
-   token=$3
+   string_name="$1"
+   string="$2"
+   token="$3"
    if [ -z "$token" ]
    then
       token=" "
