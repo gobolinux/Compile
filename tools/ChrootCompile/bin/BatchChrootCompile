@@ -49,7 +49,7 @@ cat "$listfile" | while read i; do
       echo "Skipping $name (`ls Clean/i686/$name--*`)"
    else 
       echo "Processing $name..."
-      time nice -20 ChrootCompile -l `GetRecipe $name $version` 0<&6 || { 
+      time nice -20 ChrootCompile -lS `GetRecipe $name $version` 0<&6 || { 
          echo -en "\007"; 
          Ask_Continue "Compilation of $name failed. Proceed to next program?" 0<&6 
       }
