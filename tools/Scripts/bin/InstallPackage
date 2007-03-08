@@ -31,7 +31,7 @@ Add_Option_Entry "o" "old" "What to do with a previously existing
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
 "from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
 Add_Option_Boolean "S" "no-sign-check" "Do not check the signature."
-Add_Option_Boolean "U" "no-unmanaged" "Do not install unmanaged files. Same as '--unmanaged skip' (deprecated)"
+Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the package"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
 Parse_Options "$@"
@@ -48,7 +48,6 @@ Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
 Boolean "use-contrib"&& contrib=",contrib_package"
-Boolean "no-unmanaged" && unmanaged="--unmanaged skip"
 Is_Writable "${goboPrograms}" || Verify_Superuser
 Is_Writable "${goboInstall}"  || Verify_Superuser
 
@@ -325,7 +324,7 @@ fi
 # Hack for updating Glibc
 if [ "$packagename" != "Glibc" ]
 then
-   UpdateSettings "$packagename" "$packageversion"
+   Boolean "no-updatesettings" || UpdateSettings "$packagename" "$packageversion"
 fi
 
 SymlinkProgram ${unmanaged} "$packagename" "$packageversion"
