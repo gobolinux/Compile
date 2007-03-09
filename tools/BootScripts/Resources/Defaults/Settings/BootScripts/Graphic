@@ -1,5 +1,0 @@
-#!/bin/sh
-
-source BootUp
-
-Exec "Loading login manager..." kdm

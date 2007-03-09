@@ -1,3 +1,0 @@
-config PKG_ZLIB
-    bool "ZLib"
-    default y

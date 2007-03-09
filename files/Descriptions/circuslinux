@@ -1,6 +1,0 @@
-[Name]  circuslinux
-[Summary]  A Clone of the Atari 2600 Game "Circus Atari"
-[Description]  The object is to move a teeter-totter back and forth across the screen to bounce clowns into the air. When they reach the top, they pop rows of balloons, and then fall back down.
-[Suse Category]  Amusements/Games/Action/Breakout
-[License]  GPL
-[Homepage]  http://www.newbreedsoftware.com/circus-linux/
