@@ -147,11 +147,11 @@ alias SymlinkProgram="SymlinkProgram --relative"
 
 [ ! "$goboPrefix" ] && export goboPrefix='$rootlessPrefix'
 
-if [ "${ZSH_NAME}" = "zsh" ]
+if [ "${ZSH_NAME}" = "zsh" -o "$(basename $(readlink -f ${SHELL}))" = "zsh" ]
 then
    [ -e "${goboPrefix}/System/Settings/zshrc" ] && . "${goboPrefix}/System/Settings/zshrc"
    prompt lode cyan
-elif [ "${SHELL}" = "/bin/bash" ]
+elif [ "${SHELL}" = "/bin/bash" -o "$(basename $(readlink -f ${SHELL}))" = "bash" ]
 then
    [ -e "${goboPrefix}/System/Settings/bashrc" ] && . "${goboPrefix}/System/Settings/bashrc"
 fi
