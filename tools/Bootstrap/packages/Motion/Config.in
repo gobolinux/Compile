@@ -1,3 +1,0 @@
-config PKG_MOTION
-    bool "Motion"
-    select PKG_FFMPEG_MOTION

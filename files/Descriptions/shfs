@@ -1,6 +1,0 @@
-[Name] SHFS
-[Summary] Mounts remote directories using a shell connection.
-[License] GNU General Public License (GPL)
-[Description] SHFS (sshfs) is a simple and easy-to-use Linux kernel module which allows you to mount remote filesystems using a plain shell (SSH) connection. It supports some nice
-features like file cache for access speedup, and a Perl server, etc.
-[Homepage] http://shfs.sourceforge.net/
