@@ -152,7 +152,7 @@ fi
 
 if ls *.patch &> /dev/null
 then
-   Log_Normal "This recipe contains patches. Please check if they still apply."
+   Log_Terse "This recipe contains patches. Please check if they still apply."
 fi
 
 if [ "$url" ]
