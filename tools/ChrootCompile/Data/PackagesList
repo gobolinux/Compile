@@ -4,11 +4,12 @@
 
 BinUtils
 GCC
-# Glibc
+Glibc
 
-# E2FSProgs
+E2FSProgs
 M4
-# Ncurses
+GPM
+Ncurses
 PCRE
 Readline
 ZLib
@@ -27,17 +28,16 @@ Gzip
 Make
 MkTemp
 Patch
-# Perl # failed on icmp test
+Perl
 Python
 Sed
-# Sudo
+Sudo
 Tar
 Texinfo
 Util-Linux
 
 Atool
 Mtail
-
 
 # ################################################
 # Base packages
@@ -52,7 +52,6 @@ DHCPCD
 Ed
 Flex
 GLib
-GPM
 Groff
 Hdparm
 InetUtils
@@ -88,13 +87,20 @@ ZSH
 # ################################################
 ALSA-Lib
 ALSA-Utils
-APR
+APR      # needed by subversion
+APR-Util # subversion
 ATK
 Aspell
+Aspell-en
+Aspell-pl
+Aspell-sv
+Aspell-pt
+Aspell-pt_BR
 Audiofile
 Aumix
 CDRTools
 Cdparanoia-III
+Cyrus-Sasl
 DB
 DVD+RW-Tools
 Device-Mapper
@@ -103,16 +109,15 @@ Eject
 Expat
 GDB
 GMP
-# Gimp-Print
 Htop
-# HwData
+HwData
 ID3Lib
 Indent
 JACK
 JPEG
 LILO
 Lame
-# Lazy
+Lazy
 # Listener
 LibART_LGPL
 LibExif
@@ -127,23 +132,24 @@ LibVorbis
 LibXML2
 LibXSLT
 Lsof
-NTFSProgs
+# NTFSProgs # deprecated, we now have ntfs-3g!
 OpenSSH
 PPP
 Parted
 Perl-XML-Parser
 Popt
-# ProgsReiserFS
+# ProgsReiserFS # deprecated (QtParted dependency)
 RP-PPPoE
 Rsync
 Ruby
 SquashFS-Tools
+Neon # Subversion dependency for SSL support
 Subversion
 SysFSUtils
 TIFF
 TagLib
 TraceRoute
-# Unsermake
+# Unsermake # deprecated
 Unzip
 Wireless-Tools
 YAFC
@@ -156,18 +162,30 @@ LibAssuan
 LibGCrypt
 LibKSBA 
 GnuPG
+GnuTLS
 
+# ################################################
+# Printing support
+# ################################################
+LibPaper
+A2PS
+ESP-GhostScript
+Gutenprint
+Foomatic
+CUPS
+Hplip
 
 CDRDAO
-CUPS
 CVS
 LCMS
-# LibMNG
+LibMNG
 Flac
 LibSndfile
 LibSamplerate
 
-exit
+Fuse
+NTFS-3G
+
 
 # ################################################
 # Fonts, Xorg
@@ -180,14 +198,13 @@ Xorg
 # Non-Qt non-GTK+ Xorg apps / libraries
 # ################################################
 Lesstif
-GhostScript
 # Gnuplot # take it off the iso
 # Imake # imake is now integrated in Xorg
 Links
 Mesa
 T1Lib
 # TeTeX # remove from iso?
-WindowMaker # recipe problem
+WindowMaker
 XTerm
 Xpdf
 
@@ -198,20 +215,36 @@ Cairo
 Pango
 Gutenprint
 GTK+
-IMLib
+Imlib
 ImageMagick
 LibGlade
 LibRSVG
 
+
 # ################################################
 # GTK+ Applications
 # ################################################
+LibMCS # Audacious dependency
 Audacious
 Gimp
 # MPlayer
 Vim
-# Firefox
+GVim
+
+
+# ################################################
+# Firefox dependencies
+# ################################################
+NSPR
+NSS
+LibIDL
+Firefox
 # Thunderbird
+
+####### exit #######
+exit
+####################
+
 
 # ################################################
 # Qt
@@ -224,8 +257,6 @@ Qt 3.3.7
 # QtParted # remove from iso
 SIP
 PyQt
-
-exit
 
 # ################################################
 # KDE
@@ -270,7 +301,6 @@ TeTeX
 
 LyX
 
-GDBM
 Sqlite
 Imlib2
 LibKExif
@@ -311,7 +341,6 @@ Screen
 Git
 LibDVDCSS
 Kaffeine
-Cyrus-Sasl
 OpenLdap
 Samba
 
