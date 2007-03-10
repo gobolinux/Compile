@@ -34,7 +34,7 @@ then
       fi
    done
 else
-   lddresult=`ldd "$1" 2> /dev/null | grep "=>"`
+   lddresult=$(ldd "$1" 2> /dev/null | grep "=>")
    echo -n "$lddresult"  | grep "not found" | awk '{ print $1 }' | while read i
    do
       echo "# *Warning*: Unresolved library $i"
@@ -49,24 +49,23 @@ fi
 }
 
 function path2programs() {
-# The follow perl could/should be converted to sed.  Unfortunately I don't know sed.
-
-# I would be glad to convert this to sed, if I had the slightest idea of what this does. :) --hhm
-   perl -n -e '$_ =~ m@/([^/]+)/([^/]+)/lib@ && print "$1 $2\n";' \
-           -e '$_ =~ m@/([^/]+)/([^/]+)/libexec@ && print "$1 $2\n";' \
-           -e '$_ =~ m@/([^/]+)/([^/]+)/bin@ && print "$1 $2\n";' \
-           -e '$_ =~ m@/([^/]+)/([^/]+)/sbin@ && print "$1 $2\n";' \
-           -e '$_ =~ m@([# ]+.*)@ && print "$1 $2 $3 $4\n";'
+   # sed: First replace all spaces with newlines as sed operates on one line at the time
+   # second: if we match '#', place the (n)ext 4 lines in the (H)old buffer then e(x)change
+   # the hold buffer with the pattern space and replace the new lines with spaces and (p)rint it
+   # The third and fourth line just takes a path and returns the app name and version.
+   sed 's, ,\n,g' | sed -r -n -e '/^#/{n;h;n;H;n;H;n;H;x;s/\n/ /gp}
+                                  s,^/.*/(.*)/(.*)/lib.*/.*,\1 \2,gp
+                                  s,^/.*/(.*)/(.*)/s?bin.*/.*,\1 \2,gp'
 }
 
-package=`GuessProgramCase $(Arg 1) $(Arg 2)`
+package=$(GuessProgramCase $(Arg 1) $(Arg 2))
 [ "$(Arg 2)" ] && version="$(Arg 2)" || version="Current"
-version=`Get_Version "$package" "$version"`
+version=$(Get_Version "$package" "$version")
 Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
 Is_Empty "$version" && Die "Couldn't find a proper version for $package."
-prefix=`readlink -f $goboPrograms/$package/$version`
+prefix=$(readlink -f $goboPrograms/$package/$version)
 Is_Directory "$prefix" || Die "$package version $version is not a valid package."
-dependenciesfile=`Dependencies_File "$package" "$version"`
+dependenciesfile=$(Dependencies_File "$package" "$version")
 
 if Boolean "store"
 then
@@ -80,28 +79,26 @@ fi
 
 if [ "$prefix" ]
 then
-report=`{
+report=$({
    Progress_Start "Generating dependency report. Please wait: "
-   {
-      if Boolean "all"
-      then
-         find "$prefix"
-      else
-         find "$prefix" -path "$prefix/sbin/*" -or \
-                        -path "$prefix/bin/*"  -or \
-                        -path "$prefix/lib/*"  -or \
-                        -path "$prefix/libexec/*"
-      fi
-   } | while read i
+   while read i
    do
       if [ -x "$i" -a ! -L "$i" -a ! -d "$i" ]
       then
          extract_dependencies_from_file "$i"
       fi
       Progress_Move
-   done
+   done < <(if Boolean "all"
+            then
+               find "$prefix"
+            else
+               find "$prefix" -path "$prefix/sbin/*" -or \
+                              -path "$prefix/bin/*"  -or \
+                              -path "$prefix/lib/*"  -or \
+                              -path "$prefix/libexec/*"
+            fi)
    Progress_End
-}`
-deplist=`echo "$report" | path2programs | sort | uniq | grep -v "^$package "`
+})
+deplist=$(echo ${report} | path2programs | sort | uniq | grep -v "^$package ")
 [ "$deplist" ] && echo "$deplist" || true
 fi
