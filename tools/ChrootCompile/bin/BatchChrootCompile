@@ -14,7 +14,7 @@ scriptUsage="[packages_list_file]"
 scriptNotes="Default package list file is "`readlink -f "$scriptPath/../Data/PackagesList"`
 Add_Option_Entry "s" "start-at"    "Start at a given package from the list." ""
 Add_Option_Boolean "f" "force" "Force compilation of applications already in the store."
-Add_Option_Boolean "r" "skip-revision" "Do not mind revision changes on recipes."
+Add_Option_Boolean "r" "skip-revision" "Ignore revision strings on recipes."
 Add_Option_Boolean "S" "no-sign" "Do not try to sign the resulting packages."
 Add_Option_Boolean "W" "no-web" "Do not try to fetch recipes from the online repository."
 
