@@ -1036,6 +1036,7 @@ build_python_options() {
 
 if [ "$recipe_type" = "python" ]
 then
+   Quiet $(python -V) || Die "This is a python type recipe and you don't seem to have python installed."
    [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:$goboLibraries/python2.3/site-packages'."
    build_tree_if "true"
    sitepackages="$target/lib/python${PYTHONPATH##*/python}"
@@ -1076,6 +1077,7 @@ fi
 
 if [ "$recipe_type" = "perl" ]
 then
+   Quiet $(perl --version) || Die "This is a perl type recipe and it seems like you don't have perl installed"
    [ "$PERL5LIB" ] || {
       export PERL5LIB="${goboLibraries}/perl5/site_perl/$(basename $(readlink -f ${goboPrograms}/Perl/Current))/"
    }
@@ -1186,6 +1188,7 @@ fi
 
 if [ "$recipe_type" = "scons" ]
 then
+   Quiet $(scons --version) || Die "This is a scons type recipe and you don't seem to have scons isntalled."
    [ "$scons" ] || scons="scons"
    if [ ! "$override_default_options" = "yes" ]
    then
