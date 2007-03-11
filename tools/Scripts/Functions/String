@@ -123,3 +123,7 @@ function Chop() {
 function Downcase() {
    echo "$*" | tr '[:upper:]' '[:lower:]'
 }
+
+function Uppercase() {
+   echo "$*" | tr '[:lower:]' '[:upper:]'
+}
