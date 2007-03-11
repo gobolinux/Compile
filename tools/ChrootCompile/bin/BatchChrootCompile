@@ -5,6 +5,7 @@
 source ScriptFunctions
 Import GoboLinux
 Import OptionParser
+Import String
 
 #############################################################################
 # Setting options
@@ -46,7 +47,7 @@ while read i; do
    if echo "${version:0:1}" | grep -q "^#"
    then unset version
    fi
-   [ "$startat" = "$name" ] && startat=
+   [ "$(Downcase ${startat})" = "$(Downcase ${name})" ] && startat=
    echo "$name" | grep -q "^#" || [ "$startat" -o ! "$name" ] && continue
    [ "$name" = "exit" ] && break
 
@@ -57,6 +58,7 @@ while read i; do
       versionandrevision=$(Get_Token "${recipe}" "/" "-1")
    else
       versionandrevision="${version}"
+      recipe="${name} ${version}"
    fi
    
    Boolean "skip-revision" && versionandrevision="$(String_Version ${versionandrevision})"
