@@ -17,7 +17,6 @@ Add_Option_Entry "s" "start-at"    "Start at a given package from the list." ""
 Add_Option_Boolean "f" "force" "Force compilation of applications already in the store."
 Add_Option_Boolean "R" "skip-revision" "Ignore revision strings on recipes."
 Add_Option_Boolean "S" "no-sign" "Do not try to sign the resulting packages."
-Add_Option_Boolean "W" "no-web" "Do not try to fetch recipes from the online repository."
 
 Parse_Options "$@"
 
@@ -51,31 +50,30 @@ while read i; do
    echo "$name" | grep -q "^#" || [ "$startat" -o ! "$name" ] && continue
    [ "$name" = "exit" ] && break
 
-   if ! Boolean "no-web"
+   if Boolean "skip-revision"
    then
+      versionandrevision="${version}"
+   else
       recipe=$(GetRecipe ${name} ${version})
       name=$(Get_Token "${recipe}" "/" "-2")
-      versionandrevision=$(Get_Token "${recipe}" "/" "-1")
-   else
-      versionandrevision="${version}"
-      recipe="${name} ${version}"
+      versionandrevision=$(String_Version $(Get_Token "${recipe}" "/" "-1"))
    fi
-   
-   Boolean "skip-revision" && versionandrevision="$(String_Version ${versionandrevision})"
    
    if Quiet ls Clean/i686/${name}--${versionandrevision}* && ! Boolean "force"
    then 
       echo "Skipping ${name} ($(ls Clean/i686/${name}--${versionandrevision}*))"
-   else 
-      echo "Processing ${name} ${versionandrevision}..."
-      time nice -20 ChrootCompile --local-repository --no-sign ${recipe}
-      if [ $? -gt 0 ]
-      then
-         echo -en "\007"; 
-         Ask_Continue "Compilation of $name failed. Proceed to next program?" 0<&6 
-      else
-         succeededapps=(${succeededapps[@]} "${name}--${versionandrevision}")
-      fi
+      continue
+   fi
+
+   echo "Processing ${name} ${versionandrevision}..."
+   Boolean "skip-revision" && recipe=$(GetRecipe ${name} ${version})
+   time nice -20 ChrootCompile --local-repository --no-sign ${recipe}
+   if [ $? -gt 0 ]
+   then
+      echo -en "\007"; 
+      Ask_Continue "Compilation of $name failed. Proceed to next program?" 0<&6 
+   else
+      succeededapps=(${succeededapps[@]} "${name}--${versionandrevision}")
    fi
 done < ${listfile}
 
