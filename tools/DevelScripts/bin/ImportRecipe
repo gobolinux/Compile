@@ -140,6 +140,9 @@ then
       Ask_Continue "Proceed and overwrite with given recipe?"
    elif [ $(GuessLatest $latestexisting $version) != $version ]
    then
+      if [ "$(Subversion_Diff "$newrecipedir" | grep -v "^$" | wc -l)" = "0" ]
+      then exit 0
+      fi
       Ask_Continue "Latest version in trunk ($latestexisting) seems more recent than recipe ($version). Add $version to trunk anyway?"
    fi
    
