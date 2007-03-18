@@ -17,6 +17,7 @@ scriptUsage="<program> [<version>]"
 scriptExample="Glibc 2.5"
 scriptNotes="If no version is given, all versions in trunk are checked."
 Add_Option_Boolean "S" "skip-lint" "Don't run RecipeLint."
+Add_Option_Boolean "b" "batch" "Don't ask questions. Generate automatic commit logs such as 'NewVersion' and 'New recipe'."
 #Add_Option_Entry "r" "rename" "Rename program to <entry>."
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Add_Option_Entry "u" "username"  "User name used for commiting changes at svn server."
@@ -28,9 +29,11 @@ Parse_Options "$@"
 
 Parse_Conf CompileSubversion.conf
 
+unset batch
+Boolean "batch" && batch=yes
+
 trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
 revisions=`Get_Local_Revisions` || Die "Could not find a valid svn revisions tree."
-
 username=`Entry username`
 [ "$username" ] && username="--username $username" 
 
@@ -47,8 +50,7 @@ function publish_revision() {
    prefix="$version-r"
    if ls -d "$revisions/$program/$prefix"* &> /dev/null
    then
-      latest=`cd "$revisions/$program"
-              ls -d "$prefix"* | cut -b$[${#prefix}+1]- | sort -nr | head -n1`
+      latest=`cd "$revisions/$program"; ls -d "$prefix"* | cut -b$[${#prefix}+1]- | sort -nr | head -n1`
       revision=$[latest+1]
       
       if [ `diff -Nur --exclude .svn "$revisions/$program/$version-r$latest" "$trunk/$program/$version" | wc -l` = 0 ]
@@ -57,8 +59,10 @@ function publish_revision() {
          Log_Verbose "Will not publish a new revision for $program $version."
          return
       fi
+      commitmsg="NewVersion."
    else
       revision=1
+      commitmsg="New recipe."
    fi
    
    appdir="$trunk/$program/$version"
@@ -69,7 +73,9 @@ function publish_revision() {
       then commitdir="$trunk/$program"
       else commitdir="$appdir"
       fi
-      if Ask "Commit the changes at $commitdir?"
+      if [ "$batch" ]
+      then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error commiting $commitdir"
+      elif Ask "Commit the changes at $commitdir?"
       then svn commit $username "$commitdir" || Die "Error commiting $commitdir"
       else return
       fi
@@ -112,7 +118,7 @@ function publish_revision() {
    
    Log_Normal "Listing $revdir"
    find $revdir | grep -v '\.svn'
-   if [ ! "$publishrecipe" ] && ! Ask "Ok to commit revision?"
+   if [ ! "$publishrecipe" ] && [ ! "$batch" ] && ! Ask "Ok to commit revision?"
    then 
       # svn revert $revdir ?
       rm -rf $revdir
