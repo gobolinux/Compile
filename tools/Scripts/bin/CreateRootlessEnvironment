@@ -30,7 +30,7 @@ hostSystemDependencies=(
 )
 
 gnuSystemDependencies=(
-   sed readlink dircolors ls
+   sed readlink ls
 )
 
 ###############################################################################
@@ -64,6 +64,7 @@ for app in "${gnuSystemDependencies[@]}"
 do
    if ! { $app --version 2> /dev/null | grep -qi "GNU\|Free Software Foundation" ;}
    then
+      [ "$app" == "readlink" ] && readlink -f . &> /dev/null && continue
       echo "Rootless GoboLinux requires the GNU version of $app in your \$PATH."
       exit 1
    fi
@@ -150,15 +151,14 @@ alias SymlinkProgram="SymlinkProgram --relative"
 if [ "${ZSH_NAME}" = "zsh" -o "$(basename $(readlink -f ${SHELL}))" = "zsh" ]
 then
    [ -e "${goboPrefix}/System/Settings/zshrc" ] && . "${goboPrefix}/System/Settings/zshrc"
-   prompt lode cyan
 elif [ "${SHELL}" = "/bin/bash" -o "$(basename $(readlink -f ${SHELL}))" = "bash" ]
 then
    [ -e "${goboPrefix}/System/Settings/bashrc" ] && . "${goboPrefix}/System/Settings/bashrc"
 fi
 
-export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages:${PYTHONPATH:+:$PYTHONPATH}
+export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages${PYTHONPATH:+:$PYTHONPATH}
 
-export PKG_CONFIG_PATH=${goboPrefix}/System/Links/Libraries/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}}
+export PKG_CONFIG_PATH=${goboPrefix}/System/Links/Libraries/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}
 
 # Without calling cd, prompt does not display ~, but ${HOME}
 { [ `readlink -f ${PWD}` = `readlink -f ${HOME}` ] && cd; } 2> /dev/null
@@ -208,6 +208,7 @@ then
          mkdir ${goboPrefix}/Programs/Scripts
          cp -r $scripts ${goboPrefix}/Programs/Scripts
          cd ${goboPrefix}/Programs/Scripts
+         find -name "CVS" | xargs rm -rf
          ln -s `basename ${scripts}` Current
       fi
    else
