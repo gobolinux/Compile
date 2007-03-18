@@ -1222,7 +1222,9 @@ fi
 if [ "$recipe_type" = "manifest" ]
 then
    build_tree_if "true"
-   is_function_set pre_install && pre_install
+   if is_function_set pre_install
+   then pre_install || wrap_fail "pre_install failed."
+   fi
    for i in "${manifest[@]}"
    do
       src=`echo $i | cut -d: -f1`
