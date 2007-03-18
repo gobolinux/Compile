@@ -24,7 +24,9 @@ class Freshen < GoboApplication
 		@progs = nil
 		@recipes = nil
 		@packages = nil
-		@config = GoboParseConfig.new(File.expand_path("#{@dirname}/../../Settings/Freshen") + "/Freshen.conf")
+		settingspath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/Freshen.conf"
+		settingspath = File.expand_path("#{@dirname}/../Settings/Freshen") + "/Freshen.conf" if !File.exists?(settingspath)
+		@config = GoboParseConfig.new(settingspath)
 		if @config['verbosity']=='error'
 			@logLevel = 10
 		elsif @config['verbosity']=='quiet'
@@ -382,11 +384,15 @@ END_OF_NOTES
 		gotone = false
 		pfn = ""
 		self.logNormal('Using package, will call InstallPackage')
+		# Strip -r1 off the end of packages. Some do have it, but InstallPackage doesn't need it and
+		# chokes if it's present when it shouldn't be.
+		vers = "#{ver}"
+		vers.gsub!(/-r1$/, '')
 		sudo = ""
 		if File.writable?("#{@config['goboRoot']}/Programs")
 			sudo = "sudo -u #0 "
 		end
-		r = system("#{sudo} InstallPackage -k -U -s keep -b -D -u keep #{prog} #{ver}")
+		r = system("#{sudo} InstallPackage -k -U -s keep -b -D -u keep #{prog} #{vers}")
 		if !r
 			self.logError "InstallPackage failed. Terminating."
 			exit
