@@ -1,6 +1,27 @@
 #!/bin/bash
 
+##################################################
+# Imports
+##################################################
+
 . GoboPath
+. ScriptFunctions
+Import OptionParser
+Import String
+
+##################################################
+# Options and configuration
+##################################################
+
+#helpOnNoArguments=no
+scriptDescription="Automatic fstab generator."
+scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL."
+scriptUsage=""
+Add_Option_Entry "x" "extra-list" "A list of predefined devices and mount points on the format <device>:<mount point>:[<filesystem>]:[<mount options>]:[<comment>], each entry separated by a comma." ""
+
+Parse_Options "$@"
+
+extralist="$(Entry "extra-list")"
 
 ################################################################################
 # Guess context
@@ -55,33 +76,50 @@ echo
 
 unset fat
 unset win
+unset ntfs
 function gen_config() {
    lastpart=1
-   devicetype="$1"
-   drive="${upper[drive]}"
+   drive="${1}"
+   device="${2}"
 
-   result=`fdisk -l "$realdev" 2>&1 | grep "^/"`
-   partlist=`echo "$result" | awk {'print $1'} | tr "\n" " "`
-   for part in $partlist
+   partitions=$(fdisk -l "${device}" 2>&1 | grep "^/")
+   partitionlist=$(echo "$partitions" | awk {'print $1'} | tr "\n" " ")
+   for partition in $partitionlist
    do
-      [ "$part" = "" ] && continue
+      [ "${partition}" = "" ] && continue
 
-      bootableflag=`echo "$result" | awk {'print $2'}`
+      partitionnumber=$(echo "${partition}" | sed s/".*${drive}\(.*\)"/"\1"/)
+      bootableflag=$(echo "${partition}" | awk {'print $2'})
+      test ! -z "${extralist}" && if echo "${extralist}" | grep -q "${drive}${partitionnumber}"
+      then
+         mountpoint=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\1"/)
+	 filesystem=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\2"/)
+	 mountoptions=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\3"/)
+	 comment=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\4"/)
+      else
+         unset mountpoint
+	 unset filesystem
+	 unset mountoptions
+	 unset comment
+      fi         
       if [ "$bootableflag" = "*" ]
-      then n=`echo "$result" | awk {'print $6'}`
-      else n=`echo "$result" | awk {'print $5'}`
+      then id=$(echo "${partition}" | awk {'print $6'})
+      else id=$(echo "${partition}" | awk {'print $5'})
       fi
 
-      if [ "$part" = "$root" ]
+      if [ "$partition" = "$root" ]
       then
-         echo "# Root partition."
-         echo $part " / auto defaults 1 0" 
-         echo
-      elif [ "$n" = "1" -o "$n" = "4" -o "$n" = "6" -o "$n" = "b" -o "$n" = "c" -o "$n" = "e" ]
-      then
+         comment="# Root partition."
+         mountpoint="/"
+	 filesystem="auto"
+	 mountoptions="defaults"
+	 checks="1 0"
+      else
+      case ${id} in
+      "1"|"4"|"6"|"b"|"c"|"e")
          mountname="FAT"
          mountopts="umask=000"
-         if mount $part /Mount 2> /dev/null
+         if mount ${partition} /Mount 2> /dev/null
          then
             if ls /Mount/ | grep -qi "^windows$"
             then
@@ -90,72 +128,73 @@ function gen_config() {
             fi
             umount /Mount
          fi
-         echo "# $mountname partition."
-         if [ "$win" = "1" ]
+         [ -z "${comment}" ] && comment="# $mountname partition."
+         if [ "$mountname" = "Windows" ]
          then
-            echo "$part /Mount/${mountname}${win} vfat $mountopts 1 0"
-            echo
             if [ "$win" ]
             then let win=win+1
             else win=2
             fi
+	    [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${win}"
          else
-            echo "$part /Mount/${mountname}${fat} vfat $mountopts 1 0"
-            echo
             if [ "$fat" ]
             then let fat=fat+1
             else fat=2
             fi
+	    [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${fat}"
          fi
-      elif [ "$n" = "82" ]
-      then
-         echo "# Swap partition."
-         echo "$part none swap pri=1 0 0" 
-         echo
-      elif [ "$n" != "5" ]
-      then
-         partnum=`echo $part | cut -b${#part}-`
-         # so that hda10 does not become HDA0
-         if [ $lastpart -gt $partnum ]
-         then
-            let lastpart=lastpart+1
-            partnum=$lastpart
-         else
-            lastpart=$partnum
+         filesystem="vfat"
+         [ -z "${mountoptions}" ] && mountoptions="${mountopts}"
+	 checks="1 0"
+      ;;
+      "7")
+         if [ "$ntfs" ]
+         then let ntfs=ntfs+1
+         else ntfs=2
          fi
-         echo "# Additional partition."
-         echo $part " /Mount/${devicetype}${drive}${partnum} auto defaults 1 0" 
-         echo
+         [ -z "${comment}" ] && comment="NTFS partition"
+         [ -z "${mountpoint}" ] && mountpoint="/Mount/NTFS${ntfs}"
+         filesystem="ntfs-3g" 
+         [ -z "${mountoptions}" ] && mountoptions="defaults"
+	 checks="1 0"
+      ;; 
+      "82")
+         comment="# Swap partition."
+         mountpoint="none"
+	 filesystem="swap"
+	 mountoptions="pri=1"
+	 checks="0 0"
+      ;;
+      "5");;
+      *)
+         [ -z "${comment}" ] && comment="# Additional partition."
+         [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partionnumber}"
+         [ -z "${filesystem}" ] && filesystem="auto"
+         [ -z "${mountoptions}" ] && mountoptions="defaults"
+	 checks="1 0"
+      ;;
+      esac
       fi
+      echo "${comment}" | grep -q "^#" || comment="# ${comment}"
+      echo "${comment}"
+      echo "${partition} ${mountpoint} ${filesystem} ${mountoptions} ${checks}"
+         echo
   done
 }
 
 ################################################################################
-# IDE Drives
+# IDE and SCSI Drives
 ################################################################################
 
-upper=(A B C D E F G H I J)
-lower=(a b c d e f g h i j)
-for drive in 0 1 2 3 4 5 6 7 8 9
-do
-   device=/dev/hd${lower[drive]}
-   realdev=`readlink -f "$device"`
-   [ -e "$realdev" ] || continue
-   gen_config "HD"
-done
-
-################################################################################
-# SCSI Drives
-################################################################################
-
-upper=(A B C D E F G H I J)
-lower=(a b c d e f g h i j)
-for drive in 0 1 2 3 4 5 6 7 8 9
-do
-   device=/dev/sd${lower[drive]}
-   realdev=`readlink -f "$device"`
-   [ -e "$realdev" ] || continue
-   gen_config "SD"
+drives=(a b c d e f g h i j)
+types=(h s)
+for t in $types; do
+   for d in $drives; do
+      drive="${t}d${d}"
+      device=$(readlink -f "/dev/${drive}")
+      [ -e "${device}" ] || continue
+      gen_config "${drive}" "${device}"
+   done
 done
 
 ################################################################################
