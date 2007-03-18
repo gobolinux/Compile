@@ -20,6 +20,7 @@ class Hash
 		rs + ')'
 	end
 	def merge(hash)
+		return if !hash.is_a?(Hash)
 		hash.each do |key, value|
 			if self.member?(key)
 				j = self[key].dup

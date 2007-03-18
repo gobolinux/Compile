@@ -6,7 +6,7 @@ class Version
 		@version = version.to_s
 	end
 	def to_s
-		if @version
+		if set?
 			@version
 		else
 			"none"
@@ -30,12 +30,12 @@ class Version
 			return 1
 		end
 		if !x.is_a?(Version)
-			raise "#<#{x.class}:#{x.id}> (#{x.inspect}) is not a Version"
+			raise "#<#{x.class}:#{x.object_id}> (#{x.inspect}) is not a Version"
 		end
 		# assume x.is_a(Version), there shouldn't be a need to compare anything else
-		# This is a beautiful piece of code.
+		# This is a beautiful regex
 		# It splits on . or -, and on boundaries between alphabetic and numerics, and 
-		#  removes empties.
+		#  then removes empties.
 		mytokens = @version.split(/ [-.] | (\d)(?=[a-z]) /x).delete_if {|y| y==""}
 		xstokens = x.version.split(/ [-.] | (\d)(?=[a-z]) /x).delete_if {|y| y==""}
 		returnvalue = 0
@@ -46,8 +46,15 @@ class Version
 				mv = mv.to_i
 				xv = xv.to_i
 			end
-			if xv.nil?
+			if mv.to_s.slice(0,1) == "r" && xv.to_s.slice(0,1) != "r"
+				returnvalue = -1
+				returnvalue = 0 if xv.nil?
+				break
+			elsif xv.to_s.slice(0,1) == "r" && mv.to_s.slice(0,1) != "r" && !(xv.to_s == 'r1' && mv.nil?)
 				returnvalue = 1
+				break
+			elsif xv.nil?
+				return 1
 			elsif mv > xv
 				returnvalue = 1
 				break
@@ -56,6 +63,7 @@ class Version
 				break			
 			end
 		end
+		returnvalue = -1 if returnvalue == 0 and xstokens.length>mytokens.length
 		returnvalue
 	end
 end
