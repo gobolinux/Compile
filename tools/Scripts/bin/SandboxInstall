@@ -159,6 +159,7 @@ then
    rm -rf Files/Compile/Sources
    rm -f Programs/Glibc/Settings/ld.so.cache
    rm -f System/Kernel/Devices/null
+   [ -e System/Kernel/Devices/tty ] && rm -f System/Kernel/Devices/tty
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
    find -type f -name "*__dir_opaque" | xargs rm -f &> /dev/null
    if [ "$goboIndex" ]
