@@ -16,3 +16,11 @@ lo_Netmask=255.0.0.0
 
 #Gateway=192.168.2.1
 #GatewayInterface=eth0
+
+# Following is example of network hooks.  Other hooks are:
+#      <if>_PreDown(), <if>_PostUp, <if>_PostDown
+#
+#eth0_PreUp() {
+#    # This function is called before eth0 if brought up
+#}
+
