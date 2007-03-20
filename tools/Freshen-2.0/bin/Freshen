@@ -370,7 +370,7 @@ END_OF_NOTES
 		if !File.writable?("#{@config['goboRoot']}/Files/Compile/Sources")
 			sudo = "sudo -u #0 "
 		end
-		r  = system("#{sudo} Compile -U -D -b #{prog} #{ver}")
+		r  = system("#{sudo} Compile -G -U -D -b #{prog} #{ver}")
 		if !r
 			v = ver.to_s.gsub(/-r.*$/, '')
 			r = system "#{sudo} SymlinkProgram #{prog} #{v}"
@@ -394,6 +394,13 @@ END_OF_NOTES
 		end
 		r = system("#{sudo} InstallPackage -k -U -s keep -b -D -u keep #{prog} #{vers}")
 		if !r
+			self.logNormal "Initial InstallPackage failed. Retrying will null revision..."
+			ov = vers.clone
+			if ov!=vers.gsub!(/-r.*$/, '')
+				if system("#{sudo} InstallPackage -k -U -s keep -b -D -u keep #{prog} #{vers}")
+					return
+				end
+			end
 			self.logError "InstallPackage failed. Terminating."
 			exit
 		end
@@ -401,22 +408,6 @@ END_OF_NOTES
 	def getRecipe(prog,ver)
 		system "GetRecipe #{prog} #{ver}"
 		return
-		if @config['netMode']=='ask'
-			self.logError "I haven't worked out how to ask yet. Sorry."
-		end
-		self.logNormal "Downloading recipe for #{prog} #{ver}..."
-		rf = "#{prog}--#{ver}--recipe.tar.bz2"
-		system("wget -nv -O /tmp/#{rf} #{@compileConfig['getRecipeStores'][0]}/#{rf}")
-		self.logNormal "Retrieved recipe..."
-		pwd = Dir.pwd()
-		sudo = ""
-		if !File.writable?(@compileConfig['compileGetRecipeDir']+"/#{prog}/#{ver}")
-			sudo = "sudo -u #0 "
-		end
-		Dir.chdir(@compileConfig['compileGetRecipeDir'])
-		system("#{sudo}tar xjf /tmp/#{rf}")
-		Dir.chdir(pwd)
-		self.logNormal "Recipe installed."
 	end
 	def getProgs
 		return @progs if @progs and @progs.length>0
