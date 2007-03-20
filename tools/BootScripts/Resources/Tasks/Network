@@ -37,15 +37,32 @@ function StaticNetworkInterface() {
    esac
 }
 
+function RunHook() {
+   case "$2" in
+      [Ss]tart)
+         hookfunc="$3_${1}Up"
+         [ "`type -t $hookfunc`" = "function" ] && $hookfunc
+         ;;
+      [Ss]top)
+         hookfunc="$3_${1}Down"
+         [ "`type -t $hookfunc`" = "function" ] && $hookfunc
+         ;;
+   esac
+}
+
 function NetworkInterface() {
    eval 'export networkBootProto=$'$2'_BootProto'
    eval 'export networkIP=$'$2'_IP'
    eval 'export networkNetmask=$'$2'_Netmask'
    eval 'export networkBroadcast=$'$2'_Broadcast'
+   RunHook Pre "$@"
    if [ -z "$networkBootProto" -o "$networkBootProto" = "Static" ]
    then StaticNetworkInterface "$1" "$2"
    else source ${networkBootProto}NetworkInterface "$1" "$2"
    fi
+   rtn=$?
+   RunHook Post "$@"
+   return $rtn
 }
 
 if [ "$2" ]
