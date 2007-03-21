@@ -58,7 +58,7 @@ class Freshen < GoboApplication
 		addOptionBoolean("no-binaries", ["-B"], "Do not include binary packages#{@config['binaries']=='no' and ' [default]' or ''}")
 		addOptionBoolean("recipes", ["-r"], "Include recipes#{@config['recipes']=='yes' and ' [default]' or ''}")
 		addOptionBoolean("no-recipes", ["-R"], "Do not include recipes#{@config['recipes']=='no' and ' [default]' or ''}")
-		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
+#		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
 		addOptionBoolean("upgrade", ["-u"], "Upgrade <list>")
 		addOptionBoolean("upgrade-system", ["-U"], "Upgrade all available recipes except <list>")
 		addOptionEntry("limit", ["-l"], "Limit update to first <n> packages (useful only with upgrade-system)")
@@ -104,9 +104,10 @@ END_OF_NOTES
 		elsif options('no-downgrades')
 			@config['showDowngrades'] = 'no'
 		end
-		if options('netmode')
-			@config['netMode'] = options('netmode')
-		end
+# Netmode doesn't work. Does it need to be there at all?
+#		if options('netmode')
+#			@config['netMode'] = options('netmode')
+#		end
 		if options('limit')
 			@config['limit'] = options('limit').to_i
 		end
@@ -134,43 +135,62 @@ END_OF_NOTES
 		end
 		puts "\033];\007"
 	end
-	def info(prog)
+	def getTrueCase(prog)
+		if !@trueCase
+			@trueCase = Hash.new
+		end
+		if @trueCase[prog]
+			return @trueCase[prog]
+		end
+		oprog = prog.clone
 		self.genTree
 		self.getProgs
 		self.genPackages
 		found = false
-		recipe = false
-		description = newver = versionstring = size = recipefile = depof = false
 		if !@recipes[prog]
 			@recipes.each_key {|x|
 				if x.downcase==prog.downcase
 					prog = x
 					found = true
-					recipe = true
 					break
 				end
 			}
 			if !found
 				if !@progs[prog]
-					puts "#{prog} not found in @progs"
 					@progs.each_key {|x|
 						if x.downcase==prog.downcase
 							prog = x
 							found = true
-							recipe = false
 							break
 						end
 					}
 				else
 					found = true
-					recipe = false
 				end
 			end
 		else
 			found = true
-			recipe = true
 		end
-		if recipe
+		if found
+			@trueCase[oprog] = prog
+			return prog
+		end
+		logError "Could not find true case of #{prog}"
+		return nil
+	end
+	def info(prog)
+		self.genTree
+		self.genPackages
+		self.getProgs
+		found = false
+		recipe = false
+		description = newver = versionstring = size = recipefile = depof = false
+		if !(prog = getTrueCase(prog))
+			self.logError "Cannot fetch information. Program not found."
+			return
+		end
+		# Find the recipe file
+		if @recipes[prog]
 			present = false
 			if @compileConfig['compileRecipeDirs'].is_a?(Array)
 				@compileConfig['compileRecipeDirs'].each {|dir|
@@ -181,11 +201,12 @@ END_OF_NOTES
 					end
 				}
 			end
-			if !present and @config['netMode'] == 'always'
+			if !present
 				self.getRecipe(prog,@recipes[prog].at(-1))
 				recipefile = "#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{@recipes[prog].at(-1)}/Recipe"
 			end
 		end
+		
 		installed = @progs[prog] if @progs[prog]
 		newver = @recipes[prog].at(-1) if @recipes[prog]
 		newver = @packages[prog].at(-1) if @packages[prog] and (!newver or @packages[prog].at(-1)>newver)
@@ -194,14 +215,20 @@ END_OF_NOTES
 		else
 			nvcol = Screen.colour['cyan']
 		end
-#		versionstring = @recipes[prog].join(" ") if @recipes[prog]
+		# Merge recipes and packages versions, sort and remove duplicates
 		vers = ((@recipes[prog] ? @recipes[prog] : Array.new) | (@packages[prog] ? @packages[prog] : Array.new))
-		vers.each {|x|
-			vers.push(vers.delete(x))
-		}
 		vers.sort!
+		vers.uniq!
+		# Add the mnemonic colours
 		versionstring = ""
+		vslength = 0 # This is used to insert hard line breaks and wordwrap the version list.
+		wrappos = Screen.width-24 # We can't use wordwrap() because of the escape sequences
 		vers.each {|ver|
+			if vslength+ver.to_s.length>wrappos
+				versionstring+="\n"+" "*23
+				vslength = 0
+			end
+			vslength+= ver.to_s.length
 			if @recipes[prog] and @packages[prog] and @recipes[prog].index(ver) and @packages[prog].index(ver)
 				versionstring+= "#{Screen.colour['blue']+ver.to_s+Screen.colour['normal']} "
 			elsif @recipes[prog] and @recipes[prog].index(ver)
@@ -210,17 +237,23 @@ END_OF_NOTES
 				versionstring+= "#{Screen.colour['brown']+ver.to_s+Screen.colour['normal']} "
 			end
 		}
+		# There's no way to get package descriptions without fetching them, so we have to rely on
+		# recipes or /Programs entries. There should be a better way, although there aren't many
+		# package-only programs any more.
+		desclines = []
 		if recipefile and File.exists?(recipefile.sub(/Recipe$/,'')+"Resources/Description")
-			wwl = Screen.width-23
-			dl = File.readlines(recipefile.sub(/Recipe$/,'')+"Resources/Description")
-			dl.each {|l|
-				if l =~ /\[Description\]/
-					description = wordwrap(l[14,l.length], 23)
-					#description = (l[14,l.length].gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 
-#5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n                       ").strip
-				end
-			}
+			desclines = File.readlines(recipefile.sub(/Recipe$/,'')+"Resources/Description")
+		elsif @progs[prog] and File.exists?("#{@config['goboRoot']}/Programs/#{prog}/Current/Resources/Description")
+			desclines = File.readlines("#{@config['goboRoot']}/Programs/#{prog}/Current/Resources/Description")
 		end
+		desclines.each {|l|
+			if l =~ /\[Description\]/
+				description = wordwrap(l[14,l.length], 24) # 24 is the space taken by the label
+			end
+		}
+
+		# Only produce list of programs that depend on prog if we're at verbose or higher, because
+		# it requires generating the whole tree
 		if @logLevel>=40
  			pl = produceUpdatesList(true, false, true)
  			dl = []
@@ -228,7 +261,7 @@ END_OF_NOTES
 	 			dl.push k if v.include?(prog)
  			}
  			if dl.length>0
- 				depof = wordwrap(dl.join(", "), 23)
+ 				depof = wordwrap(dl.join(", "), 24)
  			end
  		end
 		
@@ -236,22 +269,18 @@ END_OF_NOTES
 			rc = GoboParseConfig.new(recipefile)
 			size = rc['file_size'].to_i if rc['file_size']
 		end
-		if found
-			puts "  * #{Screen.colour['green']+prog+Screen.colour['normal']}"
-			puts "    Description:       #{description}" if description
-			puts "    Installed Version: #{Screen.colour['cyan']}#{installed}#{Screen.colour['normal']}" if installed
-			puts "    Newest Version:    #{nvcol}#{newver}#{Screen.colour['normal']}" if newver
-			puts "    Versions:          #{versionstring}" if versionstring
-			puts "    Dependency of:     #{depof}" if depof
-			puts "    Size:              #{Gobo.smartSize(size)}" if size
-			puts "    Recipe: #{recipefile}" if recipefile
-		else
-			self.logError "#{prog} was not found in the recipe tree or in /Programs"
-		end
+		puts "  * #{Screen.colour['green']+prog+Screen.colour['normal']}"
+		puts "    Description:       #{description}" if description
+		puts "    Installed Version: #{Screen.colour['cyan']}#{installed}#{Screen.colour['normal']}" if installed
+		puts "    Newest Version:    #{nvcol}#{newver}#{Screen.colour['normal']}" if newver
+		puts "    Versions:          #{versionstring}" if versionstring
+		puts "    Dependency of:     #{depof}" if depof
+		puts "    Size:              #{Gobo.smartSize(size)}" if size
+		puts "    Recipe: #{recipefile}" if recipefile
 	end
 	def wordwrap(s, n)
 		wwl = Screen.width-n
-		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*n).strip
+		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
 	end
 	def oldUS(except)
 		toupdate = []
@@ -415,7 +444,7 @@ END_OF_NOTES
 #		pcpath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/ProgramsCache.rb"
 		pcpath = "#{@config['tmpDir']}/ProgramsCache.rb"
 		if File.exists?(pcpath) and File.ctime(pcpath)>Time.now-@config['programsCacheTimeout'] and !options('no-cache')
-			self.logVerbose "Reading /Programs data from cache"
+			#self.logVerbose "Reading /Programs data from cache"
 			eval(File.open(pcpath).read)
 			@progs = progs
 		else
@@ -424,7 +453,6 @@ END_OF_NOTES
 	end
 	def genProgs
 		self.logNormal "Generating list of installed programs..."
-#		pcpath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/ProgramsCache.rb"
 		pcpath = "#{@config['tmpDir']}/ProgramsCache.rb"
 		@progs = Hash.new
 		pcache = "progs = {\n"
@@ -565,70 +593,24 @@ END_OF_NOTES
 		readfromcache = false
 #		pcpath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/ProgramsCache.rb"
 		pcpath = "#{@config['tmpDir']}/ProgramsCache.rb"
-		if File.exists?(pcpath) and File.ctime(pcpath)>Time.now-@config['programsCacheTimeout'] and !options('no-cache')
-			self.getProgs
-			#eval(File.open(pcpath).read)
-			#readfromcache = true
-			@progs = progs
-		else
-			self.logNormal "Generating list of installed programs..."
-			@progs = Hash.new
-		end
-		pcache = "progs = {\n"
-		rp = {}
-		rp = @recipes.clone if @config['recipes'] == 'yes'
-		rp.merge(@packages)
-		pb = ProgressBar.new(rp.size,1)
+		self.getProgs
 		toupdate = []
-		rp.each_key {|prog|
-			if !@progs[prog]
-				curver = `readlink -f #{@config['goboRoot']}/Programs/#{prog}/Current`
-				curver.match(/Current$/) and next
-				curver.gsub!(/.*\/(.+?)\n/,"\\1")
-				curver == "" and curver = 0
-				ver = Version.new(curver)
-				@progs[prog] = ver
-				if File.exists?("#{@config['goboRoot']}/Programs/#{prog}")
-					Dir.foreach("#{@config['goboRoot']}/Programs/#{prog}") {|fn|
-						next if fn=='.'||fn=='..'||fn=='Current'||fn=='Settings'
-						v = Version.new(fn)
-						ver = v if v>ver
-					}
-					@progs[prog] = ver
-				end
-			else
-				ver = @progs[prog]
-			end
-			pcache+= "'#{prog}'=>Version.new('#{curver}'),\n"
+		# This is the point the large deletion was made. If things didn't go according to plan, reinsert it.
+		pb = ProgressBar.new(@progs.size,1)
+		@progs.each_key {|prog|
 			pb.inc
 			pb.draw
-			next unless ver.set?
-			newver = nil
-			if @recipes[prog]
-				newver = @recipes[prog].at(-1)
-			end
-			if @packages[prog]
-				newver = @packages[prog].at(-1) if @packages[prog].at(-1)>newver
-			end
-			if ver<newver and showupgrades
-				toupdate.push [prog, newver]
-				upgrades+=1
-			elsif ver>newver and showdowngrades
-				toupdate.push [prog, newver]
-				downgrades+=1
+			ver = @progs[prog]
+			next if !ver.set?
+			ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
+			ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
+			if ver>@progs[prog] and showupgrades
+				toupdate.push [prog, ver]
+			elsif raw
+				toupdate.push [prog, ver]
 			end
 		}
-		pcache+= "}"
-		if false && !readfromcache
-			self.logVerbose "Saving /Programs data to cache"
-			pc = File.open(pcpath,"w")
-			pc.puts(pcache)
-			pc.close
-		end
-		
 		print " "*Screen.width
-		
-		#toupdate = dependencySort(toupdate)
 		dephash = createDepHash(toupdate)
 		return dephash if raw
 		toupdate = dephash.tsort.delete_if {|x|
@@ -715,12 +697,13 @@ END_OF_NOTES
 		toup.each {|prog, ver|
 			dh[prog] = getDependencies(prog, ver)
 			# SPECIAL CASE: circular dependency
-			if prog=='Mesa' and dh[prog].include?('Xorg')
-				self.logError "Circular dependency of Mesa on Xorg removed from tree"
-				dh[prog]-= ['Xorg']
+			if prog=='Xorg' and dh[prog].include?('Mesa')
+				#self.logError "Circular dependency of Xorg on Mesa removed from tree"
+				dh[prog]-= ['Mesa']
 			end
 		}
 		
+		# This ensures that the complete dependencies of every program are included in the tree.
 		begin
 			mh = {}
 			dh.each {|k, v|
@@ -758,7 +741,7 @@ END_OF_NOTES
 			np = false
 			Dir.foreach("#{@config['goboRoot']}/Programs") {|fn|
 				if fn.downcase == prog.downcase && fn != prog
-					puts "Found a match: #{prog}=>#{fn}"
+					self.logVerbose "Normalised dependency in #{fr}: #{prog} should be #{fn}"
 					return getNewestAvailableVersion(fn)
 				end
 			}
@@ -766,7 +749,7 @@ END_OF_NOTES
 				@compileConfig['compileRecipeDirs'].each {|dir|
 					Dir.foreach("#{dir}") {|fn|
 						if fn.downcase == prog.downcase && fn != prog
-							self.logError "Notice: dependency file for #{fr} has invalid entry #{prog}. Entry should read: #{fn}"
+							self.logVerbose "Notice: dependency file for #{fr} has invalid entry #{prog}. Entry should read: #{fn}"
 							return getNewestAvailableVersion(fn) 
 						end
 					}
