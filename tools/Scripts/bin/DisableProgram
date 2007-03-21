@@ -67,6 +67,7 @@ Log_Normal "Removing links..."
 rm -- $filesdir
 
 #{ find "${goboLinks}" | RemoveBroken ;} || Die "Couldn't cleanup links."
+Gen_Env_Cache
 
 
 mv "$disabled" "$prefix" || Die "Please check $disabled."
