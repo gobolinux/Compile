@@ -118,7 +118,9 @@ System/Links/Manuals/man{0,1,2,3,4,5,6,7,8} \
 System/Links/Shared \
 System/Links/Tasks \
 System/Settings \
-System/Variable
+System/Variable \
+Files/Compile/Archives \
+Files/Compile/Sources
 do
    [ -e "${goboPrefix}/$dir" ] || { echo "Creating ${goboPrefix}/$dir"; mkdir -p "${goboPrefix}/$dir"; }
 done
@@ -355,16 +357,21 @@ SymlinkProgram Rootless
 # Preparing Rootless startup on next sessions
 ###############################################################################
 
-for f in .bashrc .zshrc
+for sh in bash zsh
 do
-   file="${HOME}/${f}"
+   file="${HOME}/.${sh}rc"
    line=". ${goboPrefix}/Programs/Rootless/Current/bin/StartRootless"
    
    if ! grep "^${line}" ${file} &> /dev/null
    then
-      Log_Normal "Adding StartRootless line to ~/${f}"
-      echo >> ${file}
-      echo "$line" >> ${file}
+      if Ask "Should a StartRootless line be added to ~/.${sh}rc?"
+      then
+         echo >> ${file}
+         echo "$line" >> ${file}
+      else
+         Log_Terse "StartRootless was not added to ~/.${sh}rc."
+	 Log_Normal "To start rootless you either need to issue '. ${goboPrefix}/Programs/Rootless/Current/bin/StartRootless' at the prompt each session or add that line to ~/.${sh}rc manually."
+      fi
    fi
 done
 
