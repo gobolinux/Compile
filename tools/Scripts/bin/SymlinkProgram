@@ -350,17 +350,7 @@ then
       Log_Normal "Symlinking environment..."
       rm -f -- "$goboEnvironment/$package--"*
       Verbose ln -sfv "$envfile" "$goboEnvironment/$package--$version"
-      Log_Verbose "Rebuilding environment cache..."
-      cache="$goboEnvironment"/Cache
-      echo -e "unset unsetvars\n[ ! \"\$goboSettings\" ] && unsetvars=true\n" > "$cache"
-      echo -e "source GoboPath\n" >> "$cache"
-      for linkedfile in "$goboEnvironment"/*--*
-      do 
-         [ -f "$linkedfile" ] && cat "$linkedfile" >> "$cache"
-         echo >> "$cache"
-      done
-      unsetvars=`grep export $goboExecutables/GoboPath | awk {'print $1 " " $2'} | grep "^export" | sed -e 's,=.*,,g' -e 's,export,unset,g'`
-      echo -e "if [ \"\$unsetvars\" ]\nthen\n$unsetvars\nfi\n" >> "$cache"
+      Gen_Env_Cache
    fi
 fi
 
