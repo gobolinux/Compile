@@ -60,10 +60,11 @@ class Freshen < GoboApplication
 		addOptionBoolean("no-recipes", ["-R"], "Do not include recipes#{@config['recipes']=='no' and ' [default]' or ''}")
 #		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
 		addOptionBoolean("upgrade", ["-u"], "Upgrade <list>")
-		addOptionBoolean("upgrade-system", ["-U"], "Upgrade all available recipes except <list>")
+		addOptionBoolean("upgrade-system", ["-U"], "Upgrade entire system, excluding items blocked by -x")
 		addOptionEntry("limit", ["-l"], "Limit update to first <n> packages (useful only with upgrade-system)")
 		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages (useful only with upgrade-system)")
 		addOptionEntry("info", ["-i"], "Get information on <program>")
+		addOptionBoolean("excluding", ["-x"], "Exclude <list> from output.")
       self.description = "Checks for updated GoboLinux recipes and packages"
       self.credits     = "By Michael Homer <michael@e.geek.nz>"
       self.usage       = "[<opts>]"
@@ -114,6 +115,14 @@ END_OF_NOTES
 		if options('lower-limit')
 			@config['lower-limit'] = options('lower-limit').to_i
 		end
+		if options('excluding')
+			@config['except'] = ARGV.dup
+			@config['except'].each_index {|i|
+				@config['except'][i] = getTrueCase @config['except'][i]
+			}
+		elsif !@config['except']
+			@config['except'] = []
+		end
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")
 		@getAvailableConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Scripts/GetAvailable.conf")
 		if options('cache-only')
@@ -127,11 +136,11 @@ END_OF_NOTES
 				self.upgrade(prog)
 			}
 		elsif options('upgrade-system')
-			self.upgradeSystem(ARGV)
+			self.upgradeSystem
 		elsif options('info')
 			self.info(options('info'))
 		else
-			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes')
+			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes',@config['except'])
 		end
 		puts "\033];\007"
 	end
@@ -282,25 +291,8 @@ END_OF_NOTES
 		wwl = Screen.width-n
 		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
 	end
-	def oldUS(except)
-		toupdate = []
-		rp.each_key {|prog|
-			next unless @progs[prog] and @progs[prog].set?
-			vers = rp[prog].sort
-			if vers.at(-1)>@progs[prog]
-				go = true
-				except.each {|x|
-					go = false if x.downcase==prog.downcase
-				}
-				if go
-					pvs[prog] = vers.at(-1)
-					toupdate.push [prog, vers.at(-1)]
-					sz+= @packsizes[prog] if @packsizes[prog]
-				end
-			end
-		}
-	end
-	def upgradeSystem(except)
+	def upgradeSystem
+		except = @config['except']
 		self.genTree
 		self.genPackages
 		self.getProgs
@@ -309,7 +301,7 @@ END_OF_NOTES
 		pvs = Hash.new
 		sz = 0
 
-		toupdate = produceUpdatesList(true,false)
+		toupdate = produceUpdatesList(true,false, false, except)
 		
 		if @config['lower-limit']
 			toupdate = toupdate[@config['lower-limit']..toupdate.length]
@@ -330,6 +322,9 @@ END_OF_NOTES
 			self.logNormal "\033]2;Freshen: Updating settings\007Updating #{p} Settings..."
 			system "UpdateSettings #{p}"
 		}
+		if toupdate.length==0
+			self.logNormal "Nothing to do."
+		end
 		@config['recipeCacheTimeout'] = 0
 		self.getProgs
 	end
@@ -583,7 +578,7 @@ END_OF_NOTES
 		self.genPackages
 		self.genProgs
 	end
-	def produceUpdatesList(showupgrades, showdowngrades, raw = false)
+	def produceUpdatesList(showupgrades, showdowngrades, raw = false, except = [])
 		self.genTree
 		self.genPackages
 		self.logNormal "\033]2;Freshen: Producing updates list\007Producing updates list..."
@@ -602,6 +597,7 @@ END_OF_NOTES
 			pb.draw
 			ver = @progs[prog]
 			next if !ver.set?
+			next if except.include?(prog)
 			ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
 			ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
 			if ver>@progs[prog] and showupgrades
@@ -611,7 +607,7 @@ END_OF_NOTES
 			end
 		}
 		print " "*Screen.width
-		dephash = createDepHash(toupdate)
+		dephash = createDepHash(toupdate, except)
 		return dephash if raw
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
@@ -623,12 +619,17 @@ END_OF_NOTES
 		end
 		toupdate
 	end
-	def sysStatus(showupgrades,showdowngrades)
-		self.logVerbose "Displaying #{showupgrades and 'upgrades ' or 'only '}#{showupgrades and showdowngrades and 'and ' or ''}#{showdowngrades and 'downgrades' or 'only'}, #{@config['recipes']=='yes' and 'recipes ' or 'just '}#{@config['recipes']=='yes' and @config['binaries']=='yes' and 'and ' or ''}#{@config['binaries']=='yes' and 'binaries' or 'exclusively'}"
+	def sysStatus(showupgrades,showdowngrades, except=[])
+		exl = ""
+		if except.length>0
+			anditem = except.pop
+			exl = ", excluding "+except.join(', ')+(except.length>0 ? " and " : '')+anditem
+		end
+		self.logVerbose "Displaying #{showupgrades and 'upgrades ' or 'only '}#{showupgrades and showdowngrades and 'and ' or ''}#{showdowngrades and 'downgrades' or 'only'}, #{@config['recipes']=='yes' and 'recipes ' or 'just '}#{@config['recipes']=='yes' and @config['binaries']=='yes' and 'and ' or ''}#{@config['binaries']=='yes' and 'binaries' or 'exclusively'}#{exl}"
 		out = ""
 		upgrades = downgrades = 0
 		readfromcache = false
-		toupdate = produceUpdatesList(showupgrades, showdowngrades)
+		toupdate = produceUpdatesList(showupgrades, showdowngrades, false, except)
 		if @config['lower-limit']
 			toupdate = toupdate[@config['lower-limit']..toupdate.length]
 		end
@@ -692,7 +693,7 @@ END_OF_NOTES
 			first
 		}
 	end
-	def createDepHash(toup)
+	def createDepHash(toup, except = [])
 		dh = DependencyHash.new
 		toup.each {|prog, ver|
 			dh[prog] = getDependencies(prog, ver)
@@ -716,7 +717,24 @@ END_OF_NOTES
 			}
 			dh.merge(mh)
 		end while mh.size>0
-		
+		begin
+			todel = []
+			dh.each {|k, v|
+				if except.include?(k)
+					todel.push k
+					next
+				end
+				v.each {|d|
+					if except.include?(d) || !dh[d] # If this has an excluded or non-present dependency,
+						todel.push k # drop it completely.
+						break
+					end
+				}
+			}
+			todel.each {|item| # Delete them and go again
+				dh.delete item
+			}
+		end while todel.length>0
 		return dh
 	end
 	def getNewestAvailableVersion(prog, fr="unknown package")
