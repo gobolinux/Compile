@@ -223,7 +223,7 @@ then
          if ! [[ $((` ls *.la 2> /dev/null | wc -l`)) == 0 ]]
          then
             Log_Normal "Correcting libtool entries..."
-            FixLibtoolLa *.la
+            find . -name '*.la' |xargs FixLibtoolLa
          fi
          Quiet popd
       fi
