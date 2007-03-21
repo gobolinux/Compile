@@ -30,14 +30,11 @@ do
    done
    cp "${current}" "$old"
    cat "$old" | sed "
-
-s%$goboPrefix/Programs/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
-s%$goboPrefix/Programs/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
-
+s%$goboPrograms/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
 " > "${current}"
 
    Boolean "backup" || rm -- "$old"
-
 done
 
 # Why the hell does libtool keep hardcoded paths?
