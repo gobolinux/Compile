@@ -59,18 +59,20 @@ class Freshen < GoboApplication
 		addOptionBoolean("recipes", ["-r"], "Include recipes#{@config['recipes']=='yes' and ' [default]' or ''}")
 		addOptionBoolean("no-recipes", ["-R"], "Do not include recipes#{@config['recipes']=='no' and ' [default]' or ''}")
 #		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
-		addOptionBoolean("upgrade", ["-u"], "Upgrade <list>")
+		# NOTE: Consider whether this is useful at all. Possibly make -u an alias to -U
+		#addOptionBoolean("upgrade", ["-u"], "Upgrade <list> (presently non-functional).")
 		addOptionBoolean("upgrade-system", ["-U"], "Upgrade entire system, excluding items blocked by -x")
-		addOptionEntry("limit", ["-l"], "Limit update to first <n> packages (useful only with upgrade-system)")
-		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages (useful only with upgrade-system)")
+		addOptionEntry("limit", ["-l"], "Limit update list to first <n> packages")
+		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages of update list")
 		addOptionEntry("info", ["-i"], "Get information on <program>")
 		addOptionBoolean("excluding", ["-x"], "Exclude <list> from output.")
-      self.description = "Checks for updated GoboLinux recipes and packages"
+		addOptionBoolean("empty-tree", ["-e"], "Behave as if installed program tree were empty")
+      self.description = "Checks for updated GoboLinux recipes and packages."
       self.credits     = "By Michael Homer <michael@e.geek.nz>"
-      self.usage       = "[<opts>]"
-      self.example     = "-D"
+      self.usage       = "[<opts>] [<list>]"
+      self.example     = "-U -l 5 -R"
       self.helpOnNoArguments = false
-      @version         = "2.0.9992"
+      @version         = "2.1"
       self.notes = <<END_OF_NOTES
 Run with no arguments, Freshen outputs a list of updates in the form:
 [I#{Screen.colour['cyan']}U#{Screen.colour['normal']}X] #{Screen.colour['red']}Foo 2.0#{Screen.colour['normal']}                                                                1.0
@@ -82,6 +84,8 @@ The mnemonics mean:                Colour code:
  R Recipe available
  B Binary available
  X Recipe and binary available
+ 
+If <list> is provided, Freshen examines only the programs in it and their dependencies, unless the -x flag is enabled. If <list> is not provided, Freshen will examine all installed programs.
 END_OF_NOTES
 	end
 	def run
@@ -120,27 +124,30 @@ END_OF_NOTES
 			@config['except'].each_index {|i|
 				@config['except'][i] = getTrueCase @config['except'][i]
 			}
+			@config['onlyUpgrade'] = []
 		elsif !@config['except']
 			@config['except'] = []
+			@config['onlyExamine'] = ARGV
 		end
+		@config['emptyTree'] = options('empty-tree')
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")
 		@getAvailableConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Scripts/GetAvailable.conf")
 		if options('cache-only')
 			self.updateCaches
-		elsif options('upgrade')
-			self.logError "This component is non-functional at present. Consider using --upgrade-system"
-			i = 0
-			ARGV.each { |prog|
-				i+=1
-				self.logNormal "Upgrading program #{i}/#{ARGV.size}..."
-				self.upgrade(prog)
-			}
+# 		elsif options('upgrade')
+# 			self.logError "This component is non-functional at present. Consider using --upgrade-system"
+# 			i = 0
+# 			ARGV.each { |prog|
+# 				i+=1
+# 				self.logNormal "Upgrading program #{i}/#{ARGV.size}..."
+# 				self.upgrade(prog)
+# 			}
 		elsif options('upgrade-system')
 			self.upgradeSystem
 		elsif options('info')
 			self.info(options('info'))
 		else
-			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes',@config['except'])
+			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes')
 		end
 		puts "\033];\007"
 	end
@@ -292,7 +299,6 @@ END_OF_NOTES
 		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
 	end
 	def upgradeSystem
-		except = @config['except']
 		self.genTree
 		self.genPackages
 		self.getProgs
@@ -301,7 +307,7 @@ END_OF_NOTES
 		pvs = Hash.new
 		sz = 0
 
-		toupdate = produceUpdatesList(true,false, false, except)
+		toupdate = produceUpdatesList(true,false, false)
 		
 		if @config['lower-limit']
 			toupdate = toupdate[@config['lower-limit']..toupdate.length]
@@ -463,7 +469,7 @@ END_OF_NOTES
 			@progs[prog] = ver
 			if File.exists?("#{@config['goboRoot']}/Programs/#{prog}")
 					Dir.foreach("#{@config['goboRoot']}/Programs/#{prog}") {|fn|
-						next if fn=='.'||fn=='..'||fn=='Current'||fn=='Settings'
+						next if fn=='.'||fn=='..'||fn=='Current'||fn=='Settings'||fn=='Variable'
 						v = Version.new(fn)
 						if v>ver
 							ver = v
@@ -578,7 +584,7 @@ END_OF_NOTES
 		self.genPackages
 		self.genProgs
 	end
-	def produceUpdatesList(showupgrades, showdowngrades, raw = false, except = [])
+	def produceUpdatesList(showupgrades, showdowngrades, raw = false)
 		self.genTree
 		self.genPackages
 		self.logNormal "\033]2;Freshen: Producing updates list\007Producing updates list..."
@@ -590,46 +596,61 @@ END_OF_NOTES
 		pcpath = "#{@config['tmpDir']}/ProgramsCache.rb"
 		self.getProgs
 		toupdate = []
-		# This is the point the large deletion was made. If things didn't go according to plan, reinsert it.
-		pb = ProgressBar.new(@progs.size,1)
-		@progs.each_key {|prog|
-			pb.inc
-			pb.draw
-			ver = @progs[prog]
-			next if !ver.set?
-			next if except.include?(prog)
-			ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
-			ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
-			if ver>@progs[prog] and showupgrades
-				toupdate.push [prog, ver]
-			elsif raw
-				toupdate.push [prog, ver]
-			end
-		}
-		print " "*Screen.width
-		dephash = createDepHash(toupdate, except)
+		if @config['onlyExamine'].length==0
+			# This is the point the large deletion was made. If things didn't go according to plan, reinsert it.
+			pb = ProgressBar.new(@progs.size,1)
+			@progs.each_key {|prog|
+				pb.inc
+				pb.draw
+				ver = @progs[prog]
+				next if !ver.set?
+				next if except.include?(prog)
+				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
+				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
+				if ver>@progs[prog] and showupgrades
+					toupdate.push [prog, ver]
+				elsif raw
+					toupdate.push [prog, ver]
+				end
+			}
+			print " "*Screen.width
+		else #onlyExamine
+			logNormal "Examining only #{@config['onlyExamine'].join(', ')}"
+			@config['onlyExamine'].each {|prog|
+				prog = getTrueCase(prog) if !@progs[prog]
+				ver = @progs[prog]
+				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
+				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
+				if true || ver>@progs[prog] and showupgrades
+					toupdate.push [prog, ver]
+				elsif raw
+					toupdate.push [prog, ver]
+				end
+			}
+		end
+		dephash = createDepHash(toupdate)
 		return dephash if raw
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
-			x.nil? || x=="" || (@progs[x].nil? || nv.nil?) || nv<=@progs[x]
+			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x]))
 		}
-#		toupdate.delete('Glibc')
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
 			self.logError("Warning: Glibc upgrade requires kernel upgrade to at least 2.6.20. Glibc has been deleted from the updates list. Some packages may fail to install because of this.");
 		end
 		toupdate
 	end
-	def sysStatus(showupgrades,showdowngrades, except=[])
+	def sysStatus(showupgrades,showdowngrades)
 		exl = ""
-		if except.length>0
-			anditem = except.pop
-			exl = ", excluding "+except.join(', ')+(except.length>0 ? " and " : '')+anditem
+		if @config['except'].length>0
+			anditem = @config['except'].pop
+			exl = ", excluding "+@config['except'].join(', ')+(@config['except'].length>0 ? " and " : '')+anditem
+			@config['except'].push anditem
 		end
 		self.logVerbose "Displaying #{showupgrades and 'upgrades ' or 'only '}#{showupgrades and showdowngrades and 'and ' or ''}#{showdowngrades and 'downgrades' or 'only'}, #{@config['recipes']=='yes' and 'recipes ' or 'just '}#{@config['recipes']=='yes' and @config['binaries']=='yes' and 'and ' or ''}#{@config['binaries']=='yes' and 'binaries' or 'exclusively'}#{exl}"
 		out = ""
 		upgrades = downgrades = 0
 		readfromcache = false
-		toupdate = produceUpdatesList(showupgrades, showdowngrades, false, except)
+		toupdate = produceUpdatesList(showupgrades, showdowngrades, false)
 		if @config['lower-limit']
 			toupdate = toupdate[@config['lower-limit']..toupdate.length]
 		end
@@ -691,51 +712,7 @@ END_OF_NOTES
 		return File.readlines(fn).collect {|ln|
 			first, junk = ln.split(' ', 2)
 			first
-		}
-	end
-	def createDepHash(toup, except = [])
-		dh = DependencyHash.new
-		toup.each {|prog, ver|
-			dh[prog] = getDependencies(prog, ver)
-			# SPECIAL CASE: circular dependency
-			if prog=='Xorg' and dh[prog].include?('Mesa')
-				#self.logError "Circular dependency of Xorg on Mesa removed from tree"
-				dh[prog]-= ['Mesa']
-			end
-		}
-		
-		# This ensures that the complete dependencies of every program are included in the tree.
-		begin
-			mh = {}
-			dh.each {|k, v|
-				v.each {|d|
-					next if d.nil? || d==""
-					if !dh[d]
-						mh[d] = getDependencies(d, getNewestAvailableVersion(d, k))
-					end
-				}
-			}
-			dh.merge(mh)
-		end while mh.size>0
-		begin
-			todel = []
-			dh.each {|k, v|
-				if except.include?(k)
-					todel.push k
-					next
-				end
-				v.each {|d|
-					if except.include?(d) || !dh[d] # If this has an excluded or non-present dependency,
-						todel.push k # drop it completely.
-						break
-					end
-				}
-			}
-			todel.each {|item| # Delete them and go again
-				dh.delete item
-			}
-		end while todel.length>0
-		return dh
+		}-[""]
 	end
 	def getNewestAvailableVersion(prog, fr="unknown package")
 		# Patch around incorrect WindowMaker dependency file
