@@ -229,10 +229,12 @@ function merge_and_edit()
       Log_Normal "Not changed: $cur"
       rm $cur.new
       rm $cur.new.copy
+      return 1
    else
       Log_Normal "Edited: $cur"
       mv $cur.new $file
       rm $cur.new.copy
+      return 0
    fi
 }
 
@@ -546,6 +548,7 @@ function attempt_action() {
          ;;
          
       m) merge_and_edit "$cur" "$default"
+         [ $? > 0 ] && repeatQuestion=yes
          ;;
          
       d) if Exists "$cur"; then
