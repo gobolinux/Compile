@@ -25,6 +25,7 @@ class GoboParseConfig < Hash
 			if !line.empty? and line.slice(0,1) != "#"
 				words = Shellwords.shellwords(line)
 				words[0].gsub!(/\$([a-zA-Z]+)/) {self[$1]}
+				words[0].gsub!(/\$\{([a-zA-Z]+)\}/) {self[$1]}
 				spl = words[0].split("=", 2)
 				if spl[1] == "("
 					inarray = true
