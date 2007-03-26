@@ -67,7 +67,7 @@ function Verify_Files() {
                Log_Verbose "$file is complete and matches MD5 checksum."
             else
                Log_Error "According to MD5 checksum, $file is corrupted."
-	       return 1
+               return 1
             fi
          else
             if [ -z "$file_md5" ]
@@ -78,7 +78,7 @@ function Verify_Files() {
                Log_Normal "Warning: file size could not be verified but $file matches MD5 checksum."
             else
                Log_Error "According to MD5 checksum, $file is corrupted."
-	       return 1
+               return 1
             fi
          fi
       fi
