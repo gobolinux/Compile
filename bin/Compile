@@ -779,7 +779,12 @@ then
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" || Die "Error fetching SVN snapshot."
    Boolean "no-build" && exit 0
 else
-   Boolean "no-web" || in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
+   if ! Boolean "no-web"
+   then
+      in_host FetchArchive $verbose $batch "$recipe" || Die "Error fetching archive(s)."
+   else
+      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" || Die "Files are corrupted and new versions will not be fetched. Exiting."
+   fi
 
    pfiles=`
       for i in "${files[@]}"
