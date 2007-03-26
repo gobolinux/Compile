@@ -40,6 +40,52 @@ function Assert_Dir() {
    fi
 }
 
+function Verify_Files() {
+   local files=($1)
+   local sizes=($2)
+   local md5s=($3)
+   for i in $(seq 0 $[${#files[@]}-1])
+   do
+      file="$compileArchivesDir/${files[i]}"
+      file_size="${file_sizes[i]}"
+      file_md5="${file_md5s[i]}"
+      if Exists "$file"
+      then
+         siz=$(Get_Size "$file")
+         md5=$(Get_MD5 "$file")
+         if [ -n "$file_size" ] && [ "$file_size" != "$siz" ]
+         then
+            Log_Terse "Warning: $file is either not complete or currupted."
+         elif [ -n "$file_size" ]
+         then
+            if [ -z "$file_md5" ]
+            then
+               Log_Normal "Warning: no MD5 checksum."
+               Log_Normal "Assuming $file is complete based only in size."
+            elif [ "$file_md5" = "$md5" ]
+            then
+               Log_Verbose "$file is complete and matches MD5 checksum."
+            else
+               Log_Error "According to MD5 checksum, $file is corrupted."
+	       return 1
+            fi
+         else
+            if [ -z "$file_md5" ]
+            then
+               Log_Terse "Warning: no file size or MD5 checksum. File cannot be verified"
+            elif [ "$file_md5" = "$md5" ]
+            then
+               Log_Normal "Warning: file size could not be verified but $file matches MD5 checksum."
+            else
+               Log_Error "According to MD5 checksum, $file is corrupted."
+	       return 1
+            fi
+         fi
+      fi
+   done
+   return 0
+}
+
 function foreach_if_array_set() {
    local array=$1
    local cmd=$2
