@@ -38,16 +38,7 @@ fi
 Log_Terse "Removing $program, version $version."
 
 Log_Verbose "Getting program file list..."
-filesdir=`mktemp`
-cd ${goboPrograms}/${program}/${version}
-find > $filesdir
-GrepReplace "./lib/"     "./Libraries/"    $filesdir
-GrepReplace "./sbin/"    "./Executables/"  $filesdir
-GrepReplace "./bin/"     "./Executables/"  $filesdir
-GrepReplace "./man/"     "./Manuals/"      $filesdir
-GrepReplace "./include/" "./Headers/"      $filesdir
-GrepReplace "./info/"    "./Manuals/info/" $filesdir
-GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
+filesdir=$(Get_System_Paths "${goboPrograms}/${program}/${version}")
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
 if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
@@ -61,10 +52,7 @@ Quiet RemoveBroken "${goboPrograms}/${program}/Current"
 Quiet rmdir ${goboPrograms}/${program}
 
 Log_Normal "Removing broken links..."
-cd ${goboLinks}
-RemoveBroken < $filesdir
-rm -- $filesdir
-
+RemoveBroken $filesdir
 
 #Log_Normal "Rebuilding Environment Cache file..."
 #yes | RebuildLinks -n

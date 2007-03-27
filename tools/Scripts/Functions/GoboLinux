@@ -650,3 +650,21 @@ function String_Version() {
    Parameters "$@" versionandrevision
    echo $versionandrevision | sed -r 's/-r[0-9]+(p[0-9]+)?$//g'
 }
+
+function Get_System_Paths () {
+   Parameters "$1" programpath
+   filesdir=$(mktemp)
+   find ${programpath} > $filesdir
+   GrepReplace "${programpath}/lib/"     "${goboLinks}/Libraries/"    $filesdir
+   GrepReplace "${programpath}/sbin/"    "${goboLinks}/Executables/"  $filesdir
+   GrepReplace "${programpath}/bin/"     "${goboLinks}/Executables/"  $filesdir
+   GrepReplace "${programpath}/man/"     "${goboLinks}/Manuals/"      $filesdir
+   GrepReplace "${programpath}/include/" "${goboLinks}/Headers/"      $filesdir
+   GrepReplace "${programpath}/Shared/" "${goboLinks}/Shared/"      $filesdir
+   GrepReplace "${programpath}/info/"    "${goboLinks}/Manuals/info/" $filesdir
+   GrepReplace "${programpath}/Resources/Wrappers/" "${goboLinks}/Executables/"  $filesdir
+   GrepReplace "${programpath}/Resources/Tasks/" "${goboLinks}/Tasks/"  $filesdir
+   GrepReplace "${programpath}/Resources/Environment/" "${goboLinks}/Environment/"  $filesdir
+   cat $filesdir
+   rm -- $filesdir
+}
