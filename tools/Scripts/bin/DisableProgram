@@ -54,6 +54,7 @@ GrepReplace "./man/"     "./Manuals/"      $filesdir
 GrepReplace "./include/" "./Headers/"      $filesdir
 GrepReplace "./info/"    "./Manuals/info/" $filesdir
 GrepReplace "./Resources/Wrappers/" "./Executables/"  $filesdir
+GrepReplace "./Resources/Tasks/" "./Tasks/"  $filesdir
 find ${goboEnvironment} >> $filesdir
 if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
