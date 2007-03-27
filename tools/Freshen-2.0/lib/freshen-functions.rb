@@ -59,10 +59,14 @@ class Freshen < GoboApplication
 	end
 	
 	def readDependencyFile(fn)
-		return File.readlines(fn).collect {|ln|
+		r = File.readlines(fn).collect {|ln|
 			first, junk = ln.split(' ', 2)
 			first
 		}-[""]
+		r.delete_if {|l|
+			l[0,1]=="#"
+		}
+		r
 	end
 	
 	def getNewestAvailableVersion(prog, fr="unknown package")
@@ -162,7 +166,19 @@ class Freshen < GoboApplication
 				(print "\015#{' '*Screen.width}\015" or break) if select([pipe],nil,nil,0)
 			end
 		}
-		return IO.readlines(rlpath)
+		logVerbose "Creating recipe directories"
+		sudo = ""
+		sudo = "sudo -u #0 " if !File.writable?(@compileConfig['compileGetRecipeDir'])
+		lines = IO.readlines(rlpath)
+		pb = ProgressBar.new(lines.length, 0)
+		lines.each {|ln|
+			pb.inc
+			pb.draw
+			(prog, ver, junk) = ln.split('--')
+			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}") if !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}")
+			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}") if !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}")
+		}
+		return lines
 	end
 	def packagesListLines
 		rlpath = "#{@config['tmpDir']}/BinaryPackagesList"
@@ -243,7 +259,7 @@ class Freshen < GoboApplication
 				pb.draw
 				ver = @progs[prog]
 				next if !ver.set?
-				next if except.include?(prog)
+				next if @config['except'].include?(prog)
 				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
 				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
 				if ver>@progs[prog] and showupgrades
@@ -257,6 +273,10 @@ class Freshen < GoboApplication
 			logNormal "Examining only #{@config['onlyExamine'].join(', ')}"
 			@config['onlyExamine'].each {|prog|
 				prog = getTrueCase(prog) if !@progs[prog]
+				if !@progs[prog]
+					logError "Removed from list."
+					next
+				end
 				ver = @progs[prog]
 				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
 				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
@@ -297,10 +317,16 @@ class Freshen < GoboApplication
 				rver = cv.to_s
 			end
 			if rver!='none' && !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies") && !File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
-				self.logNormal("Attempting to fetch recipe dependencies for #{prog}")
+				self.logNormal("Attempting to fetch recipe dependencies for #{prog} #{rver}")
 				system("GetRecipe #{prog} #{rver}")
+			elsif !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}/Resources/Dependencies") && !File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
+				self.logNormal("Attempting to fetch recipe dependencies for #{prog} #{ver}")
+				system("GetRecipe #{prog} #{ver}")
+				rver = "#{ver}"
 			end
+			
 			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
+				#puts "     XXX 1 for #{prog} #{rver}"
 				return readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
 			end
 		end

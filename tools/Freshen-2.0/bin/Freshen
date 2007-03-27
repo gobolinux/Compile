@@ -118,15 +118,15 @@ END_OF_NOTES
 		if options('lower-limit')
 			@config['lower-limit'] = options('lower-limit').to_i
 		end
+		@config['except'] = [] if !@config['except']
+		@config['onlyExamine'] = [] if !@config['onlyExamine']
 		if options('excluding')
 			@config['except'] = ARGV.dup
 			@config['except'].each_index {|i|
 				@config['except'][i] = getTrueCase @config['except'][i]
 			}
-			@config['onlyUpgrade'] = []
 		elsif !@config['except']
-			@config['except'] = []
-			@config['onlyExamine'] = ARGV
+			@config['onlyExamine'] = ARGV.dup
 		end
 		@config['emptyTree'] = options('empty-tree')
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")
@@ -156,7 +156,8 @@ END_OF_NOTES
 		# Find the recipe file
 		# TODO: remove this. We shouldn't be searching /F/C/R, we should be using our own cache.
 		# Using /F/C/R makes us liable to problems when somebody hasn't run UpdateSettings recently.
-		# However, the cache doesn't account for LocalRecipes. Fix?
+		# However, the cache doesn't account for LocalRecipes. Fix? Maybe use a heuristic and check for
+		# paths containing "Local"?
 		if @recipes[prog]
 			present = false
 			if @compileConfig['compileRecipeDirs'].is_a?(Array)

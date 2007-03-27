@@ -13,6 +13,9 @@ class DependencyHash < Hash
 end
 
 def createDepHash(toup)
+	# Local alias to save typing
+	except = @config['except']
+	
 	dh = DependencyHash.new
 	toup.each {|prog, ver|
 		dh[prog] = getDependencies(prog, ver)
@@ -22,21 +25,19 @@ def createDepHash(toup)
 			dh[prog]-= ['Mesa']
 		end
 	}
-	
 	# This ensures that the complete dependencies of every program are included in the tree.
 	begin
 		mh = {}
-		dh.each {|k, v|
-			v.each {|d|
-				next if d.nil? || d==""
-				if !dh[d]
-					mh[d] = getDependencies(d, getNewestAvailableVersion(d, k))
+		dh.each {|prog, deps|
+			deps.each {|dep|
+				next if dep.nil? || dep==""
+				if !dh[dep] && !except.include?(dep)
+					mh[dep] = getDependencies(dep, getNewestAvailableVersion(dep, prog))
 				end
 			}
 		}
 		dh.merge(mh)
 	end while mh.size>0
-	except = @config['except']
 	begin
 		todel = []
 		dh.each {|k, v|
