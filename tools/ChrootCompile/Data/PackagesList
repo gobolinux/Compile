@@ -161,6 +161,7 @@ PTH
 LibAssuan
 LibGCrypt
 LibKSBA 
+Pinentry
 GnuPG
 GnuTLS
 
@@ -201,6 +202,7 @@ Lesstif
 # Gnuplot # take it off the iso
 # Imake # imake is now integrated in Xorg
 Links
+LibDRM
 Mesa
 T1Lib
 # TeTeX # remove from iso?
@@ -254,26 +256,60 @@ Qt 3.3.7
 SIP
 PyQt
 
-####### exit #######
-exit
-####################
+
+# ################################################
+# KDE dependencies
+# ################################################
+FAM
+LibNTLM
+DBus
+DBus-GLib
+HAL
+# LibMusicbrainz  # optional (KDE-Multimedia)
+# FFTW            # optional (KDE-Multimedia)
+# LibOFA          # optional (KDE-Multimedia)
+# LibTunepimp     # optional (KDE-Multimedia)
+Pilot-Link
+Tcl               # Ocaml dependency
+Tk                # Ocaml dependency
+OCaml             # Facile dependency
+Facile            # recommended (KDE-Edu)
+HtDig
+Ctags
+MDNSResponder     # recommended (KDE-Libs)
+#Samba             # recommended (KDE-Base)
 
 # ################################################
 # KDE
 # ################################################
 KDE-Libs
 KDE-Base
+KDE-Network
+KDE-Admin
+KDE-Utils
 KDE-Graphics
 KDE-Multimedia
-KDE-Network
 KDE-PIM
-KDE-Utils
+KDE-SDK
+KDE-Toys
+KDE-Accessibility
+KDE-Artwork
+KDE-Bindings
+KDE-Edu
+KDE-Games
+KDE-Webdev
+KDE-Addons
 KDE-I18n-de
 KDE-I18n-pt_BR
+
+####### exit #######
+exit
+####################
 
 # ################################################
 # KDE apps
 # ################################################
+KDevelop
 K3B
 
 # ################################################
