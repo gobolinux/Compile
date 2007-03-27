@@ -1143,12 +1143,12 @@ if [ "$recipe_type" = "xmkmf" ]
 then
    is_function_set pre_build && pre_build
    xmkmf
-   $make Makefiles
    buildmerged=(
       "BINDIR=$target/bin"
       "LIBDIR=$target/lib"
       "LIBEXECDIR=$target/libexec"
       "INCDIR=$target/include"
+      "IRULESRC=$goboLibraries/X11/config"
       "${buildmerged[@]}"
    )
    installmerged=(
@@ -1156,6 +1156,7 @@ then
       "LIBDIR=$installprefix/lib"
       "LIBEXECDIR=$installprefix/libexec"
       "INCDIR=$installprefix/include"
+      "IRULESRC=$goboLibraries/X11/config"
       "${installmerged[@]}"
    )
    if [ ! -z "$goboIndex" ]
@@ -1163,6 +1164,7 @@ then
       buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
       installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
    fi
+   $make Makefiles "${buildmerged[@]}"
    recipe_type="makefile"
    unset pre_build # Little hack: we already ran it, so don't run it in is_makefile.
 fi
