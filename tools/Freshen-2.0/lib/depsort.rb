@@ -5,6 +5,7 @@ require 'tsort'
 class DependencyHash < Hash
 	include TSort
 	alias tsort_each_node each_key
+	attr_accessor :introducedBy
 	def tsort_each_child(node, &block)
 		if has_key?(node)
 			fetch(node).each(&block)
@@ -15,9 +16,10 @@ end
 def createDepHash(toup)
 	# Local alias to save typing
 	except = @config['except']
-	
+	introducedBy = {}
 	dh = DependencyHash.new
 	toup.each {|prog, ver|
+		introducedBy[prog] = nil
 		dh[prog] = getDependencies(prog, ver)
 		# SPECIAL CASE: circular dependency
 		if prog=='Xorg' and dh[prog].include?('Mesa')
@@ -31,7 +33,8 @@ def createDepHash(toup)
 		dh.each {|prog, deps|
 			deps.each {|dep|
 				next if dep.nil? || dep==""
-				if !dh[dep] && !except.include?(dep)
+				if !dh[dep]
+					introducedBy[dep] = prog
 					mh[dep] = getDependencies(dep, getNewestAvailableVersion(dep, prog))
 				end
 			}
@@ -58,5 +61,6 @@ def createDepHash(toup)
 			dh.delete item
 		}
 	end while todel.length>0
+	dh.introducedBy = introducedBy
 	return dh
 end

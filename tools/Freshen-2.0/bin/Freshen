@@ -264,11 +264,17 @@ END_OF_NOTES
 		if @config['limit']
 			toupdate = toupdate[0, @config['limit']]
 		end
+		if @logLevel>=40
+			toupdate.each {|p,v|
+				puts progStatus(p)
+			}
+		end
 		i = 0
 		toupdate.each {|p,v|
 			i+= 1
 			#szs = ", #{Gobo.smartSize(sz)} to go..." if sz>0
 			self.logNormal "\033]2;Freshen: Upgrading #{p}, #{i}/#{toupdate.size}\007Upgrading #{i}/#{toupdate.size}..."
+			puts progStatus(p) if @logLevel>=40
 			self.upgrade(p)
 			#sz-=@packsizes[p] if @packsizes[p]
 		}
@@ -281,7 +287,7 @@ END_OF_NOTES
 			self.logNormal "Nothing to do."
 		end
 		@config['recipeCacheTimeout'] = 0
-		self.getProgs
+		self.genProgs
 	end
 	def upgrade(prog)
 		self.logNormal "Upgrading #{prog}..."
@@ -529,7 +535,9 @@ END_OF_NOTES
 			package = true
 			recipe = false
 		end
-		if @progs[prog]>newver
+		if !@progs[prog] || !@progs[prog].set?
+			upg = ' '
+		elsif @progs[prog]>newver
 			upg = "#{Screen.colour['red']}D#{Screen.colour['normal']}"
 		elsif @progs[prog]<newver
 			upg = "#{Screen.colour['cyan']}U#{Screen.colour['normal']}"
@@ -556,7 +564,8 @@ END_OF_NOTES
 		else
 			ins = Screen.colour['green']+"N"+Screen.colour['normal']
 		end
-		"[#{ins}#{upg}#{prs}] #{progcol}#{prog} #{newver}#{Screen.colour['normal']}#{' '*(Screen.width-7-prog.length-newver.to_s.length-@progs[prog].to_s.length)}#{@progs[prog]}\n"
+		@introducedBy[prog] = " ("+@introducedBy[prog]+")" if @introducedBy[prog]
+		"[#{ins}#{upg}#{prs}] #{progcol}#{prog} #{newver}#{Screen.colour['normal']}#{@introducedBy[prog]}#{' '*(Screen.width-7-prog.length-newver.to_s.length-@progs[prog].to_s.length-@introducedBy[prog].to_s.length)}#{@progs[prog]}\n"
 	end
 	
 	def genTree

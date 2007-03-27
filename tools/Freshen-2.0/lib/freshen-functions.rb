@@ -296,6 +296,7 @@ class Freshen < GoboApplication
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
 			self.logError("Warning: Glibc upgrade requires kernel upgrade to at least 2.6.20. Glibc has been deleted from the updates list. Some packages may fail to install because of this.");
 		end
+		@introducedBy = dephash.introducedBy
 		toupdate
 	end
 	def getDependencies(prog, ver)
