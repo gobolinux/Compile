@@ -70,7 +70,7 @@ oldversion=`String_Version "$oldversionandrevision"`
 
 oldrecipedir="$bakedrecipedir"
 
-if [ "$oldversion" = "$newversion" -a ! "$newurl" ]
+if [ "$oldversion" = "$newversion" -a ! "$newurl" ] || [ "$newversion" = "$oldversionandrevision" -a ! "$newurl" ]
 then
    Die "Current version is already $newversion."
 fi
