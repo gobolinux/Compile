@@ -55,7 +55,7 @@ function Verify_Files() {
          md5=$(Get_MD5 "$file")
          if [ -n "$file_size" ] && [ "$file_size" != "$siz" ]
          then
-            Log_Terse "Warning: $file is either not complete or currupted."
+            Log_Terse "Warning: $file is either not complete or corrupted."
          elif [ -n "$file_size" ]
          then
             if [ -z "$file_md5" ]
