@@ -11,7 +11,7 @@ require 'screen'
 require 'version'
 require 'gobo'
 require 'gobo/parseconfig'
-require 'parseconfig'
+require 'parseconfig' # Until a new Compile release is out
 require 'merge'
 require 'progressbar'
 require 'tsort'
@@ -125,7 +125,7 @@ END_OF_NOTES
 			@config['except'].each_index {|i|
 				@config['except'][i] = getTrueCase @config['except'][i]
 			}
-		elsif !@config['except']
+		elsif not @config['except'].length>0
 			@config['onlyExamine'] = ARGV.dup
 		end
 		@config['emptyTree'] = options('empty-tree')
@@ -357,12 +357,13 @@ END_OF_NOTES
 		end
 		r  = system("#{sudo} Compile -G -U -D -b #{prog} #{ver}")
 		if !r
-			v = ver.to_s.gsub(/-r.*$/, '')
-			r = system "#{sudo} SymlinkProgram #{prog} #{v}"
-			if !r
-				self.logError "Compile failed. Terminating."
+#			v = ver.to_s.gsub(/-r.*$/, '')
+#			r = system "#{sudo} SymlinkProgram #{prog} #{v}"
+#			if !r
+			# This behaviour needs to be better defined. Perhaps an option to continue over the top?
+				self.logError "Compile failed. Terminating. Programs data cache has not been updated."
 				exit
-			end
+#			end
 		end
 	end
 	def upgradePackage(prog,ver)
@@ -431,6 +432,11 @@ END_OF_NOTES
 							curver = fn
 						end
 					}
+					if File.exists?("#{@config['goboRoot']}/Programs/#{prog}/#{ver}/Resources/Revision")
+						rv = (File.readlines("#{@config['goboRoot']}/Programs/#{prog}/#{ver}/Resources/Revision"))[0].strip
+						ver = Version.new("#{ver}-#{rv}") if !rv.nil? and rv!=''
+						curver = "#{ver}"
+					end
 					@progs[prog] = ver
 			end
 			pcache+= "'#{prog}'=>Version.new('#{curver}'),\n"

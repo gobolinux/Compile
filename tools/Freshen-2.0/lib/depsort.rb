@@ -21,11 +21,6 @@ def createDepHash(toup)
 	toup.each {|prog, ver|
 		introducedBy[prog] = nil
 		dh[prog] = getDependencies(prog, ver)
-		# SPECIAL CASE: circular dependency
-		if prog=='Xorg' and dh[prog].include?('Mesa')
-			#self.logError "Circular dependency of Xorg on Mesa removed from tree"
-			dh[prog]-= ['Mesa']
-		end
 	}
 	# This ensures that the complete dependencies of every program are included in the tree.
 	begin
@@ -61,6 +56,8 @@ def createDepHash(toup)
 			dh.delete item
 		}
 	end while todel.length>0
+	dh['Xorg']-=['Mesa'] if dh['Xorg']
+	dh['Mesa']-=['Xorg'] if dh['Mesa']
 	dh.introducedBy = introducedBy
 	return dh
 end
