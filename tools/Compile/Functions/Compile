@@ -49,7 +49,7 @@ function Verify_Files() {
       file="$compileArchivesDir/${files[i]}"
       file_size="${sizes[i]}"
       file_md5="${md5s[i]}"
-      if Exists "$file"
+      if [ -f "$file" ]
       then
          siz=$(Get_Size "$file")
          md5=$(Get_MD5 "$file")
