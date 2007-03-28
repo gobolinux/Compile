@@ -47,8 +47,8 @@ function Verify_Files() {
    for i in $(seq 0 $[${#files[@]}-1])
    do
       file="$compileArchivesDir/${files[i]}"
-      file_size="${file_sizes[i]}"
-      file_md5="${file_md5s[i]}"
+      file_size="${sizes[i]}"
+      file_md5="${md5s[i]}"
       if Exists "$file"
       then
          siz=$(Get_Size "$file")
