@@ -403,7 +403,7 @@ done
 echo "ChrootCompile: Installing base packages inside $root..."
 
 function filter_dir() {
-   grep -v Settings | grep -v Variable | grep -v Current
+   grep -v \/Settings\/ | grep -v \/Variable\/ | grep -v \/Current\/
 }
 
 function get_package_for() {
