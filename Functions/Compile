@@ -41,12 +41,13 @@ function Assert_Dir() {
 }
 
 function Verify_Files() {
-   local files=($1)
+   local myfiles=($1)
    local sizes=($2)
    local md5s=($3)
-   for i in $(seq 0 $[${#files[@]}-1])
+   local i=0
+   for i in $(seq 0 $[${#myfiles[@]}-1])
    do
-      file="$compileArchivesDir/${files[i]}"
+      file="$compileArchivesDir/${myfiles[i]}"
       file_size="${sizes[i]}"
       file_md5="${md5s[i]}"
       if [ -f "$file" ]
