@@ -548,7 +548,7 @@ function attempt_action() {
          ;;
          
       m) merge_and_edit "$cur" "$default"
-         [ $? > 0 ] && repeatQuestion=yes
+         if [ $? -gt 0 ]; then repeatQuestion=yes;fi
          ;;
          
       d) if Exists "$cur"; then
