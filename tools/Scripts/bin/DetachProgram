@@ -85,5 +85,5 @@ fi
 if ! Boolean "no-dependencies"
 then
    Log_Normal "Detaching Dependencies..."
-   Dependencies -c -h -p "$goboInstall" -e "DetachProgram -c" "$programname" "$versionnumber"
+   Dependencies -c -H -p "$goboInstall" -e "DetachProgram -c" "$programname" "$versionnumber"
 fi
