@@ -85,7 +85,7 @@ blacklistfile="`Find_Conf "Dependencies.blacklist"`"
 blacklist=("do_not_match")
 if [ "$blacklistfile" ]
 then
-   for app in `grep -v "^#" "$blacklistfile"`
+   for app in (cat "$blacklistfile" | sed -e 's/#.*//' -e '/^$/d')
    do blacklist=("${blacklist[@]}" "^$app ")
    done
 fi
