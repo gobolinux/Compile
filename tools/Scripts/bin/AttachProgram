@@ -51,7 +51,7 @@ then
       versionnumber="$(Arg 2)"
    fi
 else
-   versionnumber=`(cd ${goboInstall}/${programname}; GuessLatest \`find * -type d -maxdepth 0\`)`
+   versionnumber=`(cd ${goboInstall}/${programname}; GuessLatest \`find * -maxdepth 0 -type d\`)`
 fi
 
 prefix="${goboInstall}/$programname/$versionnumber"
@@ -61,7 +61,7 @@ error_msg="$programname $versionnumber already attached."
 if Boolean "force"
 then
    Boolean "batch" && error_msg=""
-   Is_Directory "${goboPrograms}/$programname/$versionnumber" && PassAway $error_msg
+   Is_Directory "${goboPrograms}/$programname/$versionnumber" && Pass_Away $error_msg
 fi
 
 Log_Normal "Attaching ${programname}, version ${versionnumber} from ${goboInstall}."
@@ -82,5 +82,5 @@ SymlinkProgram $symopts "$programname" "$versionnumber"
 if ! Boolean "no-dependencies"
 then
    Log_Normal "Checking Dependencies..."
-   Dependencies -c -h -e $0 "$programname" "$versionnumber"
+   Dependencies -c -H -e $0 "$programname" "$versionnumber"
 fi

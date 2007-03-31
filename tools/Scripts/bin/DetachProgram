@@ -52,7 +52,7 @@ prefix="${goboPrograms}/$programname/$versionnumber"
 Is_Directory "$prefix" || Die "$programname version $versionnumber was not found."
 error_msg="$programname version $versionnumber is already detached."
 Boolean "batch" && error_msg=""
-Is_Real_Directory "$prefix" || PassAway $error_msg
+Is_Real_Directory "$prefix" || Pass_Away $error_msg
 
 Is_Directory "$goboInstall" || Die "Unable to detach to ${goboInstall}: not a valid directory"
 
