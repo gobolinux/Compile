@@ -67,7 +67,7 @@ while read i; do
 
    echo "Processing ${name} ${versionandrevision}..."
    Boolean "skip-revision" && recipe=$(GetRecipe ${name} ${version})
-   time nice -20 ChrootCompile --local-repository --no-sign ${recipe}
+   time nice -20 ChrootCompile --local-repository --no-sign ${recipe} 0<&6
    if [ $? -gt 0 ]
    then
       echo -en "\007"; 
