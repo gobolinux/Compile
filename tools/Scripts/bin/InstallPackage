@@ -337,19 +337,17 @@ then
    if ! Boolean "no-dependencies" && ! Boolean "no-build"
    then
       Log_Normal "Checking dependencies..."
-      selecteddeps=`Temporary_File`
-      CheckDependencies --types=local_package,official_package --mode=missing \
+      selecteddeps=$(CheckDependencies --types=local_package,official_package --mode=missing \
         --no-recursive --quiet-progress  "$packagename" "$packageversion" \
-        "installed" "${goboPrograms}/$packagename/$packageversion"  > $selecteddeps || Die "Aborted."
-      cat $selecteddeps | while read d_program d_version d_type d_url;
+        "installed" "${goboPrograms}/$packagename/$packageversion" | awk '{ print $4 }')
+        [ -z "$selecteddeps" ] && Die "Aborted."
+      for d_url in $selecteddeps
       do
          InstallPackage --no-dependencies $d_url || {
             ret=$?
-            rm $selecteddeps
             exit $ret
          }
       done
-      rm $selecteddeps
    fi
 #   Dependencies --check --keep-going --higher-or-missing-only ${batch} --execute "$0 $keep" "$packagename" "$packageversion"
 fi
