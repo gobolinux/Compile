@@ -170,14 +170,13 @@ def interpret_dependency_line(line, t=None, cross_compile=False) :
 		return
 
 	global global_dependencies_blacklist
-	
 	m = new_format_c.match(line)
 	if m :
 		if (m.group(1).lower() in global_dependencies_blacklist) :
 			return
 		if ((m.group(8) == 'cross' and not cross_compile) or (m.group(8) == '!cross' and cross_compile)) :
 			return
-		
+
 		ret = {'program'    : m.group(1),
 		       'loincluded' : True,
 		       'lover'      : '',
@@ -188,12 +187,16 @@ def interpret_dependency_line(line, t=None, cross_compile=False) :
 			op = m.group(i)
 			if not op :
 				break
-			if '>' in op :
-				limit = 'lo'
+			if '=' == op :
+				ret['hiver'] = ret['lover'] = m.group(i+1)
+				ret['hiincluded'] = True
 			else :
-				limit = 'hi'
-			ret[limit+'ver']      = m.group(i+1)
-			ret[limit+'included'] = '=' in m.group(i)
+				if '>' in op :
+					limit = 'lo'
+				else :
+					limit = 'hi'
+				ret[limit+'ver']      = m.group(i+1)
+				ret[limit+'included'] = '=' in m.group(i)
 	else :
 		m = old_format_c.match(line)
 		if m :
@@ -201,7 +204,7 @@ def interpret_dependency_line(line, t=None, cross_compile=False) :
 				return
 			if ((m.group(4) == 'cross' and not cross_compile) or (m.group(4) == '!cross' and cross_compile)) :
 				return
-			
+
 			ret = {'program'    : m.group(1),
 			       'lover'      : m.group(2),
 			       'loincluded' : True,
@@ -348,7 +351,7 @@ def ask_if_install(match) :
 #
 def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 	                                    acceptable_types=None, mode='missing', recursive=True, hook=None,
-	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None, 
+	                                    noWeb=False, add_self='if_required', install_optional='ask', ask_hook=None,
 	                                    all_matches = None, no_compatlist=False, cross_compile=False):
 	ordered_matches, ordered_rules = [], []
 	self_match, self_rule = None, None
