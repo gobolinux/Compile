@@ -577,7 +577,7 @@ if __name__ == '__main__' :
 		try :
 			if not sys.argv[1:] :
 				sys.argv[1:] = [ '--help' ]
-			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:i:WRBCh', ['add-self=','install-optional=','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'cross-compile', 'help'])
+			opts, args = getopt.getopt(sys.argv[1:], 't:m:s:i:bWRBCh', ['add-self=','install-optional=', 'batch','types=', 'type=', 'mode=', 'no-web', 'no-recursive', 'no-blacklist', 'quiet-progress', 'no-compatlist', 'cross-compile', 'help'])
 		except getopt.GetoptError, detail :
 			print sys.argv[0].split('/')[-1]+': '+str(detail)
 			sys.exit(1)
@@ -615,6 +615,9 @@ if __name__ == '__main__' :
 				install_optional=a
 				if install_optional == 'always' :
 					global_always_do = 'install/compile'
+			elif o in ['--batch', '-b'] :
+				install_optional = 'always'
+				global_always_do = 'install/compile'
 			elif o in ['--no-web', '-W'] :
 				noWeb = True
 			elif o in ['--no-blacklist', '-B'] :
@@ -647,6 +650,9 @@ Options:
 
  -i
  --install-optional=  Install optional dependencies? 'always', 'never', 'ask'
+
+ -b
+ --batch              Same as --install-optional=always
 
  -m, --mode=          Can be set to:
                          missing  - report matches only for missing packages
