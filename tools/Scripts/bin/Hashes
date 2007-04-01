@@ -55,19 +55,19 @@ else
    version=`Get_Version "$package" "Current"`
 fi
 
-prefix="$goboPrograms/$package/$version"
+prefix="$goboPrograms"
 
 Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
 Is_Empty "$version" && Die "Couldn't find a proper version for $package."
-Is_Directory "$prefix" || Die "$package version $version is not a valid package."
+Is_Directory "$prefix/$package/$version" || Die "$package version $version is not a valid package."
 cd "$prefix"
 
 ### --generate: create Resources/FileHash################################################
-
+echo "$prefix/$package/$version $FileHash_loc"
 
 if Boolean "generate"
 then
-   Gen_FileHash "$package" "$prefix" "$FileHash_loc"
+   Gen_FileHash "$prefix/$package/$version" "$FileHash_loc"
    exit 0
 fi
 
@@ -78,7 +78,7 @@ then
    if ! Exists "Resources/FileHash"
    then
       # Generate FileHash
-      Gen_FileHash "$package" "$prefix" "$FileHash_loc"
+      Gen_FileHash "$prefix/$package/$version" "$FileHash_loc"
    fi
    cat "$prefix/Resources/FileHash"
    exit 0
