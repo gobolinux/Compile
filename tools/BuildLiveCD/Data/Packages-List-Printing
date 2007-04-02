@@ -1,0 +1,10 @@
+# ################################################
+# Printing support
+# ################################################
+LibPaper
+A2PS
+ESP-Ghostscript
+Gutenprint
+Foomatic
+CUPS
+Hplip
