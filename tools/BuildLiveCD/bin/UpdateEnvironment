@@ -121,6 +121,6 @@ rm -rf files/Documentation
 echo "=> Fetching remote packages..."
 mkdir -p "$root/Archives/Packages"
 cd "$root"
-rsync --delete --verbose --progress --port=8730 -r -L rsync.gobolinux.org::livecd-packages/ Archives/Packages/
+rsync --delete --verbose --progress --port=8730 -r -L gobo.calica.com::gobolinux-packages/livecd/ Archives/Packages/
 
 echo "=> Done."
