@@ -17,14 +17,14 @@ Parse_Options "$@"
 #############################################################################
 # Choosing between complete and base set of packages
 #############################################################################
-repository="chrootcompile-packages"
-Is_Entry_Set "complete" && repository="livecd-packages"
+repository="chrootcompile"
+Is_Entry_Set "complete" && repository="livecd"
 
 #############################################################################
 # Download packages
 #############################################################################
 mkdir -p BaseDependencies
-rsync --verbose --progress --port=8730 -r -L rsync.gobolinux.org::$repository/ BaseDependencies/
+rsync --verbose --progress --port=8730 -r -L gobo.calica.com::gobolinux-packages/$repository/ BaseDependencies/
 
 #############################################################################
 # SetupAddOn and final message
