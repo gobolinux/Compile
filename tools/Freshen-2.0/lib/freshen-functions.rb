@@ -155,19 +155,26 @@ class Freshen < GoboApplication
 			end
 		end
 		secs = 0
-		IO.popen("wget -nv -O #{rlpath} http://gobo.calica.com/recipe-store/RecipeList 2>&1") { |pipe|
-			while true
-				print "\015Waiting #{@config['downloadTimeout'].to_i-secs}..."
-				STDOUT.flush
-				sleep 1
-				secs+=1
-				if secs>@config['downloadTimeout'].to_i
-					self.logError "Error retrieving recipe list"
-					break
+#		IO.popen("wget -nv -O #{rlpath} http://gobo.calica.com/recipe-store/RecipeList 2>&1") { |pipe|
+		@compileConfig['getRecipeStores'].each {|store|
+			File.delete("#{rlpath}.bz2") if File.exists?("#{rlpath}.bz2")
+			logNormal "Downloading from store #{store}"
+			IO.popen("wget -nv -O #{rlpath}.bz2 #{store}/MANIFEST.bz2 2>&1") { |pipe|
+				while true
+					print "\015Waiting #{@config['downloadTimeout'].to_i-secs}..."
+					STDOUT.flush
+					sleep 1
+					secs+=1
+					if secs>@config['downloadTimeout'].to_i
+						self.logError "Error retrieving recipe list"
+						break
+					end
+					(print "\015#{' '*Screen.width}\015" or break) if select([pipe],nil,nil,0)
 				end
-				(print "\015#{' '*Screen.width}\015" or break) if select([pipe],nil,nil,0)
-			end
+			}
+			break if File.exists?("#{rlpath}.bz2")
 		}
+		system("bunzip2 -f #{rlpath}.bz2")
 		logVerbose "Creating recipe directories"
 		sudo = ""
 		sudo = "sudo -u #0 " if !File.writable?(@compileConfig['compileGetRecipeDir'])
@@ -227,7 +234,7 @@ class Freshen < GoboApplication
 			}
 			if File.exists?(rlpath+".bz2")
 				File.delete(rlpath) if File.exists?(rlpath)
-				system "bunzip2 #{rlpath}.bz2"
+				system "bunzip2 -f #{rlpath}.bz2"
 				rv+= File.readlines(rlpath)
 				return rv if !@config['fetchAllPackageLists']=='yes'
 			end
