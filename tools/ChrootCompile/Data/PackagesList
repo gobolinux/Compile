@@ -132,6 +132,7 @@ LibVorbis
 LibXML2
 LibXSLT
 Lsof
+Mdadm
 # NTFSProgs # deprecated, we now have ntfs-3g!
 OpenSSH
 PPP
@@ -170,7 +171,7 @@ GnuTLS
 # ################################################
 LibPaper
 A2PS
-ESP-GhostScript
+ESP-Ghostscript
 Gutenprint
 Foomatic
 CUPS
@@ -204,6 +205,7 @@ Lesstif
 Links
 LibDRM
 Mesa
+DriConf
 T1Lib
 # TeTeX # remove from iso?
 WindowMaker
@@ -243,6 +245,23 @@ LibIDL
 Firefox
 # Thunderbird
 
+# ################################################
+# SDL
+# ################################################
+SDL
+SDL_image
+SDL_mixer
+SDL_Pango
+SDL_ttf
+Perl-XML-Writer
+# SDL_perl
+# Frozen-Bubble
+
+# ################################################
+# SDL applications
+# ################################################
+Neverball
+ZSNES
 
 # ################################################
 # Qt
@@ -269,6 +288,9 @@ HAL
 # FFTW            # optional (KDE-Multimedia)
 # LibOFA          # optional (KDE-Multimedia)
 # LibTunepimp     # optional (KDE-Multimedia)
+Speex             # optional (KDE-Multimedia)
+LibTheora         # Xine-Lib dependency
+Xine-Lib          # recommended (KDE-Multimedia)
 Pilot-Link
 Tcl               # Ocaml dependency
 Tk                # Ocaml dependency
@@ -278,6 +300,7 @@ HtDig
 Ctags
 MDNSResponder     # recommended (KDE-Libs)
 #Samba             # recommended (KDE-Base)
+Doxygen           # needed for KDE-Bindings
 
 # ################################################
 # KDE
@@ -299,12 +322,14 @@ KDE-Edu
 KDE-Games
 KDE-Webdev
 KDE-Addons
-KDE-I18n-de
-KDE-I18n-pt_BR
-
-####### exit #######
-exit
-####################
+KDE-I18N-cs
+KDE-I18N-de
+KDE-I18N-es
+KDE-I18N-fr
+KDE-I18N-hu
+KDE-I18N-nl
+KDE-I18N-pt
+KDE-I18N-pt_BR
 
 # ################################################
 # KDE apps
@@ -317,9 +342,9 @@ K3B
 # ################################################
 LibAO
 Startup-Notification
-Gnutls
+GnuTLS
+Intltool
 Gaim
-
 
 LibSigc++
 Glibmm
@@ -330,6 +355,10 @@ GParted
 LibUSB
 LibGPhoto2
 GPhoto2
+
+####### exit #######
+exit
+####################
 
 TeTeX
 
@@ -348,27 +377,12 @@ LibGPod
 GtkPod
 
 LibVisual
-LibTheora
-Speex
-Xine-Lib
 Amarok
 
 GraphicsMagick
 Koffice
 
 Konversation
-
-SDL
-SDL_image
-SDL_mixer
-SDL_Pango
-SDL_ttf
-Perl-XML-Writer
-# SDL_perl
-# Frozen-Bubble
-
-Neverball
-ZSNES
 
 XChat
 
