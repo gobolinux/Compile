@@ -23,7 +23,7 @@ then
 fi
 
 root=$PWD/Output/InitRD
-archives=$PWD/Archives/InitRD
+archives=$PWD/Archives/
 
 rm -rf $root
 
@@ -40,7 +40,6 @@ packages=(
    BusyBox-InitRD--20060202-SVN--$arch.tar.bz2
    MiniUdev--0.1--$arch.tar.bz2
    InitRDScripts--$today--$arch.tar.bz2
-   Unionfs--1.0.14--i686.tar.bz2
 )
 
 cd $root
