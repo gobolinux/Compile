@@ -1,107 +1,128 @@
-ALSA-Utils
-GTK+
-HwData
-LILO
-OpenSSH
-PPP
-Pango
-RP-PPPoE
-Rsync
-WindowMaker
+# ################################################
+# Non-base non-Xorg packages
+# ################################################
 ALSA-Lib
+ALSA-Utils
+APR        # needed by Subversion
+APR-Util   # needed by Subversion
 ATK
 Aspell
+Aspell-en
 Audiofile
 Aumix
+CDRDAO
+CDRTools
 CVS
-Cairo
 Cdparanoia-III
+Cyrus-Sasl
 DB
+DVD+RW-Tools
 Device-Mapper
 DosFSTools
 Eject
-GDB
-Gnupg
+GDB            # really required?
+GMP            # really required?
 Htop
+HwData
 ID3Lib
 Indent
 JACK
 JPEG
-LCMS
+LILO
 Lame
+Lazy
 LibART_LGPL
 LibExif
 LibID3Tag
 LibIDN
-LibMNG
 LibMad
 LibOGG
 LibPNG
-LibSamplerate
-LibSndfile
+LibUSB
 LibUngif
 LibVorbis
 LibXML2
 LibXSLT
 Lsof
-Mesa
+Mdadm
+Neon           # Subversion dependency for SSL support
+OpenSSH
+PPP
 Parted
-Pkgconfig
+Perl-XML-Parser
 Popt
-ProgsReiserFS
+RP-PPPoE
+Rsync
+Ruby
+SquashFS-Tools
+Subversion
 SysFSUtils
 TIFF
+TagLib
 TraceRoute
 Unzip
 Vim
 Wireless-Tools
-Zip
-Links
-Gnuplot
-KDE-Base
-Lesstif
-Gimp-Print
-CUPS
-Imake
-T1Lib
-Flac
-KDE-Libs
-Ruby
-Qt
-SquashFS-Tools
-SIP
-PyQt
 YAFC
-Xpdf
-GhostScript
-KDE-PIM
-KDE-Multimedia
-KDE-Network
-K3B
-DVD+RW-Tools
-Firefox
-Thunderbird
-Subversion
-LibStdC++
-KDE-Graphics
-TeTeX
-Perl-XML-Parser
-LibRSVG
-Gimp
-MPlayer
-QtParted
-KDE-I18n-pt_BR
-KDE-I18n-de
-CDRDAO
-IMLib
+Zip
+
+Curl
+LibGPG-Error
+PTH
+LibAssuan
+LibGCrypt
+LibKSBA 
+Pinentry
+GnuPG
+GnuTLS
+
+LCMS
+LibMNG
+Flac
+LibSndfile
+LibSamplerate
+
+Fuse
+NTFS-3G
+
+# ################################################
+# Non-Qt non-GTK+ Xorg apps / libraries
+# ################################################
 ImageMagick
-NTFSProgs
-Unsermake
-CDRTools
-TagLib
+Lesstif
+Links
+Mesa
+DriConf
+T1Lib
+WindowMaker
+Xpdf
+
+# ################################################
+# GTK+ and family
+# ################################################
+Cairo
+Pango
+GTK+
+Imlib
 LibGlade
+LibRSVG
+
+# ################################################
+# GTK+ Applications
+# ################################################
+LibMCS         # Audacious dependency
 Audacious
-KDE-Utils
-LibUSB
-Lazy
-Mdadm
+Gimp
+# MPlayer
+
+# ################################################
+# Firefox and dependencies
+# ################################################
+NSPR
+NSS
+LibIDL
+Firefox
+# Thunderbird
+
+Pkgconfig
+LibStdC++
