@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-datadir="${goboPrefix}/Programs/BuildLiveCD/Current/Data"
+datadir="${goboPrograms}/BuildLiveCD/Current/Data"
 
 root="$1"
 shift
@@ -25,11 +25,11 @@ fi
 
 
 function get_package_name() {
-   packagename=`echo $1 | awk {'print $1'}`
+   packagename=`echo $1 | awk {'print $1'} | grep -v "^#"`
 
    if [ -e "$datadir/Packages-List-GoboLinuxTools" ] && grep -q "$packagename" "$datadir/Packages-List-GoboLinuxTools"
    then packagever=`date +%Y%m%d`
-   else packagever=`echo $1 | awk {'print $2'}`
+   else packagever=`echo $1 | awk {'print $2'} | grep -v "^#"`
    fi
    pkg=`ls $packagedir/${packagename}--${packagever}--* 2> /dev/null || true`
    [ -z "$pkg" ] && pkg=`ls $packagedir/${packagename}--* 2> /dev/null || true`
@@ -50,6 +50,7 @@ function get_package_name() {
 cat $packagelists | while read line
 do
    # just ensure that required packages are found
+   echo "$line" | awk {'print $1'} | grep -q "^#" && continue
    [ `get_package_name "$line"` ] || exit 1
 done
 
