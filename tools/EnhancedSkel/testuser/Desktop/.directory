@@ -1,0 +1,29 @@
+[Desktop Entry]
+BgImage=
+Encoding=UTF-8
+Icon=desktop
+Type=Directory
+
+[IconPosition::Home]
+X=30
+Y=5
+
+[IconPosition::Trash]
+X=130
+Y=5
+
+[IconPosition::The Gimp]
+X=230
+Y=5
+
+[IconPosition::XMMS]
+X=330
+Y=5
+
+[IconPosition::Install GoboLinux]
+X=430
+Y=5
+
+[IconPosition::QtParted]
+X=530
+Y=5

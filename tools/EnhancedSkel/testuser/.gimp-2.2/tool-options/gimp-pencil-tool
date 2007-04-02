@@ -1,0 +1,6 @@
+# GIMP gimp-pencil-tool options
+
+(brush "Circle (11)")
+(gradient "FG to BG (RGB)")
+
+# end of gimp-pencil-tool options

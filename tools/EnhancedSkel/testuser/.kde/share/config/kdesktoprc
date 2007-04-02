@@ -1,0 +1,44 @@
+[Desktop Icons]
+Preview=
+VertAlign=false
+
+[Desktop0]
+BackgroundMode=Flat
+BlendBalance=100
+BlendMode=NoBlending
+ChangeInterval=60
+Color1=0,48,130
+Color2=108,139,185
+CurrentWallpaperName=
+LastChange=0
+MinOptimizationDepth=1
+MultiWallpaperMode=NoMulti
+Pattern=
+Program=
+ReverseBlending=false
+UseSHM=false
+Wallpaper=/Files/Wallpapers/WallpaperQue.png
+WallpaperList=
+WallpaperMode=Scaled
+
+[FMSettings]
+NormalTextColor=255,255,255
+UnderlineLinks=false
+
+[General]
+AutoLineUpIcons=true
+
+[KFileDialog Settings]
+Automatic Preview=true
+Recent Files=/Files/Wallpapers/WallpaperQue.png
+
+[Menubar]
+ShowMenubar=false
+
+[Mouse Buttons]
+Middle=WindowListMenu
+
+[Version]
+KDEVersionMajor=3
+KDEVersionMinor=5
+KDEVersionRelease=3

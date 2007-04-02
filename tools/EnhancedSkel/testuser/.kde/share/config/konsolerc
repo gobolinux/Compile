@@ -1,0 +1,29 @@
+[$Version]
+update_info=konsole.upd:kde2.2/r1,konsole.upd:kde3.0/r1
+
+[Desktop Entry]
+ActiveSession=0
+AutoResizeTabs=false
+DefaultSession=shell.desktop
+DynamicTabHide=false
+EncodingName=Default
+Fullscreen=false
+Height 480=355
+Height 768=403
+MenuBar=Disabled
+TabColor=0,0,0
+TabViewMode=0
+Width 1024=587
+Width 640=506
+bellmode=0
+class=konsole-mainwindow#1
+defaultfont=Monospace,12,-1,2,50,0,0,0,0,0
+history=1000
+historyenabled=true
+keytab=default
+schema=Linux.schema
+scrollbar=2
+tabbar=2
+
+[TipOfDay]
+TipLastShown=2006,10,15,13,43,20

@@ -1,0 +1,14 @@
+# GIMP gimprc
+# 
+# This is your personal gimprc file.  Any variable defined in this file takes
+# precedence over the value defined in the system-wide gimprc:
+# /Programs/Gimp/Settings/gimp/2.0/gimprc
+# Most values can be set within The GIMP by changing some options in the
+# Preferences dialog.
+
+(monitor-xresolution 101.000000)
+(monitor-yresolution 101.000000)
+(show-tips no)
+
+
+# end of gimprc

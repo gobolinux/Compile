@@ -1,0 +1,194 @@
+[$Version]
+update_info=kaccel.upd:kde3.3/r1,kded.upd:kde3.0,klippershortcuts.upd:04112002,kwin.upd:kde3.2Xinerama,mouse_cursor_theme.upd:kde3.4.99,socks.upd:kde3.0/r1
+
+[DesktopIcons]
+ActiveEffect=togamma
+ActiveValue=0.7
+Animated=true
+Size=32
+
+[General]
+background=239,239,239
+buttonBackground=221,223,228
+buttonForeground=0,0,0
+foreground=0,0,0
+linkColor=0,0,238
+selectBackground=103,141,178
+selectForeground=255,255,255
+visitedLinkColor=82,24,139
+widgetStyle=Plastik
+windowBackground=255,255,255
+windowForeground=0,0,0
+
+[Global Shortcuts]
+Activate Window Demanding Attention=default(Alt+Ctrl+A)
+Block Global Shortcuts=none
+Defaults timestamp=Jun 27 200621:25:07
+Desktop Screenshot=Print
+Enable/Disable Clipboard Actions=none
+Halt without Confirmation=none
+Kill Window=none
+Lock Session=none
+Log Out=default(Alt+Ctrl+Delete)
+Log Out Without Confirmation=default(Alt+Ctrl+Shift+Delete)
+Manually Invoke Action on Current Clipboard=none
+Mouse Emulation=none
+Next Taskbar Entry=none
+Popup Launch Menu=Ctrl+Escape
+Previous Taskbar Entry=none
+Reboot without Confirmation=none
+Run Command=default(Alt+F2)
+Setup Window Shortcut=none
+Show Klipper Popup-Menu=none
+Show Taskmanager=Alt+Ctrl+Delete
+Show Window List=none
+Switch One Desktop Down=none
+Switch One Desktop Up=none
+Switch One Desktop to the Left=none
+Switch One Desktop to the Right=none
+Switch User=default(Alt+Ctrl+Insert)
+Switch to Desktop 1=Win+F1
+Switch to Desktop 10=Win+F10
+Switch to Desktop 11=none
+Switch to Desktop 12=none
+Switch to Desktop 13=none
+Switch to Desktop 14=none
+Switch to Desktop 15=none
+Switch to Desktop 16=none
+Switch to Desktop 17=default(Ctrl+Shift+F5)
+Switch to Desktop 18=default(Ctrl+Shift+F6)
+Switch to Desktop 19=default(Ctrl+Shift+F7)
+Switch to Desktop 2=Win+F2
+Switch to Desktop 20=default(Ctrl+Shift+F8)
+Switch to Desktop 3=Win+F3
+Switch to Desktop 4=Win+F4
+Switch to Desktop 5=Win+F5
+Switch to Desktop 6=Win+F6
+Switch to Desktop 7=Win+F7
+Switch to Desktop 8=Win+F8
+Switch to Desktop 9=Win+F9
+Switch to Next Desktop=none
+Switch to Next Keyboard Layout=default(Alt+Ctrl+K)
+Switch to Previous Desktop=none
+Toggle Showing Desktop=Win+D;Win+M
+Toggle Window Raise/Lower=none
+Walk Through Desktop List=none
+Walk Through Desktop List (Reverse)=none
+Walk Through Desktops=Win+Tab
+Walk Through Desktops (Reverse)=Win+Shift+Tab
+Walk Through Windows=default(Alt+Tab)
+Walk Through Windows (Reverse)=default(Alt+Shift+Tab)
+Window Above Other Windows=none
+Window Below Other Windows=none
+Window Close=default(Alt+F4)
+Window Fullscreen=none
+Window Grow Horizontal=none
+Window Grow Vertical=none
+Window Lower=none
+Window Maximize=none
+Window Maximize Horizontal=none
+Window Maximize Vertical=none
+Window Minimize=none
+Window Move=none
+Window No Border=none
+Window On All Desktops=none
+Window One Desktop Down=none
+Window One Desktop Up=none
+Window One Desktop to the Left=none
+Window One Desktop to the Right=none
+Window Operations Menu=Alt+Space
+Window Pack Down=none
+Window Pack Left=none
+Window Pack Right=none
+Window Pack Up=none
+Window Raise=none
+Window Resize=none
+Window Screenshot=default(Alt+Print)
+Window Shade=none
+Window Shrink Horizontal=none
+Window Shrink Vertical=none
+Window to Desktop 1=none
+Window to Desktop 10=none
+Window to Desktop 11=none
+Window to Desktop 12=none
+Window to Desktop 13=none
+Window to Desktop 14=none
+Window to Desktop 15=none
+Window to Desktop 16=none
+Window to Desktop 17=none
+Window to Desktop 18=none
+Window to Desktop 19=none
+Window to Desktop 2=none
+Window to Desktop 20=none
+Window to Desktop 3=none
+Window to Desktop 4=none
+Window to Desktop 5=none
+Window to Desktop 6=none
+Window to Desktop 7=none
+Window to Desktop 8=none
+Window to Desktop 9=none
+Window to Next Desktop=none
+Window to Previous Desktop=none
+
+[Icons]
+Theme=crystalsvg
+
+[KDE]
+ChangeCursor=false
+EffectAnimateCombo=false
+EffectFadeMenu=false
+EffectFadeTooltip=false
+EffectsEnabled=false
+OpaqueResize=true
+ShowIconsOnPushButtons=false
+SingleClick=false
+colorScheme=<default>
+contrast=7
+macStyle=false
+
+[KFileDialog Settings]
+Automatically select filename extension=true
+Height 480=204
+LocationCombo Completionmode=5
+PathCombo Completionmode=5
+Recent URLs=/Programs/FireFox/Current/icons/
+Show Bookmarks=false
+Show Speedbar=true
+Show hidden files=false
+Sort by=Name
+Sort case insensitively=true
+Sort directories first=true
+Sort reversed=false
+View Style=Simple
+Width 640=605
+
+[Keyboard]
+Gestures=false
+
+[Locale]
+Country=C
+Language=en_US
+
+[PanelIcons]
+ActiveEffect=togamma
+ActiveValue=0.7
+
+[Paths]
+Trash=$HOME/Desktop/Trash/
+
+[Shortcuts]
+AddBookmark=Ctrl+D
+Close=Ctrl+F4;Ctrl+W
+PopupMenuContext=F10
+Quit=Alt+F4
+
+[WM]
+activeBackground=65,142,220
+activeBlend=107,145,184
+activeForeground=255,255,255
+activeTitleBtnBg=127,158,200
+alternateBackground=237,244,249
+inactiveBackground=157,170,186
+inactiveBlend=157,170,186
+inactiveForeground=221,221,221
+inactiveTitleBtnBg=167,181,199

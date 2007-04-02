@@ -1,0 +1,12 @@
+[General]
+PassiveResourceKeys=
+ResourceKeys=ontq3cqp9W
+Standard=ontq3cqp9W
+
+[Resource_ontq3cqp9W]
+FileFormat=vcard
+ResourceIdentifier=ontq3cqp9W
+ResourceIsActive=true
+ResourceIsReadOnly=false
+ResourceName=resource
+ResourceType=file

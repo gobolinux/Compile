@@ -1,0 +1,22 @@
+[Desktop Entry]
+Comment=
+Comment[en_US]=
+Encoding=UTF-8
+Exec=Manager
+GenericName=GoboLinux Management Front-end
+GenericName[en_US]=GoboLinux Management Front-end
+Icon=/System/Links/Shared/Manager/icons/manager.png
+MimeType=
+Name=Manager
+Name[en_US]=Manager
+Path=
+ServiceTypes=
+StartupNotify=true
+SwallowExec=
+SwallowTitle=
+Terminal=true
+TerminalOptions=--geometry 1x1 --noscrollbar --noframe --notoolbar --nomenubar --caption "Manager Shell"
+Type=Application
+X-DCOP-ServiceType=none
+X-KDE-SubstituteUID=false
+X-KDE-Username=

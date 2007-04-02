@@ -1,0 +1,51 @@
+[IconPosition::Home]
+X 640=-99359
+Xabs=24
+Xabs_640x480=24
+Y 480=-99519
+Yabs=18
+Yabs_640x480=18
+
+[IconPosition::Install GoboLinux]
+X 640=-99359
+Xabs=331
+Xabs_640x480=331
+Y 480=-99519
+Yabs=18
+Yabs_640x480=18
+
+[IconPosition::Manager.desktop]
+Xabs=256
+Xabs_640x480=256
+Yabs=18
+Yabs_640x480=18
+
+[IconPosition::QtParted]
+X 640=-99359
+Xabs=417
+Xabs_640x480=417
+Y 480=-99519
+Yabs=18
+Yabs_640x480=18
+
+[IconPosition::The Gimp]
+X 640=-99359
+Xabs=174
+Xabs_640x480=174
+Y 480=-99519
+Yabs=18
+Yabs_640x480=18
+
+[IconPosition::Trash]
+X 640=-99359
+Y 480=-99519
+
+[IconPosition::XMMS]
+X 640=-99359
+Y 480=-99519
+
+[IconPosition::trash.desktop]
+Xabs=105
+Xabs_640x480=105
+Yabs=18
+Yabs_640x480=18
