@@ -347,7 +347,7 @@ END_OF_NOTES
 			self.logNormal "Got a binary though."
 			self.upgradePackage(prog,newver)
 		else
-			self.logError "Nothing matches your criteria"
+			self.logError "Nothing matches your criteria."
 		end
 	end
 	def upgradeCompile(prog,ver)
@@ -361,7 +361,7 @@ END_OF_NOTES
 #			r = system "#{sudo} SymlinkProgram #{prog} #{v}"
 #			if !r
 			# This behaviour needs to be better defined. Perhaps an option to continue over the top?
-				self.logError "Compile failed. Terminating. Programs data cache has not been updated."
+				self.logError "Compile failed of #{prog} #{ver}. Terminating. Programs data cache has not been updated. Use Freshen -C to do this if necessary."
 				exit
 #			end
 		end

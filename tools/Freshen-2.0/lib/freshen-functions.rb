@@ -16,6 +16,8 @@ class Freshen < GoboApplication
 		if @trueCase[prog]
 			return @trueCase[prog]
 		end
+		# Ghostscript was renamed Artofcode-Ghostscript
+		return 'Artofcode-Ghostscript' if prog.downcase=='ghostscript'
 		oprog = prog.clone
 		self.genTree
 		self.getProgs
