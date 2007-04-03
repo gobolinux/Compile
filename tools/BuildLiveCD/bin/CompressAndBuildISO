@@ -74,8 +74,8 @@ then
       exit 1
    fi
 
-   if [ -e $datadir/Packages-List-GoboLinuxTools ]
-   then tools=`cat $datadir/Packages-List-GoboLinuxTools`
+   if [ -e $datadir/Packages-List-GoboLinuxTools-CVS ]
+   then tools=`cat $datadir/Packages-List-GoboLinuxTools-CVS`
    else tools=""
    fi
 

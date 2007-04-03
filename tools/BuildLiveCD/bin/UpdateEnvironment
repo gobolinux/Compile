@@ -86,8 +86,8 @@ fi
 mkdir -p $root/LocalCVS/
 cd $root/LocalCVS/
 
-if [ -e $datadir/Packages-List-GoboLinuxTools ]
-then tools="`cat $datadir/Packages-List-GoboLinuxTools` InitRDScripts"
+if [ -e $datadir/Packages-List-GoboLinuxTools-CVS ]
+then tools="`cat $datadir/Packages-List-GoboLinuxTools-CVS` InitRDScripts"
 else tools="InitRDScripts"
 fi
 

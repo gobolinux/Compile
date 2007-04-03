@@ -27,7 +27,7 @@ fi
 function get_package_name() {
    packagename=`echo $1 | awk {'print $1'} | grep -v "^#"`
 
-   if [ -e "$datadir/Packages-List-GoboLinuxTools" ] && grep -q "$packagename" "$datadir/Packages-List-GoboLinuxTools"
+   if [ -e "$datadir/Packages-List-GoboLinuxTools-CVS" ] && grep -q "$packagename" "$datadir/Packages-List-GoboLinuxTools-CVS"
    then packagever=`date +%Y%m%d`
    else packagever=`echo $1 | awk {'print $2'} | grep -v "^#"`
    fi
