@@ -124,7 +124,7 @@ function install_package() {
    base=$(basename $package)
    name=${base%%--*}
    version=${base#*--}
-   version=${version%%--*}
+   version=`echo ${version%%--*} | sed -r 's/-r[0-9]+(p[0-9]+)?$//g'`
    
    #
    # BIG FAT WARNING:
