@@ -50,7 +50,8 @@ function get_package_name() {
 cat $packagelists | while read line
 do
    # just ensure that required packages are found
-   echo "$line" | awk {'print $1'} | grep -q "^#" && continue
+   ret=`echo "$line" | awk {'print $1'}`
+   [ -z "$ret" ] || echo $ret | grep -q "^#" && continue
    get_package_name "$line" > /dev/null || exit 1
 done
 
