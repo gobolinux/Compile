@@ -51,7 +51,7 @@ cat $packagelists | while read line
 do
    # just ensure that required packages are found
    echo "$line" | awk {'print $1'} | grep -q "^#" && continue
-   [ `get_package_name "$line"` ] || exit 1
+   get_package_name "$line" > /dev/null || exit 1
 done
 
 [ $? -eq 0 ] || exit 1
