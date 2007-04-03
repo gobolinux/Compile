@@ -65,6 +65,7 @@ class Freshen < GoboApplication
 		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages of update list")
 		addOptionEntry("info", ["-i"], "Get information on <program>")
 		addOptionBoolean("excluding", ["-x"], "Exclude <list> from output.")
+		addOptionBoolean("exclude-asserting-compatibility", ["-X"], "Exclude <list> from output, but do not block dependent programs.")
 		addOptionBoolean("empty-tree", ["-e"], "Behave as if installed program tree were empty")
       self.description = "Checks for updated GoboLinux recipes and packages."
       self.credits     = "By Michael Homer <michael@e.geek.nz>"
@@ -119,12 +120,18 @@ END_OF_NOTES
 			@config['lower-limit'] = options('lower-limit').to_i
 		end
 		@config['except'] = [] if !@config['except']
+		@config['exceptButCompatible'] = [] if !@config['exceptButCompatible']
 		@config['onlyExamine'] = [] if !@config['onlyExamine']
 		if options('excluding')
 			@config['except'] = ARGV.dup
 			@config['except'].each_index {|i|
 				@config['except'][i] = getTrueCase @config['except'][i]
 			}
+		elsif options('exclude-asserting-compatibility')
+			@config['exceptButCompatible'] = ARGV.dup
+			@config['exceptButCompatible'].each_index {|i|
+				@config['exceptButCompatible'][i] = getTrueCase @config['exceptButCompatible'][i]
+			}			
 		elsif not @config['except'].length>0
 			@config['onlyExamine'] = ARGV.dup
 		end

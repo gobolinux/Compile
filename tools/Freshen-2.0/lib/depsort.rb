@@ -16,6 +16,7 @@ end
 def createDepHash(toup)
 	# Local alias to save typing
 	except = @config['except']
+	ebc = @config['exceptButCompatible']
 	introducedBy = {}
 	dh = DependencyHash.new
 	toup.each {|prog, ver|
@@ -56,6 +57,12 @@ def createDepHash(toup)
 			dh.delete item
 		}
 	end while todel.length>0
+	ebc.each {|prog|
+		if dh[prog]
+			logVerbose "Note: removing #{prog} from updates on user assertion of compatibility"
+			dh.delete prog
+		end
+	}
 	dh['Xorg']-=['Mesa'] if dh['Xorg']
 	dh['Mesa']-=['Xorg'] if dh['Mesa']
 	dh.introducedBy = introducedBy

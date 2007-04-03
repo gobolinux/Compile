@@ -157,7 +157,7 @@ class Freshen < GoboApplication
 		secs = 0
 #		IO.popen("wget -nv -O #{rlpath} http://gobo.calica.com/recipe-store/RecipeList 2>&1") { |pipe|
 		@compileConfig['getRecipeStores'].each {|store|
-			File.delete("#{rlpath}.bz2") if File.exists?("#{rlpath}.bz2")
+			File.delete("#{rlpath}.bz2") if File.exist?("#{rlpath}.bz2")
 			logNormal "Downloading from store #{store}"
 			IO.popen("wget -nv -O #{rlpath}.bz2 #{store}/MANIFEST.bz2 2>&1") { |pipe|
 				while true
@@ -172,7 +172,7 @@ class Freshen < GoboApplication
 					(print "\015#{' '*Screen.width}\015" or break) if select([pipe],nil,nil,0)
 				end
 			}
-			break if File.exists?("#{rlpath}.bz2")
+			break if File.exist?("#{rlpath}.bz2")
 		}
 		system("bunzip2 -f #{rlpath}.bz2")
 		logVerbose "Creating recipe directories"
@@ -184,8 +184,8 @@ class Freshen < GoboApplication
 			pb.inc
 			pb.draw
 			(prog, ver, junk) = ln.split('--')
-			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}") if !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}")
-			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}") if !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}")
+			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}") if !File.exist?("#{@compileConfig['compileGetRecipeDir']}/#{prog}")
+			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}") if !File.exist?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}")
 		}
 		return lines
 	end
@@ -269,6 +269,7 @@ class Freshen < GoboApplication
 				ver = @progs[prog]
 				next if !ver.set?
 				next if @config['except'].include?(prog)
+				next if @config['exceptButCompatible'].include?(prog)
 				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
 				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
 				if ver>@progs[prog] and showupgrades
@@ -302,6 +303,7 @@ class Freshen < GoboApplication
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
 			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x]))
 		}
+		toupdate-=@config['exceptButCompatible']
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
 			self.logError("Warning: Glibc upgrade requires kernel upgrade to at least 2.6.20. Glibc has been deleted from the updates list. Some packages may fail to install because of this.");
 		end
