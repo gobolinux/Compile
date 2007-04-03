@@ -118,8 +118,6 @@ rm -rf files/Documentation
 # Packages
 #############################################################################
 echo "=> Fetching remote packages..."
-mkdir -p "$root/Packages"
-cd "$root"
-rsync --delete --verbose --progress -r -L gobo.calica.com::gobolinux-packages/livecd/ Packages/
+rsync --delete --verbose --progress -r -L gobo.calica.com::gobolinux-packages/livecd/ $root/Packages/
 
 echo "=> Done."
