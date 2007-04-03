@@ -25,7 +25,7 @@
 char *
 get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 {
-	int i=0, skip=0;
+	int wi, j, i=0, skip=0;
 	char line[LINE_MAX], work_line[LINE_MAX];
 	char *entry_ptr, *ptr;
 
