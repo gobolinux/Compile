@@ -305,10 +305,12 @@ do
    do
       name=$(echo $line | awk {'print $1'})
       version=$(echo $line | awk {'print $2'})
+      if [ -z "$name" ] || echo "$name" | grep -q "^#"
+      then continue
+      fi
       if echo "${version:0:1}" | grep -q "^#"
       then unset version
       fi
-      echo "$name" | grep -q "^#" && continue
       pkg=`get_package_name $line`
       install_package "$pkg" "$root"
    done
