@@ -239,7 +239,7 @@ then
    time mksquashfs_on_demand Output/ISO/GoboLinux-files.squashfs Output/Environment/Files
    for i in $datadir/Packages-List-*; do 
       # Skip comments
-      applist=`cat $i | cut -f1 -d' ' | grep -v "^#" | sort -u | while read i; do echo Output/Environment/Programs/$i; done`
+      applist=`cat $i | cut -f1 -d' ' | grep -v "^#" | sort -u | while read i; do [ ! -z "$i" ] && echo Output/Environment/Programs/$i; done`
       if [ -z "$applist" ]
       then continue
       fi
