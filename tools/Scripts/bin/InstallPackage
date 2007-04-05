@@ -100,7 +100,14 @@ then
       noweb=`Forward_Boolean_Entry "no-web"` 
       pkgType="-t local_package,official_package${contrib}"
       if [ ${version} ] 
-      then 
+      then
+         if [ "$(Downcase $(Arg 1))" = "glibc" -a $(echo ${version} | sed 's/\([0-9]*\)\.\([0-9]\).*/\1\2/') -gt 24 ] && 
+         [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2622 ]
+         then
+            Log_Error "You are trying to install Glibc version ${version}. It requires a running kernel of version 2.6.20 or later."
+            Die "Either it is not installed or you have not rebooted after you installed it. Please fix before trying install Glibc again."
+         fi
+
          found=`FindPackage $noweb $pkgType ${name} ${version}`
          if [ "${found}" ]
          then 
@@ -110,6 +117,11 @@ then
             Die_With $errorNotFound "Package for ${name} ${version} not found."
          fi
       else
+         if [ "$(Downcase $(Arg 1))" = "glibc" ] && [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2622 ]
+         then
+            Log_Error "You are trying to install latest Glibc. It requires a running kernel of version 2.6.20 or later."
+            Die "Either it is not installed or you have not rebooted after you installed it. Please fix before trying install Glibc again."
+         fi
          found=$(FindPackage $noweb $pkgType ${name})
          if [ "${found}" ]
          then
