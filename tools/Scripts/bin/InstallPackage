@@ -91,7 +91,7 @@ fi
 
 function check_glibc_version_against_running_kernel_version() {
    glibc_version=$1
-   if [ -z "$glibc_version" ] || [ $(echo ${version} | sed 's/\([0-9]*\)\.\([0-9]\).*/\1\2/') -gt 24 ] &&
+   if [ -z "$glibc_version" ] || [ $(echo ${glibc_version} | sed 's/\([0-9]*\)\.\([0-9]\).*/\1\2/') -gt 24 ] &&
       [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2620 ]
    then
       Log_Error "You are trying to install a version of Glibc that requires a running kernel of version 2.6.20 or later."
