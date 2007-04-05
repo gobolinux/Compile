@@ -90,7 +90,11 @@ def downloadFiles(files, force = False, hook = None, message = '') :
 		if st.st_size == 0 or currentTime > (ageLimit + st.st_mtime) :
 			os.unlink(cacheDir+filename)
 
-	timeout = int(globalSettings['timeout'])
+	try :
+		timeout = int(globalSettings['timeout'])
+	except :
+		sys.stderr.write('Invalid timeout value "%s"\n'%globalSettings['timeout'])
+		timeout = 10
 
 	for url, filename in files :
 		if force or not os.access(cacheDir+filename, os.R_OK) : # or time.time() > (60*60 + os.stat(cacheDir+filename).st_mtime) :
@@ -246,7 +250,7 @@ def getPackedLocalPackages(directory, d = None) :
 def getVersionsFromList(file, d = None) :
 	if not os.access(file, os.R_OK) :
 		return d
-		
+
 	try :
 		if file[-4:] == '.bz2' :
 			import bz2
