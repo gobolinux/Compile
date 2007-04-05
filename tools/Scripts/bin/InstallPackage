@@ -89,6 +89,17 @@ fi
 #  1 - Try to find a package matching the exact version, or try to find any package for that program;
 #  2 - Calls InstallPackage passing the found url, or abort.
 
+function check_glibc_version_against_running_kernel_version() {
+   glibc_version=$1
+   if [ -z "$glibc_version" ] || [ $(echo ${version} | sed 's/\([0-9]*\)\.\([0-9]\).*/\1\2/') -gt 24 ] &&
+      [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2622 ]
+   then
+      Log_Error "You are trying to install a version of Glibc that requires a running kernel of version 2.6.20 or later."
+      Die "Either it is not installed or you have not rebooted after you installed it. Please fix before trying install Glibc again."
+   fi
+}
+
+      
 if [ ! -e "$(Arg 1)" ]
 then
    # checking if there is not a '/' in $1
@@ -96,18 +107,13 @@ then
    then
       name="$(Arg 1)"
       version="$(Arg 2)"
+      [ "$(Downcase ${name})" = "glibc" ] && check_glibc_version_against_running_kernel_version "${version}"
+      
       Log_Normal "Locating a binary package for" ${name} ${version} "..."
       noweb=`Forward_Boolean_Entry "no-web"` 
       pkgType="-t local_package,official_package${contrib}"
       if [ ${version} ] 
       then
-         if [ "$(Downcase $(Arg 1))" = "glibc" -a $(echo ${version} | sed 's/\([0-9]*\)\.\([0-9]\).*/\1\2/') -gt 24 ] && 
-         [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2620 ]
-         then
-            Log_Error "You are trying to install Glibc version ${version}. It requires a running kernel of version 2.6.20 or later."
-            Die "Either it is not installed or you have not rebooted after you installed it. Please fix before trying install Glibc again."
-         fi
-
          found=`FindPackage $noweb $pkgType ${name} ${version}`
          if [ "${found}" ]
          then 
@@ -117,11 +123,6 @@ then
             Die_With $errorNotFound "Package for ${name} ${version} not found."
          fi
       else
-         if [ "$(Downcase $(Arg 1))" = "glibc" ] && [ $(echo $(uname -r) | sed -e 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\).*/\1\2\3/') -lt 2620 ]
-         then
-            Log_Error "You are trying to install latest Glibc. It requires a running kernel of version 2.6.20 or later."
-            Die "Either it is not installed or you have not rebooted after you installed it. Please fix before trying install Glibc again."
-         fi
          found=$(FindPackage $noweb $pkgType ${name})
          if [ "${found}" ]
          then
