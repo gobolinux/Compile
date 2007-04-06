@@ -19,7 +19,7 @@ GPG_opts="--keyring ${GPG_gobo_keyring}"
 scriptDescription="Verify the hashes file gpg signature and check the hashes of a Gobolinux package."
 scriptCredits="Copyright (C) 2003 Carlo Calica. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{ [<options>] <package> [<version>] }"
+scriptUsage="{ [<options>] <<package> [<version>] | <tarball>> }"
 scriptNotes="If no version is specified, Current is assumed.  
 The default keyrings are: 
     $HOME/.gnupg/pubring.gpg
@@ -37,19 +37,31 @@ Release_Superuser
 ### Utility functions ################################################################
 
 ### Parse options #######################################################################
-package=`GuessProgramCase $(Arg 1) $(Arg 2)`
-if [ "$2" ]
-then version=`Get_Version "$package" "$(Arg 2)"`
-else version=`Get_Version "$package" "Current"`
+if [ -f "$(Arg 1)" ]
+then
+   Log_Normal "Uncompressing package..."
+   tar -C $goboTemp -jxf "$(Arg 1)"
+   package=`echo "$(Arg 1)" | sed 's,\(.*\)--\(.*\)--.*,\1,g'`
+   versionandrevision=`echo "$(Arg 1)" | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
+   version=`String_Version "$versionandrevision"`
+   basedir=$goboTemp
+   appname=$basedir/$package/$version
+else
+   package=`GuessProgramCase $(Arg 1) $(Arg 2)`
+   if [ "$2" ]
+   then version=`Get_Version "$package" "$(Arg 2)"`
+   else version=`Get_Version "$package" "Current"`
+   fi
+   basedir=$goboPrograms
+   appname=$package
 fi
 
 quiet=""
 Boolean "verbose" || quiet="Quiet"
 Boolean "quiet" && quiet="Quiet"
+prefix="$basedir/$package/$version"
 
-prefix="$goboPrograms/$package/$version"
-
-Is_Directory "$goboPrograms/$package" || Die "Package $package does not exist."
+Is_Directory "$basedir/$package" || Die "Package $package does not exist."
 Is_Empty "$version" && Die "Couldn't find a proper version for $package."
 Is_Directory "$prefix" || Die "$package version $version is not a valid package."
 cd "$prefix"
@@ -97,7 +109,7 @@ fi
 if Exists "${FileHash_loc}"
 then
    Boolean "quiet" || Log_Normal "Verifying FileHash..."
-   output=`Check_FileHash "$package" "$version" "Resources/FileHash"`
+   output=`Check_FileHash "$appname" "$version" "Resources/FileHash"`
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"
@@ -107,5 +119,10 @@ then
 else
    Boolean "quiet" || Log_Error "No FileHash to verify."
    result=5
+fi
+if [ "$basedir" = "$goboTemp" ]
+then
+   rm -rf -- "$goboTemp/$package"
+   Log_Normal "Removed package from $goboTemp"
 fi
 exit $result
