@@ -118,15 +118,14 @@ then
       svn update "$trunk/$program"
    fi
 
-   latestexisting=$(GuessLatest $(ls "$trunk/$program"))
-
-   unpackrecipedir="$unpackdir/$program/$version"
-   oldrecipedir="$trunk/$program/$latestexisting"
+   oldrecipedir=$(GuessLatest $trunk/$program/*)
    newrecipedir="$trunk/$program/$version"
+   unpackrecipedir="$unpackdir/$program/$version"
 
    # Test cases that may require the dev's attention
+   latestexisting=$(echo $oldrecipedir | sed "s,$trunk/$program/,,g")
 
-   if [ $latestexisting = $version ]
+   if [ "$latestexisting" = "$version" ]
    then
       diff -Naur --exclude=".svn" "$oldrecipedir" "$unpackrecipedir" >& /dev/null
       if [ $? = 0 ]
@@ -140,9 +139,6 @@ then
       Ask_Continue "Proceed and overwrite with given recipe?"
    elif [ $(GuessLatest $latestexisting $version) != $version ]
    then
-      if [ "$(Subversion_Diff "$newrecipedir" | grep -v "^$" | wc -l)" = "0" ]
-      then exit 0
-      fi
       Ask_Continue "Latest version in trunk ($latestexisting) seems more recent than recipe ($version). Add $version to trunk anyway?"
    fi
    
