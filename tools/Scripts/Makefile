@@ -18,7 +18,6 @@ PYTHON_SITE=lib/python$(PYTHON_VERSION)/site-packages
 all: python
 	sed -i~ "s/CURRENT_SCRIPTS_VERSION=.*#/CURRENT_SCRIPTS_VERSION="${VERSION}" #/g" bin/CreateRootlessEnvironment
 	rm -f bin/CreateRootlessEnvironment~
-	cvs commit -m "Update version." bin/CreateRootlessEnvironment
 	cd src; make all
 
 debug: python
@@ -49,6 +48,7 @@ verify:
 	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
 dist: version_check cleanup verify all
+	cvs commit -m "Update version." bin/CreateRootlessEnvironment
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_VDIR)
 	SignProgram $(PROGRAM)
