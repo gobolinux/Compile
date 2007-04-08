@@ -6,10 +6,10 @@ LibNTLM           # KDE-Libs optional dependency
 DBus              # KDE-Base optional dependency
 DBus-GLib         # HAL dependency
 HAL               # KDE-Base optional dependency
-LibMusicbrainz    # KDE-Multimedia optional dependency
-Speex             # KDE-Multimedia optional dependency
+##LibMusicbrainz  # KDE-Multimedia optional dependency
+#Speex            # KDE-Multimedia optional dependency
 LibTheora         # Xine-Lib dependency
-Xine-Lib          # KDE-Multimedia recommended dependency
+#Xine-Lib         # KDE-Multimedia recommended dependency
 Pilot-Link        # KDE-Pim recommended dependency
 MDNSResponder     # KDE-Libs recommended dependency
 Qt                # Well... :-)
@@ -17,10 +17,10 @@ Qt                # Well... :-)
 KDE-Libs
 KDE-Base
 KDE-Network
-KDE-Admin
+#KDE-Admin
 KDE-Utils
 KDE-Graphics
-KDE-Multimedia
+#KDE-Multimedia
 KDE-PIM
 #KDE-SDK
 #KDE-Toys
@@ -31,13 +31,13 @@ KDE-PIM
 #KDE-Games
 #KDE-Webdev
 #KDE-Addons
-KDE-I18N-cs
+#KDE-I18N-cs
 KDE-I18N-de
-KDE-I18N-es
-KDE-I18N-fr
+#KDE-I18N-es
+#KDE-I18N-fr
 KDE-I18N-hu
-KDE-I18N-nl
-KDE-I18N-pt
+#KDE-I18N-nl
+#KDE-I18N-pt
 KDE-I18N-pt_BR
 
 # ################################################

@@ -20,8 +20,8 @@ DVD+RW-Tools
 Device-Mapper
 DosFSTools
 Eject
-GDB            # really required?
-GMP            # really required?
+# GDB
+GMP
 Htop
 HwData
 ID3Lib
@@ -113,7 +113,7 @@ LibRSVG
 LibMCS         # Audacious dependency
 Audacious
 Gimp
-# MPlayer
+MPlayer
 
 # ################################################
 # Firefox and dependencies

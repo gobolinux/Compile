@@ -4,7 +4,7 @@
 LibPaper
 A2PS
 ESP-Ghostscript
-Gutenprint
+#Gutenprint
 Foomatic
 CUPS
-Hplip
+#Hplip
