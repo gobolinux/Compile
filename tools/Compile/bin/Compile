@@ -266,7 +266,6 @@ function wrap_fail() {
       PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
-      Quiet rmdir -p "$variable_target"
    fi
    undo_mounts "--dont-exit"
    Die "$1"
@@ -575,7 +574,7 @@ fi
 
 target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
-variable_target=`Get_Dir runtimeVariable $appname $versionnumber`
+variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target
 

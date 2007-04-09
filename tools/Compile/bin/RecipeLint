@@ -503,7 +503,7 @@ test_urls() {
 test_recipe() {
    target="${goboPrograms}/$name/$version"
    settings_target="${goboPrograms}/$name/Settings"
-   variable_target="${goboPrograms}/$name/Variable"
+   variable_target="${goboVariable}"
    source Recipe
    
    msg "Checking recipe declarations..."
