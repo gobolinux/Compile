@@ -39,14 +39,15 @@ mount -t unionfs -o dirs=/Mount/TmpFS/Files=rw:/Mount/SquashFS/Files/Files=ro no
 # Tricky block for /Programs
 #
 mkdir -p /Mount/TmpFS/Programs
-mount -t unionfs -o dirs=/Mount/TmpFS/Programs=rw: none /Mount/TmpFS/Programs
 
 # Mounting Packages*.squashfs files inside /Programs
+unionmountprograms="dirs=/Mount/TmpFS/Programs=rw"
 for i in /Mount/CD-ROM/Packages*.squashfs; do
     squashdir=`basename $i .squashfs`
     mount -o loop,ro -t squashfs $i /Mount/SquashFS/$squashdir
-    mount -t unionfs -o remount,add=:/Mount/SquashFS/$squashdir none /Mount/TmpFS/Programs
+    unionmountprograms="$unionmountprograms:/Mount/SquashFS/$squashdir=ro"
 done
+mount -t unionfs -o $unionmountprograms none /Mount/TmpFS/Programs
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices
