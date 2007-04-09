@@ -35,6 +35,14 @@ Parse_Options "$@"
 Release_Superuser
 
 ### Utility functions ################################################################
+function exit_with_error() {
+   if [ "$basedir" = "$goboTemp" ]
+   then
+      rm -rf -- "$goboTemp/$package"
+      Log_Normal "Removed package from $goboTemp"
+   fi
+   exit $1
+}
 
 ### Parse options #######################################################################
 if [ -f "$(Arg 1)" ]
@@ -93,7 +101,7 @@ then
       if Failed
       then
          Boolean "quiet" || Log_Error "Signature check failed: $rtn"
-         exit 3
+         exit_with_error 3
       fi
       Boolean "quiet" || Log_Normal "Signature OK"
    elif ! Boolean "no-signature"
@@ -113,16 +121,11 @@ then
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"
-      exit 3
+      exit_with_error 3
    fi
    Boolean "quiet" || Log_Normal "FileHash OK"
 else
    Boolean "quiet" || Log_Error "No FileHash to verify."
    result=5
 fi
-if [ "$basedir" = "$goboTemp" ]
-then
-   rm -rf -- "$goboTemp/$package"
-   Log_Normal "Removed package from $goboTemp"
-fi
-exit $result
+exit_with_error $result
