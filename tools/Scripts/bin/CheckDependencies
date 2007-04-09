@@ -151,7 +151,7 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 				if err == 0:
 					return [ cachedep ]
 				else :
-					global_not_found_cache.append(dependecy_u)
+					global_not_found_cache.append(dependency_u)
 					os.remove(cachedep)
 
 	if t == 'recipe' and not noWeb :
