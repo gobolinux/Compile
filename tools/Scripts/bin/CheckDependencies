@@ -91,9 +91,6 @@ def get_rules_for(p, v, r, t, u=None, noWeb=False, no_compatlist=False, no_build
 
 global_not_found_cache=[]
 def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False):
-
-	name = (p+"--"+v).lower()
-
 	if t == 'installed' :
 		p = GuessProgramCase(p, v)
 		localdep = Get_Dir('runtime', p, v)+"/Resources/Dependencies"
@@ -110,7 +107,7 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 				if os.access(u+'/Resources/Dependencies', os.R_OK) :
 					return [ u+'/Resources/Dependencies' ]
 			else :
-				cachedep = global_dependencies_cache_dir+'/'+t+'/'+ name
+				cachedep = global_dependencies_cache_dir+'/'+t+'/'+ u.split('/')[-1]
 				if os.access(cachedep, os.R_OK) :
 					return [ cachedep ]
 
@@ -137,17 +134,24 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 					return [ recipedir+'/Resources/Dependencies', recipedir+'/Resources/BuildDependencies' ]
 
 	if t in [ 'official_package', 'contrib_package', 'recipe' ] :
-		cachedep = global_dependencies_cache_dir+'/'+t+'/'+ name
+		if not u:
+			ret = FindPackage(p, v, r, types=[t], availables=global_available_packages_cache, accessWeb = not noWeb)
+			if ret :
+				u = ret[0][4]
+		
+		cachedep = global_dependencies_cache_dir+'/'+t+'/'+ u.split('/')[-1]
 		if os.access(cachedep, os.R_OK) :
 			return [ cachedep ]
 
-		if not noWeb and (not (p,v,r,t) in global_not_found_cache) and (u or FindPackage(p, v, r, types=[t], availables=global_available_packages_cache, accessWeb = not noWeb)) :
-			for server in global_dependencies_servers :
-				err = os.system('wget --timeout='+global_wget_timeout+' -q -O '+cachedep+' '+server+"/"+t+"/"+name.lower())
+		if u and not noWeb :
+			temp = u.split('/')
+			dependency_u = string.join(temp[:-1]+['dependencies']+[temp[-1]],'/')
+			if not dependency_u in global_not_found_cache :
+				err = os.system('wget --timeout='+global_wget_timeout+' -q -O '+cachedep+' '+dependency_u)
 				if err == 0:
 					return [ cachedep ]
 				else :
-					global_not_found_cache.append((p,v,r,t))
+					global_not_found_cache.append(dependecy_u)
 					os.remove(cachedep)
 
 	if t == 'recipe' and not noWeb :
