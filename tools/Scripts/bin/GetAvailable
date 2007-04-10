@@ -186,8 +186,6 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 
 	for i in range(len(programs)) :
 		p = programs[i]
-		if p == 'Linux' and requireCurrent :
-			continue
 
 		if not os.path.isdir(directory+'/'+p):
 			continue
