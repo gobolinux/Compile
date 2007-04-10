@@ -214,6 +214,8 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 				u = directory+'/'+p+'/'+v
 				if r :
 					u += '-'+r
+				else :
+					r = default_revision
 				if not os.access(u+'/'+'Recipe', os.R_OK) :
 					continue
 			else :
