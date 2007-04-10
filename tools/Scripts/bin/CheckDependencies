@@ -25,7 +25,6 @@ new_format_c = re.compile(new_format)
 old_format = s_name+s_blank+s_version+'?'+s_blank+s_cross+'?'
 old_format_c = re.compile(old_format)
 
-global_dependencies_servers = getGoboVariable('dependenciesServers', 'Scripts/CheckDependencies.conf', True)
 global_wget_timeout = getGoboVariable('timeout', 'Scripts/GetAvailable.conf')
 global_dependencies_cache_dir = os.path.expanduser(getGoboVariable('goboUserSettings')+'/dependencies_cache/')
 global_dependencies_blacklist = [ i.lower() for i in getGoboVariable('','Scripts/Dependencies.blacklist') ]
@@ -67,7 +66,7 @@ def add_compatible_dependencies(rule) :
 			rule = compatible_rule # linked list of compatible_rules
 
 # Notice that type may be required since dependencies(recipe(p)) != dependencies(package(p))
-def get_rules_for(p, v, r, t, u=None, noWeb=False, no_compatlist=False, no_builddeps=False, cross_compile=False) :
+def get_rules_for(p, v, r, t, u, noWeb=False, no_compatlist=False, no_builddeps=False, cross_compile=False) :
 	depfiles = find_dependencies_files(p, v, r, t, u, noWeb=False, no_builddeps=no_builddeps)
 	toReturn = []
 	for depfile in depfiles :
@@ -544,14 +543,14 @@ def ListDependencies(p, v, r, t, u, mode = 'terminal', types=None, report_missin
 # This function is used only in Manager at this time
 #
 def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=None, noWeb=False) :
-	px, vx, tx, ux = x
+	px, vx, rx, tx, ux = x
 	if all_programs == None :
 		all_programs = []
 
 	if px.lower() == py.lower() :
 		return True
 
-	for rule in get_rules_for(px, vx, tx, ux) :
+	for rule in get_rules_for(px, vx, rx, tx, ux) :
 		if hook :
 			hook()
 		p = rule['program']
@@ -560,9 +559,9 @@ def does_x_depend_on_y(x, py, acceptable_types=None, all_programs=None, hook=Non
 		if not p in all_programs :
 			all_programs.append(p)
 			match = find_matching_package(rule, acceptable_types, noWeb=noWeb) # (program, version, type, site)
-			pp, vv, tt, uu = match
+			pp, vv, rr, tt, uu = match
 			if tt :
-				x = does_x_depend_on_y((pp, vv, tt, uu), py, acceptable_types, all_programs, hook=hook)
+				x = does_x_depend_on_y((pp, vv, rr, tt, uu), py, acceptable_types, all_programs, hook=hook)
 				if x :
 					return True
 	return False
