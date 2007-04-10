@@ -341,13 +341,26 @@ class Freshen < GoboApplication
 				getDependencies(key, value) if value && value.set?
 			}
 		end
+		versInUse = Hash.new
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
+			versInUse[x] = nv
 			shallowexclude = false
 			shallowexclude = true if @config['shallow']=='yes' && nv>=@minVersion[x] && !@config['onlyExamine'].include?(x)
 			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x]) || shallowexclude
 		}
 		toupdate-=@config['exceptButCompatible']
+		if @config['shallow']=='yes'
+			@progs.each {|key, value|
+				getDependencies(key, value) if value && value.set?
+			}
+			toupdate.each {|prog|
+				if versInUse[prog]>=@maxVersion[prog]
+					logError "Warning: upgrading #{prog} past version #{@maxVersion[prog]} may cause breakage for other installed programs."
+				end
+			}
+		end
+		
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
 			self.logError("Warning: Glibc upgrade requires kernel upgrade to at least 2.6.20. Glibc has been deleted from the updates list. Some packages may fail to install because of this.");
 		end
