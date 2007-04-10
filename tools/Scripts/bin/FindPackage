@@ -172,10 +172,10 @@ Options:
  --types=[t1,t2,...]  Sets what kind of packages can be searched, in the 
                       passed order. Valid types are: 
                        local_package, official_package, contrib_package, 
-                       recipe, tracked, all
+                       installed, recipe, tracked, all
                       Using only the first character from any of the above 
                       is also valid:
-                       l, o, c, r, t, a     
+                       l, o, c, i, r, t, a     
                       Default types are:
                        local_package, official_package
                       Notice that when "recipe" type is used, Compile.conf is 
@@ -214,6 +214,7 @@ Examples of usage:
  FindPackage --force-update --full-list kde 3.2.3
  FindPackage --types=recipe kde-base 3.2.3
  FindPackage --types=recipe --substring kd 3.2.3
+ FindPackage --types=installed gcc
  """
 			sys.exit(0)
 	
