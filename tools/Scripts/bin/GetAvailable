@@ -456,10 +456,10 @@ Options:
  --types=[t1,t2,...]  sets what kind of packages can be searched, in the
                       passed order. Valid types are:
                        local_package, official_package, contrib_package,
-                       recipe, tracked, all
+                       installed, recipe, tracked, all
                       using only the first character from any of the above
                       is also valid:
-                       l, o, c, r, t, a
+                       l, o, c, i, r, t, a
                       Default types are:
                        local_package, official_package
                       notice that when "recipe" type is used, Compile.conf is
