@@ -53,6 +53,8 @@ class Version
 			elsif xv.to_s.slice(0,1) == "r" && mv.to_s.slice(0,1) != "r" && !(xv.to_s == 'r1' && mv.nil?)
 				returnvalue = 1
 				break
+			elsif xv.nil? && (mv=='0' || mv == nil || mv=='r1')
+				returnvalue = 0
 			elsif xv.nil?
 				return 1
 			elsif mv > xv
@@ -63,7 +65,12 @@ class Version
 				break			
 			end
 		end
-		returnvalue = -1 if returnvalue == 0 and xstokens.length>mytokens.length
+		if returnvalue == 0 and xstokens.length>mytokens.length
+			mytokens.length.upto(xstokens.length) {|i|
+				returnvalue = -1 unless xstokens[i].to_s=='0' || xstokens[i].to_s=='r1' || xstokens[i].nil?
+			}
+		end
+		#returnvalue = -1 if returnvalue == 0 and xstokens.length>mytokens.length
 		returnvalue
 	end
 end

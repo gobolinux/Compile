@@ -85,17 +85,30 @@ class Freshen < GoboApplication
 	
 	def readDependencyFile(fn)
 		r = File.readlines(fn).collect {|ln|
-			first, junk = ln.split(' ', 2)
+			first, junk = ln.strip.split(' ', 2)
 			setMinMax(first, junk)
 			first
 		}-[""]
 		r.delete_if {|l|
-			l[0,1]=="#"
+			l==nil || l[0,1]=="#"
 		}
 		r
 	end
 	
 	def getNewestAvailableVersion(prog, fr="unknown package")
+		# Remove exceeded maxima from any consideration
+		if @maxVersion[prog]
+			if @recipes[prog]
+				while @recipes[prog].at(-1)>=@maxVersion[prog]
+					@recipes[prog].pop
+				end
+			end
+			if @packages[prog]
+				while @packages[prog].at(-1)>=@maxVersion[prog]
+					@packages[prog].pop
+				end
+			end
+		end
 		# Patch around incorrect WindowMaker dependency file
 		prog = "LibUngif" if prog=="Libungif"
 		if @recipes[prog] and @packages[prog] and @config['recipes'] == 'yes' and @config['binaries']=='yes'
@@ -328,7 +341,7 @@ class Freshen < GoboApplication
 		}
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
-			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>@maxVersion[x])
+			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x])
 		}
 		toupdate-=@config['exceptButCompatible']
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
