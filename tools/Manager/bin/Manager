@@ -53,21 +53,19 @@ class ManagerUIImpl(ManagerUI) :
 	def selectAllOfficialPackages(self) :
 		self.selectAll(self.availables['official_package']['pixmap'])
 	def selectAllLocalPackages(self) :
-			self.selectAll(self.availables['local_package']['pixmap'])
+		self.selectAll(self.availables['local_package']['pixmap'])
 	def selectAllContributedPackages(self) :
-			self.selectAll(self.availables['contrib_package']['pixmap'])
+		self.selectAll(self.availables['contrib_package']['pixmap'])
 	def selectAllTracked(self) :
-			self.selectAll(self.availables['tracked']['pixmap'])
+		self.selectAll(self.availables['tracked']['pixmap'])
 	def selectAllRecipes(self) :
-			self.selectAll(self.availables['recipe']['pixmap'])
+		self.selectAll(self.availables['recipe']['pixmap'])
 	def selectAllInstalledCurrent(self) :
-			self.selectAll(currentVersionPixmap)
+		self.selectAll(currentVersionPixmap)
 	def selectAllInstalledOther(self) :
-			self.selectAll(otherVersionPixmap)
+		self.selectAll(otherVersionPixmap)
 	def selectAllInstalledUnlinked(self) :
-			self.selectAll(unlinkedVersionPixmap)
-	#def selectAllPrograms(self) :
-	#		self.selectAll(openProgramPixmap)
+		self.selectAll(unlinkedVersionPixmap)
 
 	def selectAll(self, icon) :
 		pList = self.getCurrentList()
