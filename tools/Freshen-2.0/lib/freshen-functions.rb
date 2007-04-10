@@ -341,7 +341,9 @@ class Freshen < GoboApplication
 		}
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
-			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x])
+			shallowexclude = false
+			shallowexclude = true if @config['shallow']=='yes' && nv>=@minVersion[x] && !@config['onlyExamine'].include?(x)
+			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x]) || shallowexclude
 		}
 		toupdate-=@config['exceptButCompatible']
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')

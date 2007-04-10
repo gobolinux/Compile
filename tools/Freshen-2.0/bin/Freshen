@@ -63,6 +63,7 @@ class Freshen < GoboApplication
 		addOptionBoolean("no-recipes", ["-R"], "Do not include recipes#{@config['recipes']=='no' and ' [default]' or ''}")
 #		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
 		addOptionBoolean("upgrade-system", ["-U"], "Upgrade entire system, excluding items blocked by -x")
+		addOptionBoolean("shallow", ["-s"], "Include <list> and necessary dependencies only")
 		addOptionEntry("limit", ["-l"], "Limit update list to first <n> packages")
 		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages of update list")
 		addOptionEntry("info", ["-i"], "Get information on <program>")
@@ -137,6 +138,7 @@ END_OF_NOTES
 		elsif not @config['except'].length>0
 			@config['onlyExamine'] = ARGV.dup
 		end
+		@config['shallow'] = options('shallow') ? 'yes' : 'no';
 		@config['emptyTree'] = options('empty-tree')
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")
 		@getAvailableConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Scripts/GetAvailable.conf")
