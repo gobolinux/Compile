@@ -282,7 +282,7 @@ END_OF_NOTES
 			#szs = ", #{Gobo.smartSize(sz)} to go..." if sz>0
 			self.logNormal "\033]2;Freshen: Upgrading #{p}, #{i}/#{toupdate.size}\007Upgrading #{i}/#{toupdate.size}..."
 			puts progStatus(p) if @logLevel>=40
-			self.upgrade(p)
+			break unless self.upgrade(p)
 			#sz-=@packsizes[p] if @packsizes[p]
 		}
 		toupdate.each {|p,v|
@@ -341,20 +341,21 @@ END_OF_NOTES
 		prefs = @config['preference'].split(',')
 		if prefs[0]=='recipe' and recipe
 			self.logNormal "First preference recipe, got recipe."
-			self.upgradeCompile(prog,newver)
+			return self.upgradeCompile(prog,newver)
 		elsif prefs[0]=='binary' and package
 			self.logNormal "First preference binary, got binary."
-			self.upgradePackage(prog,newver)
+			return self.upgradePackage(prog,newver)
 		elsif prefs[1]=='recipe' and recipe
 			self.logNormal "First preference binary, no binary."
 			self.logNormal "Got a recipe though."
-			self.upgradeCompile(prog,newver)
+			return self.upgradeCompile(prog,newver)
 		elsif prefs[1]=='binary' and package
 			self.logNormal "First preference recipe, no recipe."
 			self.logNormal "Got a binary though."
-			self.upgradePackage(prog,newver)
+			return self.upgradePackage(prog,newver)
 		else
 			self.logError "Nothing matches your criteria."
+			return false
 		end
 	end
 	def upgradeCompile(prog,ver)
@@ -369,9 +370,10 @@ END_OF_NOTES
 #			if !r
 			# This behaviour needs to be better defined. Perhaps an option to continue over the top?
 				self.logError "Compile failed of #{prog} #{ver}. Terminating. Programs data cache has not been updated. Use Freshen -C to do this if necessary."
-				exit
+				return false
 #			end
 		end
+		return true
 	end
 	def upgradePackage(prog,ver)
 		gotone = false
@@ -391,12 +393,13 @@ END_OF_NOTES
 			ov = vers.clone
 			if ov!=vers.gsub!(/-r.*$/, '')
 				if system("#{sudo} InstallPackage -k -U -s keep -b -D -u keep #{prog} #{vers}")
-					return
+					return true
 				end
 			end
 			self.logError "InstallPackage failed. Terminating."
-			exit
+			return false
 		end
+		return true
 	end
 	def getRecipe(prog,ver)
 		system "GetRecipe #{prog} #{ver}"
