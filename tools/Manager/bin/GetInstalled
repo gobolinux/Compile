@@ -71,17 +71,21 @@ def GetInstalled(programName = None, path = None, detectUnlinked = False, callba
 
 		p = programs[i]
 
-		# /Program/Linux is a special case, so we ignore it here
-		if p == 'Linux' :
-			continue
-
 		if not os.path.isdir(path+'/'+p):
 			continue
 
 		ds = os.listdir(path+'/'+p)
 
-		versions = [ d for d in ds if d not in ['Current','Settings', 'Variable'] and os.path.isdir(path+'/'+p+'/'+d) ]
-		#versions = [ d for d in versions if os.path.isdir(path+'/'+p+'/'+d) ]
+		versions = []
+		for d in ds :
+			if d not in ['Current','Settings','Variable'] and os.path.isdir(path+'/'+p+'/'+d) :
+				if os.access(path+'/'+p+'/'+d+'/Resources/Revision',os.R_OK) :
+					f = open(path+'/'+p+'/'+d+'/Resources/Revision')
+					vr = Join_Version_Revision(d,f.read().strip())
+					f.close()
+				else :
+					vr = Join_Version_Revision(d,'r1')
+				versions.append(vr)
 
 		if (i < len(programs) - 1)  and  p.lower() == programs[i+1].lower() :
 			otherCaptionVersions = otherCaptionVersions + versions
@@ -98,10 +102,11 @@ def GetInstalled(programName = None, path = None, detectUnlinked = False, callba
 		unlinkeds   = [] # list of versions that contain have no link at /S/L ou /S/S
 		toReturn[p] = {}
 
-		for v in versions:
+		for vr in versions:
+			v,r = Split_Version_Revision(vr)
 			try :
 				if not os.access(path+'/'+p+'/'+v, os.R_OK) or os.path.samefile(path+'/'+p+'/'+v, path+'/'+p+'/'+'Current') :
-					currents.append(v)
+					currents.append(vr)
 			except :
 				pass
 			
@@ -110,7 +115,7 @@ def GetInstalled(programName = None, path = None, detectUnlinked = False, callba
 			if linksList :
 				if linksList.find(pp+'/'+v+'/') == -1 :
 					if not v in currents or linksList.find(pp+'/'+'Current') == -1 :
-						unlinkeds.append(v)
+						unlinkeds.append(vr)
 		
 		toReturn[p]['versions'] = versions
 		toReturn[p]['currents'] = currents

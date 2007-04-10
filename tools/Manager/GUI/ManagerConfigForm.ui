@@ -88,14 +88,6 @@
                                     <string>Do not access the Web</string>
                                 </property>
                             </widget>
-                            <widget class="QCheckBox" row="4" column="0" rowspan="1" colspan="2">
-                                <property name="name">
-                                    <cstring>autoDependencies</cstring>
-                                </property>
-                                <property name="text">
-                                    <string>Allways insert dependencies in the queue</string>
-                                </property>
-                            </widget>
                             <widget class="QCheckBox" row="5" column="0" rowspan="1" colspan="2">
                                 <property name="name">
                                     <cstring>allwaysUpdate</cstring>

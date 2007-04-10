@@ -106,7 +106,7 @@ class ManagerUIImpl(ManagerUI) :
 			self.refresh()
 		
 	def refresh(self) : #
-		(p,v) = self.getLeftProgramAndVersion()
+		(p,v,r,t) = self.getCurrentTuple()
 		self.updateVisualTree()
 		self.showVisualTree()
 		if p :
@@ -273,7 +273,6 @@ class ManagerUIImpl(ManagerUI) :
 		(self.configWindow.keepDownloadedPackages,           False),
 		(self.configWindow.useCompatibilityModeInteraction,  False),
 		(self.configWindow.noWeb,                            False),
-		(self.configWindow.autoDependencies,                 False),
 		(self.configWindow.allwaysUpdate,                    False),
 		(self.configWindow.threadsBandwidth,                 1),
 		(self.configWindow.threadsCPU,                       1),
@@ -444,19 +443,7 @@ class ManagerUIImpl(ManagerUI) :
 		else :
 			pList = self.pList
 		return pList
-		
-	def getSelectedTypes(self) :
-		i = QListViewItemIterator(self.getCurrentList()) 
-		l = []
-		while True :
-			c = i.current()
-			if not c :
-				break
-			if c.isSelected() :
-				l.append(self.getTypeOf(c))
-			i += 1
-		return l
-	
+			
 	def getTypeOf(self, item) :
 		if not item or not item.pixmap(0) :
 			return ''
@@ -469,21 +456,15 @@ class ManagerUIImpl(ManagerUI) :
 		else :
 			return ''
 	
-	def getSelectedType(self) :
-		tr = self.getTypeOf(self.getCurrentList().currentItem())
-		return tr
-		
 	def getValidActions(self) :
-		pvs = self.getSelectedProgramsAndVersions()
-		types = self.getSelectedTypes()
-		
-		if not types :
+		tuples = self.getSelectedTuples()		
+		if not tuples :
 			return []
-		assert pvs
+
 		# list copying 
 		selectedActions = self.allActions[:]
 		
-		for ((p,v),t) in zip(pvs,types) :
+		for (p,v,r,t) in tuples :
 			if not selectedActions or not t:
 				return
 
@@ -634,16 +615,17 @@ class ManagerUIImpl(ManagerUI) :
 				if self.availables[t]['show']() and self.availables[t]['programs'].has_key(p) :
 					if self.availables[t]['pixmap'] :
 						v = GuessLatest(self.availables[t]['programs'][p].keys())
+						r = GuessLatest(self.availables[t]['programs'][p][v].keys())
 						
 						if self.showOutdatedAvailableAction.isOn():
 							for i in self.availables[t]['programs'][p].keys() :
 								self.visualTree[p].append((i,self.availables[t]['pixmap'] ))
 						
 						elif not self.installed.has_key(p) :
-							self.visualTree[p].append((v,self.availables[t]['pixmap']))
+							self.visualTree[p].append((Join_Version_Revision(v,r),self.availables[t]['pixmap']))
 						
 						elif GuessLatest([v, GuessLatest(self.installed[p]['versions'])]) != GuessLatest(self.installed[p]['versions']) :
-							self.visualTree[p].append((v,self.availables[t]['pixmap']))
+							self.visualTree[p].append((Join_Version_Revision(v,r),self.availables[t]['pixmap']))
 
 	def getTypeOfPixmap(self, px) :
 		#TODO: complete this list
@@ -653,7 +635,7 @@ class ManagerUIImpl(ManagerUI) :
 		return 'installed'
 		
 			
-	def getSelectedProgramsAndVersionsAndTypes(self) :
+	def getSelectedTuples(self) :
 		i = QListViewItemIterator(self.getCurrentList()) 
 		l = []
 		while True :
@@ -662,48 +644,33 @@ class ManagerUIImpl(ManagerUI) :
 				break
 			if c.isSelected() :
 				try :
-					p,v = str(c.parent().text(0)),str(c.text(0))
-					l.append((p.strip(),v.strip(),self.getTypeOfPixmap(c.pixmap(0))))
+					p,v,r = (str(c.parent().text(0)),)+Split_Version_Revision(str(c.text(0)))
+					l.append((p.strip(),v.strip(),r.strip(),self.getTypeOfPixmap(c.pixmap(0))))
 				except :
-					p,v = str(c.text(0)), ''
-					l.append((p.strip(),v.strip(),self.getTypeOfPixmap(c.pixmap(0))))
+					p,v,r = str(c.text(0)), '', ''
+					l.append((p.strip(),v.strip(),r.strip(),self.getTypeOfPixmap(c.pixmap(0))))
 			i += 1
 		return l
 	
-	def getSelectedProgramsAndVersions(self) :
-		i = QListViewItemIterator(self.getCurrentList()) 
-		l = []
-		while True :
-			c = i.current()
-			if not c :
-				break
-			if c.isSelected() :
-				try :
-					p,v = str(c.parent().text(0)),str(c.text(0))
-					l.append((p.strip(),v.strip()))
-				except :
-					p,v = str(c.text(0)), ''
-					
-					l.append((p.strip(),v.strip()))
-			i += 1
-		return l
-			
-	def getLeftProgramAndVersion(self) :
+	def getCurrentTuple(self) :
 		c = self.getCurrentList().currentItem()
-		
 		try :
 			select = c and (c.isSelected() or c.text(0) != self.getCurrentList().lastItem().parent().text(0) )
 		except :
 			select = c
 		if select :
 			try :
-				p,v = str(c.parent().text(0)),str(c.text(0))
-				return p.strip(),v.strip()
+				t = self.getTypeOfPixmap(c.pixmap(0))
 			except :
-				p,v = str(c.text(0)), ''
-				return p.strip(),v.strip()
+				t = 'program'
+			try :
+				p,v,r = (str(c.parent().text(0)),)+Split_Version_Revision(str(c.text(0)))
+				return p.strip(),v.strip(),r.strip(),t
+			except :
+				p,v,r = str(c.text(0)), '', ''
+				return p.strip(),v.strip(),r.strip(),t
 		else:
-			return "",""
+			return "","","",""
 
 	def getMode(self) :
 		if self.modeTab.currentPageIndex() == 1 :
@@ -733,18 +700,15 @@ class ManagerUIImpl(ManagerUI) :
 		self.duDone = 0
 		self.descriptionDone = 0
 
-		p, v = self.getLeftProgramAndVersion()
-		t = self.getSelectedType()
+		p,v,r,t = self.getCurrentTuple()
 	
 		p = GuessProgramCase(p,v)
 		if not p :
 			p = str(item.text(0))
 		
-		#self.getSelectedProgramsAndVersions() why was this here??
-		
 		infoTitle = p
 		if v :
-			infoTitle = infoTitle + ' ' + v
+			infoTitle = infoTitle + ' ' + Join_Version_Revision(v,r)
 		
 		if t :
 			T = string.capwords(string.replace(t, '_',' '))
@@ -756,8 +720,8 @@ class ManagerUIImpl(ManagerUI) :
 		
 		methods = []
 		if True:
-			def updateDescription(p,v,t) :
-				description = DescribeProgram(p, v, mode = 'html', noweb = self.configWindow.noWeb.isChecked())
+			def updateDescription(p,v,r,t) :
+				description = DescribeProgram(p, Join_Version_Revision(v,r), mode = 'html', noweb = self.configWindow.noWeb.isChecked())
 				if not description.strip() :
 					return ''
 					
@@ -765,15 +729,15 @@ class ManagerUIImpl(ManagerUI) :
 				
 			methods.append(updateDescription)
 			
-		#if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
-		if t in ['local_package', 'installed', 'recipe'] :
-			def updateDependencies(p,v,t) :
+		if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
+		#if t in ['local_package', 'installed', 'recipe'] :
+			def updateDependencies(p,v,r,t) :
 				if v :
 					d = v
 				else :
 					d = 'Current'
 				
-				ret = ListDependencies(p,v,'',t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
+				ret = ListDependencies(p,v,r,t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
 				if not ret.strip() :
 					return ''
 				return ret
@@ -802,8 +766,8 @@ class ManagerUIImpl(ManagerUI) :
 				
 			#methods.append(updateDependencies)
 					
-		if self.getSelectedType() == 'installed' :
-			def updateSize(p,v,t) :
+		if t == 'installed' :
+			def updateSize(p,v,r,t) :
 				try :
 					x = os.popen('du -sh '+goboPrograms+'/'+p+'/'+v+' 2> /dev/null')
 					size = x.read().split()[0]
@@ -814,48 +778,48 @@ class ManagerUIImpl(ManagerUI) :
 		
 			methods.append(updateSize)
 		
-		if self.getSelectedType() in ['official_package', 'contrib_package','local_package', 'recipe'] :
-			def availability(p,v,t) :
+		if t in ['official_package', 'contrib_package','local_package', 'recipe'] :
+			def availability(p,v,r,t) :
 				try :
 					T = string.capwords(string.replace(t, '_',' '))
-					urls=string.join([string.join(self.availables[t]['programs'][p][v][r], '<br>') for r in self.availables[t]['programs'][p][v].keys()], '<br>')
+					urls=string.join(self.availables[t]['programs'][p][v][r], '<br>')
 					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+urls+'</p>'
 				except :
 					return ''
 				
 			methods.append(availability)
 
-		if self.getSelectedType() in [''] :
-			def reverse_dependencies(p,v,t) :
-				try :
-					x = os.popen('Dependencies --reverse '+p+' | cut -d\' \' -f 1 | sort -u').readlines()
-					xx = string.join(x,'<br>')
-					if xx.strip() :
-						return '<p><font color="#000077"><b>[Installed Programs Depending On '+p+']</b></font><br>'+xx+'</p>'
-					else :
-						return ''
-				except :
-					return ''
+		#if self.getSelectedType() in [''] :
+			#def reverse_dependencies(p,vr,t) :
+				#try :
+					#x = os.popen('Dependencies --reverse '+p+' | cut -d\' \' -f 1 | sort -u').readlines()
+					#xx = string.join(x,'<br>')
+					#if xx.strip() :
+						#return '<p><font color="#000077"><b>[Installed Programs Depending On '+p+']</b></font><br>'+xx+'</p>'
+					#else :
+						#return ''
+				#except :
+					#return ''
 				
-			methods.append(reverse_dependencies)
+			#methods.append(reverse_dependencies)
 		
 		
-		def updateStuff(methods, p,v,t) :
+		def updateStuff(methods, p,v,r,t) :
 			s = ''
 			for method in methods :
-				s += method(p,v,t)
-				qApp.postEvent(self, QCustomEvent(QEvent.User, (p,v,s)))
+				s += method(p,v,r,t)
+				qApp.postEvent(self, QCustomEvent(QEvent.User, (p,v,r,t,s)))
 			
 		import thread
-		thread.start_new_thread(updateStuff, (methods, p,v,self.getSelectedType()))
+		thread.start_new_thread(updateStuff, (methods, p,v,r,t))
 		
 	def customEvent(self, event) :
 		import types
 		data = event.data()
 		if type(data[0]) == types.StringType :
-			p, v, s = event.data()
-			(pp, vv) = self.getLeftProgramAndVersion()
-			if pp.lower() == p.lower() and vv == v:
+			p,v,r,t, s = event.data()
+			(pp, vv, rr, tt) = self.getCurrentTuple()
+			if pp.lower() == p.lower() and vv == v and rr == r and tt == t:
 				self.description.setText(s)
 		else :
 			if data[1] != None :
@@ -892,7 +856,7 @@ class ManagerUIImpl(ManagerUI) :
 	def doNewVersion(self) :
 		cmds = []
 		apps = []
-		for p, v, t in self.getSelectedProgramsAndVersionsAndTypes() :
+		for p, v, r, t in self.getSelectedTuples() :
 			assert p and v and t
 			if t == 'tracked' :
 				cmds.append('NewVersion '+p+' '+v)
@@ -909,81 +873,74 @@ class ManagerUIImpl(ManagerUI) :
 	def doNewVersionAndCompile(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert p and v
 			cmds.append('NewVersion '+p+' '+v+' && '+' nice Compile '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
 	
-	def addCommandsForDependencies(self, p,v,t,u, cmds,apps, justDownload) :
-		return # skipping for now.
-		if (self.configWindow.autoDependencies.isChecked()) :
-			if self.configWindow.allwaysUpdate.isChecked() :
-				mode='updating'
+	def addCommandsForDependencies(self, p,v,r,t,u, cmds,apps, justDownload) :
+		if self.configWindow.allwaysUpdate.isChecked() :
+			mode='updating'
+		else :
+			mode='missing'
+		deps,sols = CheckDependencies(p, v, r, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook, add_self='never')
+		tr = []
+		for c in sols :
+			pp, vv, rr, tt, uu = c
+			if tt == 'recipe' :
+				self.addCommandsForCompile(pp,vv,rr,tt,uu,cmds,apps,justDownload)
+			elif tt in [ 'local_package', 'official_package', 'contrib_package' ] :
+				self.addCommandsForInstallPackage(pp,vv,rr,tt,uu,cmds,apps,justDownload)
 			else :
-				mode='missing'
-				
-			deps,sols = CheckDependencies(p, v, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook)
-				
-			tr = []
-			for c in sols :
-				pp, vv, tt, uu = c
-				if tt == 'recipe' :
-					self.addCommandsForCompile(pp,vv,tt,uu,cmds,apps,justDownload)
-				elif tt in [ 'local_package', 'official_package', 'contrib_package' ] :
-					self.addCommandsForInstallPackage(pp,vv,tt,uu,cmds,apps,justDownload)
-				else :
-					assert(False)
-		#TODO: add questions on else here. Or not.
+				assert(False)
 	
-	def addCommandsForInstallPackage(self, p,v,kind,path,cmds,apps,justDownload=False) :
+	def addCommandsForInstallPackage(self, p,v,r,t,u,cmds,apps,justDownload=False) :
 		if justDownload :
-			cmds.append('InstallPackage -I '+path)
+			cmds.append('InstallPackage -I '+u)
 			apps.append(p)
 		else :
-			if not self.configWindow.dontSplitDownload.isChecked() and kind in ['official_package', 'contrib_package'] :
-				packageName = path[path.rfind('/')+1:]
+			if not self.configWindow.dontSplitDownload.isChecked() and t in ['official_package', 'contrib_package'] :
+				packageName = u[u.rfind('/')+1:]
 				location = getGoboVariable('defaultLocalPackagesPaths', 'Scripts/GetAvailable.conf', True)[0]
 				localpath = location+'/'+packageName
-				cmds.append('InstallPackage -I '+path)
+				cmds.append('InstallPackage -I '+u)
 				apps.append(p)
 				cmds.append('InstallPackage --no-dependencies '+localpath)
 				apps.append(p)
 			else :
-				if kind in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked() :
+				if t in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked() :
 					add = ' --keep '
 				else :
 					add = ''
-				cmds.append('InstallPackage --no-dependencies '+add+path)
+				cmds.append('InstallPackage --no-dependencies '+add+u)
 				apps.append(p)
 							
-	def addCommandsForCompile(self, p,v,kind,path, cmds,apps, justDownload=False) :
+	def addCommandsForCompile(self, p, v, r, t, u, cmds,apps, justDownload=False) :
 		if justDownload :
-			cmds.append('Compile -B '+p+' '+v)
+			cmds.append('Compile -B '+p+' '+Join_Version_Revision(v,r))
 			apps.append(p)
 		else :
 			if self.configWindow.dontSplitDownload.isChecked() :
-				cmds.append('nice Compile '+p+' '+v)
+				cmds.append('nice Compile '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
 			else :
-				cmds.append('Compile -B '+p+' '+v)
+				cmds.append('Compile -B '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
-				cmds.append('nice Compile -W '+p+' '+v)
+				cmds.append('nice Compile -W '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
 	
 	def doInstallPackage(self, justDownload = False) :
-		pvs = self.getSelectedProgramsAndVersions()
-		types = self.getSelectedTypes()
 		cmds = []
 		apps = []
 		
-		for ((p,v),kind) in zip(pvs,types) :
-			assert kind in ['local_package', 'official_package', 'contrib_package']
-			r = GuessLatest(self.availables[kind]['programs'][p][v].keys())
-			path = self.availables[kind]['programs'][p][v][r][0]
-			self.addCommandsForDependencies(p,v,kind,path, cmds,apps, justDownload)
-			self.addCommandsForInstallPackage(p,v,kind,path, cmds,apps, justDownload)
+		for (p,v,r,t) in self.getSelectedTuples() :
+			assert t in ['local_package', 'official_package', 'contrib_package']
+			r = GuessLatest(self.availables[t]['programs'][p][v].keys())
+			path = self.availables[t]['programs'][p][v][r][0]
+			self.addCommandsForDependencies(p,v,r,t,path, cmds,apps, justDownload)
+			self.addCommandsForInstallPackage(p,v,r,t,path, cmds,apps, justDownload)
 			
 		self.do(cmds, apps)
 		
@@ -993,25 +950,25 @@ class ManagerUIImpl(ManagerUI) :
 	def doCompileRecipe(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert p
-			self.addCommandsForDependencies(p,v,'recipe',None, cmds,apps,False)
-			self.addCommandsForCompile(p,v,'recipe',None,cmds,apps,False)
+			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps,False)
+			self.addCommandsForCompile(p,v,r,'recipe',None,cmds,apps,False)
 		self.do(cmds, apps)
 	
 	def doFetchRecipe(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert p
-			self.addCommandsForDependencies(p,v,'recipe',None, cmds,apps, True)
-			self.addCommandsForCompile(p,v,'recipe',None,cmds,apps,True)
+			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps, True)
+			self.addCommandsForCompile(p,v,r,'recipe',None,cmds,apps,True)
 		self.do(cmds, apps)
 
 	def doDisableProgram(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('DisableProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
@@ -1019,7 +976,7 @@ class ManagerUIImpl(ManagerUI) :
 	def doRemoveProgram(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert p and v
 			cmds.append('RemoveProgram '+p+' '+v)
 			apps.append(p)
@@ -1028,7 +985,7 @@ class ManagerUIImpl(ManagerUI) :
 	def doSymlinkProgram(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('SymlinkProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
@@ -1036,7 +993,7 @@ class ManagerUIImpl(ManagerUI) :
 	def doSymlinkProgramOverwrite(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('SymlinkProgram -c overwrite '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
@@ -1044,8 +1001,8 @@ class ManagerUIImpl(ManagerUI) :
 	def doEditRecipe(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
-			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][0][0])
+		for p,v,r,t in self.getSelectedTuples() :
+			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][r][0])
 			localRecipe = x.read().strip() + '/Recipe'
 			x.close()
 			
@@ -1066,7 +1023,7 @@ class ManagerUIImpl(ManagerUI) :
 	def doCreatePackage(self) :
 		cmds = []
 		apps = []
-		for p, v in self.getSelectedProgramsAndVersions() :
+		for p,v,r,t in self.getSelectedTuples() :
 			if self.configWindow.useDefaultCreatePackageDirectory.isChecked():
 				dest = str(self.configWindow.defaultCreatePackageDirectory.text())
 			else :
@@ -1123,12 +1080,9 @@ class ManagerUIImpl(ManagerUI) :
 					#  so we cannot compile x before y is x depends on y. Not true for binary packages.
 					for pp in blockedPrograms :
 						l = cmd.split() 
-						v = l[-1] # .* Compile .* <program> <version>
-						if does_x_depend_on_y((p, v, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
-							print p,v,'recipe','DOES! depend on',pp
+						v,r = Split_Version_Revision(l[-1]) # .* Compile .* <program> <version>
+						if does_x_depend_on_y((p, v, r, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
 							return False
-						else :
-							print p,v,'recipe','does not depend on',pp
 					return True
 		return False
 		
@@ -1271,15 +1225,14 @@ def graphicalProgressHook(label, i, n, showWhenChanged = True) :
 
 def updateOnlyHook(label=None, i=0, n=0, showWhenChanged = True) :
 	qApp.lock()
-	print 'hook'
 	qApp.processEvents()
 	qApp.unlock()
 
 
 def gui_ask_if_install(match) :
-	p,v,t,u=match
+	p,v,r,t,u=match
 	global widget
-	resp = QMessageBox.warning(widget, 'Dependencies checking', "Install %s %s %s or skip this dependency?"%(p,v,t), 'Install', 'Skip')
+	resp = QMessageBox.warning(widget, 'Dependencies checking', "Install %s %s %s or skip this dependency?"%(p,Join_Version_Revision(v,r),t), 'Install', 'Skip')
 	return resp == 0
 
 widget = ManagerUIImpl()
