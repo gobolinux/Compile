@@ -199,7 +199,7 @@ class ManagerUIImpl(ManagerUI) :
 				return
 		
 		old = str(item.text())
-		(new, ok) = QInputDialog.getText('Edit command', '',  QLineEdit.Normal, old)
+		new,ok = QInputDialog.getText('Edit command', '',  QLineEdit.Normal, old)
 		if ok :
 			i = self.commandsQueue.index(item)
 			self.commandsQueue.removeItem(i)
@@ -330,7 +330,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.availables = self.getAvailableWrapper()
 
 		self.availables['local_package']['pixmap']     = QPixmap(iconsDir+'/'+localBinaryIcon)
-		self.availables['local_package']['show']       = self.show_local_package.isOn 
+		self.availables['local_package']['show']       = self.show_local_package.isOn
 		self.availables['local_package']['actions']    = [self.installPackageAction]
 		
 		self.availables['official_package']['pixmap']     = QPixmap(iconsDir+'/'+officialBinaryIcon)
@@ -364,13 +364,10 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.programsAtQueue = {}
 		self.programsOnRun = {}
-		
 		self.runningModules = {}
 		
 		self.loggers = RunningWindow(self.queueToggleShowRunWindowAction.setOn)
-
 		self.loadPreviousQueue()
-
 		self.prepareLoggersWindow()
 		self.enableOrDisableQueueActions()
 		
@@ -455,14 +452,13 @@ class ManagerUIImpl(ManagerUI) :
 			return ''
 	
 	def getValidActions(self) :
-		tuples = self.getSelectedTuples()		
+		tuples = self.getSelectedTuples()
 		if not tuples :
 			return []
 
-		# list copying 
+		# list copying
 		selectedActions = self.allActions[:]
-		
-		for (p,v,r,t) in tuples :
+		for p,v,r,t in tuples :
 			if not selectedActions or not t:
 				return
 
@@ -476,24 +472,20 @@ class ManagerUIImpl(ManagerUI) :
 					l = []
 			
 			toRemove = []
-			
 			for i in selectedActions :
 				if not i in l :
 					toRemove.append(i)
-			
 			for i in toRemove :
 				selectedActions.remove(i)
+		
 		return selectedActions
 	
 	
 	def showProgramsMenu(self, item, point) :
 		selectedActions = self.getValidActions()
-		
 		if not selectedActions :
 			return
-			
 		menu = QPopupMenu(self)
-		
 		for action in selectedActions:
 			action.addTo(menu)
 		menu.popup(point)
@@ -632,7 +624,6 @@ class ManagerUIImpl(ManagerUI) :
 				return t
 		return 'installed'
 		
-			
 	def getSelectedTuples(self) :
 		i = QListViewItemIterator(self.getCurrentList()) 
 		l = []
@@ -653,7 +644,7 @@ class ManagerUIImpl(ManagerUI) :
 	def getCurrentTuple(self) :
 		c = self.getCurrentList().currentItem()
 		try :
-			select = c and (c.isSelected() or c.text(0) != self.getCurrentList().lastItem().parent().text(0) )
+			select = c and (c.isSelected() or c.text(0) != self.getCurrentList().lastItem().parent().text(0))
 		except :
 			select = c
 		if select :
@@ -735,7 +726,7 @@ class ManagerUIImpl(ManagerUI) :
 				else :
 					d = 'Current'
 				
-				ret = ListDependencies(p,v,r,t,None,mode='html', report_missing=True, report_updating=True,recursive=False)
+				ret = ListDependencies(p,v,r,t, None, mode='html', report_missing=True, report_updating=True, recursive=False)
 				if not ret.strip() :
 					return ''
 				return ret
@@ -779,7 +770,7 @@ class ManagerUIImpl(ManagerUI) :
 		if t in ['official_package', 'contrib_package','local_package', 'recipe'] :
 			def availability(p,v,r,t) :
 				try :
-					T = string.capwords(string.replace(t, '_',' '))
+					T = string.capwords(string.replace(t, '_', ' '))
 					urls=string.join(self.availables[t]['programs'][p][v][r], '<br>')
 					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+urls+'</p>'
 				except :
@@ -815,8 +806,8 @@ class ManagerUIImpl(ManagerUI) :
 		import types
 		data = event.data()
 		if type(data[0]) == types.StringType :
-			p,v,r,t, s = event.data()
-			(pp, vv, rr, tt) = self.getCurrentTuple()
+			p,v,r,t,s   = event.data()
+			pp,vv,rr,tt = self.getCurrentTuple()
 			if pp.lower() == p.lower() and vv == v and rr == r and tt == t:
 				self.description.setText(s)
 		else :
@@ -853,7 +844,7 @@ class ManagerUIImpl(ManagerUI) :
 	
 	def doNewVersion(self) :
 		cmds,apps = [],[]
-		for p, v, r, t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert p and v and t
 			if t == 'tracked' :
 				cmds.append('NewVersion '+p+' '+v)
@@ -881,18 +872,18 @@ class ManagerUIImpl(ManagerUI) :
 			mode='updating'
 		else :
 			mode='missing'
-		deps,sols = CheckDependencies(p, v, r, t, u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook, add_self='never')
+		deps,sols = CheckDependencies(p,v,r,t,u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook, add_self='never')
 		tr = []
 		for c in sols :
-			pp, vv, rr, tt, uu = c
+			pp,vv,rr,tt,uu = c
 			if tt == 'recipe' :
-				self.addCommandsForCompile(pp,vv,rr,tt,uu,cmds,apps,justDownload)
+				self.addCommandsForCompile(pp,vv,rr,tt,uu, cmds, apps, justDownload)
 			elif tt in [ 'local_package', 'official_package', 'contrib_package' ] :
-				self.addCommandsForInstallPackage(pp,vv,rr,tt,uu,cmds,apps,justDownload)
+				self.addCommandsForInstallPackage(pp,vv,rr,tt,uu, cmds, apps, justDownload)
 			else :
 				assert(False)
 	
-	def addCommandsForInstallPackage(self, p,v,r,t,u,cmds,apps,justDownload=False) :
+	def addCommandsForInstallPackage(self, p,v,r,t,u, cmds, apps, justDownload=False) :
 		if justDownload :
 			cmds.append('InstallPackage -I '+u)
 			apps.append(p)
@@ -912,8 +903,8 @@ class ManagerUIImpl(ManagerUI) :
 					add = ''
 				cmds.append('InstallPackage --no-dependencies '+add+u)
 				apps.append(p)
-							
-	def addCommandsForCompile(self, p, v, r, t, u, cmds,apps, justDownload=False) :
+
+	def addCommandsForCompile(self, p,v,r,t,u, cmds, apps, justDownload=False) :
 		if justDownload :
 			cmds.append('Compile -B '+p+' '+Join_Version_Revision(v,r))
 			apps.append(p)
@@ -929,12 +920,12 @@ class ManagerUIImpl(ManagerUI) :
 	
 	def doInstallPackage(self, justDownload = False) :
 		cmds,apps = [],[]
-		for (p,v,r,t) in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples() :
 			assert t in ['local_package', 'official_package', 'contrib_package']
 			r = GuessLatest(self.availables[t]['programs'][p][v].keys())
-			path = self.availables[t]['programs'][p][v][r][0]
-			self.addCommandsForDependencies(p,v,r,t,path, cmds,apps, justDownload)
-			self.addCommandsForInstallPackage(p,v,r,t,path, cmds,apps, justDownload)
+			u = self.availables[t]['programs'][p][v][r][0]
+			self.addCommandsForDependencies  (p,v,r,t,u, cmds, apps, justDownload)
+			self.addCommandsForInstallPackage(p,v,r,t,u, cmds, apps, justDownload)
 			
 		self.do(cmds, apps)
 		
@@ -945,16 +936,16 @@ class ManagerUIImpl(ManagerUI) :
 		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p
-			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps,False)
-			self.addCommandsForCompile(p,v,r,'recipe',None,cmds,apps,False)
+			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds, apps, False)
+			self.addCommandsForCompile     (p,v,r,'recipe',None, cmds, apps, False)
 		self.do(cmds, apps)
 	
 	def doFetchRecipe(self) :
 		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p
-			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps, True)
-			self.addCommandsForCompile(p,v,r,'recipe',None,cmds,apps,True)
+			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds, apps, True)
+			self.addCommandsForCompile     (p,v,r,'recipe',None, cmds, apps, True)
 		self.do(cmds, apps)
 
 	def doDisableProgram(self) :
@@ -1013,7 +1004,7 @@ class ManagerUIImpl(ManagerUI) :
 			if self.configWindow.useDefaultCreatePackageDirectory.isChecked():
 				dest = str(self.configWindow.defaultCreatePackageDirectory.text())
 			else :
-				dest = str(QFileDialog.getExistingDirectory ( None, self, 'name', 'caption', True, True))
+				dest = str(QFileDialog.getExistingDirectory(None, self, 'name', 'caption', True, True))
 	
 			if not dest :
 				return
@@ -1050,7 +1041,6 @@ class ManagerUIImpl(ManagerUI) :
 			if not self.runningModules[module]["running"] :
 				started = self.runNextCommand(self.runningModules[module]["logger"], self.runningModules[module])
 	
-	
 	def canThisModuleRunThisCommand(self, runningModule, cmd, blockedPrograms) :
 		match = re.search(runningModule["commands"], cmd)
 		
@@ -1067,7 +1057,7 @@ class ManagerUIImpl(ManagerUI) :
 					for pp in blockedPrograms :
 						l = cmd.split() 
 						v,r = Split_Version_Revision(l[-1]) # .* Compile .* <program> <version>
-						if does_x_depend_on_y((p, v, r, 'recipe', None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
+						if does_x_depend_on_y((p,v,r,'recipe',None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
 							return False
 					return True
 		return False
