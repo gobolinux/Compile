@@ -21,12 +21,13 @@ def format_text(mode, category, text) :
 	elif mode == 'html' :
 		return '<p><font color="#000077"><b>['+category+'] </b></font><br>'+text+'</p>'
 
-def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', updateall = False, noweb = False, categories = ['Summary', 'Description', 'License', 'Homepage']) :
+def DescribeProgram(p, vr = '', descriptionsPaths = [], mode = 'terminal', updateall = False, noweb = False, categories = ['Summary', 'Description', 'License', 'Homepage']) :
 	import os
 	goboPrograms = getGoboVariable('goboPrograms')
 	global global_describeprogram_conf
 	
 	rawDescription = ''
+	v,r = Split_Version_Revision(vr)
 	if not updateall and os.access(goboPrograms+'/'+p, os.R_OK) :
 		if v :
 			d = v
@@ -41,7 +42,7 @@ def DescribeProgram(p, v = '', descriptionsPaths = [], mode = 'terminal', update
 	if not rawDescription and not updateall and v:
 		recipesLocalDirs = getCompileOptions()[0]
 		for directory in recipesLocalDirs :
-			path = directory+'/'+p+'/'+v+'/Resources/Description'
+			path = directory+'/'+p+'/'+vr+'/Resources/Description'
 			if os.access(path, os.R_OK) :
 				f = open(path)
 				rawDescription = f.read().strip()
