@@ -80,9 +80,9 @@ def GuessLatest(versions, stableOnly = 0, returnList = 0) :
 			if m.group(3) :
 				return version_with_revision[:-len(r)-1],[int(m.group(1)), int(m.group(3))]
 			else :
-				return version_with_revision[:-len(r)-1],[int(m.group(1)), sys.maxint]
+				return version_with_revision[:-len(r)-1],[int(m.group(1)), 0]
 		else :
-			return version_with_revision,[sys.maxint, sys.maxint]
+			return version_with_revision,[0, 0]
 
 	built_versions = []
 	built_versions_stable = []
