@@ -60,9 +60,33 @@ class Freshen < GoboApplication
 		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
 	end
 	
+	def setMinMax(prog, vers)
+		return if !vers || vers == '' || !prog || prog=='' || prog[0,1] == '#'
+		parts = vers.split(' ')
+		if parts.length == 1 # Exact version, treat as >=
+			vers = '>= '+vers
+		end
+		while vers.sub!(/(>=|==|<=|>|<) ([^ ]+)/) {|match|
+			v = Version.new($2)
+			if $1=='>=' || $1=='>'
+				if !@minVersion[prog] || @minVersion[prog] < v
+					@minVersion[prog] = v
+				end
+			elsif $1=='<=' || $1=='<'
+				if !@maxVersion[prog] || @maxVersion[prog] > v
+					@maxVersion[prog] = v
+				end
+			end
+			''
+		} do
+		
+		end
+	end
+	
 	def readDependencyFile(fn)
 		r = File.readlines(fn).collect {|ln|
 			first, junk = ln.split(' ', 2)
+			setMinMax(first, junk)
 			first
 		}-[""]
 		r.delete_if {|l|
@@ -299,9 +323,12 @@ class Freshen < GoboApplication
 		end
 		dephash = createDepHash(toupdate)
 		return dephash if raw
+		@progs.each {|key, value|
+			getDependencies(key, value) if value && value.set?
+		}
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
-			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x]))
+			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>@maxVersion[x])
 		}
 		toupdate-=@config['exceptButCompatible']
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
@@ -318,17 +345,19 @@ class Freshen < GoboApplication
 		# TODO: Should we search all recipe dirs? LocalRecipes at least might have data in it.
 		if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}")
 			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}/Resources/Dependencies")
-				rver = ver
+				rver = ver.to_s
 			else
 				cv = Version.new(0)
 				Dir.foreach("#{@compileConfig['compileGetRecipeDir']}/#{prog}") {|fn|
-					next if fn[0,ver.to_s.length] != ver
+					next if fn[0,ver.to_s.length] != ver.to_s
 					nv = Version.new(fn)
 					cv = nv if nv>cv
 				}
 				rver = cv.to_s
 			end
-			if rver!='none' && !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies") && !File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
+			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
+				# Do nothing, we're already there
+			elsif rver!='none' && !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies") && !File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
 				self.logNormal("Attempting to fetch recipe dependencies for #{prog} #{rver}")
 				system("GetRecipe #{prog} #{rver}")
 			elsif !File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}/Resources/Dependencies") && !File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")

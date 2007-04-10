@@ -25,6 +25,8 @@ class Freshen < GoboApplication
 		@progs = nil
 		@recipes = nil
 		@packages = nil
+		@minVersion = Hash.new
+		@maxVersion = Hash.new
 		settingspath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/Freshen.conf"
 		settingspath = File.expand_path("#{@dirname}/../Settings/Freshen") + "/Freshen.conf" if !File.exists?(settingspath)
 		@config = GoboParseConfig.new(settingspath)
@@ -617,7 +619,12 @@ end
 backtrace outputs a debug-level, formatted version of $!#backtrace
 =end
 def backtrace
-	$app.logDebug "Backtrace:\n  " + $!.backtrace.join("\n  ").gsub(/(.+?):(.+?)(:|$)/, "#{Screen.colour['brown']}\\1:#{Screen.colour['yellow']}\\2\\3#{Screen.colour['normal']}")
+	bt = "Backtrace:\n  " + $!.backtrace.join("\n  ").gsub(/(.+?):(.+?)(:|$)/, "#{Screen.colour['brown']}\\1:#{Screen.colour['yellow']}\\2\\3#{Screen.colour['normal']}")
+	if nil==$app
+		puts bt
+	else
+		$app.logDebug bt
+	end
 end
 
 begin
@@ -626,9 +633,9 @@ begin
 	rescue SystemExit
 		# Do nothing, this is just to stop it from giving an error message on quit
 	rescue Interrupt
-		$app.logError "#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{Screen.colour['red']}Interrupt.#{Screen.colour['normal']}"
+		puts "#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{Screen.colour['red']}Interrupt.#{Screen.colour['normal']}"
 		backtrace
 	rescue Exception
-		$app.logError "#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{Screen.colour['red']}Error: #{$!}#{Screen.colour['normal']} [#{$!.class}]"
+		puts "#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{Screen.colour['red']}Error: #{$!}#{Screen.colour['normal']} [#{$!.class}]"
 		backtrace
 end
