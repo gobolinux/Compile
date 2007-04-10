@@ -173,7 +173,7 @@ def addToDict(d, p, v, r, u) :
 		d[p][v][r] = []
 	d[p][v][r].append(u)
 
-def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
+def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='') :
 	import os, os.path
 
 	if not d :
@@ -223,7 +223,7 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None) :
 					r = f.read().strip()
 					f.close()
 				else :
-					r = ''
+					r = default_revision
 			addToDict(d, p,v,r,u)
 	return d
 
@@ -324,7 +324,7 @@ def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, avai
 			availables['installed'] = {}
 		if not availables['installed'].has_key('programs') or not availables['installed']['programs']:
 			availables['installed']['programs'] = KeyInsensitiveDict()
-		getUnpackedLocalPackages(path, True, availables['installed']['programs'])
+		getUnpackedLocalPackages(path, True, availables['installed']['programs'], default_revision= 'r1')
 
 	if 'local_package' in types :
 		if not availables.has_key('local_package') or not availables['local_package'] :
@@ -377,9 +377,11 @@ def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, avai
 			availables['recipe']['programs'] = KeyInsensitiveDict()
 
 		# searches local recipes first
+		default_revision='r'+str(sys.maxint)
 		for compileRecipeDir in compileRecipeDirs :
 			availables['recipe']['programs'] = getPackedLocalPackages(compileRecipeDir, availables['recipe']['programs'])
-			availables['recipe']['programs'] = getUnpackedLocalPackages(compileRecipeDir,  False, availables['recipe']['programs'])
+			availables['recipe']['programs'] = getUnpackedLocalPackages(compileRecipeDir,  False, availables['recipe']['programs'],default_revision=default_revision)
+			default_revision = ''
 		if accessWeb :
 			i=0
 			for getRecipeStore in getRecipeStores :
