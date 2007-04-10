@@ -62,6 +62,7 @@ class Freshen < GoboApplication
 		addOptionBoolean("recipes", ["-r"], "Include recipes#{@config['recipes']=='yes' and ' [default]' or ''}")
 		addOptionBoolean("no-recipes", ["-R"], "Do not include recipes#{@config['recipes']=='no' and ' [default]' or ''}")
 #		addOptionEntry("netmode", [], "Set netMode to (online|offline|always)")
+		addOptionBoolean("batch", [], "Batch mode, suitable for chaining into other tools")
 		addOptionBoolean("upgrade-system", ["-U"], "Upgrade entire system, excluding items blocked by -x")
 		addOptionBoolean("shallow", ["-s"], "Include <list> and necessary dependencies only")
 		addOptionEntry("limit", ["-l"], "Limit update list to first <n> packages")
@@ -142,6 +143,9 @@ END_OF_NOTES
 		@config['emptyTree'] = options('empty-tree')
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")
 		@getAvailableConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Scripts/GetAvailable.conf")
+		if options('batch')
+			@logLevel = 10
+		end
 		if options('cache-only')
 			self.updateCaches
 		elsif options('upgrade-system')
@@ -151,7 +155,7 @@ END_OF_NOTES
 		else
 			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes')
 		end
-		puts "\033];\007"
+		puts "\033];\007" if !options('batch')
 	end
 	def info(prog)
 		self.genTree
@@ -455,9 +459,9 @@ END_OF_NOTES
 			end
 			pcache+= "'#{prog}'=>Version.new('#{curver}'),\n"
 			pb.inc
-			pb.draw
+			pb.draw if @logLevel>20
 		}
-		print ' '*Screen.width+"\015"
+		print ' '*Screen.width+"\015" if @logLevel>20
 		pcache+= "}"
 		self.logVerbose "Saving /Programs data to cache"
 		pc = File.open(pcpath,"w")
@@ -518,14 +522,20 @@ END_OF_NOTES
 		if @config['limit']
 			toupdate = toupdate[0, @config['limit']]
 		end
-
+		
 		toupdate.each {|prog|
-			out+=self.progStatus prog
+			if !options('batch')
+				out+=self.progStatus prog
+			else
+				out+=prog+" "+getNewestAvailableVersion(prog).to_s+"\n"
+			end
 		}
-		print ' '*Screen.width+"\015"
+		print ' '*Screen.width+"\015" if @logLevel>20
 		tfs = 0
-		out += "Total: #{toupdate.length}".center(Screen.width)+"\n" # Size: #{Gobo.smartSize(tfs)}
-		print "\033]2;Freshen\007"
+		if !options('batch')
+			out += "Total: #{toupdate.length}".center(Screen.width)+"\n" # Size: #{Gobo.smartSize(tfs)}
+			print "\033]2;Freshen\007"
+		end
 		puts out
 	end
 

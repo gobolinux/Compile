@@ -219,7 +219,7 @@ class Freshen < GoboApplication
 		pb = ProgressBar.new(lines.length, 0)
 		lines.each {|ln|
 			pb.inc
-			pb.draw
+			pb.draw if @logLevel>20
 			(prog, ver, junk) = ln.split('--')
 			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}") if !File.exist?("#{@compileConfig['compileGetRecipeDir']}/#{prog}")
 			system("#{sudo}mkdir #{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}") if !File.exist?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{ver}")
@@ -302,7 +302,7 @@ class Freshen < GoboApplication
 			pb = ProgressBar.new(@progs.size,1)
 			@progs.each_key {|prog|
 				pb.inc
-				pb.draw
+				pb.draw if @logLevel>20
 				ver = @progs[prog]
 				next if !ver.set?
 				next if @config['except'].include?(prog)
@@ -315,7 +315,7 @@ class Freshen < GoboApplication
 					toupdate.push [prog, ver]
 				end
 			}
-			print " "*Screen.width
+			print " "*Screen.width if @logLevel>20
 		else #onlyExamine
 			logNormal "Examining only #{@config['onlyExamine'].join(', ')}"
 			@config['onlyExamine'].each {|prog|
