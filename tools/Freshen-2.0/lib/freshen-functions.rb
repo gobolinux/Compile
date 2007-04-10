@@ -336,9 +336,11 @@ class Freshen < GoboApplication
 		end
 		dephash = createDepHash(toupdate)
 		return dephash if raw
-		@progs.each {|key, value|
-			getDependencies(key, value) if value && value.set?
-		}
+		if @config['shallow']=='no' # In shallow mode, all applicable programs will have already been considered
+			@progs.each {|key, value|
+				getDependencies(key, value) if value && value.set?
+			}
+		end
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
 			shallowexclude = false
