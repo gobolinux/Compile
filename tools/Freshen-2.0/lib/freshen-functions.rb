@@ -361,6 +361,12 @@ class Freshen < GoboApplication
 			}
 		end
 		
+		@maxVersion.each {|prog, ver|
+			if ver<=@minVersion[prog]
+				logError "Error: Minimum version for #{prog} is incompatible with maximum (#{@minversion[prog]}>=#{ver})."
+			end
+		}
+		
 		if toupdate.include?('Glibc') and Version.new(`uname -r`)<Version.new('2.6.20')
 			self.logError("Warning: Glibc upgrade requires kernel upgrade to at least 2.6.20. Glibc has been deleted from the updates list. Some packages may fail to install because of this.");
 		end
