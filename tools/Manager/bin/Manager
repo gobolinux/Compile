@@ -854,8 +854,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.do(cmds, [ None ])
 	
 	def doNewVersion(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p, v, r, t in self.getSelectedTuples() :
 			assert p and v and t
 			if t == 'tracked' :
@@ -871,8 +870,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.do(cmds, apps)
 
 	def doNewVersionAndCompile(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p and v
 			cmds.append('NewVersion '+p+' '+v+' && '+' nice Compile '+p+' '+v)
@@ -932,9 +930,7 @@ class ManagerUIImpl(ManagerUI) :
 				apps.append(p)
 	
 	def doInstallPackage(self, justDownload = False) :
-		cmds = []
-		apps = []
-		
+		cmds,apps = [],[]
 		for (p,v,r,t) in self.getSelectedTuples() :
 			assert t in ['local_package', 'official_package', 'contrib_package']
 			r = GuessLatest(self.availables[t]['programs'][p][v].keys())
@@ -948,8 +944,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.doInstallPackage(True)
 	
 	def doCompileRecipe(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p
 			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps,False)
@@ -957,8 +952,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.do(cmds, apps)
 	
 	def doFetchRecipe(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p
 			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds,apps, True)
@@ -966,16 +960,14 @@ class ManagerUIImpl(ManagerUI) :
 		self.do(cmds, apps)
 
 	def doDisableProgram(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('DisableProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 
 	def doRemoveProgram(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			assert p and v
 			cmds.append('RemoveProgram '+p+' '+v)
@@ -983,24 +975,21 @@ class ManagerUIImpl(ManagerUI) :
 		self.do(cmds, apps)
 
 	def doSymlinkProgram(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('SymlinkProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
 	def doSymlinkProgramOverwrite(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			cmds.append('SymlinkProgram -c overwrite '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
 	def doEditRecipe(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][r][0])
 			localRecipe = x.read().strip() + '/Recipe'
@@ -1021,8 +1010,7 @@ class ManagerUIImpl(ManagerUI) :
 		f.close()
 		
 	def doCreatePackage(self) :
-		cmds = []
-		apps = []
+		cmds,apps = [],[]
 		for p,v,r,t in self.getSelectedTuples() :
 			if self.configWindow.useDefaultCreatePackageDirectory.isChecked():
 				dest = str(self.configWindow.defaultCreatePackageDirectory.text())
