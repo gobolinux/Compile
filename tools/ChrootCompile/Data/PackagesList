@@ -109,6 +109,8 @@ Eject
 Expat
 GDB
 GMP
+GfxBoot
+Grub
 Htop
 HwData
 ID3Lib
@@ -405,7 +407,6 @@ exit
 # ################################################
 # Some exceptions
 # ################################################
-Grub
 LibStdC++
 Linux-Headers
 OpenOffice
@@ -417,6 +418,7 @@ AbsTK
 BootScripts
 Compile
 ConfigTools
+EnhancedSkel
 GoboHide
 Installer
 LiveCD
@@ -424,3 +426,6 @@ Manager
 Scripts
 
 # Packages to be added
+PCMCIAUtils
+Madwifi-Tools
+Dmraid
