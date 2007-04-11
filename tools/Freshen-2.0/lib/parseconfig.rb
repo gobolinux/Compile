@@ -17,12 +17,13 @@ class GoboParseConfig < Hash
 # 			self = Hash.new
 # 		end
 		inarray = false
-		thisarray = "" #look, I know these are dirty blah blah
+		thisarray = ""
 		file = File.open(filename)
 		file.readlines.each {
 			|line|
 			line.strip!
 			if !line.empty? and line.slice(0,1) != "#"
+				line = line.sub(/#.*$/, '')
 				words = Shellwords.shellwords(line)
 				words[0].gsub!(/\$([a-zA-Z]+)/) {self[$1]}
 				words[0].gsub!(/\$\{([a-zA-Z]+)\}/) {self[$1]}

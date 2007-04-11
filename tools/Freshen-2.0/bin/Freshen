@@ -234,6 +234,9 @@ END_OF_NOTES
 				description = wordwrap(l[14,l.length], 24) # 24 is the space taken by the label
 			end
 		}
+		
+		dependencies = nil
+		dependencies = wordwrap(getDependencies(prog, installed).join(', '), 24)
 
 		# Only produce list of programs that depend on prog if we're at verbose or higher, because
 		# it requires generating the whole tree
@@ -257,6 +260,7 @@ END_OF_NOTES
 		puts "    Installed Version: #{Screen.colour['cyan']}#{installed}#{Screen.colour['normal']}" if installed
 		puts "    Newest Version:    #{nvcol}#{newver}#{Screen.colour['normal']}" if newver
 		puts "    Versions:          #{versionstring}" if versionstring
+		puts "    Dependencies:      #{dependencies}" if dependencies
 		puts "    Dependency of:     #{depof}" if depof
 		puts "    Size:              #{Gobo.smartSize(size)}" if size
 		puts "    Recipe: #{recipefile}" if recipefile
