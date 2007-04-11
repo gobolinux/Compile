@@ -96,6 +96,7 @@ class Freshen < GoboApplication
 	end
 	
 	def getNewestAvailableVersion(prog, fr="unknown package")
+		return if prog.nil?
 		# Remove exceeded maxima from any consideration
 		if @maxVersion[prog]
 			if @recipes[prog]
@@ -128,6 +129,10 @@ class Freshen < GoboApplication
 		else
 			# Try normalising the name
 			np = getTrueCase(prog)
+			if np.nil?
+				logError "Non-existent dependency #{prog} in #{fr}. Skipping. Please consider updating the recipe."
+				return Version.new('0')
+			end
 			if np!=prog
 				self.logVerbose "Normalised dependency in #{fr}: #{prog} should be #{np}"
 				return getNewestAvailableVersion(np)
