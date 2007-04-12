@@ -80,5 +80,5 @@ then
    GrepReplace -R "/Users/testuser" "$homedir"
 fi
 
-usermod -G floppy,audio,users,cdrecord,video $name
+usermod -G floppy,audio,users,console,video $name
 
