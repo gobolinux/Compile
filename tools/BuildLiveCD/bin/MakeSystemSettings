@@ -41,11 +41,11 @@ lp:x:9:
 dialout:x:10:
 audio:x:11:
 nobody:x:12:
-users:x:100:
+console:x:13:gobo
 uucp:x:15
-ftp:x:101:
 fibo:x:21:
-cdrecord:x:102:
+users:x:100:
+ftp:x:101:
 video:x:103:
 sshd:x:104:
 EOF
