@@ -323,12 +323,14 @@ class Freshen < GoboApplication
 			print " "*Screen.width if @logLevel>20
 		else #onlyExamine
 			logNormal "Examining only #{@config['onlyExamine'].join(', ')}"
+			oe = []
 			@config['onlyExamine'].each {|prog|
 				prog = getTrueCase(prog) if !@progs[prog]
 				if !@progs[prog]
 					logError "Removed from list."
 					next
 				end
+				oe.push prog
 				ver = @progs[prog]
 				ver = @recipes[prog].at(-1) if @config['recipes']=='yes' && @recipes[prog] && ver<@recipes[prog].at(-1)
 				ver = @packages[prog].at(-1) if @config['binaries']=='yes' && @packages[prog] && ver<@packages[prog].at(-1)
@@ -338,8 +340,17 @@ class Freshen < GoboApplication
 					toupdate.push [prog, ver]
 				end
 			}
+			@config['onlyExamine'] = oe
 		end
 		dephash = createDepHash(toupdate)
+		if @config['shallow']=='yes'
+			# We have to increment the min versions of all required dependencies so they stay in
+			# no matter what
+			@config['onlyExamine'].each {|prog|
+				@minVersion[prog] = getNewestAvailableVersion(prog)
+				@maxVersion.delete(prog)
+			}
+		end
 		return dephash if raw
 		if @config['shallow']=='no' # In shallow mode, all applicable programs will have already been considered
 			@progs.each {|key, value|
@@ -351,7 +362,7 @@ class Freshen < GoboApplication
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
 			versInUse[x] = nv
 			shallowexclude = false
-			shallowexclude = true if @config['shallow']=='yes' && nv>=@minVersion[x] && !@config['onlyExamine'].include?(x)
+			shallowexclude = true if @config['shallow']=='yes' && @minVersion[x] && nv>=@minVersion[x] && !@config['onlyExamine'].include?(x)
 			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x]) || shallowexclude
 		}
 		toupdate-=@config['exceptButCompatible']
@@ -360,7 +371,7 @@ class Freshen < GoboApplication
 				getDependencies(key, value) if value && value.set?
 			}
 			toupdate.each {|prog|
-				if versInUse[prog]>=@maxVersion[prog]
+				if @maxVersion[prog] && versInUse[prog]>=@maxVersion[prog]
 					logError "Warning: upgrading #{prog} past version #{@maxVersion[prog]} may cause breakage for other installed programs."
 				end
 			}

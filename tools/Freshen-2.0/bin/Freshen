@@ -207,7 +207,7 @@ END_OF_NOTES
 		vslength = 0 # This is used to insert hard line breaks and wordwrap the version list.
 		wrappos = Screen.width-24 # We can't use wordwrap() because of the escape sequences
 		vers.each {|ver|
-			if vslength+ver.to_s.length>wrappos
+			if vslength+ver.to_s.length>=wrappos
 				versionstring+="\n"+" "*23
 				vslength = 0
 			end
