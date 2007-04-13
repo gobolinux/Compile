@@ -22,14 +22,8 @@ done
 workaround=`Temporary_File`
 
 if Quiet which mtail; then
-   { $makecmd "$@" 2>&1
-     echo $? > $workaround
-   } | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
-
-   returnvalue=`cat $workaround`
-   rm -- $workaround
-
-   exit $returnvalue
+   $makecmd "$@" 2>&1 | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
+   exit ${PIPESTATUS[0]}
 else
    Log_Terse "mtail not found. Unable to colorize output."
    $makecmd "$@"
