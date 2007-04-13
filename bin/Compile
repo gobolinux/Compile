@@ -498,11 +498,12 @@ archreciperesources="$archsubdir/Resources"
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    Log_Normal "Checking dependencies..."
-   selecteddeps=`Temporary_File`
-   CheckDependencies --types=recipe --mode=missing \
+   set -o pipefail
+   selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress  "$app" "$versionandrevision" \
-     "recipe" "$recipedir" > $selecteddeps || Die "Aborted."
-   for d_url in `awk '{ print $4 }' < $selecteddeps`
+     "recipe" "$recipedir" | awk '{ print $4 }' ) || Die "Aborted."
+   set +o pipefail
+   for d_url in ${selecteddeps}
    do
       Compile $compileoptions --no-dependencies $d_url || {
          ret=$?
@@ -510,7 +511,6 @@ then
          exit $ret
       }
    done
-   rm $selecteddeps
 fi
 
 ##################################################
