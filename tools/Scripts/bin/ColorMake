@@ -19,8 +19,6 @@ do
     fi
 done
 
-workaround=`Temporary_File`
-
 if Quiet which mtail; then
    $makecmd "$@" 2>&1 | mtail --config="`Find_Conf ColorMake.mtailrc`" -q
    exit ${PIPESTATUS[0]}
