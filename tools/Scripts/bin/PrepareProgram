@@ -55,13 +55,8 @@ function build_change() {
 function color_command() {
    mtailrc=$1
    shift
-   workaround=`Temporary_File`
-   { "$@" 2>&1
-     echo $? > $workaround
-   } | mtail --config=${mtailrc} -q
-   returnvalue=`cat $workaround`
-   rm -- $workaround
-   return $returnvalue
+   "$@" 2>&1 | mtail --config=${mtailrc} -q
+   return ${PIPESTATUS[0]}
 }
 
 make_symlink() {
