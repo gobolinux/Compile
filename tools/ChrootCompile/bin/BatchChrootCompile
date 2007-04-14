@@ -37,6 +37,20 @@ fi
 exec 6<&0
 succeededapps=""
 
+function cleanup() {
+   ! Boolean "no-sign" && [ ! -z "${succeededapps}" ] && {
+   for app in ${succeededapps[@]}
+   do
+      SignProgram Clean/i686/$app--i686.tar.bz2
+   done
+   }
+   # Restore stdin from fd 6
+   exec 0<&6 6<&-
+   exit
+}
+
+trap "cleanup 'Exiting...'" SIGHUP SIGINT SIGTERM
+
 startat="$(Entry start-at)"
 [ ! -z "${startat}" ] && [ -z "$(grep -i ${startat} ${listfile})" ] && Die "${startat} not found in ${listfile}"
 while read i; do
@@ -77,12 +91,4 @@ while read i; do
    fi
 done < ${listfile}
 
-! Boolean "no-sign" && [ ! -z "${succeededapps}" ] && {
-for app in ${succeededapps[@]}
-do
-   SignProgram Clean/i686/$app--i686.tar.bz2
-done
-}
-
-# Restore stdin from fd 6
-exec 0<&6 6<&-
+cleanup
