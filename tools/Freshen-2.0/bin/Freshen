@@ -51,6 +51,12 @@ class Freshen < GoboApplication
 				@config[x] = match[1].to_i*mul
 			end
 		}
+		if !File.exist?(@config['tmpDir'])
+			if !system("mkdir -p #{@config['tmpDir']}")
+				logError "Fatal error: Could not create temporary directory #{@config['tmpDir']}"
+				exit
+			end
+		end
 		addOptionBoolean("upgrades", ["-n"], "Include upgrades#{@config['showUpgrades']=='yes' and ' [default]' or ''}")
 		addOptionBoolean("no-upgrades", ["-N"], "Do not include upgrades#{@config['showUpgrades']=='no' and ' [default]' or ''}")
 		addOptionBoolean("downgrades", ["-d"], "Include downgrades#{@config['showDowngrades']=='yes' and ' [default]' or ''}")
