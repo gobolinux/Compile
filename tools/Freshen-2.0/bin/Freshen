@@ -65,6 +65,7 @@ class Freshen < GoboApplication
 		addOptionBoolean("batch", [], "Batch mode, suitable for chaining into other tools")
 		addOptionBoolean("upgrade-system", ["-U"], "Upgrade entire system, excluding items blocked by -x")
 		addOptionBoolean("shallow", ["-s"], "Include <list> and necessary dependencies only")
+		addOptionBoolean("force", ["-f"], "Force installation of <list>")
 		addOptionEntry("limit", ["-l"], "Limit update list to first <n> packages")
 		addOptionEntry("lower-limit", ["-L"], "Skip the first <n> packages of update list")
 		addOptionEntry("info", ["-i"], "Get information on <program>")
@@ -139,6 +140,8 @@ END_OF_NOTES
 		elsif not @config['except'].length>0
 			@config['onlyExamine'] = ARGV.dup
 		end
+		@config['force'] = 'no';
+		@config['force'] = 'yes' if options('force')
 		@config['shallow'] = options('shallow') ? 'yes' : 'no';
 		@config['emptyTree'] = options('empty-tree')
 		@compileConfig = GoboParseConfig.new("#{@config['goboRoot']}/System/Settings/Compile/Compile.conf")

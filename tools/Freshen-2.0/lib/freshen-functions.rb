@@ -257,9 +257,9 @@ class Freshen < GoboApplication
 				self.logNormal "BinaryPackagesList required, will attempt download to #{rlpath}"
 			end
 		end
-		secs = 0
 		rv = []
 		@getAvailableConfig['officialPackagesLists'].each do |man|
+			secs = 0
 			self.logNormal "Fetching #{man}..."
 			IO.popen("wget -nv -O #{rlpath}.bz2 #{man} 2>&1") { |pipe|
 				while true
@@ -269,6 +269,8 @@ class Freshen < GoboApplication
 					secs+=1
 					if secs>@config['downloadTimeout'].to_i
 						self.logError "Error retrieving packages list"
+						system("kill #{pipe.pid}")
+						File.delete("#{rlpath}.bz2") if File.exist?("#{rlpath}.bz2")
 						break
 					end
 					(print "\015#{' '*Screen.width}\015" or break) if select([pipe],nil,nil,0)
@@ -278,7 +280,7 @@ class Freshen < GoboApplication
 				File.delete(rlpath) if File.exists?(rlpath)
 				system "bunzip2 -f #{rlpath}.bz2"
 				rv+= File.readlines(rlpath)
-				return rv if !@config['fetchAllPackageLists']=='yes'
+				return rv if @config['fetchAllPackageLists']!='yes'
 			end
 		end
 		rv.sort!
@@ -363,7 +365,7 @@ class Freshen < GoboApplication
 			versInUse[x] = nv
 			shallowexclude = false
 			shallowexclude = true if @config['shallow']=='yes' && @minVersion[x] && nv>=@minVersion[x] && !@config['onlyExamine'].include?(x)
-			x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x]) || shallowexclude
+			!(@config['force']=='yes' && @config['onlyExamine'].include?(x)) && (x.nil? || x=="" || (!@config['emptyTree'] && (@progs[x].nil? || nv.nil? || nv<=@progs[x])) || (@maxVersion[x] && nv>=@maxVersion[x]) || shallowexclude)
 		}
 		toupdate-=@config['exceptButCompatible']
 		if @config['shallow']=='yes'
@@ -419,7 +421,6 @@ class Freshen < GoboApplication
 			end
 			
 			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
-				#puts "     XXX 1 for #{prog} #{rver}"
 				return readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
 			end
 		end
