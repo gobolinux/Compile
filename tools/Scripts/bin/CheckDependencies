@@ -138,20 +138,22 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 			if ret :
 				u = ret[0][4]
 		
-		cachedep = global_dependencies_cache_dir+'/'+t+'/'+ u.split('/')[-1]
-		if os.access(cachedep, os.R_OK) :
-			return [ cachedep ]
-
-		if u and not noWeb :
-			temp = u.split('/')
-			dependency_u = string.join(temp[:-1]+['dependencies']+[temp[-1]],'/')
-			if not dependency_u in global_not_found_cache :
-				err = os.system('wget --timeout='+global_wget_timeout+' -q -O '+cachedep+' '+dependency_u)
-				if err == 0:
-					return [ cachedep ]
-				else :
-					global_not_found_cache.append(dependency_u)
-					os.remove(cachedep)
+		if u and t in [ 'official_package', 'contrib_package' ] :
+			cachedep = global_dependencies_cache_dir+'/'+t+'/'+ u.split('/')[-1]
+			if os.access(cachedep, os.R_OK) :
+				return [ cachedep ]
+	
+			if not noWeb :
+				temp = u.split('/')
+				dependency_u = string.join(temp[:-1]+['dependencies']+[temp[-1][:-len('.tar.bz2')]],'/')
+				print dependency_u
+				if not dependency_u in global_not_found_cache :
+					err = os.system('wget --timeout='+global_wget_timeout+' -q -O '+cachedep+' '+dependency_u)
+					if err == 0:
+						return [ cachedep ]
+					else :
+						global_not_found_cache.append(dependency_u)
+						os.remove(cachedep)
 
 	if t == 'recipe' and not noWeb :
 		# gets remote recipe, if no cache was found
@@ -270,7 +272,7 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 	if not global_available_packages_cache :
 		global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], accessWeb=not noWeb)
 
-	available_options = FindPackage(rule['program'], types=acceptable_types, availables=global_available_packages_cache, accessWeb = not noWeb)
+	available_options = FindPackage(rule['program'], types=acceptable_types, availables=global_available_packages_cache, accessWeb=not noWeb, fulllist=True)
 
 	if available_options :
 		for p,v,r,t,u in available_options :
