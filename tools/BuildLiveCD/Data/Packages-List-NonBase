@@ -17,6 +17,7 @@ Cdparanoia-III
 Cyrus-Sasl
 DB
 DVD+RW-Tools
+Dcron
 Device-Mapper
 DosFSTools
 Eject
@@ -114,6 +115,7 @@ LibMCS         # Audacious dependency
 Audacious
 Gimp
 MPlayer
+GParted
 
 # ################################################
 # Firefox and dependencies
