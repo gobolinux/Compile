@@ -100,8 +100,14 @@ def tr(s) :
 	return s
 
 def devToGrub(p) :
-	grub_dev = os.popen("dev2grub.sh "+p)
-	return grub_dev.readline().strip()
+	if p.startswith('/dev/') :
+		p = p[5:]
+	disc = ord(p[2]) - 97
+	try :
+		part = int(p[3:])-1
+		return '(hd%d,%d)'%(disc,part)
+	except :
+		return '(hd%d)'%(disc)
 
 def getSwapPartition() :
 	fdisk_data = os.popen("/sbin/fdisk -l")
