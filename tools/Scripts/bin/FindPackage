@@ -122,7 +122,7 @@ if __name__ == '__main__' :
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
-	validTypes = ['installed', 'local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
+	validTypes = ['installed', 'current', 'local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'all']
 	types = None
 	localdirs = None
 	fulllist = False

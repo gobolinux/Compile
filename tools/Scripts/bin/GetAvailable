@@ -173,7 +173,7 @@ def addToDict(d, p, v, r, u) :
 		d[p][v][r] = []
 	d[p][v][r].append(u)
 
-def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='') :
+def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='', current_only=True) :
 	import os, os.path
 
 	if not d :
@@ -188,6 +188,25 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		p = programs[i]
 
 		if not os.path.isdir(directory+'/'+p):
+			continue
+
+		if current_only :
+			if not os.path.isdir(directory+'/'+p+'/'+'Current'):
+				continue
+			
+			try :
+				v = os.readlink(directory+'/'+p+'/'+'Current').split('/')[-1]
+			except :
+				continue
+			
+			u = directory+'/'+p+'/'+v
+			if os.access(u+'/'+'Resources/Revision', os.R_OK) :
+				f = open(u+'/'+'Resources/Revision')
+				r = f.read().strip()
+				f.close()
+			else :
+				r = default_revision
+			addToDict(d, p,v,r,u)
 			continue
 
 		try :
@@ -326,6 +345,14 @@ def GetAvailable(types, localdirs = None, forceupdate = False, hook = None, avai
 			availables['installed']['programs'] = KeyInsensitiveDict()
 		getUnpackedLocalPackages(path, True, availables['installed']['programs'], default_revision= 'r1')
 
+	if 'current' in types :
+		path = getGoboVariable('goboPrograms')
+		if not availables.has_key('current') or not availables['current'] :
+			availables['current'] = {}
+		if not availables['current'].has_key('programs') or not availables['current']['programs']:
+			availables['current']['programs'] = KeyInsensitiveDict()
+		getUnpackedLocalPackages(path, True, availables['current']['programs'], default_revision= 'r1', current_only=True)
+
 	if 'local_package' in types :
 		if not availables.has_key('local_package') or not availables['local_package'] :
 			availables['local_package'] = {}
@@ -418,7 +445,7 @@ if __name__ == '__main__' :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
 
-	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'installed', 'all']
+	validTypes = ['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked', 'installed', 'current', 'all']
 	types      = [ 'local_package', 'official_package' ]
 	typesChanged = False
 	localdirs = None
