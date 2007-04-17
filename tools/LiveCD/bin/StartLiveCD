@@ -86,6 +86,12 @@ msg "Configuring date and time"
 hwclock --hctosys
 
 ######################################
+# Prepare grub device map file
+######################################
+device_map="/System/Kernel/Boot/grub/device.map"
+[ -e "$device_map" ] || echo quit | grub --device-map "$device_map" --batch &> /dev/null &
+
+######################################
 # Welcome message
 ######################################
 clear
