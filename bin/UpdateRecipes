@@ -65,10 +65,9 @@ else
    do
       lsfile="$getRecipeStoreHttp/RecipeList"
       Log_Normal "Updating recipes from store $getRecipeStoreHttp"
-      tmplsfile=`Temporary_File`
-      Quiet wget $lsfile -O $tmplsfile
+      tmpls=$(wget $lsfile -O - 2>/dev/null)
       
-      cat $tmplsfile | while read recipename
+      for ${recipename} in ${tmpls}
       do
          noext="$recipename"
          noext=${noext%--recipe.tar.bz2}
@@ -87,7 +86,7 @@ else
             $sudo mkdir -p "$compileGetRecipeDir/$packagename/$packageversion"
          fi
       done
-      rm $tmplsfile
+
       if [ "$?" == "0" ] && ! Boolean "thorough"
       then
          break 2
