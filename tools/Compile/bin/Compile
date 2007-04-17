@@ -898,18 +898,11 @@ then
       patch -Np1 -i $i || Die "Failed on patch $i"
    done
 
-   find "$recipedir" -name "*.patch.in" | sort | while read i
+   while read patch
    do
-      Log_Verbose "Converting patch $i..."
-      temppatch=`Temporary_File`
-      (
-         export_marked
-         ApplyVariables -i Compile "$i" > $temppatch
-      )
-      Log_Verbose "Applying patch $temppatch..."
-      patch -Np1 -i $temppatch
-      # rm $temppatch
-  done
+      Log_Verbose "Applying patch generated from ${patch}..."
+      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}")
+   done < <(find "$recipedir" -name "*.patch.in" | sort)
 
    popd &> /dev/null
 fi

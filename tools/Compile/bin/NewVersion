@@ -166,8 +166,7 @@ then
    file="`basename $url`"
    filesize="`Get_Size $compileArchivesDir/$file`"
    filemd5="`Get_MD5 $compileArchivesDir/$file`"
-   tmpfile=`Temporary_File`
-   cat "$newrecipedir/Recipe" | sed "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" > $tmpfile && mv $tmpfile "$newrecipedir/Recipe"
+   sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$newrecipedir/Recipe"
 fi
 
 Log_Normal "Recipe template for $packagename $newversion created"
