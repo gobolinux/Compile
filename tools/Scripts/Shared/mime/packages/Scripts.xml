@@ -1,22 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/x-gobo-i686-package">
-        <sub-class-of type="application/x-bzip-compressed-tar"/>
-        <sub-class-of type="application/x-gobo-package"/>
-        <comment>GoboLinux i686 package</comment>
-    	<glob pattern="*--i686.tar.bz2"/>
-    </mime-type>
-    <mime-type type="application/x-gobo-ppc-package">
-        <sub-class-of type="application/x-bzip-compressed-tar"/>
-        <sub-class-of type="application/x-gobo-package"/>
-        <comment>GoboLinux PPC package</comment>
-    	<glob pattern="*--PPC.tar.bz2"/>
-    	<glob pattern="*--ppc.tar.bz2"/>
-    </mime-type>
     <mime-type type="application/x-gobo-package">
         <sub-class-of type="application/x-bzip-compressed-tar"/>
         <comment>GoboLinux package</comment>
-    	<glob pattern="*--i686.tar.bz2"/>
+        <comment xml:lang="az">GoboLinux paketi</comment>
+        <comment xml:lang="bg">Пакет, формат GoboLinux</comment>
+        <comment xml:lang="cs">Balíček GoboLinuxu</comment>
+        <comment xml:lang="cy">Pecyn GoboLinux</comment>
+        <comment xml:lang="da">GoboLinux-pakke</comment>
+        <comment xml:lang="de">GoboLinux-Paket</comment>
+        <comment xml:lang="el">πακέτο GoboLinux</comment>
+        <comment xml:lang="eo">GoboLinux-pakaĵo</comment>
+        <comment xml:lang="es">Paquete GoboLinux</comment>
+        <comment xml:lang="eu">GoboLinux paketea</comment>
+        <comment xml:lang="fi">GoboLinux-paketti</comment>
+        <comment xml:lang="fr">Paquetage GoboLinux</comment>
+        <comment xml:lang="hu">GoboLinux-csomag</comment>
+        <comment xml:lang="it">Pacchetto GoboLinux</comment>
+        <comment xml:lang="ja">GoboLinux パッケージ</comment>
+        <comment xml:lang="ko">GoboLinux 꾸러미</comment>
+        <comment xml:lang="ms">Pakej GoboLinux</comment>
+        <comment xml:lang="nb">GoboLinux-pakke</comment>
+        <comment xml:lang="nl">GoboLinux-pakket</comment>
+        <comment xml:lang="nn">GoboLinux-pakke</comment>
+        <comment xml:lang="no">GoboLinux-pakke</comment>
+        <comment xml:lang="pl">Pakiet GoboLinuxa</comment>
+        <comment xml:lang="pt">Pacote do GoboLinux</comment>
+        <comment xml:lang="pt_BR">Pacote GoboLinux</comment>
+        <comment xml:lang="ru">пакет GoboLinux</comment>
+        <comment xml:lang="sq">Paketë GoboLinux</comment>
+        <comment xml:lang="sr">GoboLinux пакет</comment>
+        <comment xml:lang="sv">GoboLinux-paket</comment>
+        <comment xml:lang="uk">Пакет GoboLinux</comment>
+        <comment xml:lang="vi">Gói GoboLinux</comment>
+        <comment xml:lang="zh_CN">GoboLinux 软件包</comment>
+        <comment xml:lang="zh_TW">GoboLinux 套件</comment>
+        <glob pattern="*--i686.tar.bz2"/>
     	<glob pattern="*--PPC.tar.bz2"/>
     	<glob pattern="*--ppc.tar.bz2"/>
     </mime-type>
