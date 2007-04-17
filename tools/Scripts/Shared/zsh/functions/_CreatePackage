@@ -1,3 +1,0 @@
-#compdef CreatePackage
-
-_files -W ${goboPrefix}/Programs

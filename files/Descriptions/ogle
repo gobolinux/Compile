@@ -1,5 +1,0 @@
-[Name] Ogle
-[Summary] A DVD player for Solaris, *BSD, and Linux.
-[License] GNU General Public License (GPL)
-[Description] Ogle is a real DVD player that supports DVD menus and navigation. It can access CSS-protected DVDs if you have libdvdcss installed, take screen shots, and view movies in fullscreen mode. It handles angles correctly and automatically uses the correct aspect. You can switch subtitles and audio tracks. It runs on Linux, FreeBSD, NetBSD, OpenBSD, and Solaris.
-[Homepage] http://www.dtek.chalmers.se/~dvd/

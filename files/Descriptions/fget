@@ -1,5 +1,0 @@
-[Name] fget
-[Summary] A minimal HTTP/FTP download utility for boot disks.
-[License] Public Domain
-[Description] fget is a minimal HTTP/FTP download util with IPv4 and IPv6 support. It has been designed with little extra features to make it ideal for boot and rescue disks.
-[Homepage] http://www.fefe.de/fget/

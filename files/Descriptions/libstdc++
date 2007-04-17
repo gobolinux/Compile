@@ -1,2 +1,0 @@
-[Description] The Standard C Library is an ongoing project to implement the ISO 14882 Standard C library as described in chapters 17 through 27 and annex D, as a drop-in replacement for the current (ARM-conformant) library.
-[Homepage] http://gcc.gnu.org/libstdc++/

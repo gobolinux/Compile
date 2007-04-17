@@ -1,5 +1,0 @@
-[Name] Normalize
-[Summary] An audio file volume adjuster.
-[License] GNU General Public License (GPL)
-[Description] Normalize is a tool for adjusting the volume of audio files to a standard volume level. This is useful for things like creating mix CDs and MP3 databases, where different recording levels on different albums can cause the volume to vary greatly from song to song.
-[Homepage] http://www.cs.columbia.edu/~cvaill/normalize/

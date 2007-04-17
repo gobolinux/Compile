@@ -1,3 +1,0 @@
-#!/bin/sh
-
-rm -Rf sbin/debugreiserfs sbin/resize_reiserfs

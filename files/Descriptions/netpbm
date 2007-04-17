@@ -1,5 +1,0 @@
-[Name] Netpbm
-[Summary] The classic image manipulation/conversion graphics utilities.
-[License] Freely Distributable
-[Description] NetPBM (formerly PBMplus) is a package of over 220 programs that convert from one graphics format to another and do simple editing and analysis of images. There are no interactive tools in this package, and nothing that displays graphics of any kind. It is like a non-GUI equivalent of ImageMagick, GIMP, and Adobe Photoshop, etc. Over 100 graphics formats are handled, including JPEG, MPEG, PNG, GIF, TIFF, BMP, XWD, XBM, G3 fax, and special formats used by digital cameras and handheld computers. Over 40 editing functions include scaling, cropping, quantization and dithering, colorizing and uncolorizing, blurring, and dimming. Netpbm programs are often invoked by other programs, for example in CGI scripts that manage web site graphics. It also includes a C function library which helps you write programs to process graphics at a lower level than the Netpbm utilities.
-[Homepage] http://netpbm.sourceforge.net/
