@@ -431,10 +431,6 @@ class Freshen < GoboApplication
 				repo = repo[0, repo.length-12]
 				system("wget -q -O #{@config['tmpDir']}/dependencies-#{prog}--#{ver} #{repo}dependencies/#{prog.downcase}--#{ver}--#{@config['arch']}")
 				break if File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
-				# Addition to handle rename of circa 12/4/07
-				# One or other of these will go when things are resolved.
-				system("wget -q -O #{@config['tmpDir']}/dependencies-#{prog}--#{ver} #{repo}dependencies/#{prog.downcase}--#{ver}--#{@config['arch']}.tar.bz2")
-				break if File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
 			}
 		end
 		if File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
