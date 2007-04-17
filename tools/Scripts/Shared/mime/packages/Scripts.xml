@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-gobo-i686-package">
+        <sub-class-of type="application/x-bzip-compressed-tar"/>
+        <sub-class-of type="application/x-gobo-package"/>
+        <comment>GoboLinux i686 package</comment>
+    	<glob pattern="*--i686.tar.bz2"/>
+    </mime-type>
+    <mime-type type="application/x-gobo-ppc-package">
+        <sub-class-of type="application/x-bzip-compressed-tar"/>
+        <sub-class-of type="application/x-gobo-package"/>
+        <comment>GoboLinux PPC package</comment>
+    	<glob pattern="*--PPC.tar.bz2"/>
+    	<glob pattern="*--ppc.tar.bz2"/>
+    </mime-type>
+    <mime-type type="application/x-gobo-package">
+        <sub-class-of type="application/x-bzip-compressed-tar"/>
+        <comment>GoboLinux package</comment>
+    	<glob pattern="*--i686.tar.bz2"/>
+    	<glob pattern="*--PPC.tar.bz2"/>
+    	<glob pattern="*--ppc.tar.bz2"/>
+    </mime-type>
+</mime-info>
