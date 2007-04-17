@@ -173,7 +173,7 @@ function check_dir() {
             }
          }
          ;;
-      i686|ppc|arm|sh4)
+      i686|ppc|arm|sh4|x86_64)
          [ "$1" = "root" ] && {
             arches=("${arches[@]}" $file)
          } || {
