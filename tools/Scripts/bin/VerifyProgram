@@ -49,11 +49,10 @@ if [ -f "$(Arg 1)" ]
 then
    Log_Normal "Uncompressing package..."
    tar -C $goboTemp -jxf "$(Arg 1)"
-   package=`echo "$(Arg 1)" | sed 's,\(.*\)--\(.*\)--.*,\1,g'`
-   versionandrevision=`echo "$(Arg 1)" | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
+   package=$(echo "$(basename $(Arg 1))" | sed 's,\(.*\)--\(.*\)--.*,\1,g')
+   versionandrevision=`echo "$(basename $(Arg 1))" | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
    version=`String_Version "$versionandrevision"`
    basedir=$goboTemp
-   appname=$basedir/$package/$version
 else
    package=`GuessProgramCase $(Arg 1) $(Arg 2)`
    if [ "$2" ]
@@ -61,7 +60,6 @@ else
    else version=`Get_Version "$package" "Current"`
    fi
    basedir=$goboPrograms
-   appname=$package
 fi
 
 quiet=""
@@ -72,9 +70,8 @@ prefix="$basedir/$package/$version"
 Is_Directory "$basedir/$package" || Die "Package $package does not exist."
 Is_Empty "$version" && Die "Couldn't find a proper version for $package."
 Is_Directory "$prefix" || Die "$package version $version is not a valid package."
-cd "$prefix"
 
-FileHash_loc="Resources/FileHash"
+FileHash_loc="${prefix}/Resources/FileHash"
 FileHash_sig="${FileHash_loc}.sig"
 
 if Exists "$HOME/.gnupg/pubring.gpg"
@@ -117,7 +114,7 @@ fi
 if Exists "${FileHash_loc}"
 then
    Boolean "quiet" || Log_Normal "Verifying FileHash..."
-   output=`Check_FileHash "$appname" "$version" "Resources/FileHash"`
+   output=$(Check_FileHash "${prefix}" "${FileHash_loc}")
    if Failed
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"

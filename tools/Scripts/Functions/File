@@ -177,9 +177,11 @@ function Check_FileSig() {
 function Check_FileHash() {
 ### python check_filehashes CHANGELOG
 # 10/10/2004 - [calica] First version
-   Parameters "$@" program version hash_file
+   Parameters "$@" prefix hash_file
+   cleanhashfilename=$(echo $hash_file | sed s,$prefix\/*,,g)
    local rtn
-   $sudo_exec ListProgramFiles --files "$program" "$version" | grep -v "$hash_file" | $sudo_exec python -c """#
+   Quiet pushd $prefix
+   $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$cleanhashfilename" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
 hashfile='$hash_file'
