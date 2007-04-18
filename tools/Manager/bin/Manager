@@ -3,7 +3,7 @@
 # GoboLinux Manager
 #
 #
-# (C) 2004-2005 Andre Detsch. Released under the GNU GPL.
+# (C) 2004-2007 Andre Detsch. Released under the GNU GPL.
 #          detsch at gobolinux.org
 #
 # PyQT based front-end to easy the task of managing the installed packages
@@ -47,101 +47,93 @@ officialBinaryIcon = 'ark.png'
 contribBinaryIcon  = 'ark_grey.png'
 trackedIcon        = 'xmag.png'
 
-class ManagerUIImpl(ManagerUI) :
+class ManagerUIImpl(ManagerUI):
+	
 	initialized = False
 	
-	def selectAllOfficialPackages(self) :
-		self.selectAll(self.availables['official_package']['pixmap'])
-	def selectAllLocalPackages(self) :
-		self.selectAll(self.availables['local_package']['pixmap'])
-	def selectAllContributedPackages(self) :
-		self.selectAll(self.availables['contrib_package']['pixmap'])
-	def selectAllTracked(self) :
-		self.selectAll(self.availables['tracked']['pixmap'])
-	def selectAllRecipes(self) :
-		self.selectAll(self.availables['recipe']['pixmap'])
-	def selectAllInstalledCurrent(self) :
-		self.selectAll(currentVersionPixmap)
-	def selectAllInstalledOther(self) :
-		self.selectAll(otherVersionPixmap)
-	def selectAllInstalledUnlinked(self) :
-		self.selectAll(unlinkedVersionPixmap)
+	def selectAllOfficialPackages(self):    self.selectAll(self.availables['official_package']['pixmap'])
+	def selectAllLocalPackages(self):       self.selectAll(self.availables['local_package']['pixmap'])
+	def selectAllContributedPackages(self): self.selectAll(self.availables['contrib_package']['pixmap'])
+	def selectAllTracked(self):             self.selectAll(self.availables['tracked']['pixmap'])
+	def selectAllRecipes(self):             self.selectAll(self.availables['recipe']['pixmap'])
+	def selectAllInstalledCurrent(self):    self.selectAll(currentVersionPixmap)
+	def selectAllInstalledOther(self):      self.selectAll(otherVersionPixmap)
+	def selectAllInstalledUnlinked(self):   self.selectAll(unlinkedVersionPixmap)
 
-	def selectAll(self, icon) :
+	def selectAll(self, icon):
 		pList = self.getCurrentList()
 		i = QListViewItemIterator(pList) 
-		while True :
+		while True:
 			c = i.current()
-			if not c :
+			if not c:
 				break
-			if c.pixmap(0) and c.pixmap(0).serialNumber() == icon.serialNumber() :
+			if c.pixmap(0) and c.pixmap(0).serialNumber() == icon.serialNumber():
 				c.setSelected(True)
 				c.repaint()
 			i += 1
 		
-	def rescan(self) :
-		if not self.rescaning :
+	def rescan(self):
+		if not self.rescaning:
 			self.rescaning = 1
 			self.forceAvailablesRescan(False)
 			self.forceInstalledRescan(False)
 			self.rescaning = 0
 			self.refresh()
 		
-	def forceAvailablesRescan(self, refresh=True) :
+	def forceAvailablesRescan(self, refresh=True):
 		self.needToUpdateAvailables = 1
 		self.updateIfNeeded()
-		if refresh :
+		if refresh:
 			self.refresh()
 	
-	def forceInstalledRescan(self, refresh=True) :
+	def forceInstalledRescan(self, refresh=True):
 		self.needToUpdateInstalled = 1
 		self.updateIfNeeded()
-		if refresh :
+		if refresh:
 			self.refresh()
 
-	def refreshIfFiltering(self) :
-		if self.applyFilter.isOn() :
+	def refreshIfFiltering(self):
+		if self.applyFilter.isOn():
 			self.refresh()
 		
-	def refresh(self) : #
+	def refresh(self): #
 		(p,v,r,t) = self.getCurrentTuple()
 		self.updateVisualTree()
 		self.showVisualTree()
-		if p :
+		if p:
 			item = self.getCurrentList().findItem(p, 0)
-			if item :
+			if item:
 				self.getCurrentList().ensureItemVisible(item)
-			else :
+			else:
 				self.pList.ensureVisible(0, 0)
 				self.pList_2.ensureVisible(0, 0)
 				self.pList_3.ensureVisible(0, 0)
-		else :
+		else:
 			self.pList.ensureVisible(0, 0)
 			self.pList_2.ensureVisible(0, 0)
 			self.pList_3.ensureVisible(0, 0)
 	
-	def deleteCommand(self) : #
-		try :
+	def deleteCommand(self): #
+		try:
 			del(self.programsAtQueue[str(self.commandsQueue.text(self.commandsQueue.currentItem()))])
-		except :
+		except:
 			pass
 		self.commandsQueue.removeItem(self.commandsQueue.currentItem())
 		self.enableOrDisableQueueActions()
 		self.autoSaveQueue()
 	
-	def clearCommands(self) : #
+	def clearCommands(self): #
 		self.commandsQueue.clear()
 		self.enableOrDisableQueueActions()
 		self.autoSaveQueue()
 		
-	def saveCommands(self) : #
+	def saveCommands(self): #
 		filename = QFileDialog.getSaveFileName()
-		
-		if not filename :
+		if not filename:
 			return
 		filename = str(filename)
 		
-		if os.access(filename, os.F_OK) :
+		if os.access(filename, os.F_OK):
 			resp = QMessageBox.warning(self, 'Save commands', 'File '+filename+' exists.\nOverwrite?', 'Yes', 'No')
 			if resp != 0:
 				return
@@ -151,22 +143,22 @@ class ManagerUIImpl(ManagerUI) :
 		f.write(s)
 		f.close()
 		
-	def getQueue(self) :
+	def getQueue(self):
 		ret = ''
 		cmds = []
-		for i in range(self.commandsQueue.count()) :
+		for i in range(self.commandsQueue.count()):
 			cmds.append(str(self.commandsQueue.text(i)))
-		for cmd in cmds :
+		for cmd in cmds:
 			ret += cmd+' #'+ str(self.programsAtQueue[cmd]) +'\n'
 		return ret
 		
-	def openCommands(self) : #
-		filename =  QFileDialog.getOpenFileName()
-		if not filename :
+	def openCommands(self): #
+		filename = QFileDialog.getOpenFileName()
+		if not filename:
 			return
 		filename = str(filename)
 		
-		if not os.access(filename, os.R_OK) :
+		if not os.access(filename, os.R_OK):
 			resp = QMessageBox.warning(self, 'Open commands', 'File '+filename+' not found.', 'Ok')
 		
 		f = open(filename)
@@ -174,96 +166,96 @@ class ManagerUIImpl(ManagerUI) :
 		f.close()
 		self.setQueue(s)
 		
-	def setQueue(self, commands) :
+	def setQueue(self, commands):
 		cmds=[]
-		for cmd in commands.split('\n') :
+		for cmd in commands.split('\n'):
 			c = cmd.strip()
-			if c :
+			if c:
 				cmds.append(c)
 		
 		self.commandsQueue.clear()
-		for cmd in cmds :
-			if cmd.find('#') > -1 :
+		for cmd in cmds:
+			if cmd.find('#') > -1:
   				self.programsAtQueue[cmd.split('#')[0]] = cmd.split('#')[1]
 				self.commandsQueue.insertItem(cmd.split('#')[0])
-			else :
+			else:
 				self.programsAtQueue[cmd] = "<BLOCK>"
 				self.commandsQueue.insertItem(cmd)
 		self.enableOrDisableQueueActions()
 		self.autoSaveQueue()
 	
-	def editCommandAtQueue(self, item = None) :
-		if not item :
+	def editCommandAtQueue(self, item=None):
+		if not item:
 			item = self.commandsQueue.selectedItem()
-			if not item :
+			if not item:
 				return
 		
 		old = str(item.text())
-		new,ok = QInputDialog.getText('Edit command', '',  QLineEdit.Normal, old)
-		if ok :
+		new,ok = QInputDialog.getText('Edit command', '', QLineEdit.Normal, old)
+		if ok:
 			i = self.commandsQueue.index(item)
 			self.commandsQueue.removeItem(i)
 			self.commandsQueue.insertItem(str(new), i)
 		self.autoSaveQueue()
 
-	def showConfigurationWindow(self) : #
-		self.connect(self.configWindow.okButton,SIGNAL("clicked()"),self.saveSettings)
-		self.connect(self.configWindow.cancelButton,SIGNAL("clicked()"),self.readSettings)
+	def showConfigurationWindow(self): #
+		self.connect(self.configWindow.okButton, SIGNAL("clicked()"), self.saveSettings)
+		self.connect(self.configWindow.cancelButton, SIGNAL("clicked()"), self.readSettings)
 		self.configWindow.show()
 	
-	def loadPreviousQueue(self) :
+	def loadPreviousQueue(self):
 		self.setQueue(str(self.settings.readEntry('/options/Manager/CommandsQueue', '')[0]))
 	
-	def autoSaveQueue(self) :
+	def autoSaveQueue(self):
 		self.settings.writeEntry('/options/Manager/CommandsQueue', self.getQueue())
 	
-	def writeSetting(self, widget) :
+	def writeSetting(self, widget):
 		t = str(widget).split()[0][1:]
 		n = widget.name()
-		if t == 'qt.QLineEdit' :
+		if t == 'qt.QLineEdit':
 			self.settings.writeEntry('/options/Manager/'+n, widget.text())
-		elif t == 'qt.QCheckBox' :
+		elif t == 'qt.QCheckBox':
 			self.settings.writeEntry('/options/Manager/'+n, widget.isChecked())
-		elif t == 'qt.QAction' :
+		elif t == 'qt.QAction':
 			self.settings.writeEntry('/options/Manager/'+n, widget.isOn())
-		elif t == 'qt.QSpinBox' :
+		elif t == 'qt.QSpinBox':
 			self.settings.writeEntry('/options/Manager/'+n, widget.value())
-		else :
+		else:
 			print 'Invalid type:',widget
 
-	def readSetting(self, widget, default = False) :
+	def readSetting(self, widget, default = False):
 		t = str(widget).split()[0][1:]
 		n = widget.name()
-		if t == 'qt.QLineEdit' :
-			if not default :
+		if t == 'qt.QLineEdit':
+			if not default:
 				default = ''
 			widget.setText(self.settings.readEntry('/options/Manager/'+n, default)[0])
-		elif t == 'qt.QCheckBox' :
+		elif t == 'qt.QCheckBox':
 			widget.setChecked(self.settings.readBoolEntry('/options/Manager/'+n, default)[0])
-		elif t == 'qt.QAction' :
+		elif t == 'qt.QAction':
 			widget.setOn(self.settings.readBoolEntry('/options/Manager/'+n, default)[0])
-		elif t == 'qt.QSpinBox' :
+		elif t == 'qt.QSpinBox':
 			widget.setValue(self.settings.readNumEntry('/options/Manager/'+n, default)[0])
-		else :
+		else:
 			print 'Invalid type:',widget
 	
-	def resetSetting(self, widget, default = False) :
+	def resetSetting(self, widget, default = False):
 		t = str(widget).split()[0][1:]
 		n = widget.name()
-		if t == 'qt.QLineEdit' :
-			if not default :
+		if t == 'qt.QLineEdit':
+			if not default:
 				default = ''
 			widget.setText(default)
-		elif t == 'qt.QCheckBox' :
+		elif t == 'qt.QCheckBox':
 			widget.setChecked(default)
-		elif t == 'qt.QAction' :
+		elif t == 'qt.QAction':
 			widget.setOn(default)
-		elif t == 'qt.QSpinBox' :
+		elif t == 'qt.QSpinBox':
 			widget.setValue(default)
-		else :
+		else:
 			print 'Invalid type:',widget
 		
-	def getSettings(self) :
+	def getSettings(self):
 		return [
 		(self.configWindow.useDefaultCreatePackageDirectory, False),
 		(self.configWindow.defaultCreatePackageDirectory,    '/Depot/Packages'),
@@ -287,26 +279,28 @@ class ManagerUIImpl(ManagerUI) :
 		(self.hideInstalledAction,                           False)
 		]
 		
-	def saveSettings(self, refresh=True) : #
+	def saveSettings(self, refresh=True): #
 		for item, default in self.getSettings():
 			self.writeSetting(item)
-		if refresh :
+		if refresh:
 			self.forceAvailablesRescan()
 			self.updateLoggersWindow()
 		
-	def readSettings(self) : #
+	def readSettings(self): #
 		for item, default in self.getSettings():
 			self.readSetting(item, default)
 	
-	def resetSettings(self) :
+	def resetSettings(self):
 		for item, default in self.getSettings():
 			self.resetSetting(item, default)
 		self.forceAvailablesRescan()
 		
-	def getAvailableWrapper(self, forceUpdate = False) :
-		return GetAvailable(['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked'], None, forceUpdate, graphicalProgressHook, self.availables, accessWeb = (not self.configWindow.noWeb.isChecked()), doNotUpdate = (self.availables != None))
+	def getAvailableWrapper(self, forceUpdate=False):
+		return GetAvailable(['local_package', 'official_package', 'recipe', 'contrib_package', 'tracked'],
+	                            None, forceUpdate, graphicalProgressHook, self.availables,
+		                    accessWeb = (not self.configWindow.noWeb.isChecked()), doNotUpdate = (self.availables != None))
 		
-	def init(self) :
+	def init(self):
 		self.vSplit.setSizes([240, 400])
 		self.hSplit.setSizes([400, 200])
 	
@@ -322,7 +316,8 @@ class ManagerUIImpl(ManagerUI) :
 		self.needToUpdateInstalled  = 1
 		self.needToUpdateAvailables = 0
 	
-		self.installedProgramActions = [self.symlinkProgramAction, self.symlinkProgramOverwriteAction, self.removeProgramAction, self.disableProgramAction, self.createPackageAction]
+		self.installedProgramActions = [self.symlinkProgramAction, self.symlinkProgramOverwriteAction, self.removeProgramAction,
+		                                self.disableProgramAction, self.createPackageAction]
 		
 		self.visualTree = None
 		
@@ -343,16 +338,17 @@ class ManagerUIImpl(ManagerUI) :
 		
 		self.availables['recipe']['pixmap']   = QPixmap(iconsDir+'/'+recipeIcon)
 		self.availables['recipe']['show']     = self.show_recipe.isOn 
-		self.availables['recipe']['actions']  = [self.compileRecipeAction, self.fetchRecipeAction, self.newVersionAction, self.doEditRecipeAction]
+		self.availables['recipe']['actions']  = [self.compileRecipeAction, self.fetchRecipeAction, self.newVersionAction,
+		                                         self.doEditRecipeAction]
 		
 		self.availables['tracked']['pixmap']  = QPixmap(iconsDir+'/'+trackedIcon)
 		self.availables['tracked']['show']    = self.show_tracked.isOn 
 		self.availables['tracked']['actions'] = [self.newVersionAction] #, self.newVersionAndCompileAction]
 		
 		self.allActions = self.installedProgramActions[:]
-		for t in self.availables.keys() :
-			for a in self.availables[t]['actions'] :
-				if not a in self.allActions :
+		for t in self.availables.keys():
+			for a in self.availables[t]['actions']:
+				if not a in self.allActions:
 					self.allActions.append(a)
 
 		self.settings = QSettings()
@@ -374,7 +370,7 @@ class ManagerUIImpl(ManagerUI) :
 		self.genericEditor = GenericEditor(modal=1)
 		self.initialized = True
 	
-	def prepareLoggersWindow(self) :
+	def prepareLoggersWindow(self):
 		self.cmdDict = {}
 		self.cmdDict["Compilation"] =  r"((Compile(?! -B))|(CreatePackage))"
 		self.cmdDict["Download"]    =  r"((InstallPackage -I)|(Compile -B))"
@@ -388,8 +384,8 @@ class ManagerUIImpl(ManagerUI) :
 		t = self.cmdDict.keys()
 		t.sort()
 		
-		for cmdType in t :
-			for i in range(self.threasNumberDict[cmdType]) :
+		for cmdType in t:
+			for i in range(self.threasNumberDict[cmdType]):
 				name = cmdType + '-' + str(i+1)
 				self.runningModules[name] = {}
 				self.runningModules[name]["name"] = name
@@ -398,25 +394,25 @@ class ManagerUIImpl(ManagerUI) :
 				self.runningModules[name]["inverse_regex"] = (cmdType == "Other")
 				self.runningModules[name]["running"]  = False
 	
-	def updateLoggersWindow(self) :
+	def updateLoggersWindow(self):
 		self.threasNumberDict = {}
 		self.threasNumberDict["Compilation"] =  self.configWindow.threadsCPU.value()
 		self.threasNumberDict["Download"]    =  self.configWindow.threadsBandwidth.value()
 		self.threasNumberDict["Other"]       =  self.configWindow.threadsOther.value()
 		
-		for name in self.runningModules.keys() :
+		for name in self.runningModules.keys():
 			t = name.split('-')[0]
 			n = int(name.split('-')[1])
-			if self.threasNumberDict[t] < n :
+			if self.threasNumberDict[t] < n:
 				self.runningModules[name]["logger"].remove()
 				del self.runningModules[name]
-						
+
 		t = self.cmdDict.keys()
 		t.sort()
-		for cmdType in t :
-			for i in range(self.threasNumberDict[cmdType]) :
+		for cmdType in t:
+			for i in range(self.threasNumberDict[cmdType]):
 				name = cmdType + '-' + str(i+1)
-				if not self.runningModules.has_key(name) or not self.runningModules[name] :
+				if not self.runningModules.has_key(name) or not self.runningModules[name]:
 					self.runningModules[name] = {}
 					self.runningModules[name]["name"] = name
 					self.runningModules[name]["logger"] = Logger(name, self.loggers)
@@ -425,88 +421,90 @@ class ManagerUIImpl(ManagerUI) :
 					self.runningModules[name]["running"]  = False
 	
 	
-	def doUpdateCache(self) : #
-		for t in self.availables.keys() :
+	def doUpdateCache(self): #
+		for t in self.availables.keys():
 			self.availables[t]['programs'] = {}
 		self.getAvailableWrapper(True)
 		
-	def getCurrentList(self) :
-		if self.modeTab.currentPageIndex() == 1 :
+	def getCurrentList(self):
+		if self.modeTab.currentPageIndex() == 1:
 			pList = self.pList_2
-		elif self.modeTab.currentPageIndex() == 2 :
+		elif self.modeTab.currentPageIndex() == 2:
 			pList = self.pList_3
-		else :
+		else:
 			pList = self.pList
 		return pList
 			
-	def getTypeOf(self, item) :
-		if not item or not item.pixmap(0) :
+	def getTypeOf(self, item):
+		if not item or not item.pixmap(0):
 			return ''
 		serial = item.pixmap(0).serialNumber()
-		for t in self.availables.keys() :
-			if self.availables[t]['pixmap'] and self.availables[t]['actions'] and serial == self.availables[t]['pixmap'].serialNumber() :
+		for t in self.availables.keys():
+			if self.availables[t]['pixmap'] and self.availables[t]['actions'] and \
+			                   serial == self.availables[t]['pixmap'].serialNumber():
 				return t
-		if serial in [ currentVersionPixmap.serialNumber(), unlinkedVersionPixmap.serialNumber(), otherVersionPixmap.serialNumber() ] :
+		if serial in [currentVersionPixmap.serialNumber(), unlinkedVersionPixmap.serialNumber(),
+		                                                      otherVersionPixmap.serialNumber()]:
 			return 'installed'
-		else :
+		else:
 			return ''
 	
-	def getValidActions(self) :
+	def getValidActions(self):
 		tuples = self.getSelectedTuples()
-		if not tuples :
+		if not tuples:
 			return []
 
 		# list copying
 		selectedActions = self.allActions[:]
-		for p,v,r,t in tuples :
+		for p,v,r,t in tuples:
 			if not selectedActions or not t:
 				return
 
-			if t == 'installed' :
+			if t == 'installed':
 				l = self.installedProgramActions
-			else :
+			else:
 				# quick hack: only tracked that already have recipes can be 'NewVersioned'
-				if t != 'tracked' or self.availables['recipe']['programs'].has_key(p) :
+				if t != 'tracked' or self.availables['recipe']['programs'].has_key(p):
 					l = self.availables[t]['actions']
-				else :
+				else:
 					l = []
 			
 			toRemove = []
-			for i in selectedActions :
-				if not i in l :
+			for i in selectedActions:
+				if not i in l:
 					toRemove.append(i)
-			for i in toRemove :
+			for i in toRemove:
 				selectedActions.remove(i)
 		
 		return selectedActions
 	
 	
-	def showProgramsMenu(self, item, point) :
+	def showProgramsMenu(self, item, point):
 		selectedActions = self.getValidActions()
-		if not selectedActions :
+		if not selectedActions:
 			return
 		menu = QPopupMenu(self)
 		for action in selectedActions:
 			action.addTo(menu)
 		menu.popup(point)
 
-	def updateIfNeeded(self) :
-		if not self.initialized :
+	def updateIfNeeded(self):
+		if not self.initialized:
 			return
 		
-		if self.needToUpdateInstalled :
+		if self.needToUpdateInstalled:
 			temp = GetInstalled(detectUnlinked=self.detectUnlinkedAction.isOn(), callback=graphicalProgressHook)
-			if temp or not self.installed :
+			if temp or not self.installed:
 				self.installed = temp
 			self.needToUpdateInstalled = 0
-
-		if self.needToUpdateAvailables :
-			for t in self.availables.keys() :
+			
+		if self.needToUpdateAvailables:
+			for t in self.availables.keys():
 				self.availables[t]['programs'] = {}
 			self.getAvailableWrapper()
 			self.needToUpdateAvailables = 0
 
-	def showVisualTree(self) :
+	def showVisualTree(self):
 		pList = self.getCurrentList()
 			
 		before = int(pList.contentsY())
@@ -514,16 +512,16 @@ class ManagerUIImpl(ManagerUI) :
 
 		programs = caseinsensitive_sort(self.visualTree.keys())
 		programs.reverse()
-		for p in programs :
+		for p in programs:
 			pp = QListViewItem(pList, p)
 			pp.setPixmap(0, openProgramPixmap)
 			pp.setSelectable(False)
 			pList.insertItem(pp)
 			pp.setOpen(1)
 			x = pp
-			versions = GuessLatest(self.visualTree[p],returnList=1)
+			versions = GuessLatest(self.visualTree[p], returnList=1)
 			versions.reverse()
-			for (v,pixmap) in versions :
+			for (v,pixmap) in versions:
 				vv = QListViewItem(pList, v)
 				vv.setPixmap(0, pixmap)
 				x.insertItem(vv)
@@ -533,156 +531,157 @@ class ManagerUIImpl(ManagerUI) :
 	#
 	# Updates self.visualTree, that represents the items at package list 
 	#
-	def updateVisualTree(self) :
+	def updateVisualTree(self):
 		self.visualTree = KeyInsensitiveDict()
 		installed = self.installed
-		for p in installed.keys() :
-			if self.hideInstalledAction.isOn() :
+		for p in installed.keys():
+			if self.hideInstalledAction.isOn():
 				break
 				
 			versions  = installed[p]['versions']
 			currents  = installed[p]['currents']
 			unlinkeds = installed[p]['unlinkeds']
 			
-			if self.getMode() == 'duplicated' and len(versions) < 2 :
+			if self.getMode() == 'duplicated' and len(versions) < 2:
 				continue
 
 			latestInstalled = GuessLatest(versions)
 			add = 0
-			if self.getMode() == 'outdated' :
+			if self.getMode() == 'outdated':
 				all_versions = [latestInstalled]
 
-				for t in self.availables.keys() :
-					if self.availables[t]['show']() and self.availables[t]['programs'].has_key(p) :
+				for t in self.availables.keys():
+					if self.availables[t]['show']() and self.availables[t]['programs'].has_key(p):
 						all_versions = all_versions + self.availables[t]['programs'][p].keys()
 
-				if GuessLatest(all_versions) != latestInstalled :
+				if GuessLatest(all_versions) != latestInstalled:
 					add = 1
 
-			else :
+			else:
 				add = 1
 
-			if add and self.applyFilter.isOn() :
-				if p.lower().find(str(self.filterString.text()).lower()) == -1 :
+			if add and self.applyFilter.isOn():
+				if p.lower().find(str(self.filterString.text()).lower()) == -1:
 					add = 0
 					
-			if add :
-				if not self.visualTree.has_key(p) :
+			if add:
+				if not self.visualTree.has_key(p):
 					self.visualTree[p] = []
 
-				for v in versions :
-					if v in unlinkeds :
+				for v in versions:
+					if v in unlinkeds:
 						self.visualTree[p].append((v, unlinkedVersionPixmap))
 					elif v in currents:
 						self.visualTree[p].append((v, currentVersionPixmap))
-					else :
+					else:
 						self.visualTree[p].append((v, otherVersionPixmap))
 
 		added = map(string.lower, self.installed.keys())
 		toAdd = []
-		if self.getMode() == 'all' :
-			for t in self.availables.keys() :
-				if self.availables[t]['show']() : 
+		if self.getMode() == 'all':
+			for t in self.availables.keys():
+				if self.availables[t]['show']():
 					l = [i for i in self.availables[t]['programs'].keys() if i.lower() not in added ]
 					
-					if self.applyFilter.isOn() :
-						l = [i for i in l if i.lower().find(str(self.filterString.text()).lower()) > -1 ]
+					if self.applyFilter.isOn():
+						l = [i for i in l if i.lower().find(str(self.filterString.text()).lower()) > -1]
 					
 					added = added + map(string.lower, l)
 					toAdd = toAdd + l
 
-		if self.getMode() == 'duplicated' :
+		if self.getMode() == 'duplicated':
 			return
 
-		for p in toAdd + self.visualTree.keys() :
-			if self.hideInstalledAction.isOn() and self.installed.has_key(p) :
+		for p in toAdd + self.visualTree.keys():
+			if self.hideInstalledAction.isOn() and self.installed.has_key(p):
 				continue
 			
-			if not self.visualTree.has_key(p) :
+			if not self.visualTree.has_key(p):
 				self.visualTree[p] = []
 
-			for t in self.availables.keys() :
-				if self.availables[t]['show']() and self.availables[t]['programs'].has_key(p) :
-					if self.availables[t]['pixmap'] :
+			for t in self.availables.keys():
+				if self.availables[t]['show']() and self.availables[t]['programs'].has_key(p):
+					if self.availables[t]['pixmap']:
 						v = GuessLatest(self.availables[t]['programs'][p].keys())
 						r = GuessLatest(self.availables[t]['programs'][p][v].keys())
 						
 						if self.showOutdatedAvailableAction.isOn():
-							for i in self.availables[t]['programs'][p].keys() :
-								self.visualTree[p].append((i,self.availables[t]['pixmap'] ))
+							for i in self.availables[t]['programs'][p].keys():
+								self.visualTree[p].append((i,self.availables[t]['pixmap']))
 						
-						elif not self.installed.has_key(p) :
+						elif not self.installed.has_key(p):
 							self.visualTree[p].append((Join_Version_Revision(v,r),self.availables[t]['pixmap']))
 						
-						elif GuessLatest([v, GuessLatest(self.installed[p]['versions'])]) != GuessLatest(self.installed[p]['versions']) :
+						elif GuessLatest([v, GuessLatest(self.installed[p]['versions'])]) != \
+						                             GuessLatest(self.installed[p]['versions']):
 							self.visualTree[p].append((Join_Version_Revision(v,r),self.availables[t]['pixmap']))
 
-	def getTypeOfPixmap(self, px) :
+	def getTypeOfPixmap(self, px):
 		#TODO: complete this list
-		for t in self.availables.keys() :
+		for t in self.availables.keys():
 			if self.availables[t]['pixmap'].serialNumber() ==  px.serialNumber():
 				return t
 		return 'installed'
 		
-	def getSelectedTuples(self) :
-		i = QListViewItemIterator(self.getCurrentList()) 
+	def getSelectedTuples(self):
+		i = QListViewItemIterator(self.getCurrentList())
 		l = []
-		while True :
+		while True:
 			c = i.current()
-			if not c :
+			if not c:
 				break
-			if c.isSelected() :
-				try :
+			if c.isSelected():
+				try:
 					p,v,r = (str(c.parent().text(0)),)+Split_Version_Revision(str(c.text(0)))
 					l.append((p.strip(),v.strip(),r.strip(),self.getTypeOfPixmap(c.pixmap(0))))
-				except :
+				except:
 					p,v,r = str(c.text(0)), '', ''
 					l.append((p.strip(),v.strip(),r.strip(),self.getTypeOfPixmap(c.pixmap(0))))
 			i += 1
 		return l
 	
-	def getCurrentTuple(self) :
+	def getCurrentTuple(self):
 		c = self.getCurrentList().currentItem()
-		try :
+		try:
 			select = c and (c.isSelected() or c.text(0) != self.getCurrentList().lastItem().parent().text(0))
-		except :
+		except:
 			select = c
-		if select :
-			try :
+		if select:
+			try:
 				t = self.getTypeOfPixmap(c.pixmap(0))
-			except :
+			except:
 				t = 'program'
-			try :
+			try:
 				p,v,r = (str(c.parent().text(0)),)+Split_Version_Revision(str(c.text(0)))
 				return p.strip(),v.strip(),r.strip(),t
-			except :
+			except:
 				p,v,r = str(c.text(0)), '', ''
 				return p.strip(),v.strip(),r.strip(),t
 		else:
 			return "","","",""
 
-	def getMode(self) :
-		if self.modeTab.currentPageIndex() == 1 :
+	def getMode(self):
+		if self.modeTab.currentPageIndex() == 1:
 			return 'outdated'
-		elif self.modeTab.currentPageIndex() == 2 :
+		elif self.modeTab.currentPageIndex() == 2:
 			return 'duplicated'
-		else :
+		else:
 			return 'all'
 
-	def adjustCommandsMenu(self) :
+	def adjustCommandsMenu(self):
 		selectedActions = self.getValidActions()
-		for i in range(self.Actions.count()-1, 2, -1) :
+		for i in range(self.Actions.count()-1, 2, -1):
 			self.Actions.removeItemAt(i)
-		if not selectedActions :
+		if not selectedActions:
 			return
-		for action in selectedActions :
+		for action in selectedActions:
 			action.addTo(self.Actions)
 	
-	def showCommandsQueueMenu(self, item, point) :
+	def showCommandsQueueMenu(self, item, point):
 		self.Queue.popup(point)
 	
-	def listClicked(self, item) :
-		if not item :
+	def listClicked(self, item):
+		if not item:
 			return
 		self.adjustCommandsMenu()
 		self.description.clear()
@@ -692,14 +691,14 @@ class ManagerUIImpl(ManagerUI) :
 		p,v,r,t = self.getCurrentTuple()
 	
 		p = GuessProgramCase(p,v)
-		if not p :
+		if not p:
 			p = str(item.text(0))
 		
 		infoTitle = p
-		if v :
+		if v:
 			infoTitle = infoTitle + ' ' + Join_Version_Revision(v,r)
 		
-		if t :
+		if t:
 			T = string.capwords(string.replace(t, '_',' '))
 			infoTitle = infoTitle + ' (' + T + ')'
 		
@@ -709,45 +708,47 @@ class ManagerUIImpl(ManagerUI) :
 		
 		methods = []
 		if True:
-			def updateDescription(p,v,r,t) :
-				description = DescribeProgram(p, Join_Version_Revision(v,r), mode = 'html', noweb = self.configWindow.noWeb.isChecked())
-				if not description.strip() :
+			def updateDescription(p,v,r,t):
+				description = DescribeProgram(p, Join_Version_Revision(v,r), mode='html',
+				                              noweb=self.configWindow.noWeb.isChecked())
+				if not description.strip():
 					return ''
 					
 				return description
 				
 			methods.append(updateDescription)
 			
-		if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe'] :
-		#if t in ['local_package', 'installed', 'recipe'] :
-			def updateDependencies(p,v,r,t) :
-				if v :
+		if t in ['local_package', 'installed', 'official_package', 'contrib_package', 'recipe']:
+		#if t in ['local_package', 'installed', 'recipe']:
+			def updateDependencies(p,v,r,t):
+				if v:
 					d = v
-				else :
+				else:
 					d = 'Current'
 				
-				ret = ListDependencies(p,v,r,t, None, mode='html', report_missing=True, report_updating=True, recursive=False)
-				if not ret.strip() :
+				ret = ListDependencies(p,v,r,t, None, mode='html', report_missing=True,
+				                                 report_updating=True, recursive=False)
+				if not ret.strip():
 					return ''
 				return ret
 				
 			methods.append(updateDependencies)
 			
-		#if self.installed.has_key(p) :
-			#def updateDependencies(p,v,t) :
-				#if v :
+		#if self.installed.has_key(p):
+			#def updateDependencies(p,v,t):
+				#if v:
 					#d = v
-				#else :
+				#else:
 					#d = 'Current'
-				#if os.access(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies', os.R_OK) :
+				#if os.access(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies', os.R_OK):
 					#add = '<p><font color="#000077"><b>['+'Dependencies'+'] </b></font><br>'
 					
 					#f = open(goboPrograms+'/'+p+'/'+d+'/Resources/Dependencies')
 					#lines = f.readlines()
 					#f.close()
-					#for line in lines :
+					#for line in lines:
 						#add = add + '<font color="#000000">'+line.strip()+'</font><br>'
-					#if not lines :
+					#if not lines:
 						#add = add + '<font color="#000000">'+'-'+'</font><br>'
 					#add = add + '</p>'
 					#return add
@@ -755,140 +756,141 @@ class ManagerUIImpl(ManagerUI) :
 				
 			#methods.append(updateDependencies)
 					
-		if t == 'installed' :
-			def updateSize(p,v,r,t) :
-				try :
+		if t == 'installed':
+			def updateSize(p,v,r,t):
+				try:
 					x = os.popen('du -sh '+goboPrograms+'/'+p+'/'+v+' 2> /dev/null')
 					size = x.read().split()[0]
 					return '<p><font color="#000077"><b>['+'Unpacked size'+'] </b></font><br>'+str(size)+'</p>'
-				except :
+				except:
 					pass
 					return ''
 		
 			methods.append(updateSize)
 		
-		if t in ['official_package', 'contrib_package','local_package', 'recipe'] :
-			def availability(p,v,r,t) :
-				try :
+		if t in ['official_package', 'contrib_package','local_package', 'recipe']:
+			def availability(p,v,r,t):
+				try:
 					T = string.capwords(string.replace(t, '_', ' '))
-					urls=string.join(self.availables[t]['programs'][p][v][r], '<br>')
+					urls = string.join(self.availables[t]['programs'][p][v][r], '<br>')
 					return '<p><font color="#000077"><b>['+T+' Availability]</b></font><br>'+urls+'</p>'
-				except :
+				except:
 					return ''
 				
 			methods.append(availability)
 
-		#if self.getSelectedType() in [''] :
-			#def reverse_dependencies(p,vr,t) :
-				#try :
+		#if self.getSelectedType() in ['']:
+			#def reverse_dependencies(p,vr,t):
+				#try:
 					#x = os.popen('Dependencies --reverse '+p+' | cut -d\' \' -f 1 | sort -u').readlines()
 					#xx = string.join(x,'<br>')
-					#if xx.strip() :
+					#if xx.strip():
 						#return '<p><font color="#000077"><b>[Installed Programs Depending On '+p+']</b></font><br>'+xx+'</p>'
-					#else :
+					#else:
 						#return ''
-				#except :
+				#except:
 					#return ''
 				
 			#methods.append(reverse_dependencies)
 		
 		
-		def updateStuff(methods, p,v,r,t) :
+		def updateStuff(methods, p,v,r,t):
 			s = ''
-			for method in methods :
+			for method in methods:
 				s += method(p,v,r,t)
 				qApp.postEvent(self, QCustomEvent(QEvent.User, (p,v,r,t,s)))
 			
 		import thread
 		thread.start_new_thread(updateStuff, (methods, p,v,r,t))
 		
-	def customEvent(self, event) :
+	def customEvent(self, event):
 		import types
 		data = event.data()
-		if type(data[0]) == types.StringType :
+		if type(data[0]) == types.StringType:
 			p,v,r,t,s   = event.data()
 			pp,vv,rr,tt = self.getCurrentTuple()
 			if pp.lower() == p.lower() and vv == v and rr == r and tt == t:
 				self.description.setText(s)
-		else :
-			if data[1] != None :
+		else:
+			if data[1] != None:
 				# please, someone tell me a better way to unpack a tuple in args:
 				if type(data[1]) != types.TupleType or len(data[1]) == 1:
 					data[0](data[1])
-				elif len(data[1]) == 2 :
+				elif len(data[1]) == 2:
 					data[0](data[1][0], data[1][1])
-				elif len(data[1]) == 3 :
+				elif len(data[1]) == 3:
 					data[0](data[1][0], data[1][1], data[1][2])
-				elif len(data[1]) == 4 :
+				elif len(data[1]) == 4:
 					data[0](data[1][0], data[1][1], data[1][2], data[1][3])
-				elif len(data[1]) == 5 :
+				elif len(data[1]) == 5:
 					data[0](data[1][0], data[1][1], data[1][2], data[1][3], data[1][4])
-				elif len(data[1]) == 6 :
+				elif len(data[1]) == 6:
 					data[0](data[1][0], data[1][1], data[1][2], data[1][3], data[1][4], data[1][5])
-			else :
+			else:
 				data[0]()
 	
-	def helpAbout(self) :
-		QMessageBox.about(self, 'About', 'Manager(C) 2004-2006 Andre Detsch.\nReleased under the GNU GPL.')
+	def helpAbout(self):
+		QMessageBox.about(self, 'About', 'Manager(C) 2004-2007 Andre Detsch.\nReleased under the GNU GPL.')
 			
 	################################################################################################
 	# Management commands
 	################################################################################################
-	def doUpdateDescriptions(self) :
+	def doUpdateDescriptions(self):
 		cmd = 'DescribeProgram --update-all'
 		self.do([cmd], [ None ])
 	
-	def doRemoveSystemBroken(self) :
+	def doRemoveSystemBroken(self):
 		cmds = [ 'find '+goboLinks+' | RemoveBroken', 'find '+goboSettings+' | RemoveBroken' ]
 		self.do(cmds, [ None ])
 	
-	def doNewVersion(self) :
+	def doNewVersion(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert p and v and t
-			if t == 'tracked' :
+			if t == 'tracked':
 				cmds.append('NewVersion '+p+' '+v)
 				apps.append(p)
-			elif t == 'recipe' :
+			elif t == 'recipe':
 				(vv, ok) = QInputDialog.getText('New version', 'Enter new version number for '+p,  QLineEdit.Normal, v)
-				if ok :
+				if ok:
 					cmds.append('NewVersion '+p+' '+str(vv))
 					apps.append(p)
-			else :
+			else:
 				assert False
 		self.do(cmds, apps)
 
-	def doNewVersionAndCompile(self) :
+	def doNewVersionAndCompile(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert p and v
 			cmds.append('NewVersion '+p+' '+v+' && '+' nice Compile '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
 	
-	def addCommandsForDependencies(self, p,v,r,t,u, cmds,apps, justDownload) :
-		if self.configWindow.allwaysUpdate.isChecked() :
+	def addCommandsForDependencies(self, p,v,r,t,u, cmds,apps, justDownload):
+		if self.configWindow.allwaysUpdate.isChecked():
 			mode='updating'
-		else :
+		else:
 			mode='missing'
-		deps,sols = CheckDependencies(p,v,r,t,u, ['local_package', 'official_package', 'recipe'], mode=mode, ask_hook=gui_ask_if_install, hook=updateOnlyHook, add_self='never')
+		deps,sols = CheckDependencies(p,v,r,t,u, ['local_package', 'official_package', 'recipe'], mode=mode,
+		                                 ask_hook=gui_ask_if_install, hook=updateOnlyHook, add_self='never')
 		tr = []
-		for c in sols :
+		for c in sols:
 			pp,vv,rr,tt,uu = c
-			if tt == 'recipe' :
+			if tt == 'recipe':
 				self.addCommandsForCompile(pp,vv,rr,tt,uu, cmds, apps, justDownload)
-			elif tt in [ 'local_package', 'official_package', 'contrib_package' ] :
+			elif tt in [ 'local_package', 'official_package', 'contrib_package' ]:
 				self.addCommandsForInstallPackage(pp,vv,rr,tt,uu, cmds, apps, justDownload)
-			else :
+			else:
 				assert(False)
 	
-	def addCommandsForInstallPackage(self, p,v,r,t,u, cmds, apps, justDownload=False) :
-		if justDownload :
+	def addCommandsForInstallPackage(self, p,v,r,t,u, cmds, apps, justDownload=False):
+		if justDownload:
 			cmds.append('InstallPackage -I '+u)
 			apps.append(p)
-		else :
-			if not self.configWindow.dontSplitDownload.isChecked() and t in ['official_package', 'contrib_package'] :
+		else:
+			if not self.configWindow.dontSplitDownload.isChecked() and t in ['official_package', 'contrib_package']:
 				packageName = u[u.rfind('/')+1:]
 				location = getGoboVariable('defaultLocalPackagesPaths', 'Scripts/GetAvailable.conf', True)[0]
 				localpath = location+'/'+packageName
@@ -896,31 +898,31 @@ class ManagerUIImpl(ManagerUI) :
 				apps.append(p)
 				cmds.append('InstallPackage --no-dependencies '+localpath)
 				apps.append(p)
-			else :
-				if t in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked() :
+			else:
+				if t in ['official_package', 'contrib_package'] and self.configWindow.keepDownloadedPackages.isChecked():
 					add = ' --keep '
-				else :
+				else:
 					add = ''
 				cmds.append('InstallPackage --no-dependencies '+add+u)
 				apps.append(p)
 
-	def addCommandsForCompile(self, p,v,r,t,u, cmds, apps, justDownload=False) :
-		if justDownload :
+	def addCommandsForCompile(self, p,v,r,t,u, cmds, apps, justDownload=False):
+		if justDownload:
 			cmds.append('Compile -B '+p+' '+Join_Version_Revision(v,r))
 			apps.append(p)
-		else :
-			if self.configWindow.dontSplitDownload.isChecked() :
+		else:
+			if self.configWindow.dontSplitDownload.isChecked():
 				cmds.append('nice Compile '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
-			else :
+			else:
 				cmds.append('Compile -B '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
 				cmds.append('nice Compile -W '+p+' '+Join_Version_Revision(v,r))
 				apps.append(p)
 	
-	def doInstallPackage(self, justDownload = False) :
+	def doInstallPackage(self, justDownload = False):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert t in ['local_package', 'official_package', 'contrib_package']
 			r = GuessLatest(self.availables[t]['programs'][p][v].keys())
 			u = self.availables[t]['programs'][p][v][r][0]
@@ -929,57 +931,57 @@ class ManagerUIImpl(ManagerUI) :
 			
 		self.do(cmds, apps)
 		
-	def doDownloadPackage(self) :
+	def doDownloadPackage(self):
 		self.doInstallPackage(True)
 	
-	def doCompileRecipe(self) :
+	def doCompileRecipe(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert p
 			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds, apps, False)
 			self.addCommandsForCompile     (p,v,r,'recipe',None, cmds, apps, False)
 		self.do(cmds, apps)
 	
-	def doFetchRecipe(self) :
+	def doFetchRecipe(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert p
 			self.addCommandsForDependencies(p,v,r,'recipe',None, cmds, apps, True)
 			self.addCommandsForCompile     (p,v,r,'recipe',None, cmds, apps, True)
 		self.do(cmds, apps)
 
-	def doDisableProgram(self) :
+	def doDisableProgram(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			cmds.append('DisableProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 
-	def doRemoveProgram(self) :
+	def doRemoveProgram(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			assert p and v
 			cmds.append('RemoveProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 
-	def doSymlinkProgram(self) :
+	def doSymlinkProgram(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			cmds.append('SymlinkProgram '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
-	def doSymlinkProgramOverwrite(self) :
+	def doSymlinkProgramOverwrite(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			cmds.append('SymlinkProgram -c overwrite '+p+' '+v)
 			apps.append(p)
 		self.do(cmds, apps)
 	
-	def doEditRecipe(self) :
+	def doEditRecipe(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			x = os.popen('GetRecipe %s'%self.availables['recipe']['programs'][p][v][r][0])
 			localRecipe = x.read().strip() + '/Recipe'
 			x.close()
@@ -992,23 +994,23 @@ class ManagerUIImpl(ManagerUI) :
 				self.connect(self.genericEditor.okButton,SIGNAL("clicked()"),self.editRecipeOK)
 				self.genericEditor.show()
 				
-	def editRecipeOK(self) :
+	def editRecipeOK(self):
 		t = str(self.genericEditor.textEdit.text())
 		f = open(str(self.genericEditor.caption()), 'w')
 		f.write(t)
 		f.close()
 		
-	def doCreatePackage(self) :
+	def doCreatePackage(self):
 		cmds,apps = [],[]
-		for p,v,r,t in self.getSelectedTuples() :
+		for p,v,r,t in self.getSelectedTuples():
 			if self.configWindow.useDefaultCreatePackageDirectory.isChecked():
 				dest = str(self.configWindow.defaultCreatePackageDirectory.text())
-			else :
+			else:
 				dest = str(QFileDialog.getExistingDirectory(None, self, 'name', 'caption', True, True))
 	
-			if not dest :
+			if not dest:
 				return
-			if not os.access(dest, os.W_OK) :
+			if not os.access(dest, os.W_OK):
 				os.makedirs(dest)
 			# TODO (easy): parameter at CreatePackage for setting destination directory
 			cmds.append('cd '+dest+'; CreatePackage '+p+' '+v)
@@ -1019,68 +1021,69 @@ class ManagerUIImpl(ManagerUI) :
 	# Tasks execution
 	################################################################################################
 	
-	def toggleShowRunWindow(self, pressed) :
-		if pressed :
+	def toggleShowRunWindow(self, pressed):
+		if pressed:
 			self.loggers.show()
-		else :
+		else:
 			self.loggers.hide()
 	
-	def playToggled(self, pressed) :
-		if pressed :
+	def playToggled(self, pressed):
+		if pressed:
 			if self.commandsQueue.count() == 0:
 				self.queueToggleRunningAction.setOn(False)
-			else :
+			else:
 				self.queueToggleShowRunWindowAction.setOn(True)
 				self.activateNotRunningModules()
-		else :
+		else:
 			pass
 			#self.stopRunning()
 	
-	def activateNotRunningModules(self) :
-		for module in self.runningModules.keys() :
-			if not self.runningModules[module]["running"] :
+	def activateNotRunningModules(self):
+		for module in self.runningModules.keys():
+			if not self.runningModules[module]["running"]:
 				started = self.runNextCommand(self.runningModules[module]["logger"], self.runningModules[module])
 	
-	def canThisModuleRunThisCommand(self, runningModule, cmd, blockedPrograms) :
+	def canThisModuleRunThisCommand(self, runningModule, cmd, blockedPrograms):
 		match = re.search(runningModule["commands"], cmd)
 		
 		p = self.programsAtQueue[cmd]
 		# if the program is not blocked
 		if p not in blockedPrograms and "<BLOCK>" not in blockedPrograms:
 			# if the command fits the running module tasks group (e.g. Compilation)
-			if match and not runningModule["inverse_regex"] or not match and runningModule["inverse_regex"] :
-				if runningModule['name'][:len('Compilation')] != 'Compilation' : 
+			if match and not runningModule["inverse_regex"] or not match and runningModule["inverse_regex"]:
+				if runningModule['name'][:len('Compilation')] != 'Compilation': 
 					return True
-				else :
+				else:
 					# When dealing with compilation, all dependencies must have its order respected, 
 					#  so we cannot compile x before y is x depends on y. Not true for binary packages.
-					for pp in blockedPrograms :
+					for pp in blockedPrograms:
 						l = cmd.split() 
 						v,r = Split_Version_Revision(l[-1]) # .* Compile .* <program> <version>
-						if does_x_depend_on_y((p,v,r,'recipe',None), pp, ['recipe', 'local_package', 'official_package', 'contrib_package'], hook=updateOnlyHook) :
+						types = ['recipe', 'local_package', 'official_package', 'contrib_package']
+						if does_x_depend_on_y((p,v,r,'recipe',None), pp, types, hook=updateOnlyHook):
 							return False
 					return True
 		return False
 		
 	
-	def runNextCommand(self, logger, runningModule) :
+	def runNextCommand(self, logger, runningModule):
 		import re
-		if self.commandsQueue.count() == 0 :
+		if self.commandsQueue.count() == 0:
 			runningModule["running"] = False
 			return False
 		
 		blockedPrograms= self.programsOnRun.values()[:]
 		
 		#for each command at the queue
-		for i in range(self.commandsQueue.count()) :
+		for i in range(self.commandsQueue.count()):
 			cmd = str(self.commandsQueue.text(i))
 			
-			if self.canThisModuleRunThisCommand(runningModule, cmd, blockedPrograms) :
+			if self.canThisModuleRunThisCommand(runningModule, cmd, blockedPrograms):
 				current = runningModule['logger'].getFocusedTabName()
 				if current[-2:] == " *": # ' *' marks a running module tab
 					current = current[:-2]
 				
-				if not self.runningModules[current]['running'] :
+				if not self.runningModules[current]['running']:
 					runningModule['logger'].setFocus()
 				
 				self.programsOnRun[cmd] = self.programsAtQueue[str(self.commandsQueue.text(i))]
@@ -1091,34 +1094,34 @@ class ManagerUIImpl(ManagerUI) :
 				self.enableOrDisableQueueActions()
 				self.autoSaveQueue()
 				return True
-			else :
+			else:
 				blockedPrograms.append(self.programsAtQueue[cmd])
 		
 		runningModule["running"] = False
 		return runningModule["running"]
 
 	
-	def do(self, cmds, apps = []) :
-		if len(cmds) == 0 :
+	def do(self, cmds, apps=[]):
+		if len(cmds) == 0:
 			return
 			
-		for cmd, app in zip(cmds,apps) :
+		for cmd, app in zip(cmds,apps):
 			self.commandsQueue.insertItem(cmd)
 			self.programsAtQueue[cmd] = app
 		
 		self.enableOrDisableQueueActions()
 		self.autoSaveQueue()
 		
-		if self.queueToggleRunningAction.isOn() or self.autorunAction.isOn() :
+		if self.queueToggleRunningAction.isOn() or self.autorunAction.isOn():
 			self.activateNotRunningModules()
 
-	def initiateCommandThread(self, cmd, logger, cmdsRegex) :
+	def initiateCommandThread(self, cmd, logger, cmdsRegex):
 		r = Runner(self, qApp, logger, cmd, cmdsRegex)
 		r.start()
 	
-	def commandFinished(self, aborted, logger, cmd, runningModule) :
+	def commandFinished(self, aborted, logger, cmd, runningModule):
 		if aborted or self.commandsQueue.count() == 0:
-			if aborted :
+			if aborted:
 				self.commandsQueue.insertItem(cmd)
 			runningModule["running"] = False
 			self.enableOrDisableQueueActions()
@@ -1131,16 +1134,16 @@ class ManagerUIImpl(ManagerUI) :
 		if self.queueToggleRunningAction.isOn():
 			found = self.runNextCommand(logger, runningModule)
 			self.activateNotRunningModules()
-		else :
+		else:
 			runningModule["running"] = False
 		
 		self.autoSaveQueue()
 	
-	def enableOrDisableQueueActions(self) :
+	def enableOrDisableQueueActions(self):
 		# Adjusting 4 variables that may interfer in enabling or disabling the actions:
 		isSomethingRunning = False
-		for name in self.runningModules.keys() :
-			if self.runningModules[name]['running'] :
+		for name in self.runningModules.keys():
+			if self.runningModules[name]['running']:
 				isSomethingRunning = True
 				break
 		actionsWereEnabled = self.queueRemoveItemAction.isEnabled()
@@ -1148,49 +1151,50 @@ class ManagerUIImpl(ManagerUI) :
 		queueEmpty = (self.commandsQueue.count() == 0)
 		
 		# Enabling/disabling based on the above variables
-		if isPlayPressed and (not isSomethingRunning and queueEmpty) :
+		if isPlayPressed and (not isSomethingRunning and queueEmpty):
 			self.queueToggleRunningAction.setOn(False)
 		
-		if (queueEmpty and not isSomethingRunning) and actionsWereEnabled :
+		if (queueEmpty and not isSomethingRunning) and actionsWereEnabled:
 			enable = False
-		elif (not queueEmpty or isSomethingRunning) and not actionsWereEnabled :
+		elif (not queueEmpty or isSomethingRunning) and not actionsWereEnabled:
 			enable = True
-		else :
+		else:
 			return
 		
-		for action in [ self.queueEditCommandAction, self.queueSaveQueueAction, self.queueToggleRunningAction, self.queueRemoveItemAction, self.queueClearQueueAction] :
+		for action in [self.queueEditCommandAction, self.queueSaveQueueAction, self.queueToggleRunningAction, 
+		               self.queueRemoveItemAction, self.queueClearQueueAction]:
 			action.setEnabled(enable)
 	
-	def closeEvent(self, e) :
+	def closeEvent(self, e):
 		self.saveSettings(False)
 		isSomethingRunning = False
-		for name in self.runningModules.keys() :
-			if self.runningModules[name]['running'] :
+		for name in self.runningModules.keys():
+			if self.runningModules[name]['running']:
 				isSomethingRunning = True
 				break
 		accept = True
-		if isSomethingRunning :
+		if isSomethingRunning:
 			accept = not QMessageBox.warning(self, "Manager", "There are commands running. \nReally exit?", "Yes", "No")
 			
-		if accept :
+		if accept:
 			e.accept()
 	
 
 progress = None
 # to be used when calling default back-end functions
-def graphicalProgressHook(label, i, n, showWhenChanged = True) :
+def graphicalProgressHook(label, i, n, showWhenChanged=True):
 	global progress
 	qApp.lock()
-	if not progress and label :
+	if not progress and label:
 		progress = QProgressDialog(label, 'Abort', n)
 		progress.forceShow()
 	
-	if showWhenChanged and str(progress.labelText()) != label and label :
+	if showWhenChanged and str(progress.labelText()) != label and label:
 		progress.setLabelText(label)
 		progress.setTotalSteps(n)
 		progress.forceShow()
 		
-	if i != n and i >= progress.totalSteps() :
+	if i != n and i >= progress.totalSteps():
 		progress.setTotalSteps(n)
 
 	progress.setProgress(i)
@@ -1199,16 +1203,17 @@ def graphicalProgressHook(label, i, n, showWhenChanged = True) :
 	qApp.unlock()
 	return ret
 
-def updateOnlyHook(label=None, i=0, n=0, showWhenChanged = True) :
+def updateOnlyHook(label=None, i=0, n=0, showWhenChanged=True):
 	qApp.lock()
 	qApp.processEvents()
 	qApp.unlock()
 
 
-def gui_ask_if_install(match) :
+def gui_ask_if_install(match):
 	p,v,r,t,u=match
 	global widget
-	resp = QMessageBox.warning(widget, 'Dependencies checking', "Install %s %s %s or skip this dependency?"%(p,Join_Version_Revision(v,r),t), 'Install', 'Skip')
+	resp = QMessageBox.warning(widget, 'Dependencies checking', "Install %s %s %s or skip this dependency?"%
+	                                                    (p,Join_Version_Revision(v,r),t), 'Install', 'Skip')
 	return resp == 0
 
 widget = ManagerUIImpl()
