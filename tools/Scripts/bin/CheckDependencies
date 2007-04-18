@@ -146,7 +146,6 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 			if not noWeb :
 				temp = u.split('/')
 				dependency_u = string.join(temp[:-1]+['dependencies']+[temp[-1][:-len('.tar.bz2')]],'/')
-				print dependency_u
 				if not dependency_u in global_not_found_cache :
 					err = os.system('wget --timeout='+global_wget_timeout+' -q -O '+cachedep+' '+dependency_u)
 					if err == 0:
