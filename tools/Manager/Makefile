@@ -52,8 +52,18 @@ TARBALL_ROOT=$(PACKAGE_DIR)/$(TARBALL_BASE)
 TARBALL_FILE=$(PACKAGE_DIR)/$(PROGRAM)-$(VERSION).tar.gz
 DESTDIR=/Programs/$(PROGRAM)/$(VERSION)/
 CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
+
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
+
+verify:
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
+
+cleanup:
+	rm -rf Resources/FileHash*
+	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
+	cd src && make clean
+	cd $(LIB_DIR) && rm -f *.pyc *.pyo
 
 dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
