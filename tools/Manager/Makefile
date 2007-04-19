@@ -40,3 +40,29 @@ compilation :
 
 clean :
 	rm -f $(LIB_DIR)/*.pyo $(LIB_DIR)/*.pyc $(LIB_DIR)/*.py
+
+VERSION=
+PROGRAM=Manager
+PACKAGE_DIR=$(HOME)
+PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
+PACKAGE_VDIR=$(PACKAGE_ROOT)/$(VERSION)
+PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
+TARBALL_BASE=$(PROGRAM)-$(VERSION)
+TARBALL_ROOT=$(PACKAGE_DIR)/$(TARBALL_BASE)
+TARBALL_FILE=$(PACKAGE_DIR)/$(PROGRAM)-$(VERSION).tar.gz
+DESTDIR=/Programs/$(PROGRAM)/$(VERSION)/
+CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
+version_check:
+	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
+
+dist: version_check cleanup verify all
+	rm -rf $(PACKAGE_ROOT)
+	mkdir -p $(PACKAGE_VDIR)
+	SignProgram $(PROGRAM)
+	cat Resources/FileHash
+	ListProgramFiles $(PROGRAM) | cpio -p $(PACKAGE_VDIR)
+	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
+	rm -rf $(PACKAGE_ROOT)
+	@echo; echo "Package at $(PACKAGE_FILE)"
+	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
+	! { cvs up -dP 2>&1 | grep "^M" ;}
