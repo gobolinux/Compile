@@ -62,7 +62,7 @@ verify:
 cleanup:
 	rm -rf Resources/FileHash*
 	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
-	cd $(LIB_DIR) && rm -f *.pyc *.pyo
+	cd $(LIB_DIR) && rm -f *.pyc *.pyo *.py
 
 dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
