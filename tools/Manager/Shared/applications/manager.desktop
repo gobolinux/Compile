@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=
+Name=Manager
+Type=Application
+Comment=Show System Processes
+Terminal=true
+Exec=Manager
+Path=
+Icon=manager
+Categories=ConsoleOnly;System;Application;
+GenericName=GoboLinux Package Management Front-end
