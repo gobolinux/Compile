@@ -173,7 +173,7 @@ def addToDict(d, p, v, r, u) :
 		d[p][v][r] = []
 	d[p][v][r].append(u)
 
-def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='', current_only=True) :
+def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='', current_only=False) :
 	import os, os.path
 
 	if not d :
