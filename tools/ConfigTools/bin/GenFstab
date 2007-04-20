@@ -89,8 +89,9 @@ function gen_config() {
       [ "${partition}" = "" ] && continue
 
       partitionnumber=$(echo "${partition}" | sed s/".*${drive}\(.*\)"/"\1"/)
-      bootableflag=$(echo "${partition}" | awk {'print $2'})
-      test ! -z "${extralist}" && if echo "${extralist}" | grep -q "${drive}${partitionnumber}"
+      pt=$(fdisk -l | grep "${drive}${partitionnumber}")
+      bootableflag=$(echo "${pt}" | awk {'print $2'})
+      if [ ! -z "${extralist}" -a "$(echo ${extralist} | grep -q ${drive}${partitionnumber})" ]
       then
          mountpoint=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\1"/)
 	 filesystem=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\2"/)
@@ -103,8 +104,8 @@ function gen_config() {
 	 unset comment
       fi         
       if [ "$bootableflag" = "*" ]
-      then id=$(echo "${partition}" | awk {'print $6'})
-      else id=$(echo "${partition}" | awk {'print $5'})
+      then id=$(echo "${pt}" | awk {'print $6'})
+      else id=$(echo "${pt}" | awk {'print $5'})
       fi
 
       if [ "$partition" = "$root" ]
@@ -168,17 +169,19 @@ function gen_config() {
       "5");;
       *)
          [ -z "${comment}" ] && comment="# Additional partition."
-         [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partionnumber}"
+         [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partitionnumber}"
          [ -z "${filesystem}" ] && filesystem="auto"
          [ -z "${mountoptions}" ] && mountoptions="defaults"
 	 checks="1 0"
       ;;
       esac
       fi
-      echo "${comment}" | grep -q "^#" || comment="# ${comment}"
-      echo "${comment}"
-      echo "${partition} ${mountpoint} ${filesystem} ${mountoptions} ${checks}"
+      if [ ! "$id" = "5" ]; then
+         echo "${comment}" | grep -q "^#" || comment="# ${comment}"
+         echo "${comment}"
+         echo "${partition} ${mountpoint} ${filesystem} ${mountoptions} ${checks}"
          echo
+      fi
   done
 }
 
@@ -188,8 +191,8 @@ function gen_config() {
 
 drives=(a b c d e f g h i j)
 types=(h s)
-for t in $types; do
-   for d in $drives; do
+for t in ${types[@]}; do
+   for d in ${drives[@]}; do
       drive="${t}d${d}"
       device=$(readlink -f "/dev/${drive}")
       [ -e "${device}" ] || continue
