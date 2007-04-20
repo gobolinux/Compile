@@ -151,7 +151,7 @@ function gen_config() {
          "7")
             if [ "$ntfs" ]
             then let ntfs=ntfs+1
-            else ntfs=" "
+            else ntfs=1
             fi
             [ -z "${comment}" ] && comment="NTFS partition"
             [ -z "${mountpoint}" ] && mountpoint="/Mount/NTFS${ntfs}"
