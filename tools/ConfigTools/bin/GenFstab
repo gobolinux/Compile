@@ -99,9 +99,9 @@ function gen_config() {
 	 comment=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\4"/)
       else
          unset mountpoint
-	 unset filesystem
-	 unset mountoptions
-	 unset comment
+         unset filesystem
+         unset mountoptions
+         unset comment
       fi         
       if [ "$bootableflag" = "*" ]
       then id=$(echo "${pt}" | awk {'print $6'})
@@ -112,69 +112,69 @@ function gen_config() {
       then
          comment="# Root partition."
          mountpoint="/"
-	 filesystem="auto"
-	 mountoptions="defaults"
-	 checks="1 0"
+         filesystem="auto"
+         mountoptions="defaults"
+         checks="1 0"
       else
-      case ${id} in
-      "1"|"4"|"6"|"b"|"c"|"e")
-         mountname="FAT"
-         mountopts="umask=000"
-         if mount ${partition} /Mount 2> /dev/null
-         then
-            if ls /Mount/ | grep -qi "^windows$"
+         case ${id} in
+         "1"|"4"|"6"|"b"|"c"|"e")
+            mountname="FAT"
+            mountopts="umask=000"
+            if mount ${partition} /Mount 2> /dev/null
             then
-                mountname="Windows"
-                mountopts="defaults"
+               if ls /Mount/ | grep -qi "^windows$"
+               then
+                   mountname="Windows"
+                   mountopts="defaults"
+               fi
+               umount /Mount
             fi
-            umount /Mount
-         fi
-         [ -z "${comment}" ] && comment="# $mountname partition."
-         if [ "$mountname" = "Windows" ]
-         then
-            if [ "$win" ]
-            then let win=win+1
-            else win=2
+            [ -z "${comment}" ] && comment="# $mountname partition."
+            if [ "$mountname" = "Windows" ]
+            then
+               if [ "$win" ]
+               then let win=win+1
+               else win=2
+               fi
+               [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${win}"
+            else
+               if [ "$fat" ]
+               then let fat=fat+1
+               else fat=2
+               fi
+               [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${fat}"
             fi
-	    [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${win}"
-         else
-            if [ "$fat" ]
-            then let fat=fat+1
-            else fat=2
+            filesystem="vfat"
+            [ -z "${mountoptions}" ] && mountoptions="${mountopts}"
+            checks="1 0"
+            ;;
+         "7")
+            if [ "$ntfs" ]
+            then let ntfs=ntfs+1
+            else ntfs=2
             fi
-	    [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${fat}"
-         fi
-         filesystem="vfat"
-         [ -z "${mountoptions}" ] && mountoptions="${mountopts}"
-	 checks="1 0"
-      ;;
-      "7")
-         if [ "$ntfs" ]
-         then let ntfs=ntfs+1
-         else ntfs=2
-         fi
-         [ -z "${comment}" ] && comment="NTFS partition"
-         [ -z "${mountpoint}" ] && mountpoint="/Mount/NTFS${ntfs}"
-         filesystem="ntfs-3g" 
-         [ -z "${mountoptions}" ] && mountoptions="defaults"
-	 checks="1 0"
-      ;; 
-      "82")
-         comment="# Swap partition."
-         mountpoint="none"
-	 filesystem="swap"
-	 mountoptions="pri=1"
-	 checks="0 0"
-      ;;
-      "5");;
-      *)
-         [ -z "${comment}" ] && comment="# Additional partition."
-         [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partitionnumber}"
-         [ -z "${filesystem}" ] && filesystem="auto"
-         [ -z "${mountoptions}" ] && mountoptions="defaults"
-	 checks="1 0"
-      ;;
-      esac
+            [ -z "${comment}" ] && comment="NTFS partition"
+            [ -z "${mountpoint}" ] && mountpoint="/Mount/NTFS${ntfs}"
+            filesystem="ntfs-3g" 
+            [ -z "${mountoptions}" ] && mountoptions="defaults"
+            checks="1 0"
+            ;; 
+         "82")
+            comment="# Swap partition."
+            mountpoint="none"
+            filesystem="swap"
+            mountoptions="pri=1"
+            checks="0 0"
+            ;;
+         "5");;
+         *)
+            [ -z "${comment}" ] && comment="# Additional partition."
+            [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partitionnumber}"
+            [ -z "${filesystem}" ] && filesystem="auto"
+            [ -z "${mountoptions}" ] && mountoptions="defaults"
+            checks="1 0"
+            ;;
+         esac
       fi
       if [ ! "$id" = "5" ]; then
          echo "${comment}" | grep -q "^#" || comment="# ${comment}"
@@ -210,7 +210,7 @@ do
    device=`readlink -f /dev/floppy/$floppy`
    if [ -e "$device" ]
    then
-      echo "# Floppy drive."
+     echo "# Floppy drive."
      if [ $floppy -eq 0 ]
      then mountpoint="/Mount/Floppy"
      else mountpoint="/Mount/Floppy"$[floppy+1]
