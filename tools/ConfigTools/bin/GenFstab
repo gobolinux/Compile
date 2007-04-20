@@ -134,13 +134,13 @@ function gen_config() {
             then
                if [ "$win" ]
                then let win=win+1
-               else win=2
+               else win=1
                fi
                [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${win}"
             else
                if [ "$fat" ]
                then let fat=fat+1
-               else fat=2
+               else fat=1
                fi
                [ -z "${mountpoint}" ] && mountpoint="/Mount/${mountname}${fat}"
             fi
@@ -151,7 +151,7 @@ function gen_config() {
          "7")
             if [ "$ntfs" ]
             then let ntfs=ntfs+1
-            else ntfs=2
+            else ntfs=" "
             fi
             [ -z "${comment}" ] && comment="NTFS partition"
             [ -z "${mountpoint}" ] && mountpoint="/Mount/NTFS${ntfs}"
