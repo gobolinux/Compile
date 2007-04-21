@@ -3,135 +3,135 @@
     <name>@default</name>
     <message>
         <source>No valid partitions found</source>
-        <translation>Nem találtam érvényes partíciót</translation>
+        <translation>Nem talÃ¡ltam Ã©rvÃ©nyes partÃ­ciÃ³t</translation>
     </message>
     <message>
         <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
-        <translation>Csinálhatsz egyet a &quot;qtparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
+        <translation>CsinÃ¡lhatsz egyet a &quot;qtparted&quot; vagy a &quot;cfdisk&quot; hasznÃ¡latÃ¡val</translation>
     </message>
     <message>
         <source>Welcome!</source>
-        <translation>Üdvözöllek!</translation>
+        <translation>ÃœdvÃ¶zÃ¶llek!</translation>
     </message>
     <message>
         <source>Introduction</source>
-        <translation type="obsolete">Bevezetés</translation>
+        <translation type="obsolete">BevezetÃ©s</translation>
     </message>
     <message>
         <source>Installation process</source>
-        <translation>A telepítési eljárás</translation>
+        <translation>A telepÃ­tÃ©si eljÃ¡rÃ¡s</translation>
     </message>
     <message>
         <source>Read this to learn more about the installation.</source>
-        <translation>Olvasd el ezt ahhoz, hogy többet megtudj a telepítésrõl.</translation>
+        <translation>Olvasd el ezt ahhoz, hogy tÃ¶bbet megtudj a telepÃ­tÃ©srÃµl.</translation>
     </message>
     <message>
         <source>Target device selection</source>
-        <translation>A telepítés helyének kiválasztása</translation>
+        <translation>A telepÃ­tÃ©s helyÃ©nek kivÃ¡lasztÃ¡sa</translation>
     </message>
     <message>
         <source>Root partition</source>
-        <translation>Root-Partíció</translation>
+        <translation>Root-PartÃ­ciÃ³</translation>
     </message>
     <message>
         <source>Which partition of your hard drive should the system be copied to?</source>
-        <translation>Merevlemezed melyik partíciójára óhajtod másolni a rendszert?</translation>
+        <translation>Merevlemezed melyik partÃ­ciÃ³jÃ¡ra Ã³hajtod mÃ¡solni a rendszert?</translation>
     </message>
     <message>
         <source>Warning, this will destroy all data in</source>
-        <translation>FIGYELMEZTETÉS! Ez minden adatot megsemmisít!</translation>
+        <translation>FIGYELMEZTETÃ‰S! Ez minden adatot megsemmisÃ­t!</translation>
     </message>
     <message>
         <source>Format partition</source>
-        <translation>A partíció formatálása</translation>
+        <translation>A partÃ­ciÃ³ formatÃ¡lÃ¡sa</translation>
     </message>
     <message>
         <source>Erase all contents of the partition and prepare it to receive the new system?</source>
-        <translation>Töröljük a partíció adatait, és készítsük elõ az új rendszer számára?</translation>
+        <translation>TÃ¶rÃ¶ljÃ¼k a partÃ­ciÃ³ adatait, Ã©s kÃ©szÃ­tsÃ¼k elÃµ az Ãºj rendszer szÃ¡mÃ¡ra?</translation>
     </message>
     <message>
         <source>File system</source>
-        <translation>Fájlrendszer</translation>
+        <translation>FÃ¡jlrendszer</translation>
     </message>
     <message>
         <source>Which kind of file system should be used to format the root partition.</source>
-        <translation>Válaszd ki, milyen fájlrendszert óhajtasz a Root-partíciód számára!</translation>
+        <translation>VÃ¡laszd ki, milyen fÃ¡jlrendszert Ã³hajtasz a Root-partÃ­ciÃ³d szÃ¡mÃ¡ra!</translation>
     </message>
     <message>
         <source>Package selection</source>
-        <translation>Válogatás a csomagokból</translation>
+        <translation>VÃ¡logatÃ¡s a csomagokbÃ³l</translation>
     </message>
     <message>
         <source>Predefined sets of packages</source>
-        <translation>A csomagösszeállítások elõzetes kiválasztása</translation>
+        <translation>A csomagÃ¶sszeÃ¡llÃ­tÃ¡sok elÃµzetes kivÃ¡lasztÃ¡sa</translation>
     </message>
     <message>
         <source>Selecting one of these will reset the selections of the package list.</source>
-        <translation>Egynek vagy többnek a kiválasztása visszaállítja a csomaglista kijelölését.</translation>
+        <translation>Egynek vagy tÃ¶bbnek a kivÃ¡lasztÃ¡sa visszaÃ¡llÃ­tja a csomaglista kijelÃ¶lÃ©sÃ©t.</translation>
     </message>
     <message>
         <source>Select packages</source>
-        <translation>Csomagok kiválasztása</translation>
+        <translation>Csomagok kivÃ¡lasztÃ¡sa</translation>
     </message>
     <message>
         <source>Mark the packages that should be installed in the system.</source>
-        <translation>Jelöld ki a rendszeredre telepíteni kívánt csomagokat!</translation>
+        <translation>JelÃ¶ld ki a rendszeredre telepÃ­teni kÃ­vÃ¡nt csomagokat!</translation>
     </message>
     <message>
         <source>Space required: %s</source>
-        <translation>Szükséges helymennyiség: %s</translation>
+        <translation>SzÃ¼ksÃ©ges helymennyisÃ©g: %s</translation>
     </message>
     <message>
         <source>Space required to install the selected packages</source>
-        <translation>A kiválasztott csomagok installálásához szükséges helymennyiség</translation>
+        <translation>A kivÃ¡lasztott csomagok installÃ¡lÃ¡sÃ¡hoz szÃ¼ksÃ©ges helymennyisÃ©g</translation>
     </message>
     <message>
         <source>Fill Up Dependencies</source>
-        <translation type="obsolete">Függõségek meghatározása</translation>
+        <translation type="obsolete">FÃ¼ggÃµsÃ©gek meghatÃ¡rozÃ¡sa</translation>
     </message>
     <message>
         <source>Mark all packages in the list that are needed by the ones already marked.</source>
-        <translation>Minden olyan csomag megjelölése, melyek szükségesek egy már korábban bejelölt számára.</translation>
+        <translation>Minden olyan csomag megjelÃ¶lÃ©se, melyek szÃ¼ksÃ©gesek egy mÃ¡r korÃ¡bban bejelÃ¶lt szÃ¡mÃ¡ra.</translation>
     </message>
     <message>
         <source>Bypass dependencies checking</source>
-        <translation>Függõségek vizsgálatának átlépése</translation>
+        <translation>FÃ¼ggÃµsÃ©gek vizsgÃ¡latÃ¡nak Ã¡tlÃ©pÃ©se</translation>
     </message>
     <message>
         <source>Check if you want to install only the above selected packages.</source>
-        <translation>Csak a fent bejelölt csomagok installálása.</translation>
+        <translation>Csak a fent bejelÃ¶lt csomagok installÃ¡lÃ¡sa.</translation>
     </message>
     <message>
         <source>Bootloader options</source>
-        <translation>A betöltésvezérlõ (bootloader) opciói</translation>
+        <translation>A betÃ¶ltÃ©svezÃ©rlÃµ (bootloader) opciÃ³i</translation>
     </message>
     <message>
         <source>Install bootloader</source>
-        <translation>Betöltésvezérlõ (bootloader) telepítése</translation>
+        <translation>BetÃ¶ltÃ©svezÃ©rlÃµ (bootloader) telepÃ­tÃ©se</translation>
     </message>
     <message>
         <source>Install GRUB in the MBR of your hard disk in order to load up the system.</source>
-        <translation>A GRUB telepítése a merevlemezed MBR-jébe, hogy a rendszer betöltõdése rendben megtörténhessen.</translation>
+        <translation>A GRUB telepÃ­tÃ©se a merevlemezed MBR-jÃ©be, hogy a rendszer betÃ¶ltÃµdÃ©se rendben megtÃ¶rtÃ©nhessen.</translation>
     </message>
     <message>
         <source>Install at</source>
-        <translation>Telepítés ide:</translation>
+        <translation>TelepÃ­tÃ©s ide:</translation>
     </message>
     <message>
         <source>On the MBR of which disk should the bootloader be installed.</source>
-        <translation>Válaszd ki, hogy hová települjön a betöltésvezérlõ!</translation>
+        <translation>VÃ¡laszd ki, hogy hovÃ¡ telepÃ¼ljÃ¶n a betÃ¶ltÃ©svezÃ©rlÃµ!</translation>
     </message>
     <message>
         <source>Boot GRUB in graphic mode</source>
-        <translation type="obsolete">A GRUB grafikus módban való indulása</translation>
+        <translation type="obsolete">A GRUB grafikus mÃ³dban valÃ³ indulÃ¡sa</translation>
     </message>
     <message>
         <source>Select this if you want a background image to be displayed in the bootloader screen.</source>
-        <translation type="obsolete">Válaszd ezt az opciót, ha háttérképet szeretnél megjeleníteni a betöltésvezérlõ képernyõjén.</translation>
+        <translation type="obsolete">VÃ¡laszd ezt az opciÃ³t, ha hÃ¡ttÃ©rkÃ©pet szeretnÃ©l megjelenÃ­teni a betÃ¶ltÃ©svezÃ©rlÃµ kÃ©pernyÃµjÃ©n.</translation>
     </message>
     <message>
         <source>General settings</source>
-        <translation>Általános beállítások</translation>
+        <translation>ÃltalÃ¡nos beÃ¡llÃ­tÃ¡sok</translation>
     </message>
     <message>
         <source>Host name: </source>
@@ -139,51 +139,51 @@
     </message>
     <message>
         <source>Write in a name to identify this computer in a network environment.</source>
-        <translation>Írj ide egy nevet, ami hálózati környezetben azonosítja majd a gépedet.</translation>
+        <translation>Ãrj ide egy nevet, ami hÃ¡lÃ³zati kÃ¶rnyezetben azonosÃ­tja majd a gÃ©pedet.</translation>
     </message>
     <message>
         <source>Keyboard map</source>
-        <translation>Billentyûzetkiosztás</translation>
+        <translation>BillentyÃ»zetkiosztÃ¡s</translation>
     </message>
     <message>
         <source>Select the layout type that matches your keyboard.</source>
-        <translation>Határozd meg a billentyûzeted kiosztását!</translation>
+        <translation>HatÃ¡rozd meg a billentyÃ»zeted kiosztÃ¡sÃ¡t!</translation>
     </message>
     <message>
         <source>Boot theme</source>
-        <translation>A betöltésvezérlõ kinézete</translation>
+        <translation>A betÃ¶ltÃ©svezÃ©rlÃµ kinÃ©zete</translation>
     </message>
     <message>
         <source>The appearance of the boot process can be selected here.</source>
-        <translation>A betöltésvezérlõ által mutatott kép itt kiválasztható.</translation>
+        <translation>A betÃ¶ltÃ©svezÃ©rlÃµ Ã¡ltal mutatott kÃ©p itt kivÃ¡laszthatÃ³.</translation>
     </message>
     <message>
         <source>BIOS clock is set in</source>
-        <translation>A BIOS órájának beállítása</translation>
+        <translation>A BIOS Ã³rÃ¡jÃ¡nak beÃ¡llÃ­tÃ¡sa</translation>
     </message>
     <message>
         <source>Use local time especially if your computer dual-boots with another OS.</source>
-        <translation>Használd a helyi idõt (local time) ha több operációs rendszer is van a gépedre installálva!</translation>
+        <translation>HasznÃ¡ld a helyi idÃµt (local time) ha tÃ¶bb operÃ¡ciÃ³s rendszer is van a gÃ©pedre installÃ¡lva!</translation>
     </message>
     <message>
         <source>Settings for network interface %s</source>
-        <translation>A hálózati interfész beállítása: %s</translation>
+        <translation>A hÃ¡lÃ³zati interfÃ©sz beÃ¡llÃ­tÃ¡sa: %s</translation>
     </message>
     <message>
         <source>Enable interface on boot</source>
-        <translation>Az interfész engedélyezése induláskor</translation>
+        <translation>Az interfÃ©sz engedÃ©lyezÃ©se indulÃ¡skor</translation>
     </message>
     <message>
         <source>Should this network interface be brought up when the system is powered up?</source>
-        <translation>Aktiválandó-e ez a hálózati interfész automatikusan a rendszer betöltõdésekor?</translation>
+        <translation>AktivÃ¡landÃ³-e ez a hÃ¡lÃ³zati interfÃ©sz automatikusan a rendszer betÃ¶ltÃµdÃ©sekor?</translation>
     </message>
     <message>
         <source>Automatic configuration via DHCP</source>
-        <translation>Automatikus konfigurálás DHCP segítségével</translation>
+        <translation>Automatikus konfigurÃ¡lÃ¡s DHCP segÃ­tsÃ©gÃ©vel</translation>
     </message>
     <message>
         <source>Select this if your network server is configured to use the DHCP protocol.</source>
-        <translation>Válaszd ezt, ha a hálózati szervered DHCP protokollt használ</translation>
+        <translation>VÃ¡laszd ezt, ha a hÃ¡lÃ³zati szervered DHCP protokollt hasznÃ¡l</translation>
     </message>
     <message>
         <source>IP:</source>
@@ -191,7 +191,7 @@
     </message>
     <message>
         <source>The IP address of this computer in your network.</source>
-        <translation>A számítógéped IP címe a hálózatodban.</translation>
+        <translation>A szÃ¡mÃ­tÃ³gÃ©ped IP cÃ­me a hÃ¡lÃ³zatodban.</translation>
     </message>
     <message>
         <source>Netmask:</source>
@@ -199,7 +199,7 @@
     </message>
     <message>
         <source>Your network&apos;s netmask.</source>
-        <translation>A hálózatod alhálózati maszkja.</translation>
+        <translation>A hÃ¡lÃ³zatod alhÃ¡lÃ³zati maszkja.</translation>
     </message>
     <message>
         <source>Broadcast:</source>
@@ -207,319 +207,319 @@
     </message>
     <message>
         <source>The broadcast address of this network (optional).</source>
-        <translation>E hálózat Broadcast-címe (opcionális).</translation>
+        <translation>E hÃ¡lÃ³zat Broadcast-cÃ­me (opcionÃ¡lis).</translation>
     </message>
     <message>
         <source>General network settings</source>
-        <translation>Általános hálózati beállítások</translation>
+        <translation>ÃltalÃ¡nos hÃ¡lÃ³zati beÃ¡llÃ­tÃ¡sok</translation>
     </message>
     <message>
         <source>Gateway IP:</source>
-        <translation>Átjáró IP (Gateway):</translation>
+        <translation>ÃtjÃ¡rÃ³ IP (Gateway):</translation>
     </message>
     <message>
         <source>Default gateway: the IP which redirects requests to the outside world.</source>
-        <translation>Alapértelmezett átjáró: Az az IP, melyre a külvilágnak szóló igények átirányítódnak.</translation>
+        <translation>AlapÃ©rtelmezett Ã¡tjÃ¡rÃ³: Az az IP, melyre a kÃ¼lvilÃ¡gnak szÃ³lÃ³ igÃ©nyek Ã¡tirÃ¡nyÃ­tÃ³dnak.</translation>
     </message>
     <message>
         <source>Gateway interface:</source>
-        <translation>Átjáró-interfész (Gateway):</translation>
+        <translation>ÃtjÃ¡rÃ³-interfÃ©sz (Gateway):</translation>
     </message>
     <message>
         <source>The network interface through which the default gateway can be reached.</source>
-        <translation>A hálózati interfész, melyen át az alapértelmezett átjáró elérhetõ.</translation>
+        <translation>A hÃ¡lÃ³zati interfÃ©sz, melyen Ã¡t az alapÃ©rtelmezett Ã¡tjÃ¡rÃ³ elÃ©rhetÃµ.</translation>
     </message>
     <message>
         <source>Primary DNS:</source>
-        <translation>Elsõdleges DNS-szerver:</translation>
+        <translation>ElsÃµdleges DNS-szerver:</translation>
     </message>
     <message>
         <source>Primary server for solving hostnames. Contact your sysadmin or ISP for these.</source>
-        <translation>Az elsõdleges szerver a hosztnevek kezelésére. Ha nem tudod, lépj kapcsolatba a rendszeradminisztrátoroddal</translation>
+        <translation>Az elsÃµdleges szerver a hosztnevek kezelÃ©sÃ©re. Ha nem tudod, lÃ©pj kapcsolatba a rendszeradminisztrÃ¡toroddal</translation>
     </message>
     <message>
         <source>Secondary DNS:</source>
-        <translation>Másodlagos DNS-szerver:</translation>
+        <translation>MÃ¡sodlagos DNS-szerver:</translation>
     </message>
     <message>
         <source>Fallback server for when the primary one fails to respond.</source>
-        <translation>Tartalék szerver arra az esetre, ha az elsõ nem válaszolna.</translation>
+        <translation>TartalÃ©k szerver arra az esetre, ha az elsÃµ nem vÃ¡laszolna.</translation>
     </message>
     <message>
         <source>Super-user settings</source>
-        <translation>A gép rendszergazdájának (superuser) beállítása</translation>
+        <translation>A gÃ©p rendszergazdÃ¡jÃ¡nak (superuser) beÃ¡llÃ­tÃ¡sa</translation>
     </message>
     <message>
         <source>Invalid username</source>
-        <translation>Érvénytelen felhasználónév</translation>
+        <translation>Ã‰rvÃ©nytelen felhasznÃ¡lÃ³nÃ©v</translation>
     </message>
     <message>
         <source>Passwords typed do not match</source>
-        <translation>A megadott jelszó nem elfogadható</translation>
+        <translation>A megadott jelszÃ³ nem elfogadhatÃ³</translation>
     </message>
     <message>
         <source>Passwords typed match</source>
-        <translation>A megadott jelszó elfogadva</translation>
+        <translation>A megadott jelszÃ³ elfogadva</translation>
     </message>
     <message>
         <source>Login:</source>
-        <translation>Bejelentkezés:</translation>
+        <translation>BejelentkezÃ©s:</translation>
     </message>
     <message>
         <source>Select the account name for the superuser. Disabled in this release.</source>
-        <translation type="obsolete">Válassz egy felhasználónevet a rendszergazda számára. Jelenleg letiltott.</translation>
+        <translation type="obsolete">VÃ¡lassz egy felhasznÃ¡lÃ³nevet a rendszergazda szÃ¡mÃ¡ra. Jelenleg letiltott.</translation>
     </message>
     <message>
         <source>Password:</source>
-        <translation>Jelszó:</translation>
+        <translation>JelszÃ³:</translation>
     </message>
     <message>
         <source>Enter the password for the superuser.</source>
-        <translation>Add meg a rendszergazda jelszavát!</translation>
+        <translation>Add meg a rendszergazda jelszavÃ¡t!</translation>
     </message>
     <message>
         <source>Retype password:</source>
-        <translation>Üsd be újra a jelszót:</translation>
+        <translation>Ãœsd be Ãºjra a jelszÃ³t:</translation>
     </message>
     <message>
         <source>Enter the same password as above, to verify for typing mistakes.</source>
-        <translation>Üsd be ugyanazt a jelszót mint korábban, ellenõrzendõ az esetleges elgépeléseket.</translation>
+        <translation>Ãœsd be ugyanazt a jelszÃ³t mint korÃ¡bban, ellenÃµrzendÃµ az esetleges elgÃ©pelÃ©seket.</translation>
     </message>
     <message>
         <source>Check Password</source>
-        <translation>A jelszó ellenõrzése</translation>
+        <translation>A jelszÃ³ ellenÃµrzÃ©se</translation>
     </message>
     <message>
-        <source>Annak vizsgálata, hogy a felsõ mezõ ugyanazt a jelszót tartalmazza-e.</source>
-        <translation>ÃœberprÃ¼ft ob die eingegebenen KennwÃ¶rter Ã¼berein stimmen.</translation>
+        <source>Annak vizsgÃ¡lata, hogy a felsÃµ mezÃµ ugyanazt a jelszÃ³t tartalmazza-e.</source>
+        <translation>ÃƒÅ“berprÃƒÂ¼ft ob die eingegebenen KennwÃƒÂ¶rter ÃƒÂ¼berein stimmen.</translation>
     </message>
     <message>
         <source>Additional users</source>
-        <translation>Egyéb felhasználók</translation>
+        <translation>EgyÃ©b felhasznÃ¡lÃ³k</translation>
     </message>
     <message>
         <source>Type here the UNIX login for the user, e.g. &quot;johnd&quot;</source>
-        <translation>Adj meg itt egy UNIX-Logint egy felhasználónak, pld &quot;Vikike&quot;</translation>
+        <translation>Adj meg itt egy UNIX-Logint egy felhasznÃ¡lÃ³nak, pld &quot;Vikike&quot;</translation>
     </message>
     <message>
         <source>Enter the password for this user.</source>
-        <translation>Add meg e felhasználó jelszavát.</translation>
+        <translation>Add meg e felhasznÃ¡lÃ³ jelszavÃ¡t.</translation>
     </message>
     <message>
         <source>Full name:</source>
-        <translation>Teljes név:</translation>
+        <translation>Teljes nÃ©v:</translation>
     </message>
     <message>
         <source>Type here the real name of the user, e.g. &quot;John Doe&quot;</source>
-        <translation>Add meg e felhasználó teljes nevét, pld: &quot;Hajnal Viktória&quot;</translation>
+        <translation>Add meg e felhasznÃ¡lÃ³ teljes nevÃ©t, pld: &quot;Hajnal ViktÃ³ria&quot;</translation>
     </message>
     <message>
         <source>Use advanced default settings</source>
-        <translation>Optimalizált általános beállítások használata</translation>
+        <translation>OptimalizÃ¡lt Ã¡ltalÃ¡nos beÃ¡llÃ­tÃ¡sok hasznÃ¡lata</translation>
     </message>
     <message>
         <source>Add enhanced application settings files at the user&apos;s home directory.</source>
-        <translation>Alkalmazásbeállítások konfigurációs állományainak létrehozása a felhasználó home-könyvtárában.</translation>
+        <translation>AlkalmazÃ¡sbeÃ¡llÃ­tÃ¡sok konfigurÃ¡ciÃ³s Ã¡llomÃ¡nyainak lÃ©trehozÃ¡sa a felhasznÃ¡lÃ³ home-kÃ¶nyvtÃ¡rÃ¡ban.</translation>
     </message>
     <message>
         <source>Add user</source>
-        <translation>Felhasználó hozzáadása</translation>
+        <translation>FelhasznÃ¡lÃ³ hozzÃ¡adÃ¡sa</translation>
     </message>
     <message>
         <source>Create an user account using the information entered above.</source>
-        <translation>Felhasználó létrehozása a fentebbi adatokkal.</translation>
+        <translation>FelhasznÃ¡lÃ³ lÃ©trehozÃ¡sa a fentebbi adatokkal.</translation>
     </message>
     <message>
         <source>Remove user</source>
-        <translation>Felhasználó törlése</translation>
+        <translation>FelhasznÃ¡lÃ³ tÃ¶rlÃ©se</translation>
     </message>
     <message>
         <source>Remove the user that is currently selected in the list below.</source>
-        <translation>Az alanti listán épp kiválasztott felhasználó törlése.</translation>
+        <translation>Az alanti listÃ¡n Ã©pp kivÃ¡lasztott felhasznÃ¡lÃ³ tÃ¶rlÃ©se.</translation>
     </message>
     <message>
         <source>Added users</source>
-        <translation>Hozzáadott felhasználók</translation>
+        <translation>HozzÃ¡adott felhasznÃ¡lÃ³k</translation>
     </message>
     <message>
         <source>This is the list of users added so far.</source>
-        <translation>Az eddig létrehozott felhasználók listája.</translation>
+        <translation>Az eddig lÃ©trehozott felhasznÃ¡lÃ³k listÃ¡ja.</translation>
     </message>
     <message>
         <source>Ready to install</source>
-        <translation>Készen állok az installálásra</translation>
+        <translation>KÃ©szen Ã¡llok az installÃ¡lÃ¡sra</translation>
     </message>
     <message>
         <source>Conclusion</source>
-        <translation type="obsolete">Összefoglalás</translation>
+        <translation type="obsolete">Ã–sszefoglalÃ¡s</translation>
     </message>
     <message>
         <source>Done</source>
-        <translation>Kész!</translation>
+        <translation>KÃ©sz!</translation>
     </message>
     <message>
         <source>Continuing from here will perform all the indicated actions.</source>
-        <translation>Innen továbblépve az eddig kiválasztott tevékenységek végrehajtódnak!</translation>
+        <translation>Innen tovÃ¡bblÃ©pve az eddig kivÃ¡lasztott tevÃ©kenysÃ©gek vÃ©grehajtÃ³dnak!</translation>
     </message>
     <message>
         <source>GoboLinux installation aborted</source>
-        <translation>A GoboLinux telepítése félbeszakadt</translation>
+        <translation>A GoboLinux telepÃ­tÃ©se fÃ©lbeszakadt</translation>
     </message>
     <message>
         <source>Formating root partition %s...</source>
-        <translation>A root-partíció formázása: %s...</translation>
+        <translation>A root-partÃ­ciÃ³ formÃ¡zÃ¡sa: %s...</translation>
     </message>
     <message>
         <source>Mounting selected root partition %s...</source>
-        <translation>A kiválasztott %s root partíció felcsatolása...</translation>
+        <translation>A kivÃ¡lasztott %s root partÃ­ciÃ³ felcsatolÃ¡sa...</translation>
     </message>
     <message>
         <source>Creating temporary profile file...</source>
-        <translation>ideiglenes profilfájlok létrehozása...</translation>
+        <translation>ideiglenes profilfÃ¡jlok lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Performing file installation (may take a few minutes)...</source>
-        <translation>Adatok telepítése (ez eltarthat néhány percig)...</translation>
+        <translation>Adatok telepÃ­tÃ©se (ez eltarthat nÃ©hÃ¡ny percig)...</translation>
     </message>
     <message>
         <source>Generating LILO &quot;lilo.conf&quot; file...</source>
-        <translation>A LILO-konfiguráció létrehozása a &quot;lilo.conf&quot; fájlban...</translation>
+        <translation>A LILO-konfigurÃ¡ciÃ³ lÃ©trehozÃ¡sa a &quot;lilo.conf&quot; fÃ¡jlban...</translation>
     </message>
     <message>
         <source>Generating GRUB &quot;menu.lst&quot; file...</source>
-        <translation>A GRUB &quot;menu.lst&quot; fájl létrehozása...</translation>
+        <translation>A GRUB &quot;menu.lst&quot; fÃ¡jl lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Installing GRUB in %s...</source>
-        <translation>A GRUB installálása: %s...</translation>
+        <translation>A GRUB installÃ¡lÃ¡sa: %s...</translation>
     </message>
     <message>
         <source>Creating /System/Settings/hosts...</source>
-        <translation>A /System/Settings/hosts létrehozása...</translation>
+        <translation>A /System/Settings/hosts lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Creating /System/Settings/resolv.conf...</source>
-        <translation>A /System/Settings/resolv.conf létrehozása...</translation>
+        <translation>A /System/Settings/resolv.conf lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Generating network interfaces configuration files...</source>
-        <translation type="obsolete">A hálózati interfész konfigurációs fájljainak létrehozása...</translation>
+        <translation type="obsolete">A hÃ¡lÃ³zati interfÃ©sz konfigurÃ¡ciÃ³s fÃ¡jljainak lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Generating /System/Settings/fstab...</source>
-        <translation>A /System/Settings/fstab létrehozása...</translation>
+        <translation>A /System/Settings/fstab lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Setting gobo password...</source>
-        <translation type="obsolete">A gobo jelszó beállítása...</translation>
+        <translation type="obsolete">A gobo jelszÃ³ beÃ¡llÃ­tÃ¡sa...</translation>
     </message>
     <message>
         <source>Creating user accounts...</source>
-        <translation>Felhasználói hozzáférések létrehozása...</translation>
+        <translation>FelhasznÃ¡lÃ³i hozzÃ¡fÃ©rÃ©sek lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Creating account for user %s...</source>
-        <translation>A %s felhasználó beállítása...</translation>
+        <translation>A %s felhasznÃ¡lÃ³ beÃ¡llÃ­tÃ¡sa...</translation>
     </message>
     <message>
         <source>Setting default locale settings...</source>
-        <translation>Az alapértelmezett locale beállításainak rögzítése...</translation>
+        <translation>Az alapÃ©rtelmezett locale beÃ¡llÃ­tÃ¡sainak rÃ¶gzÃ­tÃ©se...</translation>
     </message>
     <message>
         <source>Updating XF86Config file...</source>
-        <translation type="obsolete">Az XF86Config aktualizálása...</translation>
+        <translation type="obsolete">Az XF86Config aktualizÃ¡lÃ¡sa...</translation>
     </message>
     <message>
         <source>Creating &quot;whatis&quot; database...</source>
-        <translation>&quot;whatis&quot;-adatbázis generálása...</translation>
+        <translation>&quot;whatis&quot;-adatbÃ¡zis generÃ¡lÃ¡sa...</translation>
     </message>
     <message>
         <source>Error creating &quot;whatis&quot; database.</source>
-        <translation>Hiba lépett fel a &quot;whatis&quot;-adatbázis létrehozása közben.</translation>
+        <translation>Hiba lÃ©pett fel a &quot;whatis&quot;-adatbÃ¡zis lÃ©trehozÃ¡sa kÃ¶zben.</translation>
     </message>
     <message>
         <source>Generating &quot;modprobe.conf&quot;...</source>
-        <translation type="obsolete">&quot;modprobe.conf&quot; létrehozása...</translation>
+        <translation type="obsolete">&quot;modprobe.conf&quot; lÃ©trehozÃ¡sa...</translation>
     </message>
     <message>
         <source>Error generating &quot;modprobe.conf&quot;.</source>
-        <translation type="obsolete">Hiba lépett fel a &quot;modprobe.conf&quot; létrehozásakor.</translation>
+        <translation type="obsolete">Hiba lÃ©pett fel a &quot;modprobe.conf&quot; lÃ©trehozÃ¡sakor.</translation>
     </message>
     <message>
         <source>Unmounting selected root partition %s...</source>
-        <translation>A kiválasztott %s root partíció lecsatolása...</translation>
+        <translation>A kivÃ¡lasztott %s root partÃ­ciÃ³ lecsatolÃ¡sa...</translation>
     </message>
     <message>
         <source>That&apos;s it!</source>
-        <translation>Ennyi volt az egész!</translation>
+        <translation>Ennyi volt az egÃ©sz!</translation>
     </message>
     <message>
         <source>You should now be able to reboot and enjoy the GoboLinux experience. :)</source>
-        <translation>Most indítsd újra a számítógépedet, és örvendj a GoboLinuxodnak! :)</translation>
+        <translation>Most indÃ­tsd Ãºjra a szÃ¡mÃ­tÃ³gÃ©pedet, Ã©s Ã¶rvendj a GoboLinuxodnak! :)</translation>
     </message>
     <message>
         <source>Warning: wizard was run in test mode.</source>
-        <translation>Figyelmeztetés: A varázsló teszt-üzemmódban indult.</translation>
+        <translation>FigyelmeztetÃ©s: A varÃ¡zslÃ³ teszt-Ã¼zemmÃ³dban indult.</translation>
     </message>
     <message>
         <source>Use &quot;gobolinux.py [qt|curses] install&quot; to perform installation.</source>
-        <translation type="obsolete">Használd ezt: &quot;gobolinux.py [qt|curses] install&quot; a GoboLinux installálásához.</translation>
+        <translation type="obsolete">HasznÃ¡ld ezt: &quot;gobolinux.py [qt|curses] install&quot; a GoboLinux installÃ¡lÃ¡sÃ¡hoz.</translation>
     </message>
     <message>
         <source>Satisfy dependencies</source>
-        <translation>Függõségek vizsgálata</translation>
+        <translation>FÃ¼ggÃµsÃ©gek vizsgÃ¡lata</translation>
     </message>
     <message>
         <source>Filter:</source>
-        <translation>Szûrõ:</translation>
+        <translation>SzÃ»rÃµ:</translation>
     </message>
     <message>
         <source>Select the account name for the superuser.</source>
-        <translation>Válassz egy nevet a rendszergazda számára.</translation>
+        <translation>VÃ¡lassz egy nevet a rendszergazda szÃ¡mÃ¡ra.</translation>
     </message>
     <message>
         <source>Enable super-user privileges</source>
-        <translation>Rendszergazdai jogosultságok engedélyezése</translation>
+        <translation>Rendszergazdai jogosultsÃ¡gok engedÃ©lyezÃ©se</translation>
     </message>
     <message>
         <source>Adds the user to the &apos;sys&apos; group, enabling it to run all commands as super-user via &apos;sudo&apos;</source>
-        <translation>A felhasználó felvétele a &apos;sys&apos; csoportba, hogy &apos;sudo&apos;-val minden parancsot kiadhasson.</translation>
+        <translation>A felhasznÃ¡lÃ³ felvÃ©tele a &apos;sys&apos; csoportba, hogy &apos;sudo&apos;-val minden parancsot kiadhasson.</translation>
     </message>
     <message>
         <source>Setting superuser login and password...</source>
-        <translation>A rendszergazdai Login és jelszó beállítása...</translation>
+        <translation>A rendszergazdai Login Ã©s jelszÃ³ beÃ¡llÃ­tÃ¡sa...</translation>
     </message>
     <message>
         <source>Setting zoneinfo...</source>
-        <translation>Zónainfók beállítása...</translation>
+        <translation>ZÃ³nainfÃ³k beÃ¡llÃ­tÃ¡sa...</translation>
     </message>
     <message>
         <source>Updating X11 config file...</source>
-        <translation>Az X11 konfigurációs fájljainak aktualizálása...</translation>
+        <translation>Az X11 konfigurÃ¡ciÃ³s fÃ¡jljainak aktualizÃ¡lÃ¡sa...</translation>
     </message>
     <message>
         <source>Run &quot;GoboLinuxInstaller [qt|curses] install&quot; to perform installation.</source>
-        <translation>Indítsd ezt: &quot;GoboLinuxInstaller [qt|curses] install&quot; a GoboLinux telepítéséhez.</translation>
+        <translation>IndÃ­tsd ezt: &quot;GoboLinuxInstaller [qt|curses] install&quot; a GoboLinux telepÃ­tÃ©sÃ©hez.</translation>
     </message>
     <message>
         <source>Generating new OpenSSH keys...</source>
-        <translation>Új OpenSSH kulcs generálása...</translation>
+        <translation>Ãšj OpenSSH kulcs generÃ¡lÃ¡sa...</translation>
     </message>
     <message>
         <source>Time zone</source>
-        <translation>Idõzóna</translation>
+        <translation>IdÃµzÃ³na</translation>
     </message>
     <message>
         <source>Select the time zone where you are at</source>
-        <translation>Válaszd ki az idõzónádat</translation>
+        <translation>VÃ¡laszd ki az idÃµzÃ³nÃ¡dat</translation>
     </message>
     <message>
         <source>Narrow the selection by searching for a particular word</source>
-        <translation>Szûkítsd a kiválasztásodat amiben a szót keresed</translation>
+        <translation>SzÃ»kÃ­tsd a kivÃ¡lasztÃ¡sodat amiben a szÃ³t keresed</translation>
     </message>
     <message>
         <source>Error generating OpenSSH keys.</source>
-        <translation>Hiba lépett fel az OpenSSH kulcs generálásakor.</translation>
+        <translation>Hiba lÃ©pett fel az OpenSSH kulcs generÃ¡lÃ¡sakor.</translation>
     </message>
 </context>
 </TS>
