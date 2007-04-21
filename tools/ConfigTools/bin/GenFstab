@@ -166,7 +166,7 @@ function gen_config() {
             mountoptions="pri=1"
             checks="0 0"
             ;;
-         "5");;
+         "5") continue;;
          *)
             [ -z "${comment}" ] && comment="# Additional partition."
             [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partitionnumber}"
@@ -176,13 +176,11 @@ function gen_config() {
             ;;
          esac
       fi
-      if [ ! "$id" = "5" ]; then
-         echo "${comment}" | grep -q "^#" || comment="# ${comment}"
-         echo "${comment}"
-         echo "${partition} ${mountpoint} ${filesystem} ${mountoptions} ${checks}"
-         echo
-      fi
-  done
+      echo "${comment}" | grep -q "^#" || comment="# ${comment}"
+      echo "${comment}"
+      echo "${partition} ${mountpoint} ${filesystem} ${mountoptions} ${checks}"
+      echo
+   done
 }
 
 ################################################################################
