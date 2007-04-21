@@ -515,9 +515,18 @@ def updateLocaleList() :
 	installer.setValue('ZoneInfo',(localesToShow,selectedLocale))
 
 
+# Configure known locale settings
+if lang == 'pt_BR' :
+	defaultZone = 'America/Sao_Paulo'
+elif lang == 'hu_HU' :
+	defaultZone = 'Europe/Budapest'
+else :
+	defaultZone = ''
+
 localeOptions = Screen(tr('Time zone'))
-localeOptions.addList('ZoneInfo',    tr('Time zone'), (locales,''), tr('Select the time zone where you are at') )
+localeOptions.addList('ZoneInfo', tr('Time zone'), (locales,defaultZone), tr('Select the time zone where you are at') )
 localeOptions.addLineEdit('ZoneInfoFilter', tr('Filter:'),'',  tr('Narrow the selection by searching for a particular word'), updateLocaleList )
+
 installer.addScreen(localeOptions)
 
 ##############################################################################
