@@ -2,11 +2,11 @@
 # -*- coding: iso-8859-1 -*-
 #
 # *** GOBOLINUX GRAPHICAL/CONSOLE INSTALLER ***
-# 
+#
 # - Andre Detsch {detsch gobolinux.org}
 #   (Astract API, pt_BR text, Qt API Implementation, gobolinux wizard & installation code)
 #
-# 
+#
 # - Hisham H. Muhammad {lode gobolinux.org}
 #   (Abstract API, en_US text, Curses API implementation)
 #
@@ -114,7 +114,7 @@ def safeRun(cmd, context = '', showProgress = 0, logger = None) :
 
 ###############################################################################
 ###############################################################################
-		
+
 #def doRun(cmd, context = '', showProgress = 0, logger = None) :
 #	f = os.popen(cmd)
 #	while 1 :
@@ -205,8 +205,8 @@ def safeFileReadLines(fileName, logger = None) :
 			logger.append(str(inst))
 		print 'Error reading '+fileName
 		print str(inst)
-		
-		
+
+
 
 ###############################################################################
 ###############################################################################
@@ -268,7 +268,7 @@ for line in lines :
 		programName = l[1][2:]
 		programSizes[programName] = int(l[0])
 		programShowSizes[programName] = "%0.1f"%(programSizes[programName] / 1024.0)
-		
+
 
 
 ###############################################################################
@@ -339,7 +339,7 @@ t = AbsTranslator(shared+'Language/tt2_%s.ts'%(lang), lang)
 
 def tr(s) :
 	return t.tr(s)
-	
+
 installer = Wizard('GoboLinux')
 
 
@@ -380,12 +380,12 @@ def doFormatChanged() :
 		msg = tr('Warning, this will destroy all data in')+'\n'+installer.getValue('RootPartition')[1]
 		ret = installer.showMessageBox(msg, ['Ok', 'Cancel'])
 		if ret == 'Ok' :
-			installer.setEnabled('PartitionType', 1)      
+			installer.setEnabled('PartitionType', 1)
 		else :
 			installer.setValue('DoFormat', 0)
 	else :
-		installer.setEnabled('PartitionType', 0)      
-	
+		installer.setEnabled('PartitionType', 0)
+
 
 deviceSelection.addBoolean('DoFormat',   tr('Format partition'), 0, tr('Erase all contents of the partition and prepare it to receive the new system?'), doFormatChanged)
 deviceSelection.addList('PartitionType', tr('File system'), (['ReiserFS', 'Ext2', 'Ext3'],  'ReiserFS'), tr('Which kind of file system should be used to format the root partition.') )
@@ -401,11 +401,11 @@ def getPackageWithsizeAndDescription(packageName) :
 	tr = packageName
 	if programShowSizes.has_key(packageName) :
 		tr = tr + ' ('+programShowSizes[packageName]+'MB)'
-		
+
 	if programDescriptions.has_key(packageName) :
 		tr = tr + ' - '+programDescriptions[packageName]
 	return tr
-		
+
 def getProfilePackages(profileName) :
 	if profileName == 'Full' :
 		lines = os.listdir('/Programs')
@@ -426,10 +426,9 @@ def fillUpDependencies() :
 	for basePackage in profiles['Base'] :
 		if not basePackage in selectedWithSize :
 			selectedWithSize.append(basePackage)
-	
+
 	selected = map(lambda x: x.split()[0], selectedWithSize)
-	
-	#note que na medida em que se faz append, o loop avança
+
 	for package in selected :
 		try :
 			f = open("/Programs/%s/Current/Resources/Dependencies"%package)
@@ -461,16 +460,16 @@ def showSelectedSetSize() :
 		s = '%0.2f'%(sum / (1024 * 1024.0)) + 'GB'
 	else :
 		s = '%0.1f'%(sum / (1024.0)) + 'MB'
-	
+
 	installer.setValue('SpaceRequired', tr('Space required: %s'%(s)))
-	
+
 def setProfile() :
 	profileNames, profileNameAndSize = installer.getValue('Profile')
 	profileName = profileNameAndSize.split()[0]
 	p = installer.getValue('Packages')[0]
 	installer.setValue('Packages',(p,profiles[profileName]))
 	showSelectedSetSize()
-   
+
 packageSelection.addList('Profile', tr('Predefined sets of packages'), (['Base','Typical','Full'], 'Typical'), tr('Selecting one of these will reset the selections of the package list.'), setProfile)
 packageSelection.addCheckList('Packages', tr('Select packages'), (profiles['Full'],  profiles['Typical']), tr('Mark the packages that should be installed in the system.'), showSelectedSetSize)
 packageSelection.addLabel('SpaceRequired',tr('Space required: %s')%'1.5GB', '', tr('Space required to install the selected packages'))
@@ -505,7 +504,7 @@ installer.addScreen(generalOptions)
 
 
 ##############################################################################
-## Locales 
+## Locales
 ##############################################################################
 
 def updateLocaleList() :
@@ -577,7 +576,7 @@ def checkSuperUserPasswords() :
 		x = installer.showMessageBox(tr('Passwords typed do not match'), ['Ok'])
 		installer.setValue('SuperUserPasswordRetyped', '')
 		installer.setValue('SuperUserPassword', '')
-		
+
 superUserScreen.addLineEdit('SuperUserLogin',tr('Login:'),'root', tr('Select the account name for the superuser.') )
 superUserScreen.addPassword('SuperUserPassword', tr('Password:'), '', tr('Enter the password for the superuser.') )
 superUserScreen.addPassword('SuperUserPasswordRetyped', tr('Retype password:'), '', tr('Enter the same password as above, to verify for typing mistakes.'), checkSuperUserPasswords )
@@ -680,10 +679,10 @@ if not ret :
 if mode == 'qt' :
 	from GraphicalTail import *
 	logger = GraphicalTail()
-	
+
 	installer.app.setMainWidget(logger.w)
 	logger.w.show()
-	import threading 
+	import threading
 	x = threading.Thread()
 	x.run = installer.app.exec_loop
 	x.start() # 'automatic' join
@@ -704,7 +703,7 @@ try :
 			#logger.show()
 
 		print s
-		sys.stdout.flush()	
+		sys.stdout.flush()
 
 	safeRun('clear')
 	safeRun('umount '+destMountPoint+' &> /dev/null')
@@ -712,7 +711,7 @@ try :
 
 	##############################################################################
 	##############################################################################
-	#[OK]: Format partition
+	# Format partition
 	def formatPartition(partition, fileSystem) :
 		if fileSystem == 'ReiserFS' :
 			#yes, two '-f's needed
@@ -736,32 +735,32 @@ try :
 		log(tr('Formating root partition %s...')%installer.getValue('RootPartition')[1])
 		formatPartition(installer.getValue('RootPartition')[1].split()[0], installer.getValue('PartitionType')[1])
 
-	
+
 	##############################################################################
 	##############################################################################
-	#[OK]: Mount partition
+	# Mount partition
 	log(tr('Mounting selected root partition %s...')%installer.getValue('RootPartition')[1])
 	rp = installer.getValue('RootPartition')[1].split()[0]
 	cmd = 'mount /System/Kernel/Devices/%s /Mount/GoboLinux'%rp
 	safeRun(cmd, 'Mounting root partition', 0, logger)
 
-        
-        
+
+
 	##############################################################################
 	##############################################################################
-	#[OK]: Check out dependencies
+	# Check out dependencies
 	if not installer.getValue('BypassFillUpDependencies') :
 		fillUpDependencies()
 
-		
+
 	##############################################################################
 	##############################################################################
-	#[OK]: Create profile file containing packages to install
+	# Create profile file containing packages to install
 	log(tr('Creating temporary profile file...'))
-	
+
 	profiles, profileNameAndSize = installer.getValue('Profile')
 	profileName = profileNameAndSize.split()[0]
-	
+
 	def createProfileFile(packageList) :
 		o = ''
 		for package in packageList :
@@ -770,24 +769,24 @@ try :
 
 	createProfileFile(map(lambda x: x.split()[0], installer.getValue('Packages')[1]))
 
-	
+
 	##############################################################################
 	##############################################################################
-	#[OK]: Call ProfileInstall
+	# Call ProfileInstall
 	log(tr('Performing file installation (may take a few minutes)...'))
 	cmd = 'ProfileInstall --super-user %s /tmp/%s %s'%(installer.getValue('SuperUserLogin'), profileName, destMountPoint)
 	safeRun(cmd, 'ProfileGen', 1, logger)
 
-	
+
 	cmd = 'mount -o bind /System/Kernel/Status /Mount/GoboLinux/System/Kernel/Status'
 	safeRun(cmd, 'Binding /System/Kernel/Status', 0, logger)
-        
+
 	cmd = 'mount -o bind /System/Kernel/Devices/ /Mount/GoboLinux/System/Kernel/Devices'
 	safeRun(cmd, 'Binding /System/Kernel/Devices', 0, logger)
 
 	##############################################################################
 	##############################################################################
- 	# [OK]: criar o lilo.conf (script auxiliar que detecta os windows);
+ 	# Create lilo.conf...
 	installLilo = 'LILO' in map(lambda x: x.split()[0], installer.getValue('Packages')[1])
 	try :
 		if installLilo :
@@ -799,10 +798,10 @@ try :
 	except :
 		log('Error creating lilo.conf file')
 
-	
+
 	##############################################################################
 	##############################################################################
-	# [OK]: criar o menu.lst (script auxiliar que detecta os windows);
+	# Create menu.lst...
 	log(tr('Generating GRUB "menu.lst" file...'))
 
 	import GenGrubMenu
@@ -811,10 +810,10 @@ try :
 
 	menu_lst = GenGrubMenu.generateGrubMenuFile(installer.getValue('RootPartition')[1].split()[0], installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
 	safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', menu_lst, logger)
-	
-	
+
+
 	##############################################################################
-	# [OK] : Instalar o grub
+	# Install GRUB...
 	def installGrub(targetDisc, targetPartition) :
 		o = ''
 		o += 'root %s'%GenGrubMenu.devToGrub(targetPartition) + '\n'
@@ -828,9 +827,9 @@ try :
 		log(tr('Installing GRUB in %s...')%installer.getValue('BootloaderTarget')[1].split()[0])
 		installGrub(installer.getValue('BootloaderTarget')[1].split()[0], installer.getValue('RootPartition')[1].split()[0])
 
-		
+
 	##############################################################################
-	# [OK]: criar o Options 
+	# Create Options file...
 	log('Creating "BootOptions" file...')
 
 	def generateOptionsFile() :
@@ -841,7 +840,7 @@ try :
 		comments['KeymapLayout'] = '#KeymapLayout=br-abnt2\n#KeymapLayout=us\n#KeymapLayout=dvorak.map'
 		#comments['MouseDevice']  = '#MouseType=ps2\n#MouseType=imps2\n#MouseType=ms'
 		#comments['MouseType']    = '#MouseDevice=/dev/misc/psaux\n#MouseDevice=/dev/tts/0'
-		
+
 		comments['Modules'] = """
 # If you need to load a module on boot, use the array below.
 # However, be warned that the correct way to load modules
@@ -861,7 +860,7 @@ try :
 """
 
 		o = ''
-		
+
 		if (installer.getValue('HostName')) :
 			o += 'HostName' + '=' + installer.getValue('HostName') + '\n\n'
 		else :
@@ -872,13 +871,13 @@ try :
 		if (installer.getValue('ClockMode')) :
 			if installer.getValue('ClockMode') == 'GMT' :
 				o += 'ClockMode=GMT' + '\n\n'
-			else : 
+			else :
 				o += 'ClockMode=LocalTime' + '\n\n'
 
 		o += comments['BootTheme'] + '\n'
 		if (installer.getValue('BootTheme')) :
 			o += 'BootTheme' + '=' + str(installer.getValue('BootTheme')[1]) + '\n'
-		
+
 		o += '\n'
 		o += comments['KeymapLayout'] + '\n'
 		if (installer.getValue('KeymapLayout')) :
@@ -889,7 +888,7 @@ try :
 		o += mouseLines
 		o += 'ConsoleFont=/Files/Fonts/Console/lode-lat1u-16.psf.gz' + '\n'
 		o += comments['Modules']
-			
+
 		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/BootOptions', o, logger)
 
 	def generateNetworkFile() :
@@ -908,42 +907,42 @@ lo_Netmask=255.0.0.0
 			if installer.getValue('Automatic'+interface) :
 				o += '   '+interface + '\n'
 		o += ')\n'
-		
+
 		o += comments['NetworkInterfaces']
 		for interface in interfaces :
 			if installer.getValue('BootProto'+interface) :
 				o += interface+'_'+'BootProto=DHCP'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n'
 			else :
 				o += '#'+interface+'_'+'BootProto=Static'+ '   # DHCP (requires DHCPCD package), Static (default if empty)\n'
-	
-			fieldsT = [ 'IP', 'Netmask', 'Broadcast' ] 
+
+			fieldsT = [ 'IP', 'Netmask', 'Broadcast' ]
 			for field in fieldsT :
 				if installer.isEnabled(field+interface) :
 					if (installer.getValue(field+interface)) :
-						o += interface+'_'+field+ '=' + installer.getValue(field+interface)+ '\n' 
+						o += interface+'_'+field+ '=' + installer.getValue(field+interface)+ '\n'
 					else :
 						o += "#"+interface+'_'+field+'='
-	
+
 		o += '\n'
 		if (installer.getValue('Gateway')) :
 			o += 'Gateway' + '=' + installer.getValue('Gateway') + '\n'
 		else :
 			o += comments['Gateway'] + '\n'
-		
+
 		if (installer.getValue('GatewayInterface')) :
 			o += 'GatewayInterface' + '=' + str(installer.getValue('GatewayInterface')[1]) + '\n'
 		else :
 			o += comments['GatewayInterface'] + '\n'
-		
+
 		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/NetworkOptions', o, logger)
 
 	generateOptionsFile()
 	generateNetworkFile()
 
-	
+
 	##############################################################################
 	##############################################################################
-	# [OK]: Put hostname inside /etc/hosts
+	# Put hostname inside /etc/hosts
 	log(tr('Creating /System/Settings/hosts...'))
 	o = '127.0.0.1 localhost.localdomain localhost %s\n'%installer.getValue('HostName')
 	safeWriteToFile(destMountPoint+'/System/Settings/hosts', o, logger)
@@ -951,7 +950,7 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: put DNS inside /etc/resolv.conf
+	# Put DNS inside /etc/resolv.conf
 	log(tr('Creating /System/Settings/resolv.conf...'))
 	o = ''
 	if installer.getValue('PrimaryDNS') :
@@ -966,10 +965,10 @@ lo_Netmask=255.0.0.0
 
 	safeWriteToFile(destMountPoint+'/System/Settings/resolv.conf', o, logger)
 
-	
+
 	##############################################################################
 	##############################################################################
-	# [OK]: gerar fstab
+	# Create fstab
 	log(tr('Generating /System/Settings/fstab...'))
 	cmd = 'GenFstab > %s/System/Settings/fstab'%destMountPoint
 	safeRun(cmd, 'fstab generation', 0, logger)
@@ -989,8 +988,7 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: setar senha de gobo
-	#será conferido acima, mas vale conferir de novo:
+	# Set superuser password
 	log(tr('Setting superuser login and password...'))
 	if installer.getValue('SuperUserPassword') == installer.getValue('SuperUserPasswordRetyped') :
 		shadowLines = safeFileReadLines(destMountPoint+'/System/Settings/shadow', logger)
@@ -1002,10 +1000,10 @@ lo_Netmask=255.0.0.0
 
 		goboLine = shadowLines[index]
 		goboLineList = goboLine.split(':')
-		
+
 		goboLogin = installer.getValue('SuperUserLogin')
 		goboLineList[0] = goboLogin
-		
+
 		goboOldPassword = goboLineList[1]
 		uncriptedNewPassword = installer.getValue('SuperUserPassword')
 		salt = goboOldPassword[:2]
@@ -1016,13 +1014,13 @@ lo_Netmask=255.0.0.0
 		shadowLines[index] = goboLine
 		o = string.join(shadowLines,'\n')
 		safeWriteToFile(destMountPoint+'/System/Settings/shadow', o, logger)
-		
+
 		cmd = 'chroot %s GrepReplace "gobo" "%s" /etc/passwd /etc/group /Programs/Sudo/Settings/sudoers'%(destMountPoint,goboLogin)
 		safeRun(cmd, '', 0, logger)
-		
+
 		cmd = 'chroot %s rm -f /etc/passwd~ /etc/group~ /Programs/Sudo/Settings/sudoers~'%destMountPoint
 		safeRun(cmd, '', 0, logger)
-		
+
 	else :
 		print 'Warning: keeping default superuser password: "gobo" (passwords typed do not match)'
 		salt = 'LE'
@@ -1030,17 +1028,17 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: criar usuários com chroot adduser -> eventualmente copiar o super-skel
+	# Create regular users with AddUser
 	log(tr('Creating user accounts...'))
 	for login in addedUsers.keys() :
 		log(tr('Creating account for user %s...')%login)
 		cmd = 'chroot %s AddUser'%destMountPoint
-		cmd = cmd + ' -f "'+addedUsers[login]['FullName'].strip()+'" ' 
+		cmd = cmd + ' -f "'+addedUsers[login]['FullName'].strip()+'" '
 		cmd = cmd + ' -p '+ crypt.crypt(addedUsers[login]['Password'], salt)
-		
+
 		if addedUsers[login]['SuperSkel'] :
 			cmd = cmd + ' --skel'
-		
+
 		cmd = cmd + ' ' + login
 		safeRun(cmd, '', 0, logger)
 		if addedUsers[login]['NewUserEnableSudo'] :
@@ -1053,9 +1051,9 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: setar lang padrão no BootScripts Env
+	# Set Default Language on Bootscripts Env file
 	log(tr('Setting default locale settings...'))
-	
+
 	o = 'LANG=%s\nLC_ALL=%s\n'%(lang,lang)
 
 	safeWriteToFile(destMountPoint+'/Programs/BootScripts/Current/Resources/Environment', o, logger)
@@ -1063,10 +1061,10 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: zoneinfo
+	# Zoneinfo
 	log(tr('Setting zoneinfo...'))
 	safeRun('chroot '+destMountPoint+' ln -sfn /Programs/Glibc/Current/Shared/zoneinfo/%s /Programs/Glibc/Settings/localtime'%installer.getValue('ZoneInfo')[1], 'zoneinfo', 0, logger)
-	
+
 	##############################################################################
 	##############################################################################
 	# [OK]: x11
@@ -1074,10 +1072,10 @@ lo_Netmask=255.0.0.0
 	#	log(tr('Updating X11 config file...'))
 	#	safeRun('cp -fL /System/Settings/X11/xorg.conf %s/Programs/Xorg/Settings/X11/xorg.conf'%destMountPoint)
 
-		
+
 	##############################################################################
 	##############################################################################
-	# [OK]: makewhatis
+	# makewhatis
 	try :
 	    	if os.access(destMountPoint+'/Programs/Man', os.F_OK) :
 			log(tr('Creating "whatis" database...'))
@@ -1085,21 +1083,11 @@ lo_Netmask=255.0.0.0
 			safeRun(cmd)
 	except :
 		log(tr('Error creating "whatis" database.'))
-	
-	##############################################################################
-	##############################################################################
-	# [OK]: kernel 2.6 modprobe.conf. Not more needed in GoboLinux 012
-	#try :
-	#	log(tr('Generating "modprobe.conf"...'))
-	#	cmd = 'chroot %s generate-modprobe.conf /etc/modprobe.conf'%destMountPoint
-	#	safeRun(cmd, 0, logger)
-	#except :
-	#	log(tr('Error generating "modprobe.conf".'))
 
 	##############################################################################
 	##############################################################################
-	# [OK]: New in 012: ssh keys gereneration
-	
+	# ssh keys gereneration
+
 	#if os.access(destMountPoint+'/Programs/OpenSSH/', os.R_OK) :
 	if 0 :
 		try :
@@ -1115,7 +1103,7 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# [OK]: Unmounting mount point
+	# Unmounting mount point
 	cmd = 'umount /Mount/GoboLinux/System/Kernel/Status'
 	safeRun(cmd, 'Unbinding /System/Kernel/Status', 0, logger)
 
@@ -1128,16 +1116,16 @@ lo_Netmask=255.0.0.0
 
 	##############################################################################
 	##############################################################################
-	# debug	
+	# debug
 	#if not reallyInstall :
 	#	log(tr('Testing Graphic Tail (may take a few minutes)...'))
 	#	cmd = 'du -h /Programs --max-depth=1'
 	#	doRun(cmd, 'ProfileGen', 1, logger)
-	
+
 
 	##############################################################################
 	##############################################################################
-	# [OK]: Done msg
+	# Done message
 	log(tr("That's it!"))
 	log(tr("You should now be able to reboot and enjoy the GoboLinux experience. :)"))
 
@@ -1148,7 +1136,7 @@ lo_Netmask=255.0.0.0
 	if logger :
 		logger.enableOk()
 
-except Exception, inst : 
+except Exception, inst :
 	x = '\033[1;31mGoboLinux installation failed.'+'\n'+'Check /tmp/GoboLinuxInstall.log.\033[0m'
 	y = 'Error: '+str(inst)
 	print x
