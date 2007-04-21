@@ -243,7 +243,7 @@ function wrapup() {
          if [ ! -f "$recipedeps" ]
          then
             cp "$target/Resources/BuildInformation" "$recipedeps"
-            cat "$recipedeps"
+            Log_Verbose $(cat "$recipedeps")
          fi
       fi
       Log_Normal "Packing recipe directory..."
