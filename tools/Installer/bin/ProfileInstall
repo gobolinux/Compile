@@ -108,8 +108,12 @@ function install_packages() {
    while read line
    do
       Log_Normal "Installing program: $line"
-      if [ -d  ${goboPrograms}/${line} ]
+      if [ ! -d "${goboPrograms}/${line}" ]
       then
+         Log_Error "Could not find program named \"${line}\""
+         continue
+      fi
+
       cp -a ${goboPrograms}/${line} ${dest_dir}/${goboPrograms}
 
       if [ -d ${goboPrograms}/${line}/Current/Resources/Defaults/Settings ]
@@ -117,15 +121,7 @@ function install_packages() {
          rm -rf ${dest_dir}/${goboPrograms}/${line}/Settings &> /dev/null
          cp -a ${goboPrograms}/${line}/Current/Resources/Defaults/Settings ${dest_dir}/${goboPrograms}/${line}
       fi
-
-      if [ -d ${dest_dir}/${goboPrograms}/${line}/Resources/Defaults/Daemons ]
-      then
-      rm -rf ${dest_dir}/${goboPrograms}/${line}/Current/Resources/Daemons &> /dev/null
-      cp -a ${dest_dir}/${goboPrograms}/${line}/Resources/Defaults/Daemons ${dest_dir}/${goboPrograms}/${line}/Current/Resources
-      fi
-      sync
       # SymlinkProgram ${line} &> /dev/null
-   fi
    done < ${profile}
 }
 
