@@ -34,7 +34,7 @@ UseBackgroundTheme=true
 
 [KFileDialog Settings]
 Automatic Preview=true
-Recent Files=/Programs/FireFox/Current/icons/mozicon128.png
+Recent Files=
 
 [KMenuButton_1]
 FreeSpace2=0
@@ -50,9 +50,9 @@ FreeSpace2=0
 StorageId=kde-konqbrowser.desktop
 
 [ServiceButton_3]
-DesktopFile=$HOME/.local/share/applications/FireFox.desktop
+DesktopFile=/System/Links/Shared/applications/firefox.desktop
 FreeSpace2=0
-StorageId=:FireFox.desktop
+StorageId=:firefox.desktop
 
 [ServiceButton_4]
 DesktopFile=/System/Links/Shared/applications/kde/konsole.desktop
