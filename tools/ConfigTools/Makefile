@@ -18,7 +18,10 @@ all:
 	do libf=$(PYTHON_SITE)/$$f.py; \
 	   rm -f $$libf; ln -nfs ../../../bin/$$f $$libf; \
 	done
-	DirPythonCompile $(PYTHON_SITE) 2> /dev/null
+	cd $(PYTHON_SITE) && \
+	for f in *.py; \
+		do python -c "import `basename $$f .py`"; \
+	done
 
 clean :
 	make -C src clean
