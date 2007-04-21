@@ -77,7 +77,7 @@ function sure_kill() {
 	    then return 0
 	    fi
 	fi
-        kill -$signal "$pid"
+        kill -$signal "$pid" 2>/dev/null
 	sleep 2
 	if ! find_process "$pid"
 	then
@@ -85,7 +85,7 @@ function sure_kill() {
 	    return 0
 	fi
     done
-    Log_Verbose "Failed killing process $pid ($name)."
+    Log_Terse "Failed killing process $pid ($name)."
     return 1
 }
 
