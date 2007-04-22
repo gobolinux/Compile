@@ -7,6 +7,6 @@ alias cp="cp -i"
 export PATH=$PATH:/bin
 
 alias Installer='GoboLinuxInstaller install'
+export NO_UNIONFS=yes 
 
 prompt lode red
-
