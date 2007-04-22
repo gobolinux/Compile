@@ -22,12 +22,21 @@ for i in $datadir/Packages-List-*; do
       if [ -z "$pkg" ]
       then
          echo -e "\n# ERROR: Package $packagename ($i) could not be filled."
+         newest=`FindPackage  -t o "$packagename" 2> /dev/null`
+         newest=`basename "$newest"`
+         echo "ln -sfn ./official/$newest ./"
          continue
       fi
-
-      if [ "`ls $packagedir/${packagename}--* | wc -l 2> /dev/null`" -gt 1 ]
+      
+      pkgs=`ls $packagedir/${packagename}--*`
+      if [ `echo "$pkgs" | wc -w 2> /dev/null` -gt 1 ]
       then
          echo -e "\n# ERROR: More than one version for $packagename available."
+         latest=`GuessLatest $pkgs`
+         for i in $pkgs
+         do
+            [ "$i" = "$latest" ] || echo "rm -f $i"
+         done
       fi
    done
 done
