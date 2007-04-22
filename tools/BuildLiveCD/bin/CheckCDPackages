@@ -29,7 +29,7 @@ for pkg in $packagedir/*.tar.bz2
 do
    basepkg=`basename $pkg`
    packagename=`echo $basepkg | sed 's/\(.*\)--.*--.*\.tar.bz2/\1/'`
-   if ! grep --quiet "$packagename" $datadir/Packages-List-*
+   if ! grep --quiet -w "^$packagename" $datadir/Packages-List-*
    then
       echo -e "\n# WARNING: Package $pkg is not required."
       echo "rm -f $basepkg"
