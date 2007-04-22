@@ -3,6 +3,14 @@
 datadir="/Programs/BuildLiveCD/Current/Data"
 packagedir="./Packages"
 
+if [ ! -d "$packagedir" ]
+then
+   echo "Could not find \"$packagedir\" directory."
+   echo "Please run this script in the root of the live cd development environment."
+   exit 1
+fi
+
+
 for i in $datadir/Packages-List-*; do
    [ "$i" = "$datadir/Packages-List-GoboLinuxTools-CVS" ] && continue
    # Skip comments
