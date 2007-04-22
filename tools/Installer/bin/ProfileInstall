@@ -82,7 +82,8 @@ function install_base() {
 
    cd ${dest_dir}/${goboUsers}/${superuser}
    GrepReplace -R "/Users/testuser" "${goboUsers}/${superuser}/"
-   cat /Users/gobo/.zshrc | grep -v "Installer" > .zshrc
+   GrepReplace -R "prompt lode cyan" "prompt lode red" '.zshrc'
+   rm -f '.zshrc~'
    cd - &> /dev/null
 
    mkdir -p ${dest_dir}/System/Variable/tmp/{.ICE-unix,.X11-unix} -m a+rwxt
