@@ -22,46 +22,53 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 	toReturn = []
 	
 	leftPrograms = []
+	leftProgramsLower = []
+
 	for t in p1 :
 		for p in availables[t]['programs'].keys() :
-			if p.lower() not in leftPrograms :
-				leftPrograms.append(p.lower())
+			if p.lower() not in leftProgramsLower :
+				leftProgramsLower.append(p.lower())
+				leftPrograms.append(p)
 	 
 	rightPrograms = []
+	rightProgramsLower = []
 	for t in p2 :
 		for p in availables[t]['programs'].keys() :
 			if p.lower() not in rightPrograms :
-				rightPrograms.append(p.lower())
+				rightProgramsLower.append(p.lower())
+				rightPrograms.append(p)
 	
 	for p in leftPrograms :
 		if p in rightPrograms :
-			leftLatestVersion = '0'
+			leftLatestVR = '0'
 			for t in p1 :
 				try :
-					leftLatestVersion = GuessLatest(availables[t]['programs'][p].keys() + [leftLatestVersion])
+					leftLatestV = GuessLatest(availables[t]['programs'][p].keys())
+					leftLatestVR = Join_Version_Revision(leftLatestV, GuessLatest(availables[t]['programs'][p][leftLatestV].keys()))
 				except :
 					pass
 			
-			rigthLatestVersion = '0'
+			rigthLatestVR = '0'
 			for t in p2 :
 				try :
-					rigthLatestVersion = GuessLatest(availables[t]['programs'][p].keys() + [rigthLatestVersion])
+					rigthLatestV = GuessLatest(availables[t]['programs'][p].keys() + ['0'])
+					rigthLatestVR = Join_Version_Revision(rigthLatestV, GuessLatest(availables[t]['programs'][p][rigthLatestV].keys()))
 				except :
 					pass
 			
-			latestVersion = GuessLatest([leftLatestVersion,rigthLatestVersion]) 
+			latestVR = GuessLatest([leftLatestVR,rigthLatestVR])
 			
-			if rigthLatestVersion == leftLatestVersion :
+			if rigthLatestVR == leftLatestVR :
 				if '=' in op:
-					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' = '+string.ljust(rigthLatestVersion,8))
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVR,8)+' = '+string.ljust(rigthLatestVR,8))
 			
-			elif latestVersion == rigthLatestVersion :
+			elif latestVR == rigthLatestVR :
 				if '<' in op :
-					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' < '+string.ljust(rigthLatestVersion,8))
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVR,8)+' < '+string.ljust(rigthLatestVR,8))
 			
-			elif latestVersion == leftLatestVersion :
+			elif latestVR == leftLatestVR :
 				if '>' in op:
-					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVersion,8)+' > '+string.ljust(rigthLatestVersion,8))
+					toReturn.append(string.ljust(p,10)+'\t'+string.ljust(leftLatestVR,8)+' > '+string.ljust(rigthLatestVR,8))
 		else :
 			if report_missing :
 				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
@@ -118,7 +125,7 @@ if __name__ == '__main__' :
 	import getopt, os
 	noWeb = False
 	try :
-		opts, args = getopt.getopt(sys.argv[1:], 'Wmh', ['report-missing', 'help', 'no-web', 'force-update'])
+		opts, args = getopt.getopt(sys.argv[1:], 'Wmh', ['report-missing', 'help', 'no-web', 'force-update', 'local-dirs='])
 	except getopt.GetoptError, detail :
 		print sys.argv[0].split('/')[-1]+': '+str(detail)
 		sys.exit(1)
