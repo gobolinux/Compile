@@ -24,7 +24,7 @@ for i in $datadir/Packages-List-*; do
          echo -e "\n# ERROR: Package $packagename ($i) could not be filled."
          newest=`FindPackage  -t o "$packagename" 2> /dev/null`
          newest=`basename "$newest"`
-         echo "ln -sfn ./official/$newest ./"
+         echo "ln -sfn ../official/$newest ./"
          continue
       fi
       
