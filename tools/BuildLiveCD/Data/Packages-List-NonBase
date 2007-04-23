@@ -115,6 +115,10 @@ LibMCS         # Audacious dependency
 Audacious
 Gimp
 MPlayer
+
+Cairomm
+Glibmm
+GTKMM
 GParted
 
 # ################################################
