@@ -296,7 +296,7 @@ then
 
    MakeInitRDTree || die "Failed creating initrd environment."
    echo "Copying isolinux/kernel from Output/ROLayer/System/Kernel/Boot/kernel"
-   \cp --remove-destination Output/ROLayer/System/Kernel/Boot/kernel Output/ISO/isolinux/kernel
+   \cp --remove-destination Output/ROLayer/Programs/Linux/Current/Resources/Unmanaged/System/Kernel/Boot/kernel Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
    echo "=> InitRD stage done"
 fi
