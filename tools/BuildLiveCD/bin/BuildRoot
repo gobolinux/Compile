@@ -174,10 +174,11 @@ function install_package() {
    fi
    
    # Handling Unmanaged files (emulating InstallPackage)
-   if [ -d "$name/$version/Resources/Unmanaged/" ]
-   then
-      cp -fa $name/$version/Resources/Unmanaged/* ../ # warning: assuming we are under $root/Programs
-   fi
+   # This is now handled by unionfs in InitRDScripts/bin/startGoboLinux
+   #if [ -d "$name/$version/Resources/Unmanaged/" -a "$name" != "Linux" ]
+   #then
+   #   cp -fa $name/$version/Resources/Unmanaged/* ../ # warning: assuming we are under $root/Programs
+   #fi
    
    popd &> /dev/null
    
