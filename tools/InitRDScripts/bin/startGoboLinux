@@ -15,32 +15,9 @@ mount -t tmpfs none /Mount/TmpFS
 mkdir /Mount/TmpFS/Programs
 
 echo "Initializing GoboLinux squashfs files..."
-# Mounting 'GoboLinux-{rest,files}.squashfs' (still harcoded names)
-mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs  /Mount/SquashFS/Rest
-mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
-
-#
-# Tricky block for /Depot, /Mount, /System and /Files
-#
-cd /Mount/SquashFS/Rest
-for i in *
-do
-   [ -h $i ] && cp -a $i /Mount/TmpFS
-done
-cp -a Mount  /Mount/TmpFS
-cp -a usr    /Mount/TmpFS
-mkdir -p /Mount/TmpFS/Depot
-mkdir -p /Mount/TmpFS/Files
-mkdir -p /Mount/TmpFS/System
-mount -t unionfs -o dirs=/Mount/TmpFS/System=rw:/Mount/SquashFS/Rest/System=ro none /Mount/TmpFS/System
-mount -t unionfs -o dirs=/Mount/TmpFS/Files=rw:/Mount/SquashFS/Files/Files=ro none /Mount/TmpFS/Files
-
-#
-# Tricky block for /Programs
-#
-mkdir -p /Mount/TmpFS/Programs
 
 # Mounting Packages*.squashfs files inside /Programs
+mkdir -p /Mount/TmpFS/Programs
 unionmountprograms="dirs=/Mount/TmpFS/Programs=rw"
 for i in /Mount/CD-ROM/Packages*.squashfs
 do
@@ -56,9 +33,24 @@ cd /Mount/TmpFS/Programs
 for i in *
 do
     [ -d "$i/Resources/Unmanaged" ] || continue
-    unmanagedfiles="$kernelmodules:/Mount/TmpFS/Programs/$i/Resources/Unmanaged=ro"
+    unmanagedfiles="$unmanagedfiles:/Mount/TmpFS/Programs/$i/Resources/Unmanaged=ro"
 done
 mount -t unionfs -o $unmanagedfiles none /Mount/TmpFS
+
+
+# Mounting 'GoboLinux-{rest,files}.squashfs' (still harcoded names)
+mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs  /Mount/SquashFS/Rest
+mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
+cd /Mount/SquashFS/Rest
+for i in *
+do
+   [ -h $i ] && cp -a $i /Mount/TmpFS
+done
+cp -a Mount /Mount/TmpFS
+cp -a usr   /Mount/TmpFS
+mkdir -p /Mount/TmpFS/Depot /Mount/TmpFS/Files /Mount/TmpFS/System
+mount -t unionfs -o dirs=/Mount/TmpFS/System=rw:/Mount/SquashFS/Rest/System=ro none /Mount/TmpFS/System
+mount -t unionfs -o dirs=/Mount/TmpFS/Files=rw:/Mount/SquashFS/Files/Files=ro none /Mount/TmpFS/Files
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices
