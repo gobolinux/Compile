@@ -42,12 +42,23 @@ mkdir -p /Mount/TmpFS/Programs
 
 # Mounting Packages*.squashfs files inside /Programs
 unionmountprograms="dirs=/Mount/TmpFS/Programs=rw"
-for i in /Mount/CD-ROM/Packages*.squashfs; do
+for i in /Mount/CD-ROM/Packages*.squashfs
+do
     squashdir=`basename $i .squashfs`
     mount -o loop,ro -t squashfs $i /Mount/SquashFS/$squashdir
     unionmountprograms="$unionmountprograms:/Mount/SquashFS/$squashdir=ro"
 done
 mount -t unionfs -o $unionmountprograms none /Mount/TmpFS/Programs
+
+# Union-mount Unmanaged files
+unmanagedfiles="dirs=/Mount/TmpFS=rw"
+cd /Mount/TmpFS/Programs
+for i in *
+do
+    [ -d "$i/Resources/Unmanaged" ] || continue
+    unmanagedfiles="$kernelmodules:/Mount/TmpFS/Programs/$i/Resources/Unmanaged=ro"
+done
+mount -t unionfs -o $unmanagedfiles none /Mount/TmpFS
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices
