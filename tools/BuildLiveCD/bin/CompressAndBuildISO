@@ -248,8 +248,8 @@ then
       time mksquashfs_on_demand ../ISO/`basename $i`.squashfs Programs "$blackapplist"
    done
 
-   contents=`ls | tr -s '\n' ' '`
-   time mksquashfs_on_demand ../ISO/GoboLinux-rest.squashfs "$contents" "-e Files -e Programs -e Users"
+   contents=`ls | grep -v "Files\|Programs\|Users" | tr -s '\n' ' '`
+   time mksquashfs_on_demand ../ISO/GoboLinux-rest.squashfs "$contents"
    quiet popd # Output/Environment
 
    umount Output/Environment
