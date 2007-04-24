@@ -61,8 +61,6 @@ for i in /Programs/BuildLiveCD/Current/Data/Packages-List-*; do
    mkdir $root/Mount/SquashFS/`basename $i .squashfs`
 done
 mkdir -p $root/Mount/CD-ROM
-mkdir -p $root/Mount/UnionFS
-mkdir -p $root/Mount/UnionFS/Programs
 mkdir -p $root/Users
 mkdir -p $root/Users/gobo
 mkdir -p $root/System
