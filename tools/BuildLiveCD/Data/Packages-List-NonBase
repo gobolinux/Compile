@@ -116,6 +116,7 @@ Audacious
 Gimp
 MPlayer
 
+LibSigc++
 Cairomm
 Glibmm
 GTKMM
@@ -131,7 +132,7 @@ Firefox
 # Thunderbird
 
 Pkgconfig
-LibStdC++
+# LibStdC++
 
 PCMCIAUtils
 Madwifi
