@@ -209,6 +209,7 @@ create_dir $root/System/Settings
 create_dir $root/System/Variable
 create_dir $root/System/Variable/tmp a+wt
 create_dir $root/System/Variable/log
+create_dir $root/System/Variable/mail
 create_dir $root/System/Variable/run
 create_dir $root/System/Variable/lock
 create_dir $root/System/Variable/spool
