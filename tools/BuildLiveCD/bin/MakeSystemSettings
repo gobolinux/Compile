@@ -58,6 +58,7 @@ sshd:x:22:104::/var/empty:/bin/false
 EOF
 
 write_file resolv_conf <<EOF
+# Domain name servers from OpenDNS.com
 nameserver 208.67.222.222
 nameserver 208.67.220.220
 EOF
