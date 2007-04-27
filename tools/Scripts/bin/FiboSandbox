@@ -30,6 +30,8 @@ Add_Option_Entry "r" "restore" "Restore ownership to <entry>."
 Add_Option_Entry "d" "directory" "The program should be run at <entry>. "\
 "This path should be either absolute, or relative to the sandbox root."
 Add_Option_List "s" "sandbox" "Colon-separated list of areas where the restricted user has write access to." "."
+Add_Option_List "m" "map" "Colon-separated mapping (lhs=rhs) where writes to rhs are mapped to lhs." ""
+
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -43,8 +45,72 @@ Is_Directory "$sandboxroot" && Die "Could not remove $sandboxroot"
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
 
 List_To_Array "sandbox" allowed
-
+List_To_Array "map" mapmounts
 mkdir "$sandboxroot"
+
+function cleanup() {
+   while read line
+   do
+      umount ${line}
+   done < <(mount | grep "/Resources/Unmanaged" | awk {'print $1'})
+
+   if [ "$domount" = "1" ]
+   then
+      cd ${oldpwd}
+      umount "$sandboxroot"
+   fi
+   rmdir "$sandboxroot"
+}
+
+function finish() {
+   Log_Verbose "Undoing the sandbox..."
+
+   # Save changed setuid permissions before chown
+   echo -n > "$suidfile"
+   For_Each allowed '[ -e "$each" ] && find "$each" -perm +4000 -printf "chmod u+s \"%p\"\n"'\
+      >> "$suidfile"
+
+   if Is_Entry_Set "restore"
+   then
+      For_Each allowed 'chown -R "'`Entry "restore"`'" "$each"'
+   else
+      if ! Boolean "original"
+      then
+         # Catch changes since the permissions were saved
+         make_restore_cmd() {
+            Exists "$1" || { Log_Verbose "'$1' does not exist"; return 1; }
+            find "$1" ! -user fibo -printf "chown %u \"%p\"\n"
+            find "$1" ! -group fibo -printf "chgrp %g \"%p\"\n"
+         }
+
+         For_Each allowed 'make_restore_cmd "$each"' >> "$permfile"
+      fi
+
+      # Restore owner and group
+      Log_Verbose "Restoring owner..."
+      Verbose cat "$permfile"
+
+      source "$permfile"
+
+      rm -f -- "$permfile"
+   fi
+
+   # Restore setuid
+   Log_Verbose "Restoring setuid permissions..."
+   Verbose cat "$suidfile"
+
+   source "$suidfile"
+
+   rm -f -- "$suidfile"
+   cleanup
+}
+
+function fibo_die() {
+   cleanup
+   Die "$1"
+}
+
+trap "fibo_die 'Caught signal. Exiting...'" SIGHUP SIGINT SIGTERM
 
 if ! Is_Entry "restore"
 then
@@ -93,6 +159,16 @@ then
     cd "$sandboxroot"
 fi
 
+error="false"
+For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
+    rhs=$(echo $each | cut -d= -f2)
+    Assert_Dir $lhs
+    Assert_Dir $rhs
+    mount -o bind $lhs $rhs
+    [ "$?" = "0" ] || error=true
+    '
+[ "$error" = "false" ] || fibo_die "Unable to mount map areas in chroot"
+
 if Is_Entry_Set "directory" 
 then
     cd `Entry "directory"`
@@ -130,59 +206,6 @@ do
    chgrp ${grp[$c]} "$i" 
    c=$[c+1]
 done
-
-Log_Verbose "Undoing the sandbox..."
-
-finish() {
-
-if [ "$domount" = "1" ]
-then
-    cd "$oldpwd"
-    umount "$sandboxroot"
-fi
-
-# Save changed setuid permissions before chown
-echo -n > "$suidfile"
-For_Each allowed '[ -e "$each" ] && find "$each" -perm +4000 -printf "chmod u+s \"%p\"\n"'\
-    >> "$suidfile"
-
-if Is_Entry_Set "restore"
-then
-    For_Each allowed 'chown -R "'`Entry "restore"`'" "$each"'
-else
-    if ! Boolean "original"
-    then
-        # Catch changes since the permissions were saved
-        make_restore_cmd() {
-            Exists "$1" || { Log_Verbose "'$1' does not exist"; return 1; }
-            find "$1" ! -user fibo -printf "chown %u \"%p\"\n"
-            find "$1" ! -group fibo -printf "chgrp %g \"%p\"\n"
-        }
-
-        For_Each allowed 'make_restore_cmd "$each"' >> "$permfile"
-    fi
-
-    # Restore owner and group
-    Log_Verbose "Restoring owner..."
-    Verbose cat "$permfile"
-
-    . "$permfile"
-
-    rm -f -- "$permfile"
-fi
-
-# Restore setuid
-Log_Verbose "Restoring setuid permissions..."
-Verbose cat "$suidfile"
-
-. "$suidfile"
-
-rm -f -- "$suidfile"
-
-rmdir "$sandboxroot"
-
-
-}
 
 finish
 

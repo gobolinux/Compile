@@ -146,10 +146,11 @@ For_Each bindmounts 'mount -o bind $each ${sandbox_mp}/${each}; [ "$?" = "0" ] |
 [ "$error" = "false" ] || sandbox_die "Unable to mount writable areas in chroot"
 
 error=false
-For_Each mapmounts 'lhs=$(readlink -f `echo $each | cut -d= -f1`)
-    rhs=$(readlink -f `echo $each | cut -d= -f2`)
-    Assert_Dir $rhs
-    mount -o bind $lhs ${sandbox_mp}/$rhs 
+For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
+    rhs=$(echo $each | cut -d= -f2)
+    Assert_Dir $lhs
+    Assert_Dir ${sandbox_mp}$rhs
+    mount -o bind $lhs ${sandbox_mp}$rhs 
     [ "$?" = "0" ] || error=true
     '
 [ "$error" = "false" ] || sandbox_die "Unable to mount map areas in chroot"

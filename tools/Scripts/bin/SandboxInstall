@@ -21,6 +21,7 @@ Add_Option_Entry "t" "target" "Makefile target to be used." "install"
 Add_Option_Entry "f" "makefile" "Specify which makefile to use." "Makefile"
 Add_Option_Entry "c" "command" "Use the given command instead of make. Options --target and --makefile are then ignored."
 Add_Option_Entry "a" "add-allowed" "Specify additional allowed directories or files. Colon separated list."
+Add_Option_Entry "u" "unmanaged-files" "Specify allowed directories or files, which should be handled as unmanaged. Colon separated list."
 Add_Option_Boolean "F" "no-sandbox" "Do not protect the installation with a sandbox."
 Add_Option_Entry "e" "expand-sandbox" "By default, the sandbox is built relative to the current "\
 "directory, '.'. Passing 1 to this option will build it relative to the parent directory, '..',"\
@@ -86,7 +87,7 @@ fi
 
 ### Install ####################################################################
 
-function installation_failed() {
+function cleanup() {
    # If not using UnionSandbox (including --no-sandbox" and rootless)
    # undo symlink from Settings to Defaults/Settings
    settings="$installPackageDir/Settings"
@@ -95,8 +96,14 @@ function installation_failed() {
       Is_Link "${settings}" && rm "${settings}"
       Is_Directory "${settings}.hold" && mv "${settings}.hold" "${settings}"
    fi
-   Die "Installation failed."
 }
+
+function installation_failed() {
+   cleanup
+   Die "${1}"
+}
+
+trap "installation_failed 'Caught signal. Exiting...'" SIGHUP SIGINT SIGTERM
 
 Log_Normal "Installing $package..."
 
@@ -110,18 +117,32 @@ then
 fi
 
 allowed=".$expandsandbox:$installPackageDir/$version:$packageDir/Settings:$packageDir/Variable"
-Is_Entry "add-allowed" && allowed="$allowed:`Entry "add-allowed"`"
-Log_Verbose "Sandbox: $allowed"
-
+Is_Entry "add-allowed" && allowed="$allowed:$(Entry "add-allowed")"
+Is_Entry "unmanaged-files" && eval $(Split_String "unmanagedarray" "$(Entry "unmanaged-files")" ":")
+Log_Verbose "Sandbox options:"
+Log_Verbose "Allowed directories: ${allowed}"
+Log_Verbose "Unmanaged directories: ${unmanagedarray[@]}"
 settings="$installPackageDir/Settings"
 default_settings="$installPackageDir/$version/Resources/Defaults/Settings"
+
+for unmanaged in "${unmanagedarray[@]}"
+do
+   # If it's not a directory (it's possible that it's a non-existant directory, but that's ok), strip one level
+   [ ! -d ${unmanaged} ] && unmanaged=$(dirname ${unmanaged})
+   # Make sure the directories exist
+   Assert_Dir ${unmanaged}
+   Assert_Dir ${installPackageDir}/${version}/Resources/Unmanaged${unmanaged}
+   # Map them
+   unmanagedmap="${installPackageDir}/${version}/Resources/Unmanaged${unmanaged}=${unmanaged}${unmanagedmap:+:${unmanagedmap}}"
+done
+
 if [ "$unionsandbox" ] 
 then
-    sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
-    map_settings="--map ${default_settings}=${settings}"
-    sandbox="UnionSandbox -w $sandbox_rw -s $allowed $map_settings -- "
+   sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
+   map_settings="--map ${default_settings}=${settings}${unmanagedmap:+:${unmanagedmap}}"
+   sandbox="UnionSandbox --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
 else
-    sandbox="FiboSandbox -s $allowed --"
+   sandbox="FiboSandbox --sandbox $allowed ${unmanagedmap:+--map ${unmanagedmap}} --"
 fi
 
 Boolean "no-sandbox" && sandbox=
@@ -143,12 +164,6 @@ then $sandbox `Entry "command"` "${args[@]}" || installation_failed
 else $sandbox make -f "`Entry "makefile"`" "${args[@]}" `Entry "target"` || installation_failed
 fi
 result="$?"
-
-if ! [ "$unionsandbox" ]
-then
-    Is_Link "${settings}" && rm "${settings}"
-    Is_Directory "${settings}.hold" && mv "${settings}.hold" "${settings}"
-fi
 
 if [ "$unionsandbox" ]
 then
@@ -186,4 +201,5 @@ then
    Quiet rmdir $sandbox_rw
 fi
 
+cleanup
 exit $result
