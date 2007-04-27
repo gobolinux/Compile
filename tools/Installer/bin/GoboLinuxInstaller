@@ -694,7 +694,7 @@ else :
 
 # Everything inside a try: except. Better than nothing... (I think :) )
 try :
-	destMountPoint = '/Mount/GoboLinux/'
+	destMountPoint = '/Mount/GoboLinux'
 
 	def log(s) :
 		s  = "\033[36m"+'=> '+s+"\033[0m"

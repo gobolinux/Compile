@@ -127,7 +127,7 @@ Log_Normal "Removing broken links from ${dest_dir}${goboLinks}"
 chroot ${dest_dir} find ${goboLinks} > /tmp/Links
 chroot ${dest_dir} RemoveBroken < /tmp/Links &> /dev/null
 chroot ${dest_dir} rm -f /tmp/Links
-Log_Normal "Removing broken links from ${dest_dir}/${goboSettings}"
+Log_Normal "Removing broken links from ${dest_dir}${goboSettings}"
 chroot ${dest_dir} find ${goboSettings} > /tmp/Links
 chroot ${dest_dir} RemoveBroken < /tmp/Links &> /dev/null
 chroot ${dest_dir} rm -f /tmp/Links
