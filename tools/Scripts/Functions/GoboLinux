@@ -60,6 +60,14 @@ function Gen_Env_Cache() {
    echo -e "if [ \"\$unsetvars\" ]\nthen\n$unsetvars\nfi\n" >> "$cache"
 }
 
+function Rebuild_MIME_Database() {
+if Executable_Exists_In_Path "update-mime-database"
+then
+   Log_Normal "Rebuilding MIME database..."
+   update-mime-database $([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime") >/dev/null
+fi
+}
+
 function Link_Or_Expand_All() {
 
 ### python Link_Or_Expand_All CHANGELOG

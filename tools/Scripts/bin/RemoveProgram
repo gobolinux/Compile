@@ -40,6 +40,8 @@ Log_Terse "Removing $program, version $version."
 Log_Verbose "Getting program file list..."
 filesdir=$(Get_System_Paths "${goboPrograms}/${program}/${version}")
 
+Is_Real_Nonempty_Directory "${goboPrograms}/${program}/${version}/Shared/mime/packages" && rebuildmimedb=true
+
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
 if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
@@ -56,6 +58,7 @@ RemoveBroken $filesdir
 
 #Log_Normal "Rebuilding Environment Cache file..."
 #yes | RebuildLinks -n
+[ "${rebuildmimedb}" = "true" ] && Rebuild_MIME_Database
 
 Gen_Env_Cache
 

@@ -9,6 +9,10 @@ function Is_Alias() { alias "$1" &> /dev/null ;}
 
 function Is_Real_Directory() { [ -d "$1" -a ! -L "$1" ] ;}
 
+function Is_Real_Empty_Directory() { Is_Real_Directory "$1" && Is_Empty_Directory "$1" ;}
+
+function Is_Real_Nonempty_Directory() { Is_Real_Directory "$1" && Is_Nonempty_Directory "$1"  ;}
+
 function Is_Directory() { [ -d "$1" ] ;}
 
 function Is_Executable() { [ -x "$1" ] ;}
@@ -24,6 +28,8 @@ function Is_Writable() { [ \( -e "$1" -a -w "$1" \) -o \( ! -e "$1" -a -w $(dirn
 function Is_Link() { [ -L "$1" -a -e "$1" ] ;}
 
 function Is_Broken_Link() { [ -L "$1" -a ! -e "$1" ] ;}
+
+function Executable_Exists_In_Path() { [ -n "$(which ${1} 2>/dev/null)" ] ;}
 
 function Make_Directory() {
     Parameters "$@" dir

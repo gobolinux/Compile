@@ -290,41 +290,44 @@ fi
 
 ################################################################################
 
-if [ "$linkshared" != "no" -a "$goboIndex" ]
+if [ "$linkshared" != "no" ]
 then
-   Log_Normal "Symlinking shared..."
-   link_directory "$current/share" "$goboShared"
-elif [ "$linkshared" != "no" ]
-then
-   Log_Normal "Symlinking shared..."
-   cd "$current"
-   Quiet rmdir "share"
-   Quiet rmdir "Shared"
-   if Is_Real_Directory "share"
+   if [ "$goboIndex" ]
    then
-      [ ! -d "Shared" ] && mv share Shared
-   fi
-   if Is_Real_Directory "Shared"
-   then
-      link=`readlink -f share` 
-      if ! [ "$link" = "$goboShared" ]
+      Log_Normal "Symlinking shared..."
+      link_directory "$current/share" "$goboShared"
+   else
+      Log_Normal "Symlinking shared..."
+      cd "$current"
+      Quiet rmdir "share"
+      Quiet rmdir "Shared"
+      if Is_Real_Directory "share"
       then
-         Quiet rm "share"
-         [ "`echo ${goboShared:${#goboPrefix}:${#goboShared}} | cut -b1`" != "/" ] && slash="/"
-         if Boolean "relative" && [ -d "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" ]
-         then
-            Quiet ln -snf "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" share
-         else
-            Quiet ln -snf "$goboShared" share
-         fi
+         [ ! -d "Shared" ] && mv share Shared
       fi
-      link_directory "$current/Shared" "$goboShared"
+      if Is_Real_Directory "Shared"
+      then
+         link=`readlink -f share` 
+         if ! [ "$link" = "$goboShared" ]
+         then
+            Quiet rm "share"
+            [ "`echo ${goboShared:${#goboPrefix}:${#goboShared}} | cut -b1`" != "/" ] && slash="/"
+            if Boolean "relative" && [ -d "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" ]
+            then
+               Quiet ln -snf "../../..${slash}${goboShared:${#goboPrefix}:${#goboShared}}" share
+            else
+               Quiet ln -snf "$goboShared" share
+            fi
+         fi
+         link_directory "$current/Shared" "$goboShared"
+      fi
+      if ! Is_Real_Directory "Shared" && Is_Link "share"
+      then
+         rm "share"
+      fi
+      Quiet cd -
    fi
-   if ! Is_Real_Directory "Shared" && Is_Link "share"
-   then
-      rm "share"
-   fi
-   Quiet cd -
+   Is_Real_Nonempty_Directory "${current}/Shared/mime/packages" && Rebuild_MIME_Database
 fi
 
 ################################################################################
