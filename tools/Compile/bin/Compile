@@ -37,6 +37,7 @@ Add_Option_Boolean "S" "no-symlink" "Do not symlink."
 Add_Option_Boolean "T" "no-strip" "Do not strip executables."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the program"
+Add_Option_Boolean "M" "no-unmanaged" "Do not install unmanaged files."
 Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
 Add_Option_Entry   "A" "start-at" "Skip sub-recipes when building a meta-recipe: start include list at given recipe; effective only with --lazy; debugging aid: do NOT use it for building packages."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
@@ -164,6 +165,7 @@ function do_symlink() {
       fi
       [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
+      Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
       symlinkopts=$(merge_array "symlink_options")
       SymlinkProgram $safeopts $unmanaged_opts $symlinkopts "$1" "$2" || Die "Linking step failed."
       Run_PostInstall "$1" "$2" "" ""
