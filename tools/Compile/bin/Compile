@@ -105,8 +105,11 @@ function do_symlink() {
 
    if ! [ "$nomake" = "yes" ]
    then
-      unset allowleftovers
-      [ "${unmanaged_files[*]}" ] && allowleftovers=--allow-leftovers
+      [ "${unmanaged_files[*]}" ] &&
+      for unmanaged in "${unmanaged_files[@]}"
+      do
+         unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
+      done
 
       if [ "$goboIndex" ]
       then sandboxopts=()
@@ -114,18 +117,15 @@ function do_symlink() {
       fi
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-      SandboxInstall $allowleftovers ${sandboxopts[@]} -f $makefile -t "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+      SandboxInstall ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
    fi
 
    if ! [ "$noextras" = "yes" ]
    then
       install_extras
 
-      if [ "${unmanaged_files[*]}" ]
+      if [ "${unmanaged_files[*]}" ] 
       then
-         mkdir -p "$target/Resources/Unmanaged/"
-         cp -a "$target/.SandboxInstall_Root"/* "$target/Resources/Unmanaged/"
-
          rm -f -- $target/Resources/UnmanagedFiles
          for file in "${unmanaged_files[@]}"
          do echo $file >> $target/Resources/UnmanagedFiles
