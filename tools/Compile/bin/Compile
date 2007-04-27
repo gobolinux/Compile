@@ -380,7 +380,7 @@ middle=`echo $scriptsversion | sed 's/^[0-9]*\.\([0-9]*\).*$/\1/g'`
 
 if echo "$scriptsversion" | grep -q CVS || \
    echo "$scriptsversion" | grep -q GIT || \
-   [ "`GuessLatest $scriptsversion 2.2`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.6.5`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
