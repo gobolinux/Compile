@@ -18,7 +18,7 @@ Parse_Options "$@"
 # Choosing between complete and base set of packages
 #############################################################################
 repository="chrootcompile"
-Is_Entry_Set "complete" && repository="livecd"
+Boolean "complete" && repository="livecd"
 
 #############################################################################
 # Download packages
