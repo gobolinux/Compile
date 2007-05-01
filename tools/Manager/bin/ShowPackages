@@ -34,12 +34,11 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 	rightProgramsLower = []
 	for t in p2 :
 		for p in availables[t]['programs'].keys() :
-			if p.lower() not in rightPrograms :
+			if p.lower() not in rightProgramsLower :
 				rightProgramsLower.append(p.lower())
 				rightPrograms.append(p)
-	
 	for p in leftPrograms :
-		if p in rightPrograms :
+		if p.lower() in rightProgramsLower :
 			leftLatestVR = '0'
 			for t in p1 :
 				try :
