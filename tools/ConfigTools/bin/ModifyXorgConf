@@ -15,8 +15,6 @@
 # 17/05/2005 - [lucasv] Fixed the keyboard stuff, 'grep -v Viewport'
 
 . ScriptFunctions
-#Import Console
-Import Process
 
 mkdir -p ${goboTemp}/setup
 cd ${goboTemp}/setup
@@ -74,7 +72,6 @@ fi
 
 if ! Quiet grep '"XkbModel"' ${tempfile}
 then
-  #KeymapLayout=`cat ${goboTemp}/setup/keymap &> /dev/null`
   if [ -n "$KeymapLayout"  ]
   then
      Log_Normal "Your keymap layout is '$KeymapLayout'."
