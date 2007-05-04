@@ -903,7 +903,7 @@ then
    while read patch
    do
       Log_Verbose "Applying patch generated from ${patch}..."
-      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}")
+      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}") || Die "Failed on patch generated from $patch"
    done < <(find "$recipedir" -name "*.patch.in" | sort)
 
    popd &> /dev/null
