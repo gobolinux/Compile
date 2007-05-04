@@ -163,7 +163,7 @@ then
       rm -rf "$newrecipedir"
       Die "Could not download source code, aborting."
    fi
-   [ -z "${file} ] && file="`basename $url`"
+   [ -z "${file}" ] && file="`basename $url`"
    filesize="`Get_Size $compileArchivesDir/$file`"
    filemd5="`Get_MD5 $compileArchivesDir/$file`"
    sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$newrecipedir/Recipe"
