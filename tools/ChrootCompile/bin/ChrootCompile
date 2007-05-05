@@ -327,6 +327,7 @@ function create_root() {
    if [ ! -z "$prefix" ]
    then
        # this should point to the temporary environment set by chrootcompile
+       mkdir -p ${rootdir}/${prefix%/*}
        ln -nfs .. $rootdir/$prefix
 
        # these are needed by Compile and need to point to chrootcompile's rootfs;
@@ -591,11 +592,11 @@ cat <<EOF > $root/$settingsdir/hosts
 EOF
 
 sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
-sudo chmod 777 $root/$goboPrograms/Sudo/Settings
+$sudo chmod 777 $root/$goboPrograms/Sudo/Settings
 cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
 root ALL=(ALL) NOPASSWD: ALL
 EOF
-sudo chmod 755 $root/$goboPrograms/Sudo/Settings
+$sudo chmod 755 $root/$goboPrograms/Sudo/Settings
 
 $sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
 $sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
