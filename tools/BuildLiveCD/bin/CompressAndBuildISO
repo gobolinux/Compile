@@ -34,7 +34,6 @@ then
    esac
 else
    start_at=$STAGE_ROLAYER
-   #[ -d "Output/ROLayer" ] && start_at=$STAGE_SQUASHFS || 
 fi
  
 if [ "$2" ]
@@ -183,7 +182,6 @@ then
    echo "Unionfs mounting layers."
    tmp_mp=`mktemp -d /tmp/finalize_layer-XXXXX`
    unionfs_dirs="dirs=${tmp_mp}=rw:${unionfs_dirs}"
-   #echo mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment
    mount -t unionfs -o ${unionfs_dirs} $tmp_mp Output/Environment || { echo Error mounting Output/Environment; exit 1; }
 
    mkdir -p Output/Checksums
@@ -245,7 +243,8 @@ then
       if [ -z "$applist" ]
       then continue
       fi
-      time mksquashfs_on_demand ../ISO/`basename $i`.squashfs Programs "$blackapplist"
+      contents=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
+      time mksquashfs_on_demand ../ISO/`basename $i`.squashfs "$contents" "$blackapplist"
    done
 
    contents=`ls | grep -v "Files\|Programs\|Users" | tr -s '\n' ' '`
