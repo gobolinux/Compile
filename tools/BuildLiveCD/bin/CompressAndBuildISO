@@ -202,10 +202,12 @@ then
    function mksquashfs_on_demand() {
       out="$1"
       dirs="$2"
-      params="$3"
+      searchdirs="$3"
+      blacklist="$4"
       bn=`basename "$out"`
+      [ -z "$searchdirs" ] && searchdirs="$dirs"
       echo "Checking if $bn needs updating..."
-      find $dirs -newer "$out" 2> /dev/null > /tmp/newer.txt
+      find $searchdirs -newer "$out" 2> /dev/null > /tmp/newer.txt
       #FIXME: Assuming Glibc is not being changed
       diffs=`cat /tmp/newer.txt | grep -v "Programs/Glibc\|^Programs$" | wc -l`
       ld_so_cache_changed
@@ -220,7 +222,7 @@ then
       if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
       then
          echo "Creating squashfs compressed file $bn..."
-         nice -20 mksquashfs $dirs "$out" -noappend -keep-as-directory $params
+         nice -20 mksquashfs $dirs "$out" -noappend -keep-as-directory $blacklist
       else
          echo "Mksquashfs not needed for $bn."
       fi
@@ -243,8 +245,8 @@ then
       if [ -z "$applist" ]
       then continue
       fi
-      contents=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
-      time mksquashfs_on_demand ../ISO/`basename $i`.squashfs "$contents" "$blackapplist"
+      searchdirs=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
+      time mksquashfs_on_demand ../ISO/`basename $i`.squashfs Programs "$searchdirs" "$blackapplist"
    done
 
    contents=`ls | grep -v "Files\|Programs\|Users" | tr -s '\n' ' '`
