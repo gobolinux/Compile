@@ -377,7 +377,7 @@ set_permission_string(struct stat *status, char *mask_U, char *mask_G, char *mas
 
 void
 really_list_entries(struct file_info *file_info, struct dirent **namelist, int stat_num, 
-                    long *total, long *counter, long *hiddenfiles)
+                    long long *total, long *counter, long *hiddenfiles)
 {
    int i, pass;
    char mask_U[4], mask_G[4], mask_O[4], final_mask[64];
@@ -550,7 +550,7 @@ size_sort(const void *void_a, const void *void_b)
 }
 
 int
-list_file(const char *path, long *total, long *counter, long *hiddenfiles)
+list_file(const char *path, long long *total, long *counter, long *hiddenfiles)
 {
     int ret, n;
     struct stat status;
@@ -592,7 +592,7 @@ list_file(const char *path, long *total, long *counter, long *hiddenfiles)
 }
 
 int
-list_entries(const char *path, long *total, long *counter, long *hiddenfiles)
+list_entries(const char *path, long long *total, long *counter, long *hiddenfiles)
 {
    int i, n, ret, len;
    char complete_path[PATH_MAX];
@@ -739,7 +739,7 @@ get_filesystem(struct statfs status)
 }
 
 void
-summarize_simple(long total, long counter, long hiddenfiles)
+summarize_simple(long long total, long counter, long hiddenfiles)
 {
     char *bytes_total_string = colorize_bytes(total, SCHEME_FILES, 9);
 
@@ -753,7 +753,7 @@ summarize_simple(long total, long counter, long hiddenfiles)
 }
 
 void
-summarize(struct statfs status, long total, long counter, long hiddenfiles, int final_info)
+summarize(struct statfs status, long long total, long counter, long hiddenfiles, int final_info)
 {
     char *bytes_used_string, *bytes_free_string, *bytes_total_string;
    static int cols = 0;
@@ -810,7 +810,8 @@ int
 main(int argc, char **argv)
 {
    int got_statfs, c, index, num_dirs;
-   long total, counter, hiddenfiles;
+   long long total;
+   long counter, hiddenfiles;
    struct statfs status;
     
     while ((c=getopt_long(argc, argv, shortopts, long_options, &index)) != -1) {
@@ -872,7 +873,8 @@ main(int argc, char **argv)
 
    } else {
       struct stat entry_status;
-      long total_local, counter_local, hidden_local;
+      long long total_local;
+      long counter_local, hidden_local;
       
       if (optind < argc) {
          if (statfs(argv[optind], &status) == 0)
