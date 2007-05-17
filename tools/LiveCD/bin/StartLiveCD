@@ -33,6 +33,11 @@ do
 done
 
 ######################################
+# Mount remaining filesystems
+######################################
+mount -a -t tmpfs,devpts,usbfs
+
+######################################
 # Initialize Users directory
 ######################################
 msg "Initializing home directory"
@@ -73,11 +78,6 @@ LANG=`cat ${goboTemp}/setup/language`
 ######################################
 # Executes the 'launch_dhcp' function if an ethernet interface was found
 ifconfig eth0 >& /dev/null && { msg "Starting dhcp client"; launch_dhcp; }
-
-######################################
-# Mount remaining filesystems
-######################################
-mount -a -t tmpfs,devpts,usbfs
 
 ######################################
 # Configure date and time
