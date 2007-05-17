@@ -11,7 +11,7 @@ function quiet() {
 
 tar --help | grep -q -- --overwrite || die "Your version of tar is too old. Please upgrade."
 
-if [ "$1" = "--help" ]
+if [ "$1" = "--help" -o "$1" = "-h" ]
 then
    echo "$0 [<start_stage> [<end_stage>]]"
    echo "   where stage can be: rolayer, squashfs, initrd, iso"
