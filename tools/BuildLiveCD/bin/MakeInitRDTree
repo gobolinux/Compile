@@ -54,6 +54,7 @@ mkdir -p $root/Mount/HD1
 mkdir -p $root/Mount/HD2
 mkdir -p $root/Mount/Floppy
 mkdir -p $root/Mount/TmpFS
+mkdir -p $root/Mount/UnionFS
 mkdir -p $root/Mount/SquashFS
 mkdir -p $root/Mount/SquashFS/Rest
 mkdir -p $root/Mount/SquashFS/Files
