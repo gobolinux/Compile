@@ -3,6 +3,7 @@
 /bin/mount -t proc  none /System/Kernel/Status
 /bin/mount -t sysfs none /System/Kernel/Objects
 /bin/mount -t tmpfs none /System/Kernel/Devices
+/bin/mount -t tmpfs none /Mount/UnionFS
 
 echo "Generating /System/Kernel/Devices"
 /bin/miniudev >/dev/null
@@ -28,10 +29,10 @@ do
     mount -o loop,ro -t squashfs $i /Mount/SquashFS/$squashdir
     unionmountprograms="$unionmountprograms:/Mount/SquashFS/$squashdir=ro"
     
-    for pkg in /Mount/SquashFS/$squashdir/*
+    for pkg in /Mount/SquashFS/$squashdir/Programs/*
     do
         udir="$pkg/Current/Resources/Unmanaged"
-        [ -d "$udir" ] && unmanaged="$unmanaged:$udir=ro"
+        [ -d "$udir" ] && unmanaged="$unmanaged $udir"
     done
 done
 
@@ -39,8 +40,12 @@ done
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-rest.squashfs  /Mount/SquashFS/Rest
 mount -o loop,ro -t squashfs /Mount/CD-ROM/GoboLinux-files.squashfs /Mount/SquashFS/Files
 
-dirs="/Mount/TmpFS=rw${unionmountprograms}${unmanaged}:/Mount/SquashFS/Rest=ro:/Mount/SquashFS/Files=ro"
+dirs="/Mount/UnionFS=rw${unionmountprograms}:/Mount/SquashFS/Rest=ro:/Mount/SquashFS/Files=ro"
 mount -t unionfs -o dirs=$dirs none /Mount/TmpFS
+for dir in $unmanaged
+do
+   mount -t unionfs -o remount,add=:${dir}=ro none /Mount/TmpFS
+done
 
 # Remove unneeded mounts
 /bin/umount /System/Kernel/Devices
