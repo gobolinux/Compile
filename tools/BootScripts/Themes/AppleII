@@ -87,8 +87,8 @@ ThemeInit() {
       } &
       fifopid=$!
    else
-      ThemeStdoutStream=/dev/tty2
-      ThemeStderrStream=/dev/tty2
+      ThemeStdoutStream=/dev/console
+      ThemeStderrStream=/dev/console
    fi
    clear
    Color $Black $White
