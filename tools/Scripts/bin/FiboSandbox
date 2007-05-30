@@ -49,10 +49,11 @@ List_To_Array "map" mapmounts
 mkdir "$sandboxroot"
 
 function cleanup() {
+   Log_Verbose "Cleaning up mounts..."
    while read line
    do
       umount ${line}
-   done < <(mount | grep "/Resources/Unmanaged" | awk {'print $1'})
+   done < <(mount | grep "^/Programs/.*/Resources/Unmanaged" | awk {'print $1'})
 
    if [ "$domount" = "1" ]
    then
@@ -102,7 +103,6 @@ function finish() {
    source "$suidfile"
 
    rm -f -- "$suidfile"
-   cleanup
 }
 
 function fibo_die() {
@@ -207,6 +207,7 @@ do
    c=$[c+1]
 done
 
+cleanup
 finish
 
 exit $result
