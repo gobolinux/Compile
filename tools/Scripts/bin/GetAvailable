@@ -183,10 +183,9 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		return d
 
 	programs = os.listdir(directory)
-
+	
 	for i in range(len(programs)) :
 		p = programs[i]
-
 		if not os.path.isdir(directory+'/'+p):
 			continue
 
@@ -212,7 +211,7 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		try :
 			ds = os.listdir(directory+'/'+p)
 		except :
-			return d
+			continue
 
 		if requireCurrent and not 'Current' in ds :
 			continue
