@@ -507,11 +507,7 @@ then
    set +o pipefail
    for d_url in ${selecteddeps}
    do
-      Compile $compileoptions --no-dependencies $d_url || {
-         ret=$?
-         rm $selecteddeps
-         exit $ret
-      }
+      Compile $compileoptions --no-dependencies $d_url || exit $?
    done
 fi
 
