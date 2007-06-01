@@ -1,6 +1,0 @@
-[Name]  gtkglarea
-[Summary]  An OpenGL Widget for GTK+
-[Description]  This package contains a widget for the GTK+ toolkit, which allows you to program OpenGL under GTK+. It is needed by XTraceroute.
-[Suse Category]  System/Libraries
-[License]  GPL
-[Homepage]  http://www.student.oulu.fi/~jlof/gtkglarea/

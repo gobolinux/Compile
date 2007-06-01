@@ -1,5 +1,0 @@
-##!/bin/bash (this line exists for the purposes of syntax highlighting)
-
-# Dependencies.blacklist is documented in detail at 
-#  http://wiki.gobolinux.org/Dependencies
-

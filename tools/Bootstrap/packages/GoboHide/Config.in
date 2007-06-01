@@ -1,3 +1,0 @@
-config PKG_GOBOHIDE
-    bool "GoboHide"
-    default y

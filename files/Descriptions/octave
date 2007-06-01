@@ -1,5 +1,0 @@
-[Name] Octave
-[Summary] The GNU Octave language for numerical computations
-[License] GNU General Public License (GPL)
-[Description] Octave is a high-level language, primarily intended for numerical computations. It provides a convenient command line interface for solving linear and nonlinear problems numerically, and for performing other numerical experiments. It may also be used as a batch-oriented language.
-[Homepage] http://www.octave.org/

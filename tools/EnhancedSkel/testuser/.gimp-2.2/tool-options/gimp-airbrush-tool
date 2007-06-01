@@ -1,6 +1,0 @@
-# GIMP gimp-airbrush-tool options
-
-(brush "Circle (11)")
-(gradient "FG to BG (RGB)")
-
-# end of gimp-airbrush-tool options

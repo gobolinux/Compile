@@ -1,8 +1,0 @@
-[Description] The Blue Mango Quest is a 3D arcade game that 
-uses OpenGL and SDL. The goal is to extend the 
-pacman-style gameplay in several ways. You see 
-what the main character sees (like in traditional 
-FPS games), and you'll find about 20 items (bonus 
-and malus) that will give you a lot of fun. An easy 
-to use yet powerfull 2D level editor is also provided.
-[Homepage] http://mangoquest.org/

@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=InstallPackage
-Comment=GoboLinux tool for installation of binary packages
-Exec=InstallPackage
-InitialPreference=5
-MimeType=application/x-gobo-package;
-Terminal=true
-Type=Application

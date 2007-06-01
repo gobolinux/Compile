@@ -1,6 +1,0 @@
-[Name]  smssend
-[Summary]  interface to internet SMS forwarding services
-[Description]  smssend is a utility providing a command line interface to the GSM Short Message Service (SMS) via internet gateways. It requires an active internet connection (HTTP proxy is suitable) and may require a registration for such gateways. The program is quite configurable for other gateways than provided, examples are included. Keep in mind that these internet to SMS gateways may not tolerate and may even forbid their use via scripts.
-[Suse Category]  Hardware/Mobile
-[License]  GPL
-[Homepage]  http://zekiller.skytech.org/smssend_menu_en.html
