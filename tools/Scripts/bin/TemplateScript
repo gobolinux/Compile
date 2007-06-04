@@ -31,7 +31,7 @@ Parse_Options "$@"
 #Uncomment this if the script is meant to be run with superuser privileges.
 #Verify_Superuser
 
-for (( i=1; 1<=$(Number_Of_Arguments) ; i++ ))
+for (( i=1; i<=$(Number_Of_Arguments); i++ ))
 do
    : # echo "Doing something with $(Arg $i)"
 done
