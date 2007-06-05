@@ -17,8 +17,11 @@ all:
 	do libf=$(PYTHON_SITE)/$$f.py; \
 	   rm -f $$libf; ln -nfs ../../../src/$$f.py $$libf; \
 	done
-	DirPythonCompile $(PYTHON_SITE) &> /dev/null
-
+	
+	cd $(PYTHON_SITE) && \
+	for f in *.py; \
+	do python -c "import `basename $$f .py`"; \
+	done
 
 clean :
 	for f in $(PYTHON_LIBS); do libf=$(PYTHON_SITE)/$$f; rm -f $$libf.{pyo,pyc,py}; done
