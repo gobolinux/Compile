@@ -20,7 +20,7 @@ all:
 	
 	cd $(PYTHON_SITE) && \
 	for f in *.py; \
-	do python -c "import `basename $$f .py`"; \
+	do python -c "import `basename $$f .py`"; > /dev/null \
 	done
 
 clean :
