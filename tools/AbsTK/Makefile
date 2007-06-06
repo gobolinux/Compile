@@ -23,19 +23,31 @@ all:
 	do python -c "import `basename $$f .py`" &> /dev/null; \
 	done
 
-clean :
-	for f in $(PYTHON_LIBS); do libf=$(PYTHON_SITE)/$$f; rm -f $$libf.{pyo,pyc,py}; done
-	rmdir $(PYTHON_SITE) && rmdir lib/python$(PYTHON_VERSION) && rmdir lib
-
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
 
-dist: version_check all
+clean: cleanup
+
+cleanup:
+	rm -rf Resources/FileHash*
+	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
+	for f in $(PYTHON_LIBS); do libf=$(PYTHON_SITE)/$$f; rm -f $$libf.{pyo,pyc,py}; done
+	for d in $(PYTHON_SITE) lib/python$(PYTHON_VERSION) lib; \
+	do [ -d $$d ] && echo rmdir $$d || true; \
+	done
+
+verify:
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
+
+dist: version_check cleanup verify
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
-	find * -not -path "*/CVS" -and -not -path "*/CVS/*" -and -not -path "*.py[oc]" -and -not -path "*~" | cpio -p $(PACKAGE_BASE)
+	SignProgram $(PROGRAM)
+	cat Resources/FileHash
+	ListProgramFiles $(PROGRAM) | cpio -p $(PACKAGE_BASE)
 	cd $(PACKAGE_DIR); tar cvp $(PROGRAM) | bzip2 > $(PACKAGE_FILE)
 	rm -rf $(PACKAGE_ROOT)
 	@echo; echo "Package at $(PACKAGE_FILE)"
 	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
+	! { cvs up -dP 2>&1 | grep "^M" ;}
 
