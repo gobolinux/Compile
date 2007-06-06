@@ -4,7 +4,7 @@ PROGRAM=AbsTK
 PACKAGE_DIR=$(HOME)
 PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
-PACKAGE_FILE=$(PACKAGE_DIR)/$(PACKAGE_NAME)--$(VERSION)--$(shell uname -m).tar.bz2
+PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
 PYTHON_VERSION=2.4
