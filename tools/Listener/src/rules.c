@@ -22,6 +22,8 @@
 #include "listener.h"
 #include "rules.h"
 
+#define EAT_SPACES(buf,ptr) for(ptr=buf; *ptr && (*ptr == ' ' || *ptr == '\t'); ptr++)
+
 char *
 get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 {
@@ -76,29 +78,39 @@ get_token(char *cmd, int *skip_bytes, char *pathname, struct thread_info *info)
 	return strdup(line);
 }
 
+char *
+read_line(char *buf, ssize_t size, FILE *fp)
+{
+	char *ptr;
+
+	memset(buf, 0, size);
+	fgets(buf, size, fp);
+	if (! strlen(buf))
+		return NULL;
+	EAT_SPACES(buf,ptr);
+	if (*ptr && buf[strlen(buf)-1] == '\n')
+		buf[strlen(buf)-1] = 0;
+	if (! *ptr || *ptr == '#')
+		return NULL;
+	return ptr;
+}
+
 int
 expect_rule_start(FILE *fp)
 {
-	char *token;
+	char *token, *ptr;
 	char buf[LINE_MAX];
 
 	while (! feof (fp)) {
-		memset(buf, 0, sizeof(buf));
-		fgets(buf, sizeof(buf), fp);
-		if ((buf == NULL) || (buf[0] == '#') || ((strlen(buf)) == 0))
+		ptr = read_line(buf, sizeof(buf), fp);
+		if (!ptr)
 			continue;
-
-		token = strtok(buf, " \t\n");
+		token = strtok(ptr, " \t");
 		if (token == NULL)
 			continue;
-
-		if (token[strlen(token)-1] == '\n')
-			token[strlen(token)-1] = '\0';
-
 		if (! strcmp (token, "{"))
 			return 0;
-		else
-			break;
+		break;
 	}
 	return -1;
 }
@@ -106,26 +118,20 @@ expect_rule_start(FILE *fp)
 int
 expect_rule_end(FILE *fp)
 {
-	char *token;
+	char *token, *ptr;
 	char buf[LINE_MAX];
 
 	while (! feof (fp)) {
-		memset(buf, 0, sizeof(buf));
-		fgets(buf, sizeof(buf), fp);
-		if ((buf == NULL) || (buf[0] == '#') || ((strlen(buf)) == 0))
+		ptr = read_line(buf, sizeof(buf), fp);
+		if (!ptr)
 			continue;
-
-		token = strtok(buf, " \t\n");
+		token = strtok(ptr, " \t");
 		if (token == NULL)
 			continue;
-
-		if (token[strlen(token)-1] == '\n')
-			token[strlen(token)-1] = '\0';
-
-		if (! strcmp (token, "}"))
+		if (! strcmp(token, "}"))
 			return 0;
-		else
-			break;
+		fprintf(stderr, "Error: expected rule's end marker '}', but found '%s' instead.\n", ptr);
+		break;
 	}
 	return -1;
 }
@@ -133,22 +139,20 @@ expect_rule_end(FILE *fp)
 char *
 get_rule_for(char *entry, FILE *fp)
 {
-	char *token = NULL;
+	char *ptr, *token = NULL;
 	char buf[LINE_MAX];
 
 	while (! feof (fp)) {
-		memset(buf, 0, sizeof(buf));
-		fgets(buf, sizeof(buf), fp);
-		if ((buf == NULL) || (buf[0] == '#') || ((strlen(buf)) == 0))
+		ptr = read_line(buf, sizeof(buf), fp);
+		if (!ptr)
 			continue;
-		else if ((buf[0] == '{') || (buf[0] == '}'))
+		if ((*ptr == '{') || (*ptr == '}'))
 			return NULL;
-		else
-			break;
+		break;
 	}
 
 	/* check for ENTRY match */
-	if (! strstr (buf, entry))
+	if (! strstr(ptr, entry))
 		return NULL;
 
 	token = strtok(buf, "=");
@@ -223,17 +227,16 @@ assign_rules(char *config_file, int *retval)
 	/* read how many rules we have */
 	n = 0;
 	while (! feof(fp)) {
-		char buf[LINE_MAX];
-		char pathname[LINE_MAX];
+		char *ptr;
+		char buf[LINE_MAX], pathname[LINE_MAX];
 
-		memset(buf, 0, sizeof(buf));
-		fgets(buf, sizeof(buf), fp);
-		if ((buf == NULL) || (buf[0] == '#') || ((strlen(buf)) == 0))
+		ptr = read_line(buf, sizeof(buf), fp);
+		if (!ptr)
 			continue;
-		else if (buf[0] == '{')
+		if (*ptr == '{')
 			n++;
-		else if (strstr(buf, "TARGET")) {
-			char *token = strtok(buf, " \t");
+		else if (strstr(ptr, "TARGET")) {
+			char *token = strtok(ptr, " \t");
 			token = strtok(NULL, " \t");
 			token = strtok(NULL, " \t");
 			if (! token) {
@@ -264,8 +267,7 @@ assign_rules(char *config_file, int *retval)
 	rewind(fp);
 	
 	/* register the pathname */
-	for (i = 0; i < n; ++i) {
-		
+	for (i = 0; i < n; ++i) {	
 		/* expects to find the '{' character */
 		if ((expect_rule_start(fp)) < 0) {
 			fprintf(stderr, "Error: could not find the rule's start marker '{'\n");
@@ -379,10 +381,8 @@ assign_rules(char *config_file, int *retval)
 #endif
 
 		/* expects to find the '}' character */
-		if ((expect_rule_end(fp)) < 0) {
-			fprintf(stderr, "Error: could not find the rule's end marker '}'\n");
+		if ((expect_rule_end(fp)) < 0)
 			return NULL;
-		}
 
 		/* create the monitor rules */
 		ret = monitor_directory(i, di);
