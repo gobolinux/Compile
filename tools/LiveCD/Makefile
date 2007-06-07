@@ -36,6 +36,7 @@ verify:
 	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
 dist: version_check cleanup verify all
+	rm -f Data/Language/tt2_hu_HU.ts && cvs up Data/Language/tt2_hu_HU.ts
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
 	SignProgram $(PROGRAM)
@@ -45,5 +46,5 @@ dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
 	@echo; echo "Package at $(PACKAGE_FILE)"
 	@echo; echo "Now run 'cvs tag $(CVSTAG)'"; echo
-	! { cvs up 2>&1 | grep "^M" ;}
+	! { cvs up 2>&1 | grep "^M" | grep -v "Resources/FileHash\|bin/AutoLogin" ;}
 
