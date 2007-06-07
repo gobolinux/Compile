@@ -33,7 +33,7 @@ cleanup:
 	cd src; make clean
 
 verify:
-	! { cvs up 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
 dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
