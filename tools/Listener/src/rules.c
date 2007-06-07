@@ -356,6 +356,9 @@ assign_rules(char *config_file, int *retval)
 			return NULL;
 		}
 
+		/* disabled until implemented correctly */
+		di->recursive = 0;
+#if 0
 		/* get the recursive flag */
 		token = get_rule_for("RECURSIVE", fp);
 		if (! token) {
@@ -373,6 +376,7 @@ assign_rules(char *config_file, int *retval)
 			return NULL;
 		}
 		free(token);
+#endif
 
 		/* expects to find the '}' character */
 		if ((expect_rule_end(fp)) < 0) {
