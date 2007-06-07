@@ -8,12 +8,12 @@ LDFLAGS = -lpthread
 all: listener
 
 clean:
-	-rm -f *.o *~ listener ../bin/listener
+	-rm -f *.o *~
 
 listener: listener.o rules.o
 	$(CC) listener.o rules.o -o listener $(LDFLAGS)
 	mkdir -p ../bin
-	cp -f listener ../bin
+	mv listener ../bin
 
 %.o: %.c
 	$(CC) -c $< $(CFLAGS)
