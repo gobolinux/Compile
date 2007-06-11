@@ -83,7 +83,7 @@ class Freshen < GoboApplication
       self.usage       = "[<opts>] [<list>]"
       self.example     = "-U -l 5 -R"
       self.helpOnNoArguments = false
-      @version         = "2.2.3"
+      @version         = "2.2.4"
       self.notes = <<END_OF_NOTES
 Run with no arguments, Freshen outputs a list of updates in the form:
 [I#{Screen.colour['cyan']}U#{Screen.colour['normal']}X] #{Screen.colour['red']}Foo 2.0#{Screen.colour['normal']}                                                                1.0
