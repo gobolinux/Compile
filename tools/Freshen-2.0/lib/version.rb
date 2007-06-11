@@ -40,66 +40,50 @@ class Version
 		mytokens = @version.split(/ [-.] | (\d+)(?=[a-z]) | ([a-z]+)(?=\d)/x).delete_if {|y| y==""}
 		xstokens = x.version.split(/ [-.] | (\d+)(?=[a-z]) | ([a-z]+)(?=\d)/x).delete_if {|y| y==""}
 		returnvalue = 0
-		p mytokens
-		p xstokens
 		mytokens.length.times do |i|
 			xv = xstokens[i]
 			mv = mytokens[i]
-			puts "comparing #{mv} and #{xv}"
 			if mv.to_i.to_s == mv && xv.to_i.to_s == xv
 				mv = mv.to_i
 				xv = xv.to_i
 			end
 			if mv.to_s == 'pre' && xv.to_s != 'pre'
-				puts "a"
 				returnvalue = -1
 				break
 			elsif xv.to_s == 'pre' && mv.to_s != 'pre'
-				puts "a1"
 				returnvalue = 1
 				break
 			elsif mv.to_s == "rc" && mv.to_s != xv.to_s
-				puts "b"
 				returnvalue = -1
 				break
 			elsif mv.to_s == "r"
 				if mytokens[i+1] == '1' && xv.to_s == '0'
-				puts "c"
 					# Ignore
 				elsif mytokens[i+1] == '1' && xv.nil?
-					puts "c1"
 					returnvalue = 0
 					break
 				elsif xv.to_s != "r" && xv.to_s.to_i.to_s == xv.to_s
-				puts "d"
 					returnvalue = -1
 					break
 				elsif mytokens[i+1].nil?
-					puts "d1"
 					returnvalue = 1
 					break
 				elsif xstokens[i+1].nil?
-					puts "d2"
 					returnvalue = -1
 					break
 				end
 				# Otherwise, ignore
 			elsif xv.to_s == "r" && !xstokens[i+1].nil?
-				puts "e"
 				returnvalue = 1
 				break
 			elsif xv.nil? && (mv=='0' || mv == nil || (mv=='r' && mytokens[i+1]=='1'))
-				puts "f"
 				returnvalue = 0
 			elsif xv.nil?
-				puts "g"
 				return 1
 			elsif mv > xv
-				puts "h"
 				returnvalue = 1
 				break
 			elsif mv < xv
-				puts "i"
 				returnvalue = -1
 				break
 			end
