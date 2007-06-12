@@ -100,12 +100,12 @@ class Freshen < GoboApplication
 		# Remove exceeded maxima from any consideration
 		if @maxVersion[prog]
 			if @recipes[prog]
-				while @recipes[prog].at(-1)>=@maxVersion[prog]
+				while @recipes[prog].length>0 && @recipes[prog].at(-1)>=@maxVersion[prog]
 					@recipes[prog].pop
 				end
 			end
 			if @packages[prog]
-				while @packages[prog].at(-1)>=@maxVersion[prog]
+				while @packages[prog].length>0 && @packages[prog].at(-1)>=@maxVersion[prog]
 					@packages[prog].pop
 				end
 			end
