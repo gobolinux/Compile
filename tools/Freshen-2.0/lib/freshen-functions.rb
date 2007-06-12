@@ -103,11 +103,13 @@ class Freshen < GoboApplication
 				while @recipes[prog].length>0 && @recipes[prog].at(-1)>=@maxVersion[prog]
 					@recipes[prog].pop
 				end
+				@recipes[prog] = nil if @recipes[prog].length==0
 			end
 			if @packages[prog]
 				while @packages[prog].length>0 && @packages[prog].at(-1)>=@maxVersion[prog]
 					@packages[prog].pop
 				end
+				@recipes[prog] = nil if @recipes[prog].length==0
 			end
 		end
 		# Patch around incorrect WindowMaker dependency file
