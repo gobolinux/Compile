@@ -33,7 +33,7 @@ chrootcompileMode=gobo
 #############################################################################
 # Operation
 #############################################################################
-Parse_Conf Compile.conf
+Parse_Conf Compile/Compile.conf
 Parse_Conf ChrootCompile.conf
 
 Is_Entry "use-directory" && chrootCompileDir="$(Entry 'use-directory')"
@@ -173,12 +173,12 @@ fi
 [ "${name}" == "$(Downcase ${name})" ] && name=$(NamingConventions ${name})
 if [ "$localrepository" ]
 then
-   if Quiet ls /Files/Compile/LocalRecipes/${name}/${version}*/Recipe
+   if Quiet ls ${compileLocalRecipesDir}/${name}/${version}*/Recipe
    then 
-      recipedir="`GuessLatest /Files/Compile/LocalRecipes/${name}/${version}*`"
-   elif Quiet ls /Files/Compile/Recipes/${name}/${version}*/Recipe
+      recipedir="`GuessLatest ${compileLocalRecipesDir}/${name}/${version}*`"
+   elif Quiet ls ${compileGetRecipeDir}/${name}/${version}*/Recipe
    then
-      recipedir="`GuessLatest /Files/Compile/Recipes/${name}/${version}*`"
+      recipedir="`GuessLatest ${compileGetRecipeDir}/${name}/${version}*`"
    else
       Die "No such recipe (${name} ${version}) in local recipe directories"
    fi
@@ -360,14 +360,14 @@ then
    cp -rL Recipes $root/Files/Compile
 else
    echo "Warning, ./Recipes not found. Skipping copy of recipes inside $root"
-   echo "Assuming use of local repository from host's /Files/Compile."
+   echo "Assuming use of local repository from host's ${compileDir}."
    localrepository=yes
 fi
 
 if [ "$localrepository" ]
 then
-    [ "$verbose" ] && echo "ChrootCompile: bind-mounting /Files/Compile inside $root"
-    $sudo mount --bind /Files/Compile $root/Files/Compile
+    [ "$verbose" ] && echo "ChrootCompile: bind-mounting ${compileDir} inside $root"
+    $sudo mount --bind ${compileDir} $root/Files/Compile
 
     if [ -d "$crosskerneldir" ]
     then
@@ -644,8 +644,8 @@ function fetch_included_recipes() {
 
    if [ "$localrepository" ]
    then
-       recipedirs[0]=/Files/Compile/LocalRecipes
-       recipedirs[1]=/Files/Compile/Recipes
+       recipedirs[0]=${compileLocalRecipesDir}
+       recipedirs[1]=${compileGetRecipeDir}
    fi
 
    for dir in ${recipedirs[@]}
