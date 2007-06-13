@@ -174,9 +174,13 @@ fi
 if [ "$localrepository" ]
 then
    if Quiet ls /Files/Compile/LocalRecipes/${name}/${version}*/Recipe
-   then recipedir="`GuessLatest /Files/Compile/LocalRecipes/${name}/${version}*`"
+   then 
+      recipedir="`GuessLatest /Files/Compile/LocalRecipes/${name}/${version}*`"
    elif Quiet ls /Files/Compile/Recipes/${name}/${version}*/Recipe
-   then recipedir="`GuessLatest /Files/Compile/Recipes/${name}/${version}*`"
+   then
+      recipedir="`GuessLatest /Files/Compile/Recipes/${name}/${version}*`"
+   else
+      Die "No such recipe (${name} ${version}) in local recipe directories"
    fi
 else
    if Quiet ls Recipes/${name}/${version}*/Recipe
