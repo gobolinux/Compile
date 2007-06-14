@@ -515,6 +515,7 @@ conflocations=(
    "${goboSettings}/Scripts"
    "${goboSettings}"
    "${scriptPath}"
+   "/System/Settings/Scripts"
 )
 
 function Find_Conf() {
