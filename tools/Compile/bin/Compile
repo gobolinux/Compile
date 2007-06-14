@@ -469,7 +469,9 @@ then
        for i in $goboPrograms/*/Current
        do [ -d "$i/lib" ] && uniondirs="$uniondirs:$i/lib=ro"
        done
-       mount -t unionfs none -o dirs=$uniondirs $cross_libc_libdir
+       if ! [ "$uniondirs" = "$cross_libc_libdir=rw" ]
+       then mount -t unionfs none -o dirs=$uniondirs $cross_libc_libdir
+       fi
    fi
 
    export CC HOSTCC LD
