@@ -8,6 +8,7 @@
 HAVE_DOT_CONFIG=y
 # NATIVE_COMPILING is not set
 CROSS_ARM=y
+# CROSS_ARM_SOFT_FLOAT is not set
 # CROSS_SH4 is not set
 ARM_SIRIUSTAR=y
 # ARM_GP32 is not set
@@ -20,35 +21,40 @@ NETWORK_DISABLED=y
 #
 # 
 #
-KERNEL_HEADERS_VERSION="2.6.16.18"
+KERNEL_HEADERS_VERSION="2.6.18.3"
 NEW_HOSTNAME="Polaris"
 SUPER_USER_NAME="gobo"
 
 #
 # Base system
 #
+# NO_LIBC is not set
 PKG_GLIBC=y
 # PKG_UCLIBC is not set
-# PKG_MODULE_INIT_TOOLS is not set
+PKG_MODULE_INIT_TOOLS=y
 PKG_BUSYBOX=y
 PKG_LIBGCC=y
+PKG_LIBSTDC=y
 PKG_ZLIB=y
-# PKG_GPM is not set
+PKG_GPM=y
 PKG_GOBOHIDE=y
-PKG_LISTENER=y
+# PKG_LISTENER is not set
 # PKG_UDEV is not set
 
 #
 # 
 #
-# PKG_NCURSES is not set
-# PKG_BASH is not set
+PKG_KBD=y
+PKG_NCURSES=y
+PKG_BASH=y
 
 #
 # Development
 #
-PKG_LIBTOOL=y
-# PKG_STRACE is not set
+# PKG_LIBTOOL is not set
+PKG_MAKE=y
+# PKG_GDB is not set
+PKG_STRACE=y
 
 #
 # Fonts and XML parsers
@@ -62,16 +68,35 @@ PKG_FONTCONFIG=y
 # Audio
 #
 PKG_ALSA_LIB=y
+PKG_ALSA_UTILS=y
 PKG_LIBMAD=y
 PKG_LIBOGG=y
 PKG_LIBVORBIS=y
+PKG_LIBID3TAG=y
+PKG_MADPLAY=y
+PKG_SGMIXER=y
+PKG_GQMPEG=y
 
 #
-# Networking
+# Networking and Communications
 #
 PKG_OPENSSL=y
 PKG_OPENSSH=y
+PKG_GNUTLS=y
+PKG_NSPR=y
+PKG_NSS=y
+PKG_LIBIDL=y
+# PKG_LZO is not set
+PKG_OPENVPN=y
 # PKG_LINKS is not set
+PKG_MINICOM=y
+PKG_PPP=y
+# PKG_BITCHX is not set
+PKG_GAIM=y
+PKG_SYLPHEED=y
+PKG_CLAWS_MAIL=y
+# PKG_FIREFOX is not set
+PKG_REALVNC=y
 
 #
 # X servers
@@ -88,15 +113,20 @@ PKG_LIBUNGIF=y
 # PKG_LINUX_FUSION is not set
 # PKG_DIRECTFB is not set
 PKG_TIFF=y
-# PKG_SDL is not set
-# PKG_IMLIB is not set
+PKG_SDL=y
+PKG_SDL_TTF=y
+PKG_SDL_MIXER=y
+# PKG_SVGALIB is not set
+PKG_IMLIB=y
+# PKG_FFMPEG_MOTION is not set
+PKG_GQVIEW=y
 
 #
 # GTK+ suite
 #
 PKG_GETTEXT=y
 PKG_GLIB=y
-PKG_CAIRO=y
+# PKG_CAIRO is not set
 PKG_ATK=y
 PKG_PANGO=y
 PKG_GTK=y
@@ -107,10 +137,18 @@ PKG_GTK=y
 #
 # PKG_STARTUP_NOTIFICATION is not set
 # PKG_MTD_UTILS is not set
-# PKG_LIBUSB is not set
+PKG_LIBUSB=y
 # PKG_LIRC is not set
-# PKG_REISERFSPROGS is not set
+PKG_E2FSPROGS=y
+PKG_REISERFSPROGS=y
 # PKG_SHARED_MIME_INFO is not set
+# PKG_HTOP is not set
+PKG_M4=y
+PKG_FLEX=y
+PKG_BISON=y
+PKG_BC=y
+PKG_LIBGPG_ERROR=y
+PKG_LIBGCRYPT=y
 
 #
 # 
@@ -121,8 +159,14 @@ PKG_GTK=y
 # 
 #
 PKG_MOWITZ=y
-PKG_LIBART_LGPL=y
-PKG_LIBOIL=y
+# PKG_LIBART_LGPL is not set
+# PKG_LIBOIL is not set
+
+#
+# 
+#
+# PKG_GNOKII is not set
+# PKG_MOTION is not set
 
 #
 # Desktop
@@ -131,41 +175,57 @@ PKG_LIBOIL=y
 #
 # Window Managers
 #
-PKG_XFCE=y
-# PKG_ICEWM is not set
+# PKG_XFCE is not set
+PKG_ICEWM=y
 
 #
 # Applications
 #
-PKG_RXVT=y
+# PKG_RXVT is not set
+PKG_MRXVT=y
 PKG_SIAG=y
-PKG_SWFDEC=y
+# PKG_SWFDEC is not set
+
+#
+# Games
+#
+PKG_PENTAGRAM=y
+PKG_SNES9X=y
+PKG_SNES9EXPRESS=y
 
 #
 # Shrink Options
 #
+SHRINK_ALL=y
 SHRINK_HEADERS=y
 SHRINK_STATIC_LIBS=y
 SHRINK_LIBTOOL=y
 SHRINK_PKGCONFIG=y
 SHRINK_DOCS=y
-SHRINK_DEFAULT_SETTINGS=y
+# SHRINK_DEFAULT_SETTINGS is not set
 SHRINK_LOCALES=y
 SHRINK_M4_MACROS=y
+# SHRINK_STRIP_ALL is not set
+SHRINK_STRIP_UNNEEDED=y
+# SHRINK_STRIP_IGNORE is not set
 
 #
-# Native language support
+# Languages, Fonts and Encodings
 #
 NLS_ISO8859_1=y
-# NLS_ISO8859_2 is not set
-# NLS_ISO8859_3 is not set
-# NLS_ISO8859_4 is not set
-# NLS_ISO8859_5 is not set
-# NLS_ISO8859_6 is not set
-# NLS_ISO8859_7 is not set
-# NLS_ISO8859_9 is not set
-# NLS_ISO8859_13 is not set
-# NLS_ISO8859_14 is not set
+NLS_ISO8859_2=y
+NLS_ISO8859_3=y
+NLS_ISO8859_4=y
+NLS_ISO8859_5=y
+NLS_ISO8859_6=y
+NLS_ISO8859_7=y
+NLS_ISO8859_9=y
+# NLS_ISO8859_10 is not set
+# NLS_ISO8859_11 is not set
+# NLS_ISO8859_12 is not set
+NLS_ISO8859_13=y
+NLS_ISO8859_14=y
 NLS_ISO8859_15=y
-# NLS_KOI8_R is not set
-# NLS_JISX0201 is not set
+# NLS_ISO8859_16 is not set
+NLS_KOI8_R=y
+NLS_JISX0201=y
