@@ -6,50 +6,169 @@
 # Build options
 #
 HAVE_DOT_CONFIG=y
-# CROSS_NONE is not set
-# CROSS_ARM is not set
-CROSS_SH4=y
+# NATIVE_COMPILING is not set
+CROSS_ARM=y
+# CROSS_ARM_SOFT_FLOAT is not set
+# CROSS_SH4 is not set
+ARM_SIRIUSTAR=y
+# ARM_GP32 is not set
+# SH4_ST5528 is not set
+# SH4_ST7100 is not set
 TARGET_EMBEDDED=y
 # TARGET_DESKTOP is not set
+# NETWORK_DISABLED is not set
+NETWORK_DHCP=y
+# NETWORK_STATIC is not set
+
+#
+# 
+#
+KERNEL_HEADERS_VERSION="2.6.17.11"
+NEW_HOSTNAME="GoboLinux"
 SUPER_USER_NAME="root"
 
 #
 # Base system
 #
-PKG_GLIBC=y
-# PKG_UCLIBC is not set
+# NO_LIBC is not set
+# PKG_GLIBC is not set
+PKG_UCLIBC=y
+# PKG_MODULE_INIT_TOOLS is not set
 PKG_BUSYBOX=y
-PKG_LIBGCC=y
-PKG_ZLIB=y
+# PKG_LIBGCC is not set
+# PKG_LIBSTDC is not set
+# PKG_ZLIB is not set
 # PKG_GPM is not set
 PKG_GOBOHIDE=y
-# PKG_HOTPLUG is not set
-PKG_LISTENER=y
-PKG_UDEV=y
+# PKG_LISTENER is not set
+# PKG_UDEV is not set
 
 #
-# ---
+# 
 #
+# PKG_KBD is not set
 # PKG_NCURSES is not set
 # PKG_BASH is not set
 
 #
 # Development
 #
-PKG_STRACE=y
+# PKG_LIBTOOL is not set
+# PKG_MAKE is not set
+# PKG_GDB is not set
+# PKG_STRACE is not set
 
 #
-# Networking
+# Fonts and XML parsers
 #
-# PKG_LINKS is not set
+# PKG_EXPAT is not set
+# PKG_LIBXML2 is not set
+# PKG_FREETYPE is not set
+# PKG_FONTCONFIG is not set
+
+#
+# Audio
+#
+# PKG_ALSA_LIB is not set
+# PKG_ALSA_UTILS is not set
+# PKG_LIBMAD is not set
+# PKG_LIBOGG is not set
+# PKG_LIBVORBIS is not set
+# PKG_LIBID3TAG is not set
+# PKG_MADPLAY is not set
+# PKG_SGMIXER is not set
+# PKG_GQMPEG is not set
+
+#
+# Networking and Communications
+#
 # PKG_OPENSSL is not set
 # PKG_OPENSSH is not set
+# PKG_GNUTLS is not set
+# PKG_NSPR is not set
+# PKG_NSS is not set
+# PKG_LIBIDL is not set
+# PKG_LZO is not set
+# PKG_OPENVPN is not set
+# PKG_LINKS is not set
+# PKG_MINICOM is not set
+# PKG_PPP is not set
+# PKG_BITCHX is not set
+# PKG_GAIM is not set
+# PKG_SYLPHEED is not set
+# PKG_CLAWS_MAIL is not set
+# PKG_FIREFOX is not set
+# PKG_REALVNC is not set
 
 #
-# Window Servers
+# X servers
 #
 # PKG_XORG is not set
 # PKG_NANO_X is not set
+
+#
+# Video and graphics
+#
+# PKG_JPEG is not set
+# PKG_LIBPNG is not set
+# PKG_LIBUNGIF is not set
+# PKG_LINUX_FUSION is not set
+# PKG_DIRECTFB is not set
+# PKG_TIFF is not set
+# PKG_SDL is not set
+# PKG_SDL_TTF is not set
+# PKG_SDL_MIXER is not set
+# PKG_SVGALIB is not set
+# PKG_IMLIB is not set
+# PKG_FFMPEG_MOTION is not set
+# PKG_GQVIEW is not set
+
+#
+# GTK+ suite
+#
+# PKG_GETTEXT is not set
+# PKG_GLIB is not set
+# PKG_CAIRO is not set
+# PKG_ATK is not set
+# PKG_PANGO is not set
+# PKG_GTK is not set
+# PKG_DBUS is not set
+
+#
+# Misc
+#
+# PKG_STARTUP_NOTIFICATION is not set
+# PKG_MTD_UTILS is not set
+# PKG_LIBUSB is not set
+# PKG_LIRC is not set
+# PKG_E2FSPROGS is not set
+# PKG_REISERFSPROGS is not set
+# PKG_SHARED_MIME_INFO is not set
+# PKG_HTOP is not set
+# PKG_M4 is not set
+# PKG_FLEX is not set
+# PKG_BISON is not set
+# PKG_BC is not set
+# PKG_LIBGPG_ERROR is not set
+# PKG_LIBGCRYPT is not set
+
+#
+# 
+#
+# PKG_A2PS is not set
+
+#
+# 
+#
+# PKG_MOWITZ is not set
+# PKG_LIBART_LGPL is not set
+# PKG_LIBOIL is not set
+
+#
+# 
+#
+# PKG_GNOKII is not set
+# PKG_MOTION is not set
 
 #
 # Desktop
@@ -58,47 +177,57 @@ PKG_STRACE=y
 #
 # Window Managers
 #
-# PKG_MATCHBOX is not set
+# PKG_XFCE is not set
+# PKG_ICEWM is not set
 
 #
 # Applications
 #
-# PKG_ROX_FILER is not set
 # PKG_RXVT is not set
+# PKG_MRXVT is not set
 # PKG_SIAG is not set
 # PKG_SWFDEC is not set
 
 #
-# Audio, video and graphics
+# Games
 #
-PKG_DIRECTFB=y
-PKG_LIBPNG=y
-PKG_JPEG=y
-# PKG_TIFF is not set
-# PKG_SDL is not set
-# PKG_LIBMAD is not set
-# PKG_LIBOGG is not set
-# PKG_LIBVORBIS is not set
+# PKG_PENTAGRAM is not set
+# PKG_SNES9X is not set
+# PKG_SNES9EXPRESS is not set
 
 #
-# Libraries for the desktop
+# Shrink Options
 #
-# PKG_FONTCONFIG is not set
-PKG_FREETYPE=y
-# PKG_GLIB is not set
-# PKG_ATK is not set
-# PKG_PANGO is not set
-# PKG_GTK is not set
-# PKG_DBUS is not set
-# PKG_MOWITZ is not set
+# SHRINK_ALL is not set
+# SHRINK_HEADERS is not set
+# SHRINK_STATIC_LIBS is not set
+# SHRINK_LIBTOOL is not set
+# SHRINK_PKGCONFIG is not set
+# SHRINK_DOCS is not set
+# SHRINK_DEFAULT_SETTINGS is not set
+# SHRINK_LOCALES is not set
+# SHRINK_M4_MACROS is not set
+SHRINK_STRIP_ALL=y
+# SHRINK_STRIP_UNNEEDED is not set
+# SHRINK_STRIP_IGNORE is not set
 
 #
-# Other
+# Languages, Fonts and Encodings
 #
-# PKG_GETTEXT is not set
-# PKG_EXPAT is not set
-# PKG_LIBOIL is not set
-# PKG_STARTUP_NOTIFICATION is not set
-# PKG_LIBART is not set
-# PKG_LIBXML2 is not set
-# PKG_SHARED_MIME_INFO is not set
+NLS_ISO8859_1=y
+# NLS_ISO8859_2 is not set
+# NLS_ISO8859_3 is not set
+# NLS_ISO8859_4 is not set
+# NLS_ISO8859_5 is not set
+# NLS_ISO8859_6 is not set
+# NLS_ISO8859_7 is not set
+# NLS_ISO8859_9 is not set
+# NLS_ISO8859_10 is not set
+# NLS_ISO8859_11 is not set
+# NLS_ISO8859_12 is not set
+# NLS_ISO8859_13 is not set
+# NLS_ISO8859_14 is not set
+NLS_ISO8859_15=y
+# NLS_ISO8859_16 is not set
+# NLS_KOI8_R is not set
+# NLS_JISX0201 is not set
