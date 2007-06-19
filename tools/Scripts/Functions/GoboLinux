@@ -64,7 +64,10 @@ function Rebuild_MIME_Database() {
 if Executable_Exists_In_Path "update-mime-database"
 then
    Log_Normal "Rebuilding MIME database..."
-   update-mime-database $([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime") >/dev/null
+   mimedirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime")
+   Assert_Dir ${mimedirectory}
+   ln -s ${goboShared}/mime/packages ${mimedirectory}
+   update-mime-database ${mimedirectory} >/dev/null
 fi
 }
 
