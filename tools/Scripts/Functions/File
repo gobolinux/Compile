@@ -124,7 +124,7 @@ GPG_gobo_keyring="${goboPrograms}/Scripts/Current/Data/gpg/goboring.gpg"
 function Gen_FileHash() {
    Parameters "$@" file_prefix hashfile
    local dname=`dirname $hashfile`
-   cat /dev/null > "$hashfile"
+   $sudo_exec sh -c "cat /dev/null > \"$hashfile\""
    # Validate password
    $sudo_validate
    Assert_Dir $dname
@@ -133,7 +133,7 @@ function Gen_FileHash() {
    Quiet pushd $file_prefix
    $sudo_exec ListProgramFiles --files "$file_prefix" | grep -v "Resources/FileHash" | while read file
    do
-      $sudo_exec sha1sum "$file" >> "$hashfile"
+      $sudo_exec sh -c "sha1sum \"$file\" >> \"$hashfile\""
    done
    Quiet popd
 }
