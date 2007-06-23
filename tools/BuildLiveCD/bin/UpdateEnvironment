@@ -93,18 +93,25 @@ fi
 
 for cvsrepo in files `for x in $tools; do echo tools/$x; done`
 do
-   if [ -e $cvsrepo ]
+   if [ "$cvsuser" = "anonymous" ]
    then
-      echo Updating $cvsrepo...
-      cd $cvsrepo
-      cvs -q up -dP
-      cd - &> /dev/null
-   else
-      echo Getting $cvsrepo...
-      if [ "$cvsuser" = "anonymous" ]
+      if [ -e "$cvsrepo" ]
       then
-         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts -q co $cvsrepo
+         echo "Updating $cvsrepo..."
+         cd $cvsrepo
+         cvs -q up -dP
+         cd - &> /dev/null
       else
+         echo "Getting $cvsrepo..."
+         cvs -d :pserver:anonymous@cvs.sv.gnu.org:/sources/goboscripts -q co $cvsrepo
+      fi
+   else
+      if [ -e "$cvsrepo" ]
+      then
+         echo "Updating $cvsrepo..."
+         sudo -H -u $localuser bash -c "cd '$cvsrepo' && cvs -q up -dP"
+      else
+         echo "Getting $cvsrepo..."
          export CVS_RSH=ssh
          chown $localuser .
          sudo -H -u $localuser cvs -d :ext:$cvsuser@cvs.sv.gnu.org:/sources/goboscripts -q co $cvsrepo
