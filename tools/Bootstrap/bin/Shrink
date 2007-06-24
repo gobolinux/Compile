@@ -35,15 +35,35 @@ backup_dir=`basename $prefix`
 backup_file="${backup_dir}-Backup-Full.tar.gz"
 root_dir=`readlink -f $prefix/..`
 
-if [ ! -f $root_dir/$backup_file ]
+do_backup=yes
+find_has_newer_param=yes
+if ! find --help | grep -q newer
+then
+    Log_Terse "Your 'find' utility is pretty ancient. Please consider upgrading its package."
+    unset find_has_newer_param
+fi
+
+if [ -f $root_dir/$backup_file -a "$find_has_newer_param" ]
+then
+    Log_Normal "Checking for updates in the bootstrapped tree..."
+    newer=`find $prefix -newer $root_dir/$backup_file | wc -l`
+    if [ $newer = 1 ]
+    then
+        Log_Normal "A recent backup has been found at $root_dir/$backup_file, will not create another"
+        unset do_backup
+    fi
+elif [ -f $root_dir/$backup_file ]
+then
+    Ask "Do you want to overwrite the backup of your bootstrapped tree?" || unset do_backup
+fi
+
+if [ "$do_backup" ]
 then
     Log_Normal "Making a backup of the bootstrapped tree..."
     pushd $root_dir > /dev/null
     tar czpf $backup_file $backup_dir || exit 1
     popd > /dev/null
     Log_Normal "Backup created and stored at $root_dir/$backup_file"
-else
-    Log_Normal "Backup found at $root_dir/$backup_file, will not create another"
 fi
 
 
