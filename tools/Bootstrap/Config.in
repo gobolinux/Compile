@@ -30,7 +30,7 @@ config CROSS_ARM
 	  Run a toolchain to generate a distribution suitable for ARM processors.
 
 config CROSS_ARM_SOFT_FLOAT
-	prompt "Soft-Float ARM target"
+	prompt "ARM target (soft-float)"
 	bool
 	---help---
 	  Run a toolchain to generate a distribution suitable for ARM processors
@@ -196,8 +196,15 @@ source "packages/Make/Config.in"
 #source "packages/GMP/Config.in"
 #source "packages/GCC/Config.in"
 #source "packages/TCC/Config.in"
+source "packages/Python/Config.in"
 source "packages/GDB/Config.in"
 source "packages/Strace/Config.in"
+endmenu
+
+#############################################
+menu "Data base"
+#############################################
+source "packages/SQLite/Config.in"
 endmenu
 
 #############################################
@@ -229,6 +236,7 @@ menu "Networking and Communications"
 #############################################
 source "packages/OpenSSL/Config.in"
 source "packages/OpenSSH/Config.in"
+source "packages/Dropbear/Config.in"
 source "packages/GnuTLS/Config.in"
 source "packages/NSPR/Config.in"
 source "packages/NSS/Config.in"
