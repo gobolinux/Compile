@@ -73,7 +73,7 @@ fi
 for i in $prefix/$goboPrograms/*
 do
     package=`basename $i`
-    [ ! -d "$package" ] && continue
+    [ ! -d "$i" ] && continue
     
     [ ! "$SHRINK_ALL" ] && Log_Terse "Shrinking package $package"
     pushd $i/Current > /dev/null || exit 1
