@@ -1,0 +1,2 @@
+config PKG_SQLITE
+    bool "SQLite"

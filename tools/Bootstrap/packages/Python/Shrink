@@ -1,0 +1,14 @@
+#!/bin/sh
+
+#
+# There's probably more work to do here. Contributions are welcome.
+#
+
+rm -f bin/python-config*
+rm -f bin/pydoc
+rm -f bin/idle
+rm -f bin/smtpd.py
+
+rm -rf include
+find lib/ -name "*.pyc" | xargs rm -f
+find lib/ -name "*.pyo" | xargs rm -f
