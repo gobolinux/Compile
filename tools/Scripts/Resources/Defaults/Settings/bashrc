@@ -71,15 +71,16 @@ source ${goboPrefix}/System/Settings/completion.bash
 
 envcachefile="${goboPrefix}/System/Links/Environment/Cache"
 [[ -e "$envcachefile" ]] || {
-echo -e "unset unsetvars\n[ ! \"\$goboSettings\" ] && unsetvars=true\n" > "$envcachefile"
-echo -e "source GoboPath\n" >> "$envcachefile"
-for linkedfile in "${goboPrefix}/System/Links/Environment"/*--*
-do 
-   [ -f "$linkedfile" ] && cat "$linkedfile" >> "$envcachefile"
-   echo >> "$envcachefile"
-done
-unsetvars=`grep export $goboPrefix/System/Links/Executables/GoboPath | awk {'print $1 " " $2'} | grep "^export" | sed -e 's,=.*,,g' -e 's,export,unset,g'`
-echo -e "if [ \"\$unsetvars\" ]\nthen\n$unsetvars\nfi\n" >> "$envcachefile" } 2> /dev/null
+   echo -e "unset unsetvars\n[ ! \"\$goboSettings\" ] && unsetvars=true\n" > "$envcachefile"
+   echo -e "source GoboPath\n" >> "$envcachefile"
+   for linkedfile in "${goboPrefix}/System/Links/Environment"/*--*
+   do 
+      [ -f "$linkedfile" ] && cat "$linkedfile" >> "$envcachefile"
+      echo >> "$envcachefile"
+   done
+   unsetvars=`grep export $goboPrefix/System/Links/Executables/GoboPath | awk {'print $1 " " $2'} | grep "^export" | sed -e 's,=.*,,g' -e 's,export,unset,g'`
+   echo -e "if [ \"\$unsetvars\" ]\nthen\n$unsetvars\nfi\n" >> "$envcachefile"
+} 2> /dev/null
 source "$envcachefile"
 unset envcachefile
 
