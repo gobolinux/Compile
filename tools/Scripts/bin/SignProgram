@@ -34,7 +34,7 @@ then
 fi
 
 ########## Version ##########
-if [ -f "$(Arg 1)" ]
+if Is_GoboLinux_Package "$(Arg 1)"
 then
    if echo $(Arg 1) | grep -q tar.bz2
    then filepath=`readlink -f $(Arg 1)`
