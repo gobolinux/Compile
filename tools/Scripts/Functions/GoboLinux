@@ -66,7 +66,7 @@ then
    Log_Normal "Rebuilding MIME database..."
    mimedirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime")
    Assert_Dir ${mimedirectory}
-   ln -s ${goboShared}/mime/packages ${mimedirectory}
+   Is_Directory ${mimedirectory}/packages || ln -s ${goboShared}/mime/packages ${mimedirectory}
    update-mime-database ${mimedirectory} >/dev/null
 fi
 }
