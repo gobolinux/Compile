@@ -31,6 +31,23 @@ function Is_Broken_Link() { [ -L "$1" -a ! -e "$1" ] ;}
 
 function Executable_Exists_In_Path() { [ -n "$(which ${1} 2>/dev/null)" ] ;}
 
+# These functions provide basic tests to see if a file qualifies as a GoboLinux 
+# package or recipe. These test could (should) be extended to use 'file' to find
+# out mime type and/or list the contents of the archive and look for specific 
+# files like 'Recipe' or 'Resources/Dependencies'
+function Is_GoboLinux_Package() { 
+   Is_File "$1" && \
+   test -z "$(echo $(basename \"$1\") | \
+   sed -r 's/^[0-9A-Za-z_.]+--[0-9A-Za-z_.]+(-r[0-9]*)?--(.+).tar.bz2/\2/' | \
+   sed -r '/i686/d;/ppc/d;/PPC/d')"
+}
+
+function Is_GoboLinux_Recipe() {
+   Is_File "$1" && \
+   -z "$(echo $(basename \"$1\") | \
+   sed -r 's/^[0-9A-Za-z_.]+--[0-9A-Za-z_.]+(-r[0-9]*)?--[rR]ecipe.tar.bz2/d' )"
+}
+
 function Make_Directory() {
     Parameters "$@" dir
     mkdir -p "$dir"
