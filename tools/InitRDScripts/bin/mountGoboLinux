@@ -18,7 +18,7 @@ do
 done
 
 # Ok, try SCSI drives
-for device in /dev/sr*
+for device in /dev/sr* /dev/scd*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
@@ -36,7 +36,7 @@ echo "Regenerating /System/Kernel/Devices"
 /bin/miniudev
 
 # Ok, try SCSI drives (for USB)
-for device in /dev/sr*
+for device in /dev/sr* /dev/scd*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
    # Check for squashfs
