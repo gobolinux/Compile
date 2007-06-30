@@ -180,7 +180,7 @@ function install_extras() {
 
    if [ "$app" = "$appname" ]
    then
-      CheckDependencies --mode=convert $app $version recipe $recipedir > "$installprefix/Resources/Dependencies"
+      $sudo sh -c "CheckDependencies --mode=convert $app $version recipe $recipedir > \"$installprefix/Resources/Dependencies\""
    fi
 
    if [ "$app" ]
@@ -213,8 +213,8 @@ function wrapup() {
       Quiet mkdir -p $target/Resources
 
       if [ ! -z "$cross_uname_m" ]
-      then echo "$cross_uname_m" > "$target/Resources/Architecture"
-      else echo "`uname -m`" > "$target/Resources/Architecture"
+      then $sudo sh -c "echo \"$cross_uname_m\" > \"$target/Resources/Architecture\""
+      else $sudo sh -c "echo \"`uname -m`\" > \"$target/Resources/Architecture\""
       fi
 
       Log_Normal "Generating package's build information..."
@@ -1229,10 +1229,10 @@ then
       src=`echo $i | cut -d: -f1`
       dst=`echo $i | cut -d: -f2-`
       fulldst="$installprefix/$dst"
-      mkdir -p $(dirname "$fulldst")
+      $sudo mkdir -p $(dirname "$fulldst")
       if [ -d "$src" -a -d "$fulldst" ]
-      then cp -R "$src"/* "$fulldst"
-      else cp -R "$src" "$fulldst"
+      then $sudo cp -R "$src"/* "$fulldst"
+      else $sudo cp -R "$src" "$fulldst"
       fi
    done
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
