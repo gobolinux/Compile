@@ -57,7 +57,7 @@ fi
 recipe="$(Arg 1)"
 [ "$recipe" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
 . "$recipe"
-
+[ -z "${sourcedir}" ] && sourcedir="${dir%%/*}"
 ##################################################
 # Get sources
 ##################################################
@@ -65,6 +65,7 @@ recipe="$(Arg 1)"
 if [ "$cvs" ]
 then
    cd "$savedir"
+   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
    [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
    echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
 
@@ -76,6 +77,7 @@ then
 elif [ "$svn" ]
 then
    cd "$savedir"
+   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
    if [ "$svn_username" ] 
    then svn checkout $svn "${sourcedir}" --username "$svn_username" --password "$svn_password"
    else svn checkout $svn "${sourcedir}"
