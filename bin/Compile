@@ -60,9 +60,8 @@ then userconfigureoptions=(`Entry "configure-options"`)
 else userconfigureoptions=()
 fi
 
-if Is_Writable "$goboExecutables" || [ "$compileDisableSudo" = "yes" ]
-then sudo=
-else sudo="sudo -u #0"
+if [ "$compileDisableSudo" = "yes" ]
+then sudo_exec=
 fi
 
 make="${compileMakeCommand:-ColorMake}"
@@ -174,13 +173,13 @@ function do_symlink() {
 
 function install_extras() {
 
-   [ -d "$reciperesources" ] && $sudo cp -R "$reciperesources" "$installprefix"
-   [ -d "$archreciperesources" ] && $sudo cp -R "$archreciperesources" "$installprefix"
+   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix"
+   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix"
    [ "$revision" ] && echo "$revision" > "$installprefix/Resources/Revision"
 
    if [ "$app" = "$appname" ]
    then
-      $sudo sh -c "CheckDependencies --mode=convert $app $version recipe $recipedir > \"$installprefix/Resources/Dependencies\""
+      $sudo_exec sh -c "CheckDependencies --mode=convert $app $version recipe $recipedir > \"$installprefix/Resources/Dependencies\""
    fi
 
    if [ "$app" ]
@@ -197,8 +196,8 @@ function install_extras() {
          do
             if [ -e "$d/$i" ]
             then
-               $sudo mkdir -p "$docdir"
-               $sudo cp -a "$d/$i" "$docdir"
+               $sudo_exec mkdir -p "$docdir"
+               $sudo_exec cp -a "$d/$i" "$docdir"
             fi
          done
          Quiet popd
@@ -213,8 +212,8 @@ function wrapup() {
       Quiet mkdir -p $target/Resources
 
       if [ ! -z "$cross_uname_m" ]
-      then $sudo sh -c "echo \"$cross_uname_m\" > \"$target/Resources/Architecture\""
-      else $sudo sh -c "echo \"`uname -m`\" > \"$target/Resources/Architecture\""
+      then $sudo_exec sh -c "echo \"$cross_uname_m\" > \"$target/Resources/Architecture\""
+      else $sudo_exec sh -c "echo \"`uname -m`\" > \"$target/Resources/Architecture\""
       fi
 
       Log_Normal "Generating package's build information..."
@@ -812,10 +811,10 @@ else
          Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
       fi
       case $REPLY in
-      [Rr]) rm -rf "${basedirs[0]}" || $sudo rm -rf "${basedirs[0]}"
+      [Rr]) rm -rf "${basedirs[0]}" || $sudo_exec rm -rf "${basedirs[0]}"
             if [ "$needs_build_directory" = "yes" ]
             then
-               rm -rf "${basedirs[0]%/}-build" || $sudo rm -rf "${basedirs[0]%/}-build"
+               rm -rf "${basedirs[0]%/}-build" || $sudo_exec rm -rf "${basedirs[0]%/}-build"
             fi ;;
       [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" ;;
       [Uu]) unpack=no ;;
@@ -1229,10 +1228,10 @@ then
       src=`echo $i | cut -d: -f1`
       dst=`echo $i | cut -d: -f2-`
       fulldst="$installprefix/$dst"
-      $sudo mkdir -p $(dirname "$fulldst")
+      $sudo_exec mkdir -p $(dirname "$fulldst")
       if [ -d "$src" -a -d "$fulldst" ]
-      then $sudo cp -R "$src"/* "$fulldst"
-      else $sudo cp -R "$src" "$fulldst"
+      then $sudo_exec cp -R "$src"/* "$fulldst"
+      else $sudo_exec cp -R "$src" "$fulldst"
       fi
    done
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
