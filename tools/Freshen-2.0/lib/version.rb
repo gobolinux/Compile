@@ -43,6 +43,7 @@ class Version
 		mytokens.length.times do |i|
 			xv = xstokens[i]
 			mv = mytokens[i]
+			#puts "comparing #{xv} and #{mv}"
 			if mv.to_i.to_s == mv && xv.to_i.to_s == xv
 				mv = mv.to_i
 				xv = xv.to_i
@@ -80,6 +81,12 @@ class Version
 				returnvalue = 0
 			elsif xv.nil?
 				return 1
+			elsif mv.to_i>0 && xv.to_s.match(/^[a-z]+$/)
+				returnvalue = 1
+				break
+			elsif xv.to_i>0 && mv.to_s.match(/^[a-z]+$/)
+				returnvalue = -1
+				break
 			elsif mv > xv
 				returnvalue = 1
 				break
@@ -88,6 +95,7 @@ class Version
 				break
 			end
 		end
+		#puts "got value #{returnvalue}"
 		if returnvalue == 0 and xstokens.length>mytokens.length
 			mytokens.length.upto(xstokens.length) {|i|
 				returnvalue = -1 unless xstokens[i].to_s=='0' || xstokens[i].nil?
