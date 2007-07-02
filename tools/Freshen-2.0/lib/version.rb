@@ -1,5 +1,17 @@
-# Copyright (C) 2004, Michael Homer
-# Version: represents a version
+# Copyright (C) 2007 Michael Homer
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 class Version
 	include Comparable # Get free comparisons
 	def initialize(version)
@@ -43,7 +55,6 @@ class Version
 		mytokens.length.times do |i|
 			xv = xstokens[i]
 			mv = mytokens[i]
-			#puts "comparing #{xv} and #{mv}"
 			if mv.to_i.to_s == mv && xv.to_i.to_s == xv
 				mv = mv.to_i
 				xv = xv.to_i
@@ -95,7 +106,6 @@ class Version
 				break
 			end
 		end
-		#puts "got value #{returnvalue}"
 		if returnvalue == 0 and xstokens.length>mytokens.length
 			mytokens.length.upto(xstokens.length) {|i|
 				returnvalue = -1 unless xstokens[i].to_s=='0' || xstokens[i].nil?
@@ -105,7 +115,6 @@ class Version
 				end
 			}
 		end
-		#returnvalue = -1 if returnvalue == 0 and xstokens.length>mytokens.length
 		returnvalue
 	end
 end

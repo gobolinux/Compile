@@ -1,4 +1,17 @@
 #!/usr/bin/ruby
+# Copyright (C) 2007 Michael Homer
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 # Add libraries
 #This is for the global libraries
@@ -11,7 +24,6 @@ require 'screen'
 require 'version'
 require 'gobo'
 require 'gobo/parseconfig'
-require 'parseconfig' # Until a new Compile release is out
 require 'merge'
 require 'progressbar'
 require 'tsort'
@@ -79,7 +91,16 @@ class Freshen < GoboApplication
 		addOptionBoolean("exclude-asserting-compatibility", ["-X"], "Exclude <list> from output, but do not block dependent programs.")
 		addOptionBoolean("empty-tree", ["-e"], "Behave as if installed program tree were empty")
       self.description = "Checks for updated GoboLinux recipes and packages."
-      self.credits     = "By Michael Homer <michael@e.geek.nz>"
+      self.credits     = "By Michael Homer <michael@e.geek.nz>
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details."
       self.usage       = "[<opts>] [<list>]"
       self.example     = "-U -l 5 -R"
       self.helpOnNoArguments = false
@@ -155,11 +176,13 @@ END_OF_NOTES
 		if options('batch')
 			@logLevel = 10
 		end
+		@prefixApp = true
 		if options('cache-only')
 			self.updateCaches
 		elsif options('upgrade-system')
 			self.upgradeSystem
 		elsif options('info')
+			@prefixApp = false
 			self.info(options('info'))
 		else
 			self.sysStatus(@config['showUpgrades']=='yes',@config['showDowngrades']=='yes')
@@ -632,14 +655,18 @@ END_OF_NOTES
 		super("#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{Screen.colour['red']}#{msg}#{Screen.colour['normal']}")
 	end
 	def logNormal(msg='')
-		super("#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{msg}")
+		if @prefixApp
+			super("#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{msg}")
+		else
+			super(msg)
+		end
 	end
 	def logVerbose(msg='')
 		super("#{Screen.colour['cyan']}Freshen:#{Screen.colour['normal']} #{msg}")
 	end
 end
 
-=begin                                
+=begin
 backtrace outputs a debug-level, formatted version of $!#backtrace
 =end
 def backtrace
