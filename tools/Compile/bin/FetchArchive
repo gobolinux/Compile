@@ -28,7 +28,8 @@ Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
 
 savedir=$(Entry "save-to")
-sourcedir=$(Entry save-directory)
+[ -z "${savedir}" ] && savedir="${compileSourcesDir}"
+sourcedir=$(Entry "save-directory")
 
 if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
