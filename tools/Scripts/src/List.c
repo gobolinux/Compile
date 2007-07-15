@@ -28,11 +28,13 @@
 #ifdef __APPLE__
    #include <sys/param.h>
    #include <sys/mount.h>
+   #define MAJOR(x) major(x)
+   #define MINOR(x) minor(x)
 #else
    #include <sys/statfs.h>
    #include <sys/vfs.h>
+   #include <linux/kdev_t.h>
 #endif
-#include <linux/kdev_t.h>
 #include "List.h"
 
 char default_ls_colors[] =
