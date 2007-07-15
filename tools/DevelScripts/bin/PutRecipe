@@ -16,7 +16,7 @@ scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GP
 helpOnNoArguments=yes
 scriptUsage="[<recipe dirs>|<tarballs>]"
 scriptExample="/Files/Compile/LocalRecipes/Firefox"
-Add_Option_Boolean "S" "skip-store" "Don't upload to the recipe store"
+Add_Option_Boolean "s" "store" "Also upload to the recipe store"
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -81,6 +81,6 @@ do
 done
 
 # Copy the recipe to the store
-if [ "$programlist" ] && ! Boolean "skip-store"
+if [ "$programlist" ] && Boolean "store"
 then UpdateRecipeStore $programlist
 fi
