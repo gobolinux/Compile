@@ -1,0 +1,45 @@
+#!/bin/sh
+
+### Imports ###################################################################
+
+source ScriptFunctions
+Import GoboLinux
+Import File
+Import Subversion
+Import OptionParser
+
+### Options ###################################################################
+
+scriptDescription="Update a local store based on svn repository."
+scriptCredits="Copyright (C) 2007 Hisham Muhammad. Released under the GNU GPL."
+helpOnNoArguments=no
+scriptUsage=""
+scriptExample=""
+Add_Option_Boolean "a" "all" "Uploads all recipes in the local revision tree."
+Parse_Options "$@"
+
+Parse_Conf CompileSubversion.conf
+
+###############################################################################
+
+cd $compileLocalRevisions
+svn up
+
+\ls | while read program
+do
+   cd "$compileLocalRevisions/$program"
+   \ls | while read version
+   do
+      revision=${version#*-r}
+      version=${version%-r*}
+      recipe="$compileLocalStore/$program--$version--recipe.tar.bz2"
+      if [ -e "$version-r$[revision+1]" ]
+      then 
+         rm -f "$recipe"
+      elif [ ! -e "$recipe" ]
+      then
+         cd ../..
+         tar cjpf "$recipe" "$program/$version"
+      fi
+   done
+done
