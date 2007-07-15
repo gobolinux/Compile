@@ -505,6 +505,7 @@ test_recipe() {
    settings_target="${goboPrograms}/$name/Settings"
    variable_target="${goboVariable}"
    source Recipe
+   [ "$1" -a -e "$1/Recipe" ] && source "$1/Recipe"
    
    msg "Checking recipe declarations..."
    if [ ! "$recipe_type" ]
@@ -678,7 +679,15 @@ test_recipe() {
    }
 }
 
-[ "$test_recipe" = "yes" ] && test_recipe
+if [ "$test_recipe" = "yes" ]
+then
+   grep -q "url=\|urls=\|cvs=\|svn=" Recipe && test_recipe
+   for arch in "${arches[@]}"
+   do
+      [ -e "$arch/Recipe" ] || continue
+      grep -q "url=\|urls=\|cvs=\|svn=" "$arch/Recipe" && test_recipe "$arch"
+   done
+fi
 
 test_resources() {
    msg "Checking resources..."
