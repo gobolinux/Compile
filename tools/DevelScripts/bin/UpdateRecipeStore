@@ -50,7 +50,7 @@ function update_recipe() {
 
    for i in $files
    do
-      tarball=/Files/Recipe-Store/`echo $i | sed 's,\(.*\)\/\(.*\),\1--\2--recipe.tar.bz2,g'`
+      tarball=$compileLocalStore/`echo $i | sed 's,\(.*\)\/\(.*\),\1--\2--recipe.tar.bz2,g'`
       [ -e "$tarball" ] && continue || echo $tarball
       tarballs="$tarballs $tarball"
       tar cfj "$tarball" --exclude .svn $i
@@ -58,8 +58,8 @@ function update_recipe() {
    Quiet popd
 }
 
-mkdir -p /Files/Recipe-Store
-rsync --delete -avz gobolinux@gobolinux.org:gobolinux.org/recipe-store/ /Files/Recipe-Store/
+mkdir -p $compileLocalStore
+rsync --delete -avz gobolinux@gobolinux.org:gobolinux.org/recipe-store/ $compileLocalStore/
 
 if Boolean "all"
 then recipes=( `ls $compileLocalTrunk` )
@@ -73,7 +73,7 @@ do
 done
    
 # Loop 2: remove revision tarballs which doesn't exist anymore in the svn.
-cd /Files/Recipe-Store
+cd $compileLocalStore
 for i in *
 do
     svn_dir=$compileLocalRevisions/`echo $i | sed 's,\(.*\)--\(.*\)--recipe.tar.bz2,\1/\2,g'`
