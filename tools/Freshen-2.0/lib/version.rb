@@ -55,11 +55,14 @@ class Version
 		mytokens.length.times do |i|
 			xv = xstokens[i]
 			mv = mytokens[i]
+			#puts "comparing #{mv}(#{mytokens[i+1]}) and #{xv}(#{xstokens[i+1]})"
 			if mv.to_i.to_s == mv && xv.to_i.to_s == xv
 				mv = mv.to_i
 				xv = xv.to_i
 			end
-			if mv.to_s == 'pre' && xv.to_s != 'pre'
+			if xv.nil? && mv == 'r' && mytokens[i+1].to_s == '1'
+				return 0
+			elsif mv.to_s == 'pre' && xv.to_s != 'pre'
 				returnvalue = -1
 				break
 			elsif xv.to_s == 'pre' && mv.to_s != 'pre'
@@ -69,29 +72,45 @@ class Version
 				returnvalue = -1
 				break
 			elsif mv.to_s == "r"
-				if mytokens[i+1] == '1' && xv.to_s == '0'
+#				puts "comparing #{mv}(#{mytokens[i+1]}) and #{xv}(#{xstokens[i+1]})"
+				if mytokens[i+1] == '1' && (xv.to_s == '0' || xv.nil?)
 					# Ignore
+				elsif xv.to_s == 'r' && mytokens[i+1].to_i.to_s == mytokens[i+1].to_s && xstokens[i+1].to_i.to_s != xstokens[i+1].to_s
+					returnvalue = -1
+					break
+				elsif xv.to_s == 'r' && xstokens[i+1].to_i.to_s == xstokens[i+1].to_s && mytokens[i+1].to_i.to_s != mytokens[i+1].to_s
+					returnvalue = 1
+					break
+				elsif xv.to_s != 'r' && mytokens[i+1].to_i.to_s == mytokens[i+1].to_s
+					returnvalue = -1
+					break
 				elsif mytokens[i+1] == '1' && xv.nil?
 					returnvalue = 0
 					break
 				elsif xv.to_s != "r" && xv.to_s.to_i.to_s == xv.to_s
 					returnvalue = -1
 					break
-				elsif mytokens[i+1].nil?
+				elsif (mytokens[i+1].nil?  || mytokens[i+1] == 'r') && (xstokens[i+1].nil? || xv.to_s < 'r')
 					returnvalue = 1
+					break
+				elsif (mytokens[i+1].nil?  || mytokens[i+1] == 'r') && xv.to_s > 'r'
+					returnvalue = -1
 					break
 				elsif xstokens[i+1].nil?
 					returnvalue = -1
 					break
 				end
 				# Otherwise, ignore
-			elsif xv.to_s == "r" && !xstokens[i+1].nil?
+			elsif xv.to_s == "r" && !(xstokens[i+1].nil? || xstokens[i+1].to_s == 'r' || (i>0 && xstokens[i-1] == 'r' && xv.to_s == '1'))
 				returnvalue = 1
 				break
-			elsif xv.nil? && (mv=='0' || mv == nil || (mv=='r' && mytokens[i+1]=='1'))
+			elsif xv.nil? && (mv == '0' || mv == nil || (mv=='r' && mytokens[i+1]=='1'))
 				returnvalue = 0
-			elsif xv.nil?
+			elsif xv.nil? && !(mv.to_s == '0'|| mv.to_s == 'r' || mv.to_s=='1')
 				return 1
+			elsif xv.nil?
+				returnvalue = 1
+				break
 			elsif mv.to_i>0 && xv.to_s.match(/^[a-z]+$/)
 				returnvalue = 1
 				break
@@ -106,6 +125,7 @@ class Version
 				break
 			end
 		end
+#		puts "rv on loop end: #{returnvalue}"
 		if returnvalue == 0 and xstokens.length>mytokens.length
 			mytokens.length.upto(xstokens.length) {|i|
 				returnvalue = -1 unless xstokens[i].to_s=='0' || xstokens[i].nil?

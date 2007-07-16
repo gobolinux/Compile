@@ -204,6 +204,13 @@ END_OF_NOTES
 		# Using /F/C/R makes us liable to problems when somebody hasn't run UpdateSettings recently.
 		# However, the cache doesn't account for LocalRecipes. Fix? Maybe use a heuristic and check for
 		# paths containing "Local"?
+		puts "in info"
+		puts "pre-sort:"
+		puts @recipes[prog]
+		puts "post-sort:"
+		@recipes[prog].sort!
+		puts @recipes[prog]
+		puts "----done info"
 		if @recipes[prog]
 			present = false
 			if @compileConfig['compileRecipeDirs'].is_a?(Array)
@@ -634,6 +641,7 @@ END_OF_NOTES
 	end
 	
 	def genTree
+		#return if @recipes
 		recipes = Hash.new
 		if true||@config['recipes']=='yes'
 			recipeListLines.each {|line|
@@ -645,7 +653,7 @@ END_OF_NOTES
 				recipes[name].push(Version.new(ver))
 			}
 			recipes.each_key {|key|
-				recipes[key] = recipes[key].sort
+				recipes[key].sort!
 			}
 		end
 		@recipes = recipes

@@ -111,8 +111,10 @@ class Freshen < GoboApplication
 		return if prog.nil?
 		# Remove exceeded maxima from any consideration
 		if @maxVersion[prog]
+			#puts "Considering max version for #{prog} (#{@maxVersion[prog]})"
 			if @recipes[prog]
 				while @recipes[prog].length>0 && @recipes[prog].at(-1)>=@maxVersion[prog]
+					#puts "popped #{@recipes[prog].at(-1)}"
 					@recipes[prog].pop
 				end
 				@recipes[prog] = nil if @recipes[prog].length==0
