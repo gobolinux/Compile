@@ -30,7 +30,6 @@ Parse_Options "$@"
 savedir=$(Entry "save-to")
 sourcedir=$(Entry "save-directory")
 
-exit
 if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
 else sudo="sudo -u #0"
