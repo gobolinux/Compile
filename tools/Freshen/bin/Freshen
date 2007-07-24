@@ -21,37 +21,28 @@ require 'version'
 require 'consoleapplication'
 
 class Freshen < ConsoleApplication
-	def initialize()
-		super
-		@version = "3.0.0alpha1"
-#		self.description = "Updates GoboLinux recipes and packages"
-		self.credits = "By Michael Homer <michael@e.geek.nz>"
-#		self.usage = '[<opts>] [<list>]'
-#		self.helpOnNoArguments = false
-		addMode('upgrade', 'Upgrade the packages listed, or the whole system if none specified', 'U')
-		addOpt('exclude', 'Exclude <list> from consideration', 'x')
+	version "3.0.0alpha1"
+	description "Updates GoboLinux recipes and packages"
+	credits "Copyright (C) 2007 Michael Homer <michael@e.geek.nz>"
+	usage "[<opts>] [<mode>] [<list>]"
+
+	has_mode :upgrade, 'Upgrade the packages listed, or the whole system if none specified', :U
+	has_mode :info, 'Display detailed information about the listed program(s)', :i
+	has_opt :exclude, 'Exclude <list> from consideration', :x
+	
+	def run_upgrade(list)
+		out "Would upgrade #{list.join(', ')}"
+		out "Would exclude #{option(:exclude)[:list].join(', ')}"
+	end
+	
+	def run_info(list) 
+		out "Would display info for #{list.join}"
+	end
+	
+	def run_default(list)
+		out "Would display upgrades for #{list.join(', ')}"
+		out "Would exclude #{option(:exclude)[:list].join(', ')}"
 	end
 end
 
-def backtrace
-	puts $!.backtrace.join("\n  ")
-end
-
-begin
-	trap(0) {
-		print "\033];\007"
-	}
-	$app = Freshen.new
-	$app.start
-	rescue SystemExit
-		# Ignore
-	rescue Interrupt
-		puts "Interrupt."
-	rescue Exception
-		if $app.nil? || $app.debug?
-			puts "Error [#{$!.class}]: #{$!}"
-			backtrace
-		else
-			puts "Error: {$!}"
-		end
-end
+ConsoleApplication.run Freshen

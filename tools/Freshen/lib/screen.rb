@@ -53,4 +53,10 @@ module Screen
 		end
 		return Colours
 	end
+	
+	def Screen.wordwrap(s,n)
+		wwl = Screen.width-n
+		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
+	end
+
 end
