@@ -28,8 +28,8 @@
 #ifdef __APPLE__
    #include <sys/param.h>
    #include <sys/mount.h>
-   #define MAJOR(x) major(x)
-   #define MINOR(x) minor(x)
+   #define MAJOR(x) (long long) major(x)
+   #define MINOR(x) (long long) minor(x)
 #else
    #include <sys/statfs.h>
    #include <sys/vfs.h>
