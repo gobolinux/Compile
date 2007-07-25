@@ -665,7 +665,7 @@ function String_Version() {
 
 function Get_System_Paths () {
    Parameters "$1" programpath
-   filesdir=$(mktemp)
+   filesdir=$(Temporary_File)
    find ${programpath} > $filesdir
    GrepReplace "${programpath}/lib/"     "${goboLinks}/Libraries/"    $filesdir
    GrepReplace "${programpath}/sbin/"    "${goboLinks}/Executables/"  $filesdir
