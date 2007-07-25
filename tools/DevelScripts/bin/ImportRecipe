@@ -76,11 +76,13 @@ fi
 unset checkedout
 if ! trunk=`Get_Local_Trunk`
 then 
-   if Ask "You don't seem to have a copy of the svn trunk/revisions tree. Fetch it?"
+   if Ask "You don't seem to have a copy of the svn trunk tree. Fetch it?"
    then
-      Log_Normal "Calling 'svn checkout'. This is going to take a lot of time."
+      Log_Normal "Calling 'svn checkout'."
       Quiet pushd $compileDir
-      svn checkout $compileSubversion Subversion || Die "Error doing the svn checkout."
+      mkdir Subversion
+      cd Subversion
+      svn checkout --non-recursive $compileSubversion/trunk || Die "Error doing the svn checkout."
       Quiet popd
       Log_Normal "Checkout finished."
       checkedout=yes

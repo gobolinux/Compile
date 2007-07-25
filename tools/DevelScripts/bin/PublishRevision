@@ -28,12 +28,11 @@ Parse_Options "$@"
 # ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
 Parse_Conf CompileSubversion.conf
+Parse_Conf Compile/Compile.conf
 
 unset batch
 Boolean "batch" && batch=yes
 
-trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
-revisions=`Get_Local_Revisions` || Die "Could not find a valid svn revisions tree."
 username=`Entry username`
 [ "$username" ] && username="--username $username" 
 
@@ -134,13 +133,55 @@ function publish_revision() {
 program="$(basename $(Arg 1))"
 version="$(Arg 2)"
 
+trunk=`Get_Local_Trunk` || Die "Could not find a valid svn trunk."
+
 programintrunk=`ls "$trunk" | grep -i "^$program$"`
 [ "$programintrunk" ] || echo "Could not find $program in trunk."
 [ `echo "$programintrunk" | wc -l` -eq 1 ] || Die "More than one capitalization for $program found in trunk. Please check."
 program="$programintrunk"
 
-Log_Normal "Updating local subversion copy..."
-svn update "$revisions/$program"
+unset checkedout
+if ! revisions=`Get_Local_Revisions`
+then 
+   if Ask "You don't seem to have a copy of the svn revisions tree. Fetch it?"
+   then
+      Log_Normal "Calling 'svn checkout'."
+      Quiet pushd $compileDir
+      mkdir -p Subversion
+      cd Subversion
+      svn checkout --non-recursive $compileSubversion/revisions || Die "Error doing the svn checkout."
+      Quiet popd
+      Log_Normal "Checkout finished."
+      checkedout=yes
+   fi
+   if ! revisions=`Get_Local_Revisions` || [ ! "$checkedout" ]
+   then Die "Could not find a valid svn revisions tree."
+   fi
+fi
+
+existingprogram=`ls "$revisions" 2> /dev/null | grep -i "^$program$"`
+if [ ! "$existingprogram" ]
+then
+   Log_Normal "Trying to checkout $program..."
+   Quiet pushd $revisions
+   svn checkout "$compileSubversion/revisions/$program"
+   Quiet popd
+   checkedout=yes
+fi
+
+if [ ! `ls "$trunk/$program"` ]
+then
+   Log_Normal "No versions in trunk. Checking out..."
+   Quiet pushd $trunk
+   svn checkout "$compileSubversion/trunk/$program"
+   Quiet popd
+fi
+
+if [ ! "$checkedout" = "yes" ]
+then
+   Log_Normal "Updating local subversion copy..."
+   svn update "$revisions/$program"
+fi
 
 if [ "$version" ]
 then
