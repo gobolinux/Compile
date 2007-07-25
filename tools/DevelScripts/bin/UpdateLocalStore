@@ -1,4 +1,5 @@
 #!/bin/sh
+export HOME=/home/gobolinux
 
 ### Imports ###################################################################
 
@@ -22,6 +23,8 @@ Parse_Conf CompileSubversion.conf
 
 ###############################################################################
 
+echo `date` Started >> ~/cronlog.txt
+
 remove_slash() {
    sed 's,/$,,'
 }
@@ -34,12 +37,14 @@ packdir=`Temporary_Dir`
 
 svn list "$compileLocalRepoRevisions" | remove_slash | while read program
 do
-   svn list "$compileLocalRepoRevisions/$program" | remove_slash | while read version
+   unset prevversion
+   unset prevrecipe   
+   for version in `svn list "$compileLocalRepoRevisions/$program" | remove_slash | LC_ALL=C sort -r`
    do
       revision=${version#*-r}
       justversion=${version%-r*}
       recipe="$compileLocalStore/$program--$version--recipe.tar.bz2"
-      if Quiet svn list "$compileLocalRepoRevisions/$program/$justversion-r$[revision+1]"
+      if [ "$justversion" = "$prevversion" ]
       then 
          rm -f "$recipe"
       elif [ ! -e "$recipe" ]
@@ -51,6 +56,7 @@ do
          Log_Normal "Packed $recipe"
          Quiet popd
       fi
+      prevversion="$justversion"
    done
 done
 
@@ -62,3 +68,4 @@ ls | grep ".*--recipe.*" > MANIFEST
 cp MANIFEST RecipeList
 bzip2 --keep MANIFEST
 
+echo `date` Finished >> ~/cronlog.txt
