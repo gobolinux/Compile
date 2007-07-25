@@ -531,7 +531,7 @@ time_sort(const void *void_a, const void *void_b)
    stat(filename_a, &status_a);
    stat(filename_b, &status_b);
 
-   return status_a.st_mtime > status_b.st_mtime;
+   return status_a.st_mtime - status_b.st_mtime;
 }
 
 int
@@ -548,7 +548,7 @@ size_sort(const void *void_a, const void *void_b)
    stat(filename_a, &status_a);
    stat(filename_b, &status_b);
 
-   return status_a.st_size > status_b.st_size;
+   return status_a.st_size - status_b.st_size;
 }
 
 int
