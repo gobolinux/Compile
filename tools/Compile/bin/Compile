@@ -1075,7 +1075,7 @@ if [ "$recipe_type" = "perl" ]
 then
    Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
    [ "$PERL5LIB" ] || {
-      export PERL5LIB="${goboLibraries}/perl5/site_perl/$(basename $(readlink -f ${goboPrograms}/Perl/Current))/"
+      export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
    }
 
    # Quick hack: won't add these to the dependencies list because
