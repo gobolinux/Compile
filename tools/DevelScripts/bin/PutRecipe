@@ -32,19 +32,10 @@ do
       entry=`aunpack $entry --extract-to=$compileLocalRecipesDir | cut -d/ -f1 | head -n 1`
    fi
 
-   # Enforce new declaration style and ensure that a new version of Compile is set.
+   # Perform some simple cleanups
    for i in `find $entry -name Recipe`
    do
-      cat $i | sed -e 's,compile_version=.*,compile_version=1.8.2,g' \
-                   -e 's,is_compileprogram=yes,recipe_type=configure,g' \
-                   -e 's,is_makefile=yes,recipe_type=makefile,g' \
-                   -e 's,is_python=yes,recipe_type=python,g' \
-                   -e 's,is_perl=yes,recipe_type=perl,g' \
-                   -e 's,is_xmkmf=yes,recipe_type=xmkmf,g' \
-                   -e 's,is_meta=yes,recipe_type=meta,g' \
-                   -e 's,is_scons=yes,recipe_type=scons,g' \
-                   -e 's,is_manifest=yes,recipe_type=manifest,g' \
-                   -e 's,$target/../Settings,$settings_target,g' \
+      cat $i | sed -e 's,$target/../Settings,$settings_target,g' \
                    -e 's,$target/../Variable,$variable_target,g' \
                    > x && mv x $i
    done
