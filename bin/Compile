@@ -22,7 +22,7 @@ Import Versions
 
 helpOnNoArguments=yes
 scriptDescription="Automated program compilation tool."
-scriptCredits="(C)2003-2004 by Hisham Muhammad et al. Released under the GNU GPL."
+scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL."
 scriptUsage="<program> [<version>]"
 Add_Option_Entry "n" "app-name" "Override application name." ""
 Add_Option_Entry "e" "version-number" "Override version number." ""
