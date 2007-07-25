@@ -1,6 +1,7 @@
 #!/bin/bash
 
 . ScriptFunctions
+Import File
 Import GoboLinux
 Import OptionParser
 Parse_Conf Compile/Compile.conf
@@ -26,7 +27,7 @@ then noweb=--no-web
 else noweb=
 fi
 
-lintdir=`mktemp -d`
+lintdir=`Temporary_Dir`
 
 function finish() {
    rm -rf $lintdir
@@ -200,7 +201,7 @@ msg "Checking recipe contents..."
 msg "Performing basic syntax validation..."
 
 # Workaround weird bash behavior
-temprecipe=`mktemp ${goboTemp}/RecipeLint.XXXX`
+temprecipe=`Temporary_File`
 echo > $temprecipe
 cat ./Recipe >> $temprecipe
 bash -n $temprecipe || {
