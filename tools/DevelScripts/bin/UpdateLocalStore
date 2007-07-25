@@ -22,32 +22,39 @@ Parse_Conf CompileSubversion.conf
 
 ###############################################################################
 
+remove_slash() {
+   sed 's,/$,,'
+}
+
+compileLocalRepoRevisions="file:///home/gobolinux/svn/recipes/revisions"
+
 mkdir -p $compileLocalStore
 
-cd $compileLocalRevisions
-if ! Boolean "skip-update"
-then
-   svn up
-fi
+packdir=`Temporary_Dir`
 
-\ls | while read program
+svn list "$compileLocalRepoRevisions" | remove_slash | while read program
 do
-   cd "$compileLocalRevisions/$program"
-   \ls | while read version
+   svn list "$compileLocalRepoRevisions/$program" | remove_slash | while read version
    do
       revision=${version#*-r}
       justversion=${version%-r*}
       recipe="$compileLocalStore/$program--$version--recipe.tar.bz2"
-      if [ -e "$compileLocalRevisions/$program/$justversion-r$[revision+1]" ]
+      if Quiet svn list "$compileLocalRepoRevisions/$program/$justversion-r$[revision+1]"
       then 
          rm -f "$recipe"
       elif [ ! -e "$recipe" ]
       then
-         cd $compileLocalRevisions
+         Quiet pushd "$packdir"
+         mkdir "$program"
+         svn checkout "$compileLocalRepoRevisions/$program/$version" "$program/$version"
          tar cjpf "$recipe" --exclude .svn "$program/$version"
+         Log_Normal "Packed $recipe"
+         Quiet popd
       fi
    done
 done
+
+rm -rf "$packdir"
 
 cd $compileLocalStore
 rm MANIFEST MANIFEST.bz2 RecipeList
