@@ -160,7 +160,7 @@ then
 
    Quiet pushd "$compileSourcesDir"
    cvs -d "$cvs_server" checkout "$cvs_module"
-   file_contents=`mktemp`
+   file_contents=`Temporary_File`
    find "$cvs_module" >> "$file_contents"
    Quiet popd
 elif [ "$svn" = "yes" ]
@@ -169,7 +169,7 @@ then
 
    Quiet pushd "$compileSourcesDir"
    svn checkout $svn_uri "${packagename}-svn"
-   file_contents=`mktemp`
+   file_contents=`Temporary_File`
    find "${packagename}-svn" >> "$file_contents"
    Quiet popd
 else
@@ -182,7 +182,7 @@ else
    then
       if Starts_With "http" "$source_url"
       then
-         file_headers=`mktemp`
+         file_headers=`Temporary_File`
          $wget --spider --server-response "$source_url" 2> $file_headers
          filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//'`
          if [ -n "$filename" -a "$filename" != "$basefile" ]
@@ -213,7 +213,7 @@ else
    echo "file_md5="`Get_MD5 "$file"` >> "$recipedir/Recipe"
    
    # TODO: report if multiple directories, tell the user to verify it
-   file_contents=`mktemp`
+   file_contents=`Temporary_File`
    als -q "$file" >> "$file_contents"
 
    # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
