@@ -6,6 +6,7 @@ PACKAGE_DIR=$(HOME)
 PACKAGE_ROOT=$(PACKAGE_DIR)/$(PROGRAM)
 PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
+DESTDIR=/Programs/Compile/$(VERSION)/
 CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
 default:
@@ -35,3 +36,6 @@ dist: version_check cleanup verify
 manuals:
 	mkdir -p man/man1
 	for i in `cd bin && grep -l Parse_Options *`; do bn=`basename $$i`; help2man --name=" " --source="GoboLinux" --no-info $$bn > man/man1/$$bn.1; done
+
+install: version_check
+	cp -a * $(DESTDIR)
