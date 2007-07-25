@@ -12,18 +12,23 @@ Import OptionParser
 
 scriptDescription="Update a local store based on svn repository."
 scriptCredits="Copyright (C) 2007 Hisham Muhammad. Released under the GNU GPL."
-helpOnNoArguments=no
 scriptUsage=""
 scriptExample=""
-Add_Option_Boolean "a" "all" "Uploads all recipes in the local revision tree."
+Add_Option_Boolean "U" "skip-update" "Do not resync svn tree with 'svn up'"
+
 Parse_Options "$@"
 
 Parse_Conf CompileSubversion.conf
 
 ###############################################################################
 
+mkdir -p $compileLocalStore
+
 cd $compileLocalRevisions
-svn up
+if ! Boolean "skip-update"
+then
+   svn up
+fi
 
 \ls | while read program
 do
@@ -31,15 +36,22 @@ do
    \ls | while read version
    do
       revision=${version#*-r}
-      version=${version%-r*}
+      justversion=${version%-r*}
       recipe="$compileLocalStore/$program--$version--recipe.tar.bz2"
-      if [ -e "$version-r$[revision+1]" ]
+      if [ -e "$compileLocalRevisions/$program/$justversion-r$[revision+1]" ]
       then 
          rm -f "$recipe"
       elif [ ! -e "$recipe" ]
       then
-         cd ../..
-         tar cjpf "$recipe" "$program/$version"
+         cd $compileLocalRevisions
+         tar cjpf "$recipe" --exclude .svn "$program/$version"
       fi
    done
 done
+
+cd $compileLocalStore
+rm MANIFEST MANIFEST.bz2 RecipeList
+ls | grep ".*--recipe.*" > MANIFEST
+cp MANIFEST RecipeList
+bzip2 --keep MANIFEST
+
