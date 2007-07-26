@@ -169,7 +169,7 @@ then
    checkedout=yes
 fi
 
-if [ ! `ls "$trunk/$program"` ]
+if [ ! "`ls "$trunk/$program"`" ]
 then
    Log_Normal "No versions in trunk. Checking out..."
    Quiet pushd $trunk
