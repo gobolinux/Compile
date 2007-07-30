@@ -48,6 +48,7 @@ Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
 Boolean "use-contrib"&& contrib=",contrib_package"
+Boolean "no-sign-check" && nosigncheck="--no-sign-check"
 Is_Writable "${goboPrograms}" || Verify_Superuser
 Is_Writable "${goboInstall}"  || Verify_Superuser
 
@@ -72,13 +73,13 @@ then
 
       if mv ${goboTemp}/${filename} ${defaultLocalPackagesPaths[0]}/${filename} 
       then 
-         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/${filename}
+         InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/${filename}
       else
          Log_Error "Coud not move package."
-         InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/${filename}
+         InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
       fi
    else
-      InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} ${goboTemp}/${filename}
+      InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
       Log_Normal "Removing downloaded package ${goboTemp}/${filename}."
       rm -f -- ${goboTemp}/${filename}
    fi
@@ -118,7 +119,7 @@ then
          if [ "${found}" ]
          then 
             Log_Normal "Found package for ${name} ${version}: ${found}"
-            InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for ${name} ${version} not found."
          fi
@@ -127,7 +128,7 @@ then
          if [ "${found}" ]
          then
             Ask_Continue "Installing ${found}"
-            InstallPackage ${unmanaged} ${noinstall} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for ${name} not found."
          fi
@@ -267,7 +268,8 @@ else
    Verbose tar "$taroption" "$archive" -C ${goboPrograms}
 fi
 
-if Boolean "no-sign-check"
+
+if [ -n "${nosigncheck}" ]
 then
    Log_Normal "Skipping package's signature verification."
    package_verified="true"
@@ -357,7 +359,7 @@ then
       set +o pipefail
       for d_url in $selecteddeps
       do
-         InstallPackage --no-dependencies $d_url || {
+         InstallPackage --no-dependencies ${nosigncheck} $d_url || {
             ret=$?
             exit $ret
          }
