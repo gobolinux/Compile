@@ -153,7 +153,7 @@ then
 
    # Update newrecipedir to match contents of unpackrecipedir:
 
-   ( cd "$newrecipedir"; find | tac | grep -v "\.svn" ) | while read entry
+   ( cd "$newrecipedir"; find . | tac | grep -v "\.svn" ) | while read entry
    do
       if [ ! -e "$unpackrecipedir/$entry" ]
       then
