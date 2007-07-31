@@ -1,5 +1,22 @@
 #!/bin/sh
+export CPLUS_INCLUDE_PATH=/home/gobolinux/Rootless/System/Links/Headers
+export C_INCLUDE_PATH=/home/gobolinux/Rootless/System/Links/Headers
 export HOME=/home/gobolinux
+export HOST=oakdale
+export INFOPATH=/home/gobolinux/Rootless/System/Links/Manuals/info:
+export LANG=en_US
+export LANGUAGE=en_US:en_GB:en
+export LD_LIBRARY_PATH=/home/gobolinux/Rootless/System/Links/Libraries:
+export LOGNAME=gobolinux
+export PATH=/home/gobolinux/Rootless/System/Links/Executables:/home/gobolinux/Rootless/System/Links/Executables:/usr/local/bin:/bin:/usr/bin:/usr/X11R6/bin:.:.
+export PYTHONPATH=/home/gobolinux/Rootless/System/Links/Libraries/python2.3/site-packages:/home/gobolinux/Rootless/System/Links/Libraries/python2.4/site-packages:
+export ROOTLESS_GOBOLINUX=1
+export SHELL=/bin/zsh
+export TERM=xterm-color
+export TMPDIR=/home/gobolinux/Rootless/System/Variable/tmp
+export USER=gobolinux
+export USERNAME=gobolinux
+export goboPrefix=/home/gobolinux/Rootless
 
 ### Imports ###################################################################
 
