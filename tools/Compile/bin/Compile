@@ -213,7 +213,7 @@ function wrapup() {
 
       if [ ! -z "$cross_uname_m" ]
       then $sudo_exec sh -c "echo \"$cross_uname_m\" > \"$target/Resources/Architecture\""
-      else $sudo_exec sh -c "echo \"`uname -m`\" > \"$target/Resources/Architecture\""
+      else $sudo_exec sh -c "echo \"$(Get_Architecture)\" > \"$target/Resources/Architecture\""
       fi
 
       Log_Normal "Generating package's build information..."
