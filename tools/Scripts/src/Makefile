@@ -7,8 +7,6 @@ ifeq ($(shell uname -s),Darwin)
 endif
 
 all:
-	echo $(shell uname -m)
-	echo $(STATIC)
 	gcc $(MYCFLAGS) -o SuperUserName SuperUserName.c
 	gcc $(MYCFLAGS) -o IsExecutable IsExecutable.c
 	gcc $(MYCFLAGS) -o usleep usleep.c
