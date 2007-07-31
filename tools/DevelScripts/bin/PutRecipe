@@ -21,6 +21,11 @@ Parse_Options "$@"
 
 ### Operation #################################################################
 
+if [ -z "$SVN_EDITOR" -a -z "$VISUAL" -a -z "$EDITOR" ]
+then
+   Die "Please set one of SVN_EDITOR, VISUAL or EDITOR environment variables before running this script"
+fi
+
 unset programlist
 eval `Args_To_Array suppliedrecipes`
 
