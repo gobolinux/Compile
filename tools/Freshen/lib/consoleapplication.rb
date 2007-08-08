@@ -19,8 +19,8 @@ Param = Struct.new(:canonicalName, :description, :hasArgs, :short, :modeOpt)
 class ConsoleApplication
 	@@toExec = []
 	
-	attr_accessor :credits, :description, :usage, :version
-	attr_reader :list, :mode, :name
+	attr_accessor :credits, :description, :usage, :version, :name
+	attr_reader :list, :mode
 	
 	def initialize
 		trap(0) {
@@ -69,6 +69,9 @@ class ConsoleApplication
 				end
 			end
 		}
+		
+		# The automatic mapping of ARGV to STDIN isn't terribly useful. Disable it unless it's wanted.
+		ARGV.clear
 
 		@mode = :default if !@mode
 		
@@ -85,6 +88,8 @@ class ConsoleApplication
 				send("run_#{@mode.to_s}".to_sym)
 			end
 		end
+		rescue SystemExit
+			# Ignore
 		rescue Exception
 			error $!
 			backtrace
@@ -201,6 +206,12 @@ You should have received a copy of the GNU General Public License along with thi
 	def self.usage(str)
 		@@toExec.push lambda {|s|
 			s.usage = str
+		}
+	end
+	
+	def self.name(str)
+		@@toExec.push lambda {|s|
+			s.name = str
 		}
 	end
 	
