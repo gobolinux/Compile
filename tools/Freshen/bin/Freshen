@@ -19,6 +19,10 @@ $: << File.expand_path("#{dirname}/../lib/")
 
 require 'version'
 require 'consoleapplication'
+require 'repository'
+require 'reciperepository'
+require 'programrepository'
+require 'collectionrepository'
 
 class Freshen < ConsoleApplication
 	version "3.0.0alpha1"
@@ -41,7 +45,19 @@ class Freshen < ConsoleApplication
 	
 	def run_default(list)
 		out "Would display upgrades for #{list.join(', ')}"
-		out "Would exclude #{option(:exclude)[:list].join(', ')}"
+#		out "Would exclude #{option(:exclude)[:list].join(', ')}"
+		begin
+		p = ProgramRepository.new
+		r = RecipeRepository.new('/Files/Compile/Recipes', nil)
+		p.all.each {|prog|
+			vs = r[p.name]
+			if vs[-1] > prog.current
+				out "New version of #{prog}: #{vs[-1]}"
+			end
+		}
+		rescue Exception
+			backtrace
+		end
 	end
 end
 

@@ -29,4 +29,12 @@ class CollectionRepository < Repository
 			return true if rep.meet_dependency?(dep)
 		end
 	end
+	
+	def [](name)
+		vers = []
+		@repositories.each do |rep|
+			vers |= rep[name]
+		end
+		vers.sort
+	end
 end

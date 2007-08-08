@@ -19,4 +19,8 @@ class Repository
 	def meet_dependency?(dep)
 		false
 	end
+	
+	def []
+		raise NotImplementedException
+	end
 end

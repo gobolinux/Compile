@@ -11,34 +11,38 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-class RecipeRepository < Repository
+class ProgramRepository < Repository
 	
-	@recipes = Hash.new
+	@programs = Hash.new
 	
-	def new(dir='/Files/Compile/Recipes', url=nil)
+	def new(dir="/Programs")
 		super
-		@dir, @url = dir, url
+		@dir = dir
 	end
 	
 	def include?(prog, ver=nil)
-		File.exist("#{@dir}/#{prog}")
+		if ver
+			File.exist("#{@dir}/#{prog}/#{ver.raw}")
+		else
+			File.exist("#{@dir}/#{prog}")
+		end
 	end
 	
 	def meet_dependency?(dep)
-		if dep.is_a?(Version) # Assume >=
-			
-		else
-			false
+		raise NotImplementedError
+	end
+	
+	def all
+		@programs = Hash.new
+		Dir.foreach(@dir) do |name|
+			next if name == '.' or name == '..'
+			@programs[name] = Program.new name
 		end
+		@programs
 	end
 	
 	def [](name)
-		@recipes[name] if @recipes[name]
-		vers = []
-		Dir.foreach("#{dir}/#{name}") do |v|
-			next if v == '.' or v == '..'
-			vers.push Version.new(v)
-		end
-		@recipes[name] = vers.sort
+		@programs[name] = Program.new name
+		@programs[name]
 	end
 end
