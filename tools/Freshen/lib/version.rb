@@ -18,6 +18,8 @@ class Version
 	attr_reader :versionTokens, :version, :revision, :type, :raw
 	attr_writer :revision
 	
+	@@useRevisions = true
+	
 	def initialize(s)
 		@raw = s
 		(@version, @revision) = s.split('-r')
@@ -32,6 +34,7 @@ class Version
 	
 	def <=>(other)
 		@versionTokens.zip(other.versionTokens) {|m, o|
+			#puts "comparing #{m} and #{o}"
 			if o.nil?
 				# If the other version has run out of tokens, keep going as long as we're
 				# all zeroes.
@@ -67,15 +70,25 @@ class Version
 			return 1
 		end
 		# At this point, the version is equal so compare revisions
-		return (@revision <=> other.revision)
+		return (@revision <=> other.revision) if @@useRevisions
+		return 0
 	end
 	
 	private
 	def compareTokens(m,o)
 		return 1 if m.to_i.to_s == m && o.to_i.to_s != o
 		return -1 if o.to_i.to_s == o && m.to_i.to_s != m
+		if m.to_i.to_s == m && o.to_i.to_s == o
+			return 1 if m.to_i > o.to_i
+			return -1 if m.to_i < o.to_i
+		end
 		return 1 if m > o
 		return -1 if m < o
 		nil
+	end
+	
+	public
+	def self.useRevisions=(x)
+		@@useRevisions = x
 	end
 end

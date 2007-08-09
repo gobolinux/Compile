@@ -37,6 +37,7 @@ class VersionTester < Tester
 end
 
 t = VersionTester.new
+t.test('1.9.6', '1.10-r2')
 
 unequals = [
 '0.9.8',
@@ -49,7 +50,9 @@ unequals = [
 '1.0r-r2',
 '1.0.1',
 '1.1',
+'1.9.6',
 '1.10',
+'1.10-r2',
 '2.0.0',
 '2.0.0.5',
 '2.12-r1',

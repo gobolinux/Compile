@@ -15,8 +15,8 @@ class ProgramRepository < Repository
 	
 	@programs = Hash.new
 	
-	def new(dir="/Programs")
-		super
+	def initialize(dir="/Programs")
+		super()
 		@dir = dir
 	end
 	
@@ -38,7 +38,7 @@ class ProgramRepository < Repository
 			next if name == '.' or name == '..'
 			@programs[name] = Program.new name
 		end
-		@programs
+		@programs.values
 	end
 	
 	def [](name)

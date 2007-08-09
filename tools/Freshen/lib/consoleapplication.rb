@@ -14,7 +14,7 @@
 
 require 'screen'
 
-Param = Struct.new(:canonicalName, :description, :hasArgs, :short, :modeOpt)
+Param = Struct.new(:canonicalName, :description, :hasArgs, :short, :modeOpt, :lambda)
 
 class ConsoleApplication
 	@@toExec = []
@@ -56,6 +56,8 @@ class ConsoleApplication
 				if @params[o].modeOpt
 					raise "Only one mode option may be specified. Mode is #{@mode}, #{p} was also specified." if @mode
 					@mode = o
+				elsif @params[o].lambda
+					@params[o].lambda.call
 				end
 			elsif !current
 				raise "No such option: #{p}"
@@ -138,8 +140,8 @@ You should have received a copy of the GNU General Public License along with thi
 		addOptAlias(short, long) if short
 	end
 	
-	def addOptBoolean(long, helpText, short=nil)
-		@params[long] = Param.new(long, helpText, false, short, false)
+	def addOptBoolean(long, helpText, short=nil, block=nil)
+		@params[long] = Param.new(long, helpText, false, short, false, block)
 		addOptAlias(short, long) if short
 	end
 	
@@ -182,6 +184,12 @@ You should have received a copy of the GNU General Public License along with thi
 	def self.has_opt(sym, description=nil, short=nil)
 		@@toExec.push lambda {|s|
 			s.addOpt(sym, description, short)
+		}
+	end
+
+	def self.has_flag(sym, description=nil, short=nil, block=nil)
+		@@toExec.push lambda {|s|
+			s.addOptBoolean(sym, description, short, block)
 		}
 	end
 

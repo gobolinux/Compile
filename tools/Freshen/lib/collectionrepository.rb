@@ -12,7 +12,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class CollectionRepository < Repository
-	@repositories = []
+	
+	def initialize
+		@repositories = []
+	end
 	
 	def add(rep)
 		@repositories.push rep

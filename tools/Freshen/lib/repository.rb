@@ -12,6 +12,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class Repository
+	
 	def include?(prog, ver=nil)
 		false
 	end

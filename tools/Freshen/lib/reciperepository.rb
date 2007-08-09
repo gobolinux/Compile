@@ -12,12 +12,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 class RecipeRepository < Repository
-	
-	@recipes = Hash.new
-	
-	def new(dir='/Files/Compile/Recipes', url=nil)
-		super
+
+	def initialize(dir='/Files/Compile/Recipes', url=nil)
+		super()
 		@dir, @url = dir, url
+		@recipes = Hash.new
 	end
 	
 	def include?(prog, ver=nil)
@@ -35,10 +34,17 @@ class RecipeRepository < Repository
 	def [](name)
 		@recipes[name] if @recipes[name]
 		vers = []
-		Dir.foreach("#{dir}/#{name}") do |v|
-			next if v == '.' or v == '..'
-			vers.push Version.new(v)
+		if File.exist?("#{@dir}/#{name}")
+			Dir.foreach("#{@dir}/#{name}") do |v|
+				next if v == '.' or v == '..'
+				vers.push Version.new(v)
+			end
+			vers.sort!
+		else
+			Dir.foreach(@dir) do |n|
+				return self[n] if n.downcase == name.downcase
+			end
 		end
-		@recipes[name] = vers.sort
+		@recipes[name] = vers
 	end
 end

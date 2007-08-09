@@ -16,18 +16,23 @@ class Program
 	
 	def initialize(name)
 		@name = name.to_s
+		@dir = '/Programs'
+	end
+	
+	def to_s
+		"#{@name}"
 	end
 	
 	def current
 		return @current if @current
-		d = Config.getDir('Programs')
+		d = @dir
 		if File.exist?(d + '/' + @name)
 			v = `readlink -f #{d}/#{@name}/Current`
-			v = v.slice(v.rindex('/')+1, v.length)
+			v = v.slice(v.rindex('/')+1, v.length).strip
 			@current = Version.new(v)
 			# Throw in the revision if available
 			if File.exist?(d+'/'+@name+'/'+@current.raw+'/Resources/Revision')
-				(junk, rev) = IO.read(d+'/'+@current.raw+'/Resources/Revision').chomp.split('r')
+				(junk, rev) = IO.read(d+'/'+@name+'/'+@current.raw+'/Resources/Revision').strip.split('r')
 				@current.revision = rev.to_i
 			end
 			@current
@@ -37,7 +42,7 @@ class Program
 	end
 	
 	def installed_versions
-		d = Config.getDir('Programs')
+		d = @dir
 		if File.exist?(d + '/' + @name)
 			versions = []
 			Dir.foreach(d + '/' + @name) do |fn|
@@ -59,7 +64,11 @@ class Program
 		end
 	end
 	
-	def is_installed?
-		!current.nil?
+	def installed?(version=nil)
+		if version.nil?
+			!current.nil?
+		else
+			installed_versions.include?(version)
+		end
 	end
 end
