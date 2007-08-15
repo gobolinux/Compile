@@ -1,5 +1,4 @@
 
-export LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export TMPDIR="${goboPrefix}/System/Variable/tmp"
 
 # Source application environment settings.

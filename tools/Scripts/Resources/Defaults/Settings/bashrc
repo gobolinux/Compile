@@ -56,10 +56,9 @@ export LESSCHARSET=latin1
 export HISTCONTROL=ignoredups
 
 
-export               PATH="${goboPrefix}/System/Links/Executables${PATH:+:$PATH}:."
+export               PATH="${goboPrefix}/System/Links/Executables${PATH:+:$PATH}"
 export            MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}"
 export           INFOPATH="${goboPrefix}/System/Links/Manuals/info${INFOPATH:+:$INFOPATH}"
-export    LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export     C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${C_INCLUDE_PATH:+:$C_INCLUDE_PATH}"
 export CPLUS_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${CPLUS_INCLUDE_PATH:+:$CPLUS_INCLUDE_PATH}"
 
