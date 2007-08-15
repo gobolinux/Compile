@@ -13,6 +13,7 @@ Import String
 # 3     Signature check failed
 # 4     No signature
 # 5     No FileHash (implies no signature)
+# 6     Signer unknown
 
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
@@ -95,10 +96,15 @@ then
    then
       Boolean "quiet" || Log_Normal "Verifying signature..."
       $quiet Check_FileSig "${FileHash_loc}" "${FileHash_sig}"
-      if Failed
+      rtn=$?
+      if [ $rtn -eq 1 ]
       then
-         Boolean "quiet" || Log_Error "Signature check failed: $rtn"
+         Boolean "quiet" || Log_Error "Signature check failed: Faulty signature"
          exit_with_error 3
+      elif [ $rtn -eq 2 ]
+      then
+         Boolean "quiet" || Log_Error "Signature check failed: Signer unknown"
+         exit_with_error 6
       fi
       Boolean "quiet" || Log_Normal "Signature OK"
    elif ! Boolean "no-signature"

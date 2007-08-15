@@ -291,6 +291,10 @@ else
    then
       Log_Question "No signature.  Unable to verify package"
       Ask_Continue "Continue install?"
+   elif [ $result -eq 6 ] 
+   then
+      Log_Question "Package signed with unknown signature.  Unable to verify package"
+      Ask_Continue "Continue install?"
    elif [ $result -eq 1 ] || [ $result -eq 3 ] 
    then
       Log_Error "Invalid signature.  Package has been modified"
