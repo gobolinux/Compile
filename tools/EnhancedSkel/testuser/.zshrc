@@ -4,6 +4,8 @@ alias rm="rm -i"
 alias cp="cp -i"
 alias d="ls --color"
 
+export PATH=$PATH:.
+
 prompt lode cyan
 
 # function to start one instance of gpg-agent for current user
