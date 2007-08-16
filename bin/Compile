@@ -1186,7 +1186,7 @@ fi
 
 if [ "$recipe_type" = "scons" ]
 then
-   Quiet scons --version || Die "This is a scons type recipe and you don't seem to have scons isntalled."
+   Quiet scons --version || Die "This is a scons type recipe and you don't seem to have scons installed."
    [ "$scons" ] || scons="scons"
    if [ ! "$override_default_options" = "yes" ]
    then
