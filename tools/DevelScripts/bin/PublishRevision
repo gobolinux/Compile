@@ -20,7 +20,7 @@ Add_Option_Boolean "S" "skip-lint" "Don't run RecipeLint."
 Add_Option_Boolean "b" "batch" "Don't ask questions. Generate automatic commit logs such as 'NewVersion' and 'New recipe'."
 #Add_Option_Entry "r" "rename" "Rename program to <entry>."
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
-Add_Option_Entry "u" "username"  "User name used for commiting changes at svn server."
+Add_Option_Entry "u" "username"  "User name used for committing changes at svn server."
 Parse_Options "$@"
 
 # Use this to parse attributions from
@@ -73,9 +73,9 @@ function publish_revision() {
       else commitdir="$appdir"
       fi
       if [ "$batch" ]
-      then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error commiting $commitdir"
+      then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error committing $commitdir"
       elif Ask "Commit the changes at $commitdir?"
-      then svn commit $username "$commitdir" || Die "Error commiting $commitdir"
+      then svn commit $username "$commitdir" || Die "Error committing $commitdir"
       else return
       fi
    fi
@@ -124,8 +124,8 @@ function publish_revision() {
       return
    fi
    
-   Log_Normal "Commiting..."
-   svn commit $username --message "Commiting revision $revision" $revdir
+   Log_Normal "Committing..."
+   svn commit $username --message "Committing revision $revision" $revdir
 }
 
 ### Operation #################################################################
