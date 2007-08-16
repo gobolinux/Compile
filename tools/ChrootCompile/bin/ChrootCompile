@@ -38,9 +38,8 @@ Parse_Conf ChrootCompile.conf
 
 Is_Entry "use-directory" && chrootCompileDir="$(Entry 'use-directory')"
 
-if [ "$UID" -ne 0 ]
-then sudo=sudo
-else sudo=
+if [ "$UID" -eq 0 ]
+then sudo_exec=
 fi
 
 unset localrepository
@@ -210,7 +209,7 @@ echo "ChrootCompile: Preparing $root..."
 
 function unmount_dir() {
    [ "$verbose" ] && echo "ChrootCompile: Will unmount $point..."
-   $sudo umount $1 2>&1 | grep -v "not mounted" /dev/null || true
+   $sudo_exec umount $1 2>&1 | grep -v "not mounted" /dev/null || true
 }
 
 function cleanup() {
@@ -235,7 +234,7 @@ if [ -d "$root" ]
 then
    date=`date +%Y%m%d-%H%M`
    echo "Backing up old $root to $root-old-$date."
-   $sudo mv $root $root-old-$date
+   $sudo_exec mv $root $root-old-$date
 fi
 
 function create_root() {
@@ -367,13 +366,13 @@ fi
 if [ "$localrepository" ]
 then
     [ "$verbose" ] && echo "ChrootCompile: bind-mounting ${compileDir} inside $root"
-    $sudo mount --bind ${compileDir} $root/Files/Compile
+    $sudo_exec mount --bind ${compileDir} $root/Files/Compile
 
     if [ -d "$crosskerneldir" ]
     then
         [ "$verbose" ] && echo "ChrootCompile: bind-mounting $crosskerneldir inside $root"
         mkdir -p $root/$crosskerneldir
-        $sudo mount --bind $crosskerneldir $root/$crosskerneldir
+        $sudo_exec mount --bind $crosskerneldir $root/$crosskerneldir
     fi
 fi
 
@@ -480,7 +479,7 @@ function load_dependency() {
    fi
    unset usenewnames
    Boolean "new-names" && usenewnames="--new-names"
-   $sudo MiniInstallPackage $realcopy $verbose $usenewnames "$unpacked" "$root" $params
+   $sudo_exec MiniInstallPackage $realcopy $verbose $usenewnames "$unpacked" "$root" $params
 }
 
 function is_blacklisted() {
@@ -566,7 +565,7 @@ function sudo_rm_if_e() {
    if [ -e "$1" ]
    then
       [ "$verbose" ] && echo "ChrootCompile: removing $1..."
-      $sudo rm -f "$1"
+      $sudo_exec rm -f "$1"
    else
       return 0
    fi
@@ -596,14 +595,14 @@ cat <<EOF > $root/$settingsdir/hosts
 EOF
 
 sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
-$sudo chmod 777 $root/$goboPrograms/Sudo/Settings
+$sudo_exec chmod 777 $root/$goboPrograms/Sudo/Settings
 cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
 root ALL=(ALL) NOPASSWD: ALL
 EOF
-$sudo chmod 755 $root/$goboPrograms/Sudo/Settings
+$sudo_exec chmod 755 $root/$goboPrograms/Sudo/Settings
 
-$sudo chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
-$sudo chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
+$sudo_exec chmod 440 $root/$goboPrograms/Sudo/Settings/sudoers
+$sudo_exec chown 0:0 $root/$goboPrograms/Sudo/Settings/sudoers
 sudo_rm_if_e $root/System/Settings/sudoers
 ln -nfs /$goboPrograms/Sudo/Settings/sudoers $root/$settingsdir/sudoers
 touch $root/$settingsdir/fstab
@@ -614,22 +613,22 @@ touch $root/$settingsdir/fstab
 #############################################################################
 # Binding /dev, /proc and ./Archives inside root directory
 #############################################################################
-$sudo mount --bind /dev $root/System/Kernel/Devices
-$sudo mount --bind /proc $root/System/Kernel/Status
+$sudo_exec mount --bind /dev $root/System/Kernel/Devices
+$sudo_exec mount --bind /proc $root/System/Kernel/Status
 
 [ -d ./Archives ] || mkdir ./Archives
-[ ! "$localrepository" ] && $sudo mount --bind Archives $root/Files/Compile/Archives
+[ ! "$localrepository" ] && $sudo_exec mount --bind Archives $root/Files/Compile/Archives
 
-$sudo mount --bind $hostgetclean $root/Depot/$hostgetclean
-$sudo mount --bind $targetgetclean $root/Depot/$targetgetclean
+$sudo_exec mount --bind $hostgetclean $root/Depot/$hostgetclean
+$sudo_exec mount --bind $targetgetclean $root/Depot/$targetgetclean
 
 if [ "$crossopts" ]
 then
     goboModules="/System/Kernel/Modules"
     mkdir -p $root/$crosstoolchaindir
-    $sudo mount --bind $crosstoolchaindir $root/$crosstoolchaindir
+    $sudo_exec mount --bind $crosstoolchaindir $root/$crosstoolchaindir
     if [ -d "$cross_prefix_dir/$goboModules" ]
-    then $sudo mount --bind $cross_prefix_dir/$goboModules $root/$cross_prefix_dir/$goboModules
+    then $sudo_exec mount --bind $cross_prefix_dir/$goboModules $root/$cross_prefix_dir/$goboModules
     fi
 fi
 
@@ -720,7 +719,7 @@ else
 fi
 
 function in_chroot() {
-   $sudo chroot $root "$@"
+   $sudo_exec chroot $root "$@"
 }
 
 [ "$verbose" ] && echo "ChrootCompile: Will run ldconfig..."
@@ -728,7 +727,7 @@ in_chroot ldconfig
 
 if [ -e Directories.conf ]
 then
-   $sudo cp Directories.conf $root/$goboPrograms/Scripts/Settings/Scripts/Directories.conf
+   $sudo_exec cp Directories.conf $root/$goboPrograms/Scripts/Settings/Scripts/Directories.conf
 fi
 
 if ! [ "$chrootcompileMode" = "gobo" ]
@@ -741,8 +740,8 @@ fi
 #############################################################################
 
 # Only local packages are used to fullfil dependencies
-$sudo bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
-$sudo bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$targetgetclean ; )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
+$sudo_exec bash -c "echo 'defaultRepositories=( local_package )' > $root/$goboPrograms/Scripts/Settings/Scripts/FindPackage.conf"
+$sudo_exec bash -c "echo 'defaultLocalPackagesPaths=( /Depot/$targetgetclean ; )' >> $root/$goboPrograms/Scripts/Settings/Scripts/GetAvailable.conf"
 
 function check_dependencies() {
    [ "$verbose" ] && echo "ChrootCompile: Checking dependencies..."
@@ -772,7 +771,7 @@ function check_dependencies() {
 
 echo "ChrootCompile: Will run Compile..."
 unset failed
-in_chroot Compile --batch --no-web --no-sign $crossopts $name $version || failed=yes
+in_chroot Compile --batch --no-web --no-sign $verbose $crossopts $name $version || failed=yes
 if [ "$failed" ]
 then
    echo -en "\007"    
