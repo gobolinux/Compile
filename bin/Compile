@@ -117,7 +117,7 @@ function do_symlink() {
       fi
       subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-      SandboxInstall ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+      SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
    fi
 
    if ! [ "$noextras" = "yes" ]
@@ -1061,7 +1061,7 @@ then
       else sandboxopts=$(merge_array "sandbox_options")
       fi
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-      SandboxInstall ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
+      SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    check_direct_dependencies
