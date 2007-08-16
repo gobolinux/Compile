@@ -397,7 +397,7 @@ class Freshen < GoboApplication
 		
 		@maxVersion.each {|prog, ver|
 			if ver<=@minVersion[prog]
-				logError "Error: Minimum version for #{prog} is incompatible with maximum (#{@minversion[prog]}>=#{ver})."
+				logError "Error: Minimum version for #{prog} is incompatible with maximum (#{@minVersion[prog]}>=#{ver})."
 			end
 		}
 		

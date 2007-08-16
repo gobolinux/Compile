@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Module for handling screen functions
-# Presently, only terminal dimensions
+# Module for handling terminal functions
+# Presently, only terminal dimensions and colours.
 # Can be module or mixin
 # Mixin defines @@width and @@height
 # This is to avoid extra stty calls
@@ -40,8 +40,6 @@ module Screen
 		end
 		@@height
 	end
-	# Mwaha efficiency.  Sort of makes a mockery of that whole "Constant" thing, though
-	# I suppose being a constant isn't the same as Colours.freeze
 	def Screen.colour
 		if STDOUT.tty? and Colours.length==0
 			Colours['blueboldwhite']    = "\033[1;44;37m"
