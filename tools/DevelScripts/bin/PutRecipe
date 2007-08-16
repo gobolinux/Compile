@@ -16,10 +16,16 @@ scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GP
 helpOnNoArguments=yes
 scriptUsage="[<recipe dirs>|<tarballs>]"
 scriptExample="/Files/Compile/LocalRecipes/Firefox"
-Add_Option_Boolean "s" "store" "Also upload to the recipe store"
 Parse_Options "$@"
 
 ### Operation #################################################################
+
+[ "$compileLocalRecipesDir" ] || compileLocalRecipesDir="$goboPrefix/Files/Compile/LocalRecipes"
+mkdir -p "$compileLocalRecipesDir"
+[ "$compilePackedRecipesDir" ] || compilePackedRecipesDir="$goboPrefix/Files/Compile/PackedRecipes"
+mkdir -p "$compilePackedRecipesDir"
+[ "$compileLocalTrunk" ] || compilePackedRecipesDir="$goboPrefix/Files/Compile/Subversion/trunk"
+mkdir -p "$compileLocalTrunk"
 
 if [ -z "$SVN_EDITOR" -a -z "$VISUAL" -a -z "$EDITOR" ]
 then
@@ -75,8 +81,3 @@ do
       PublishRevision --skip-lint $program $version || exit 1
    done
 done
-
-# Copy the recipe to the store
-if [ "$programlist" ] && Boolean "store"
-then UpdateRecipeStore $programlist
-fi
