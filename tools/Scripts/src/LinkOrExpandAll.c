@@ -250,6 +250,7 @@ static void canonicalize_path(char* path) {
 }
 
 static void create_single_link(char* src, char* dest) {
+   count++;
    char dotdest[PATH_MAX+1];
    snprintf(dotdest, PATH_MAX, "./%s", dest);
    if (relative) {
@@ -263,7 +264,6 @@ static void create_single_link(char* src, char* dest) {
 }
 
 static void Link_Or_Expand(char* new) {
-   count++;
    if (relative) {
       char* candidate = goboProgramsSansPrefix;
       if (*candidate == '/')
