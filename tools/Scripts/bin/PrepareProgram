@@ -141,6 +141,11 @@ then
       [ -d "$programdir/Shared" ] && ln -nsf "$programdir/Shared" "$programdir/share"
    fi
 
+   if Dir_Set Manuals && [ ! "$goboIndex" ]
+   then
+      [ -d "$programdir/man" ] && ln -nsf "$programdir/man" "$programdir/Shared/man"
+   fi
+
    dirop="Make_Directory"
    linkop="make_symlink"
 elif Boolean "tree-cleanup"
@@ -172,18 +177,8 @@ then
    $dirop "$programdir/lib"
    $dirop "$programdir/include"
    $dirop "$programdir/info"
-   $dirop "$programdir/man"
    $dirop "$programdir/doc"
    $dirop "$programdir/libexec"
-   $dirop "$programdir/man/man1"
-   $dirop "$programdir/man/man2"
-   $dirop "$programdir/man/man3"
-   $dirop "$programdir/man/man4"
-   $dirop "$programdir/man/man5"
-   $dirop "$programdir/man/man6"
-   $dirop "$programdir/man/man7"
-   $dirop "$programdir/man/man8"
-   $dirop "$programdir/man/man9"
 
    if Dir_Set Install
    then
@@ -199,6 +194,29 @@ then
          ln -nfs "$programdir/Shared" "$programdir/share"
       else
          Is_Real_Directory "$programdir/Shared" || Quiet rm -- "$programdir/share"
+      fi
+   fi
+
+   if Dir_Set Manuals && [ ! "$goboIndex" ]
+   then
+      $dirop "$programdir/man/man1"
+      $dirop "$programdir/man/man2"
+      $dirop "$programdir/man/man3"
+      $dirop "$programdir/man/man4"
+      $dirop "$programdir/man/man5"
+      $dirop "$programdir/man/man6"
+      $dirop "$programdir/man/man7"
+      $dirop "$programdir/man/man8"
+      $dirop "$programdir/man/man9"
+      $dirop "$programdir/man"
+      if Boolean "tree"
+      then
+         ln -nfs "$programdir/man" "$programdir/share/man"
+      else
+         if Dir_Set Shared && [ ! "$goboIndex" ]
+         then Is_Directory "$programdir/man" || Quiet rm -- "$programdir/Shared/man"
+         else Is_Directory "$programdir/man" || Quiet rm -- "$programdir/share/man"
+	 fi
       fi
    fi
 
