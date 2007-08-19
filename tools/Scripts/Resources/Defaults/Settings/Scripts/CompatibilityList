@@ -5,3 +5,6 @@ Qmail: Sendmail Postfix
 Postfix: Qmail Sendmail
 Tcl: Tcl-Tk
 Tk: Tcl-Tk
+Artofcode-Ghostscript: Ghostscript
+Gnu-Ghostscript: Ghostscript
+ESP-Ghostscript: Ghostscript
