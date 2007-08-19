@@ -30,6 +30,8 @@ Add_Option_Boolean "l" "allow-leftovers" "When using UnionFS, do not return a fa
 
 Parse_Options "$@"
 
+Boolean "verbose" && verbose="--verbose"
+
 Dir_Set Sandbox || Set_Boolean "no-sandbox"
 
 if ! Boolean "no-sandbox"
@@ -140,9 +142,9 @@ if [ "$unionsandbox" ]
 then
    sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
    map_settings="--map ${default_settings}=${settings}${unmanagedmap:+:${unmanagedmap}}"
-   sandbox="UnionSandbox --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
+   sandbox="UnionSandbox $verbose --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
 else
-   sandbox="FiboSandbox --sandbox $allowed ${unmanagedmap:+--map ${unmanagedmap}} --"
+   sandbox="FiboSandbox $verbose --sandbox $allowed ${unmanagedmap:+--map ${unmanagedmap}} --"
 fi
 
 Boolean "no-sandbox" && sandbox=
