@@ -168,6 +168,26 @@ then
    $dirop "$programdir/Resources/Defaults/Settings"
    $dirop "$programdir/Resources/Daemons"
    $dirop "$programdir/Resources/Tasks"
+   if Dir_Set Manuals && [ ! "$goboIndex" ]
+   then
+      $dirop "$programdir/man/man1"
+      $dirop "$programdir/man/man2"
+      $dirop "$programdir/man/man3"
+      $dirop "$programdir/man/man4"
+      $dirop "$programdir/man/man5"
+      $dirop "$programdir/man/man6"
+      $dirop "$programdir/man/man7"
+      $dirop "$programdir/man/man8"
+      $dirop "$programdir/man/man9"
+      $dirop "$programdir/man"
+      if ! Boolean "tree"
+      then
+         if Dir_Set Shared && [ ! "$goboIndex" ]
+         then Is_Directory "$programdir/man" || Quiet rm -- "$programdir/Shared/man"
+         else Is_Directory "$programdir/man" || Quiet rm -- "$programdir/share/man"
+	 fi
+      fi
+   fi
    if Dir_Set Shared && [ ! "$goboIndex" ]
    then $dirop "$programdir/Shared"
    else $dirop "$programdir/share"
@@ -197,27 +217,8 @@ then
       fi
    fi
 
-   if Dir_Set Manuals && [ ! "$goboIndex" ]
-   then
-      $dirop "$programdir/man/man1"
-      $dirop "$programdir/man/man2"
-      $dirop "$programdir/man/man3"
-      $dirop "$programdir/man/man4"
-      $dirop "$programdir/man/man5"
-      $dirop "$programdir/man/man6"
-      $dirop "$programdir/man/man7"
-      $dirop "$programdir/man/man8"
-      $dirop "$programdir/man/man9"
-      $dirop "$programdir/man"
-      if Boolean "tree"
-      then
-         ln -nfs "$programdir/man" "$programdir/share/man"
-      else
-         if Dir_Set Shared && [ ! "$goboIndex" ]
-         then Is_Directory "$programdir/man" || Quiet rm -- "$programdir/Shared/man"
-         else Is_Directory "$programdir/man" || Quiet rm -- "$programdir/share/man"
-	 fi
-      fi
+   if Dir_Set Manuals && [ ! "$goboIndex" ] && Boolean "tree"
+   then ln -nfs "$programdir/man" "$programdir/share/man"
    fi
 
    if Boolean "tree" && Dir_Set Current
