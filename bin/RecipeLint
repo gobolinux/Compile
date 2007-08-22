@@ -675,6 +675,9 @@ test_recipe() {
    grep -q "\$target/../Variable" Recipe && {
       WARN "Recipe uses old \$target/../Variable idiom. Use \$variable_target."
    }
+   sed 's,#.*,,g' Recipe | grep -q "/System" && {
+      ERROR "Recipe references /System tree explicitly. Use \$<gobo environment variable>."
+   }
    sed 's,#.*,,g' Recipe | grep "wget" | grep -q -v "url=\|urls=" && {
       ERROR "Recipe performs wget explicitly. Use the urls= array instead."
    }
@@ -765,6 +768,13 @@ test_patch() {
       else instruction="Use @%Compile_target%@ and @%Compile_<dep>_path%@."
       fi
       ERROR "Patch references /Programs tree explicitly. $instruction"
+   }
+   grep -q "/System" "${patchfile}" && {
+      if [ $(basename "${patchfile}" .in) = "${patchfile}" ]
+      then instruction="Rename to ${patchfile}.in and use @%Compile_<gobo environment variable>%@."
+      else instruction="Use @%Compile_<gobo environment variable>%@."
+      fi
+      ERROR "Patch references /System tree explicitly. $instruction"
    }
    firstrow=$(head -n1 "${patchfile}")
    echo ${firstrow} | grep -q '^--- ' || echo ${firstrow} | grep -q '^diff ' && 
