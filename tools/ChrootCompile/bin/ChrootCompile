@@ -273,7 +273,7 @@ function create_root() {
    mkdir -p $rootdir/System/Kernel/Devices
    mkdir -p $rootdir/System/Kernel/Status
    mkdir -p $rootdir/Users
-   mkdir -p $rootdir/Users/root
+   mkdir -p $rootdir/Users/gobo
    mkdir -p $rootdir/Files
    mkdir -p $rootdir/Files/Compile
    mkdir -p $rootdir/Files/Compile/Archives
@@ -575,15 +575,15 @@ settingsdir=/System/Settings
 
 sudo_rm_if_e $root/$settingsdir/passwd
 cat <<EOF > $root/$settingsdir/passwd
-root:x:0:0:Gobo:/Users/root:/bin/bash
+gobo:x:0:0:Gobo:/Users/gobo:/bin/bash
 fibo:x:21:21:Fibo:/tmp:/bin/bash
 EOF
 
 sudo_rm_if_e $root/$settingsdir/group
 cat <<EOF > $root/$settingsdir/group
-root:x:0:root
+gobo:x:0:gobo
 bin:x:1:
-sys:x:2:root
+sys:x:2:gobo
 tty:x:4:
 fibo:x:21:fibo
 EOF
@@ -597,7 +597,7 @@ EOF
 sudo_rm_if_e $root/$goboPrograms/Sudo/Settings/sudoers
 $sudo_exec chmod 777 $root/$goboPrograms/Sudo/Settings
 cat <<EOF > $root/$goboPrograms/Sudo/Settings/sudoers
-root ALL=(ALL) NOPASSWD: ALL
+gobo ALL=(ALL) NOPASSWD: ALL
 EOF
 $sudo_exec chmod 755 $root/$goboPrograms/Sudo/Settings
 
