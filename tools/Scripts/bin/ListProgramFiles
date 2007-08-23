@@ -35,5 +35,5 @@ Boolean "files" && type="-xtype f"
 
 find * \( -path "CVS" \
       -or -path "*/CVS" \
-      -or -path "Resources/SettingsBackup" \) -prune -or $type -print
+      -or -path "Resources/SettingsBackup*" \) -prune -or $type -print
 
