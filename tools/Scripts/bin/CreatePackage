@@ -150,7 +150,7 @@ then
 else
    Boolean "gzip" && option="z" || option="j"
    Boolean "gzip" && extension="gz" || extension="bz2"
-   tar cvpf$option "$targetdir/$packagefile".$extension `find "$package/$versionnumber" -mindepth 1 -maxdepth 1 -not -name "Daemons" -not -name ".PostInstall_Root" -not -name ".SandboxInstall_Root"`  1>&2
+   tar cvpf$option "$targetdir/$packagefile".$extension $(ListProgramFiles --path --files ${package} ${versionnumber})  1>&2
    [ "$tree_symlinked" = "yes" ] && Quiet popd
 fi
 
