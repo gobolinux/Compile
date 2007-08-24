@@ -277,6 +277,7 @@ else
    verify_opts="--quiet"
    package_verified="false"
    Boolean "verbose" && verify_opts="--verbose"
+   Boolean "no-web" && verify_opts="${verify_opts} --no-web"
    VerifyProgram $verify_opts "$packagename" "$packageversion"
    result="$?"
    if [ $result -eq 0 ]
