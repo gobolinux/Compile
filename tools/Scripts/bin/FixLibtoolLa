@@ -29,8 +29,8 @@ do
    do old="$old~"
    done
    cp "${current}" "$old"
-   cat "$old" | sed "
-s%$goboPrograms/[^ /]*/*[^ /]*/*lib\(/*\)%$goboLibraries\1%g;
+   cat "$old" | sed -r "
+s%$goboPrograms/[^ /]*/*[^ /]*/*lib\(/?\)/*%$goboLibraries\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
 " > "${current}"
 
