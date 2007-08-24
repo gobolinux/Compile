@@ -163,7 +163,6 @@ function Can_Sign() {
       return 1
    }
    [ -n "$($gpg -n --list-secret-keys)" ]
-   
 }
 
 function Sign_File() {
@@ -204,6 +203,7 @@ function Check_FileHash() {
    cleanhashfilename=$(echo $hash_file | sed s,$prefix\/*,,g)
    local rtn
    Quiet pushd $prefix
+   $sudo_validate || sudo_exec=""
    $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$cleanhashfilename" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
