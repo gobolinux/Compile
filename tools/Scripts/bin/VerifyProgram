@@ -30,6 +30,7 @@ The default keyrings are:
 Add_Option_Entry "r" "keyring" "GPG option to an additional the keyring location."
 Add_Option_Boolean "S" "no-signature" "Just verify FileHash.  Do not check GPG signature."
 Add_Option_Boolean "q" "quiet" "No output.  Check exit status for result."
+Add_Option_Boolean "W" "no-web" "Do not check remote keyserver for keys."
 Parse_Options "$@"
 
 ##### Run as original user
@@ -86,6 +87,7 @@ then
    GPG_opts="${GPG_opts} --keyring ${keyring}"
 fi
 
+[ -s ~/.gnupg/gobopackagetrustedkeys.gpg ] && GPG_opts="${GPG_opts} --keyring ~/.gnupg/gobopackagetrustedkeys.gpg"
 ########## Operations ##########
 
 result=0
@@ -103,8 +105,33 @@ then
          exit_with_error 3
       elif [ $rtn -eq 2 ]
       then
-         Boolean "quiet" || Log_Error "Signature check failed: Signer unknown"
-         exit_with_error 6
+         Boolean "no-web" || {
+            tempkeyfile=$(Temporary_File)
+            gpg=$(which gpg2 || which gpg) 2> /dev/null
+            $quiet $gpg --no-default-keyring --keyring ${tempkeyfile} --recv-keys $($gpgv ${FileHash_sig} 2>&1 | awk '{ print $15 }')
+            if [ $? -eq 0 -a -s ${tempkeyfile} ]
+            then
+               Log_Normal "Program was signed with a signature not yet in the trust database"
+               Log_Terse "Do you want to trust this signature?\n$($gpg ${tempkeyfile})"
+               while true
+               do
+                  Ask_Option "[A]lways/[O]nce/[N]ot now."
+                  [ "$REPLY" = "N" -o "$REPLY" = "n" ] && { rm ${tempkeyfile}; exit_with_error 3; }
+       	          [ "$REPLY" = "O" -o "$REPLY" = "o" ] && { rm ${tempkeyfile}; exit 0; }
+                  [ "$REPLY" = "A" -o "$REPLY" = "a" ] && {
+                     Log_Verbose "Importing key into ~/.gnupg/gobopackagetrustedkeys.gpg"
+                     touch ~/.gnupg/gobopackagetrustedkeys.gpg
+                     $quiet $gpg --no-default-keyring --keyring ~/.gnupg/gobopackagetrustedkeys.gpg --import ${tempkeyfile}
+                     rm ${tempkeyfile}
+                     exit 0
+                  }
+       	       done
+            else
+               rm ${tempkeyfile}
+               Boolean "quiet" || Log_Error "Signature check failed: Signer unknown"
+               exit_with_error 6
+            fi
+         }
       fi
       Boolean "quiet" || Log_Normal "Signature OK"
    elif ! Boolean "no-signature"
