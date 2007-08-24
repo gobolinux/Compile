@@ -162,8 +162,8 @@ function Can_Sign() {
       Log_Verbose "gpg not found."
       return 1
    }
-   Verbose $gpg -n --list-secret-keys
-   [ "$?" = "0" ]
+   [ -n "$($gpg -n --list-secret-keys)" ]
+   
 }
 
 function Sign_File() {
