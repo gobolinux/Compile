@@ -30,7 +30,7 @@ do
    done
    cp "${current}" "$old"
    cat "$old" | sed "
-s%$goboPrograms/[^ /]*/*[^ /]*/*lib/*%$goboLibraries/%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*lib\(/*\)%$goboLibraries\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*lib\([ '\'']\)%$goboLibraries/\1%g;
 " > "${current}"
 
