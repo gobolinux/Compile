@@ -23,32 +23,20 @@ Parse_Options "$@"
 ### Utility functions #################################################################
 
 function extract_dependencies_from_file() {
-if [ "$goboCrossCompiling" = "yes" ]
-then
-   readelf_result=`${cross_compiler}readelf -a "$1" 2> /dev/null | grep "Shared library" | cut -d"[" -f2 | cut -d"]" -f1`
-   for i in $readelf_result
-   do
-      if [ ! -h $goboLibraries/$i ]
-      then echo "# *Warning*: Unresolved library $i"
-      else readlink -f "$goboLibraries/$i" | sed "s%$cross_prefix_dir%%g"
-      fi
-   done
-else
-   objectsneeded=$(objdump -p "$1" 2> /dev/null | grep "NEEDED" | awk '{ print $2 }')
-   for obj in ${objectsneeded}
-   do
-      if realfile=$(readlink -f ${goboLibraries}/${obj}) && [ -f ${realfile} ]
+objectsneeded=$(${cross_compiler}objdump -p "$1" 2> /dev/null | grep "NEEDED" | awk '{ print $2 }')
+for obj in ${objectsneeded}
+do
+   if realfile=$(readlink -f ${goboLibraries}/${obj}) && [ -f ${realfile} ]
+   then
+      echo ${realfile} | sed "s%$cross_prefix_dir\(.*\)%\1%g"
+   else if [ -n "$LD_LIBRARY_PATH" ] && realfile=$(readlink -f ${LD_LIBRARY_PATH}/${obj}) && [ -f ${realfile} ]
       then
-         echo ${realfile}
-      else if [ -n "$LD_LIBRARY_PATH" ] && realfile=$(readlink -f ${LD_LIBRARY_PATH}/${obj}) && [ -f ${realfile} ]
-         then
-            echo ${realfile}
-         else
-            echo "# *Warning*: Unresolved library ${obj}"
-         fi
+         echo ${realfile} | sed "s%$cross_prefix_dir\(.*\)%\1%g"
+      else
+         echo "# *Warning*: Unresolved library ${obj}"
       fi
-   done
-fi
+   fi
+done
 }
 
 function path2programs() {
