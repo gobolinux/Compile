@@ -40,7 +40,7 @@ Boolean "files" && type="-xtype f"
 if Boolean "path"
 then
    cd ${programpath%/$program/$version}
-   programpath="$program/$version"
+   programpath="$program/$version/"
 else
    cd ${programpath}
    programpath="*"
@@ -48,5 +48,5 @@ fi
 
 find ${programpath} \( -path "CVS" \
       -or -path "*/CVS" \
-      -or -path "${programpath}/Resources/SettingsBackup*" \) -prune -or $type -print
+      -or -path "${programpath}Resources/SettingsBackup*" \) -prune -or $type -print
 
