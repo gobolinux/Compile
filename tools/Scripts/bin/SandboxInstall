@@ -130,7 +130,7 @@ default_settings="$installPackageDir/$version/Resources/Defaults/Settings"
 for unmanaged in "${unmanagedarray[@]}"
 do
    # If it's not a directory (it's possible that it's a non-existant directory, but that's ok), strip one level
-   [ ! -d ${unmanaged} ] && unmanaged=$(dirname ${unmanaged})
+   [ ! -d ${unmanaged} ] && unmanaged=$(echo ${unmanaged} | sed 's,\(.*\)/[^/]*,\1,)
    # Make sure the directories exist
    Assert_Dir ${unmanaged}
    Assert_Dir ${installPackageDir}/${version}/Resources/Unmanaged${unmanaged}
