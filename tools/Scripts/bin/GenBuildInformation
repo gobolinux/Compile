@@ -34,16 +34,19 @@ then
       fi
    done
 else
-   lddresult=$(ldd "$1" 2> /dev/null | grep "=>")
-   echo -n "$lddresult"  | grep "not found" | awk '{ print $1 }' | while read i
+   objectsneeded=$(objdump -p "$1" 2> /dev/null | grep "NEEDED" | awk '{ print $2 }')
+   for obj in ${objectsneeded}
    do
-      echo "# *Warning*: Unresolved library $i"
-   done
-
-   echo -n "$lddresult"  | grep -v "not found" | awk '{ print $3 }' | while read i
-   do
-      [ ! "$i" ] && echo "here" "->" "$lddresult"
-      readlink -f "$i"
+      if realfile=$(readlink -f ${goboLibraries}/${obj}) && [ -f ${realfile} ]
+      then
+         echo ${realfile}
+      else if [ -n "$LD_LIBRARY_PATH" ] && realfile=$(readlink -f ${LD_LIBRARY_PATH}/${obj}) && [ -f ${realfile} ]
+         then
+            echo ${realfile}
+         else
+            echo "# *Warning*: Unresolved library ${obj}"
+         fi
+      fi
    done
 fi
 }
