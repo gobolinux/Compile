@@ -18,7 +18,7 @@
 # Mixin defines @@width and @@height
 # This is to avoid extra stty calls
 module Screen
-	Colours = {}
+	Colours = Hash.new("")
 	@@width = @@height = false
 	def Screen.width
 		`stty size` =~/(\d+) (\d+)/
