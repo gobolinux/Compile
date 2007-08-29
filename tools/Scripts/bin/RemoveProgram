@@ -54,7 +54,7 @@ Quiet RemoveBroken "${goboPrograms}/${program}/Current"
 Quiet rmdir ${goboPrograms}/${program}
 
 Log_Normal "Removing broken links..."
-RemoveBroken $filesdir
+echo "$filesdir" | RemoveBroken || Log_Error "Couldn't cleanup links."
 
 #Log_Normal "Rebuilding Environment Cache file..."
 #yes | RebuildLinks -n

@@ -47,7 +47,7 @@ mv "$prefix" "$disabled" || Die "Couldn't disable $programname $versionnumber."
 filesdir=$(Get_System_Paths "$disabled")
 
 Log_Normal "Removing links..."
-RemoveBroken $filesdir || Die "Couldn't cleanup links."
+echo "$filesdir" | RemoveBroken || Die "Couldn't cleanup links."
 
 if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then

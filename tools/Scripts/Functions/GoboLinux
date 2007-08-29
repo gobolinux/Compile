@@ -665,18 +665,16 @@ function String_Version() {
 
 function Get_System_Paths () {
    Parameters "$1" programpath
-   filesdir=$(Temporary_File)
-   find ${programpath} > $filesdir
-   GrepReplace "${programpath}/lib/"     "${goboLinks}/Libraries/"    $filesdir
-   GrepReplace "${programpath}/sbin/"    "${goboLinks}/Executables/"  $filesdir
-   GrepReplace "${programpath}/bin/"     "${goboLinks}/Executables/"  $filesdir
-   GrepReplace "${programpath}/man/"     "${goboLinks}/Manuals/"      $filesdir
-   GrepReplace "${programpath}/include/" "${goboLinks}/Headers/"      $filesdir
-   GrepReplace "${programpath}/Shared/" "${goboLinks}/Shared/"      $filesdir
-   GrepReplace "${programpath}/info/"    "${goboLinks}/Manuals/info/" $filesdir
-   GrepReplace "${programpath}/Resources/Wrappers/" "${goboLinks}/Executables/"  $filesdir
-   GrepReplace "${programpath}/Resources/Tasks/" "${goboLinks}/Tasks/"  $filesdir
-   GrepReplace "${programpath}/Resources/Environment/" "${goboLinks}/Environment/"  $filesdir
-   cat $filesdir
-   rm -- $filesdir
+   find ${programpath} |
+   sed -e "s, ,\\ ,g" \
+   -e "s,${programpath}/lib/\(.*\),${goboLinks}/Libraries/\1,g" \
+   -e "s,${programpath}/sbin/\(.*\),${goboLinks}/Executables/\1,g" \
+   -e "s,${programpath}/bin/\(.*\),${goboLinks}/Executables/\1,g" \
+   -e "s,${programpath}/man/\(.*\),${goboLinks}/Manuals/\1,g" \
+   -e "s,${programpath}/include/\(.*\),${goboLinks}/Headers/\1,g" \
+   -e "s,${programpath}/Shared/\(.*\),${goboLinks}/Shared/\1,g" \
+   -e "s,${programpath}/info/\(.*\),${goboLinks}/Manuals/info/\1,g" \
+   -e "s,${programpath}/Resources/Wrappers/,${goboLinks}/Executables/,g" \
+   -e "s,${programpath}/Resources/Tasks/,${goboLinks}/Tasks/,g" \
+   -e "s,${programpath}/Resources/Environment/,${goboLinks}/Environment/,g"
 }
