@@ -50,11 +50,14 @@ unset unionsandbox
 
 if ! Boolean "no-sandbox"
 then
-   if [ "$NO_UNIONFS" -o `cat /proc/filesystems 2> /dev/null | grep unionfs |wc -l` = "0" ] 
+   if [ "$NO_UNIONFS" ]
    then
-      Log_Terse "unionfs is unavailable.  Fallback to FiboSandbox!"
+      Log_Terse "unionfs was bypassed with NO_UNIONFS. Fallback to FiboSandbox."
+   elif ! Quiet grep unionfs /proc/filesystems 
+   then
+      Log_Terse "unionfs is unavailable. Fallback to FiboSandbox."
    else
-      Log_Normal "unionfs is available.  Using UnionSandbox!"
+      Log_Normal "unionfs is available. Using UnionSandbox."
       unionsandbox=yes
    fi
 fi
