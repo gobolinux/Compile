@@ -2,8 +2,8 @@
 Exec "Remounting root file system..."          mount -n -o remount,rw /
 Exec "Cleaning mtab and boot settings..."      rm -f "$goboSettings/mtab"*
 Exec "Cleaning up any stale lock files..."     eval "find $goboVariable/{run,lock}/ -type f | grep -v utmp | xargs -i rm -rf {}; rm -rf  $goboTemp/.X*-lock"
+Exec "Mounting system filesystems..."          mount -a -t sysfs,proc
 Exec "Starting Udev..."                        Udev Start
-Exec "Mounting system filesystems..."          mount -a -t tmpfs,sysfs,procfs
 
 #Daemon                                        /System/Links/Executables/sshd -D
 Daemon                                        klogd -n
