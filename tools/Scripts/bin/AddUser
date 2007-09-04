@@ -80,7 +80,4 @@ then
    GrepReplace -R "/Users/testuser" "$homedir"
 fi
 
-if grep -q console $goboSettings/group
-then usermod -G users,console $name
-else usermod -G floppy,audio,users,cdrecord,video $name
-fi
+usermod -g users -G floppy,audio,cdrecord,video $name
