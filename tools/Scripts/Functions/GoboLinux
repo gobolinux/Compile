@@ -63,11 +63,12 @@ function Gen_Env_Cache() {
 function Rebuild_MIME_Database() {
 if Executable_Exists_In_Path "update-mime-database"
 then
-   Log_Normal "Rebuilding MIME database..."
    mimedirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime")
    Assert_Dir ${mimedirectory}
-   Is_Directory ${mimedirectory}/packages || ln -s ${goboShared}/mime/packages ${mimedirectory}
-   update-mime-database ${mimedirectory} >/dev/null
+   $sudo_exec Is_Writable ${mimedirectory} || return 0
+   Is_Directory ${mimedirectory}/packages || $sudo_exec ln -s ${goboShared}/mime/packages ${mimedirectory}
+   Log_Normal "Rebuilding MIME database..."
+   $sudo_exec update-mime-database ${mimedirectory} >/dev/null
 fi
 }
 
