@@ -41,6 +41,7 @@ Log_Verbose "Getting program file list..."
 filesdir=$(Get_System_Paths "${goboPrograms}/${program}/${version}")
 
 Is_Real_Nonempty_Directory "${goboPrograms}/${program}/${version}/Shared/mime/packages" && rebuildmimedb=true
+Is_Real_Nonempty_Directory "${goboPrograms}/${program}/${version}/Shared/applications" && rebuilddesktopdb=true
 Is_Real_Nonempty_Directory "${goboPrograms}/${program}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$program"
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
@@ -60,6 +61,7 @@ echo "$filesdir" | RemoveBroken || Log_Error "Couldn't cleanup links."
 #Log_Normal "Rebuilding Environment Cache file..."
 #yes | RebuildLinks -n
 [ "${rebuildmimedb}" = "true" ] && Rebuild_MIME_Database
+[ "${rebuilddesktopdb}" = "true" ] && Rebuild_Desktop_Database
 
 Gen_Env_Cache
 

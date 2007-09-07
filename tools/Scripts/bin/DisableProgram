@@ -55,6 +55,7 @@ then
 fi
 
 Is_Real_Nonempty_Directory "${goboPrograms}/${programname}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$programname"
+Is_Real_Nonempty_Directory "${disabled}/Shared/applications" && Rebuild_Desktop_Database
 Is_Real_Nonempty_Directory "${disabled}/Shared/mime/packages" && Rebuild_MIME_Database
 Gen_Env_Cache
 

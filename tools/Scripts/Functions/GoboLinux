@@ -72,6 +72,17 @@ then
 fi
 }
 
+function Rebuild_Desktop_Database() {
+if Executable_Exists_In_Path "update-desktop-database"
+then
+   desktopdirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/applications" || echo "${goboVariable}/applications")
+   Assert_Dir ${desktopdirectory}
+   Is_Directory ${desktopdirectory}/desktop || ln -s ${goboShared}/applications ${desktopdirectory}/desktop
+   Log_Normal "Rebuilding desktop database..."
+   update-desktop-database ${desktopdirectory}/applications
+fi
+}
+
 function Uninstall_GConf_Schemas() {
    Parameters "$@" application_name
    if Executable_Exists_In_Path "gconftool-2"
