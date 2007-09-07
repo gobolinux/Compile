@@ -75,6 +75,10 @@ Boolean no-web && compileoptions="$compileoptions --no-web"
 Boolean batch && compileoptions="$compileoptions --batch"
 Boolean lazy && compileoptions="$compileoptions --lazy"
 
+compileInstallOptions=(
+   "GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1"
+)
+
 ### Temporary test for those tracking CVS ###
 PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
 
