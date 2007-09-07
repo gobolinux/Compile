@@ -41,6 +41,7 @@ Log_Verbose "Getting program file list..."
 filesdir=$(Get_System_Paths "${goboPrograms}/${program}/${version}")
 
 Is_Real_Nonempty_Directory "${goboPrograms}/${program}/${version}/Shared/mime/packages" && rebuildmimedb=true
+Is_Real_Nonempty_Directory "${goboPrograms}/${program}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$program"
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
 if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"

@@ -704,8 +704,12 @@ if Boolean "update"; then
       Log_Normal "No current settings. No backup made."
    fi
 
+   # we need to uninstall GConf schemas before we update the settings
+   Is_Real_Nonempty_Directory "${goboPrograms}/${appName}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$appName"
    update_files
    exitStatus="$?"
+   # then we install the GConf schemas when we have updated the settings
+   Is_Real_Nonempty_Directory "${goboPrograms}/${appName}/Settings/gconf/schemas" && Install_GConf_Schemas "$appName"
 fi
 
 exit $exitStatus

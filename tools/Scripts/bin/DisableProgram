@@ -54,6 +54,7 @@ then
    { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$programname/$versionnumber-Disabled/Resources/UnmanagedFiles"
 fi
 
+Is_Real_Nonempty_Directory "${goboPrograms}/${programname}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$programname"
 Is_Real_Nonempty_Directory "${disabled}/Shared/mime/packages" && Rebuild_MIME_Database
 Gen_Env_Cache
 

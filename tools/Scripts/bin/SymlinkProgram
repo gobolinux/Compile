@@ -328,6 +328,9 @@ then
       Quiet cd -
    fi
    Is_Real_Nonempty_Directory "${current}/Shared/mime/packages" && Rebuild_MIME_Database
+   # it's ok to install the GConf schemas even if they are already installed
+   # we do this to ensure that the schemas are really installed
+   Is_Real_Nonempty_Directory "${goboPrograms}/${appName}/Settings/gconf/schemas" && Install_GConf_Schemas "$appName"
 fi
 
 ################################################################################

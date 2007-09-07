@@ -72,6 +72,26 @@ then
 fi
 }
 
+function Uninstall_GConf_Schemas() {
+   Parameters "$@" application_name
+   if Executable_Exists_In_Path "gconftool-2"
+   then
+      export GCONF_CONFIG_SOURCE=$(gconftool-2 --get-default-source)
+      gconftool-2 --makefile-uninstall-rule ${goboPrograms}/${application_name}/Settings/gconf/schemas/*.schemas >/dev/null
+      killall -HUP gconfd-2
+   fi
+}
+
+function Install_GConf_Schemas() {
+   Parameters "$@" application_name
+   if Executable_Exists_In_Path "gconftool-2"
+   then
+      export GCONF_CONFIG_SOURCE=$(gconftool-2 --get-default-source)
+      gconftool-2 --makefile-install-rule ${goboPrograms}/${application_name}/Settings/gconf/schemas/*.schemas >/dev/null
+      killall -HUP gconfd-2
+   fi
+}
+
 function Link_Or_Expand_All() {
 
 ### python Link_Or_Expand_All CHANGELOG
