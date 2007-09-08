@@ -48,5 +48,4 @@ fi
 
 find ${programpath} \( -path "CVS" \
       -or -path "*/CVS" \
-      -or -path "${programpath}Resources/SettingsBackup*" \) -prune -or $type -print
-
+      -or -path "${programpath}Resources/SettingsBackup*" \) -prune -or $type -print0
