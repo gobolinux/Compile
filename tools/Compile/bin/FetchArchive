@@ -59,7 +59,7 @@ recipe="$(Arg 1)"
 . "$recipe"
 
 archrecipe="$(Arg 2)"
-[ ! -z "$archrecipe" ] && source "$archrecipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
 
 [ -z "${sourcedir}" ] && sourcedir="${dir%%/*}"
 ##################################################
