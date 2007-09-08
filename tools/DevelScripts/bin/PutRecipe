@@ -14,8 +14,8 @@ Parse_Conf CompileSubversion.conf
 scriptDescription="Put a recipe in the svn trunk/revision tree and upload it to the store."
 scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="[<recipe dirs>|<tarballs>]"
-scriptExample="/Files/Compile/LocalRecipes/Firefox"
+scriptUsage="{ <recipe dir> | <tarball> | <recipe name> } ..."
+scriptExample="firefox"
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -37,18 +37,25 @@ eval `Args_To_Array suppliedrecipes`
 
 for entry in ${suppliedrecipes[@]}
 do
+
    # Uncompress the file if it's a tarball
-   if `file $entry | grep -q bzip2`
+   if file $entry | grep -q bzip2
    then 
       entry=`aunpack $entry --extract-to=$compileLocalRecipesDir | cut -d/ -f1 | head -n 1`
+   # Get path from LocalRecipes if only a name is given
+   elif ! echo $entry | grep -q /
+   then
+      entry=$compileLocalRecipesDir/`ls "$compileLocalRecipesDir" | grep -i "^$(Arg 1)$"`
    fi
 
    # Perform some simple cleanups
    for i in `find $entry -name Recipe`
    do
-      cat $i | sed -e 's,$target/../Settings,$settings_target,g' \
-                   -e 's,$target/../Variable,$variable_target,g' \
-                   > x && mv x $i
+     [ -w `dirname "$i"` ] || Die "Need write permissions to the recipe."
+     sed -i.bak -e 's,$target/../Settings,$settings_target,g' \
+                -e 's,$target/../Variable,$variable_target,g' \
+                $i
+     rm $i.bak
    done
 
    # Removes revisions from submitted recipes
@@ -65,7 +72,7 @@ do
    # Create a tarball and store it at /Files/Compile/PackedRecipes
    PackRecipe $program || exit 1
 
-   for tarball in `ls -t ${compilePackedRecipesDir}/${program}*`
+   for tarball in `ls -t ${compilePackedRecipesDir}/${program}--*`
    do
       version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
       # Merge the recipe into the local trunk
