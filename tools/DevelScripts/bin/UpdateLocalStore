@@ -86,3 +86,4 @@ cp MANIFEST RecipeList
 bzip2 --keep MANIFEST
 
 echo `date` Finished >> ~/cronlog.txt
+wget -O /dev/null -o /dev/null http://www.gobolinux.org/tools/genlatestrecipes.php
