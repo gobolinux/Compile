@@ -48,13 +48,94 @@ Check_Dir_Variable compileLocalRecipesDir
 # Operation
 ##################################################
 
+handle_description() {
+   local name="$1"
+   local version="$2"
+
+   # Handle descriptions
+   description="$name/$version/Resources/Description"
+   if ! [ -e "$description" ]
+   then
+      mkdir -p $name/$version/Resources/
+      DescribeProgram $name > "$description"
+      if [ `cat $description | wc -c` -eq 0 ]
+      then
+         rm $description
+         license=""
+         sourcedir="$compileSourcesDir/$(echo $name | tr '[:upper:]' '[:lower:]')-$version"
+         if [ -d "$sourcedir" ]
+         then
+            for licensefile in $sourcedir/COPYING* $sourcedir/LICENSE*
+            do
+               if [ -e $licensefile ]
+               then
+                  md5license=`md5sum $licensefile | cut -d" " -f1`
+                  case "$md5license" in
+                  # GPL2 Mass Ave
+                  8ca43cbc842c2336e835926c2166c28b) newlicense="GNU General Public License version 2" ;;
+                  18810669f13b87348459e611d31ab760) newlicense="GNU General Public License version 2" ;;
+                  7975d4f2e1ca1e9df4dcfd94c6e1ae48) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Franklin St mentions Library
+                  59530bdf33659b29e73d4adb9f9f6552) newlicense="GNU General Public License version 2" ;;
+                  751419260aa954499f7abaabaa882bbe) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Temple Place
+                  94d55d512a9ba36caa9b7df079bae19f) newlicense="GNU General Public License version 2" ;;
+                  393a5ca445f6965873eca0259a17f833) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Linux kernel
+                  d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
+                  # LGPL2 Mass Ave
+                  55ca817ccb7d5b5b66355690e9abc605) newlicense="GNU Library General Public License version 2" ;;
+                  ac4e4df3bbeacd481df543d2b12860b3) newlicense="GNU Library General Public License version 2" ;;
+                  # LGPL2 Temple Place
+                  3bf50002aefd002f49e7bb854063f7e7) newlicense="GNU Library General Public License version 2" ;;
+                  7be2873b6270e45abacc503abbe2aa3d) newlicense="GNU Library General Public License version 2" ;;
+                  f30a9716ef3762e3467a2f62bf790f0a) newlicense="GNU Library General Public License version 2" ;;
+                  c46bda00ffbb0ba1dac22f8d087f54d9) newlicense="GNU Library General Public License version 2" ;;
+                  # LGPL2.1
+                  fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  *)
+                     Log_Terse "Could not autodetermine licensing for writing the Description file."
+                     Ask_Continue "Press Enter to view the license file $licensefile."
+                     ${PAGER:-less} $licensefile
+                     ;;
+                  esac # esac is ridiculous.
+                  if [ "$license" != "" ]
+                  then license="$license, $newlicense"
+                  else license="$newlicense"
+                  fi
+               fi
+            done
+         fi
+cat <<EOF > $description
+[Name] $name
+[Summary] ***REPLACE THIS WITH A SHORT ONE LINE DESCRIPTION***
+[Description] ***REPLACE THIS WITH A MORE DETAILED DESCRIPTION***
+[License] $license
+[Homepage] ***REPLACE THIS WITH THE HOMEPAGE URL***
+EOF
+         $EDITOR $description
+         while grep -q "***REPLACE" $description
+         do
+            if Ask "Description wasn't filled properly. Retry?"
+            then $EDITOR $description
+            else
+               rm $description
+               exit 1
+            fi
+         done
+      fi
+   fi
+}
+
 pack_recipe() {
-   name="$1"
-   version="$2"
+   local name="$1"
+   local version="$2"
    archive="$name--$version--recipe.tar.bz2"
    Log_Verbose "Package: $archive"
    cd "$compileLocalRecipesDir"
    tarball="$compilePackedRecipesDir/$name--$version--recipe.tar.bz2"
+
+   handle_description "$name" "$version"
 
    create_tarball() {
       recipe="$name/$version/Recipe"
