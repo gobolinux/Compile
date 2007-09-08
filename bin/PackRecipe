@@ -120,11 +120,12 @@ EOF
             then $EDITOR $description
             else
                rm $description
-               exit 1
+               return 1
             fi
          done
       fi
    fi
+   return 0
 }
 
 pack_recipe() {
