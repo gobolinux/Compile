@@ -20,7 +20,7 @@ Import Compile
 
 helpOnNoArguments=yes
 scriptDescription="Given a recipe, download the files required to compile it."
-scriptUsage="<recipe>"
+scriptUsage="<recipe> [arch-recipe]"
 scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
 Add_Option_Entry   "d" "save-directory" "Rename the directory into which the archive is unpacked/files checked out." ""
 Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compileArchivesDir"
@@ -57,6 +57,10 @@ fi
 recipe="$(Arg 1)"
 [ "$recipe" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
 . "$recipe"
+
+archrecipe="$(Arg 2)"
+[ ! -z "$archrecipe" ] && source "$archrecipe"
+
 [ -z "${sourcedir}" ] && sourcedir="${dir%%/*}"
 ##################################################
 # Get sources
