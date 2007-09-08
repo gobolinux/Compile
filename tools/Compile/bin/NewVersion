@@ -128,8 +128,14 @@ s/compileprogram/configure/' Recipe
 # Update compile_version to current version
 sed -i "s/\(compile_version=\).*/\1${scriptVersion}/" Recipe
 
-# TODO: support for arch-specific recipe
-. Recipe
+source Recipe
+unset newarchrecipedir
+arch=`Get_Architecture`
+if [ -e "$newrecipedir/$arch/Recipe" ] 
+then
+   newarchrecipedir="$newrecipedir/$arch/Recipe"
+   source "$newarchrecipedir"
+fi
 
 if [ "$newurl" ]
 then
@@ -158,7 +164,7 @@ fi
 if [ "$url" ]
 then
    Log_Normal "Downloading source code..."
-   if ! FetchArchive "$newrecipedir/Recipe"
+   if ! FetchArchive "$newrecipedir/Recipe" $newarchrecipedir
    then
       rm -rf "$newrecipedir"
       Die "Could not download source code, aborting."
