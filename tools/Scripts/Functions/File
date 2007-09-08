@@ -148,7 +148,7 @@ function Gen_FileHash() {
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gpg must run as normal user.
    Quiet pushd $file_prefix
-   $sudo_exec ListProgramFiles --files "$file_prefix" | grep -v "Resources/FileHash" | while read file
+   $sudo_exec ListProgramFiles --files "$file_prefix" | xargs -0i echo "{}" | grep -v "Resources/FileHash" | while read file
    do
       $sudo_exec sh -c "sha1sum \"$file\" >> \"$hashfile\""
    done
@@ -204,7 +204,7 @@ function Check_FileHash() {
    local rtn
    Quiet pushd $prefix
    $sudo_validate || sudo_exec=""
-   $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$cleanhashfilename" | $sudo_exec python -c """#
+   $sudo_exec ListProgramFiles --files "$prefix" | xargs -0i echo "{}" | grep -v "$cleanhashfilename" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
 hashfile='$hash_file'
