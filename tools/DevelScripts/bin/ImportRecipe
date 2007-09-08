@@ -59,6 +59,16 @@ if [ "$revision" ]
 then Die "A recipe submitted to the trunk should not have a revision. Not adding it."
 fi
 
+if [ -d $compileDir/Subversion ]
+then
+   [ -d $compileDir/Subversion/trunk ] && {
+      [ -w $compileDir/Subversion/trunk ] || Die "Need write permissions to $compileDir/Subversion/trunk."
+      [ -w $compileDir/Subversion/revisions ] || Die "Need write permissions to $compileDir/Subversion/revisions."
+   }
+else
+   [ -w $compileDir ] || Die "Need write permissions to $compileDir."
+fi
+
 ### Unpack recipe #############################################################
 
 unpackdir=`Temporary_Dir` || Die "Could not create temporary directory."
