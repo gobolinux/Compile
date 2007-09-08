@@ -99,12 +99,15 @@ handle_description() {
                      ${PAGER:-less} $licensefile
                      ;;
                   esac # esac is ridiculous.
-                  if [ "$license" != "" ]
-                  then license="$license, $newlicense"
-                  else license="$newlicense"
+                  if [ "$license" = "" ]
+                  then license="$newlicense"
+                  else license="$license, $newlicense"
                   fi
                fi
             done
+         fi
+         if [ "$license" = "" ]
+         then license="***REPLACE THIS WITH THE NAME OF THE LICENSE***"
          fi
 cat <<EOF > $description
 [Name] $name
