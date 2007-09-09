@@ -32,8 +32,12 @@ do
    else if [ -n "$LD_LIBRARY_PATH" ] && realfile=$(readlink -f ${LD_LIBRARY_PATH}/${obj}) && [ -f ${realfile} ]
       then
          echo ${realfile} | sed "s%$cross_prefix_dir\(.*\)%\1%g"
-      else
-         echo "# *Warning*: Unresolved library ${obj}"
+      else if [ -z "${cross_compiler}" ] && realfile=$(ldd "$1" | grep "${obj}" | awk '{ print $3 }') && [ -f ${realfile} ]
+         then
+            echo ${realfile}
+         else
+            echo "# *Warning*: Unresolved library ${obj}"
+         fi
       fi
    fi
 done
