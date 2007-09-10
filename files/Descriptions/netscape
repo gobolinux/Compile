@@ -1,6 +1,0 @@
-[Name]  netscape
-[Summary]  Netscape Communicator
-[Description]  This package contains also a start script for netscape. The script makes it possible to set some variables and libraries for netscape. In this package a Netscape Communicator[tm] is integrated. Note: the the program netscape is installed as netscape but the script will be called by its name Netscape. Attention: Please read the license conditions in /usr/share/doc/packages/netscape/
-[Suse Category]  Productivity/Networking/Web/Browsers
-[License]  Other License(s), see package
-[Homepage]  

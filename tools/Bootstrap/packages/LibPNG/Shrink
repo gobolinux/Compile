@@ -1,9 +1,0 @@
-#!/bin/sh
-
-rm -f  lib/*.a
-rm -Rf lib/pkgconfig
-
-rm -Rf bin
-rm -Rf doc
-rm -Rf include
-rm -Rf man

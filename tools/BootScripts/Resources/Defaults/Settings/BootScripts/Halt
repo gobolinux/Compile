@@ -1,4 +1,0 @@
-#!/bin/sh
-source Shutdown
-
-Exec "Halting system..." halt -h -d -f -i -p

@@ -1,5 +1,0 @@
-[Name] PWM
-[Summary] A window manager that can have multiple windows attached to a single frame.
-[License] Artistic License
-[Description] PWM is a rather lightweight window manager that can have multiple client windows attached to a single frame. This feature helps keeping windows, especially the numerous xterms, organized.
-[Homepage] http://iki.fi/tuomov/pwm/

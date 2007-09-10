@@ -1,8 +1,0 @@
-[Name] Berkeley DB
-[Description] Berkeley DB (libdb) is a programmatic toolkit that provides embedded database
-support for both traditional and client/server applications. It includes b+tree, queue,
-extended linear hashing, fixed, and variable-length record access methods, transactions,
-locking, logging, shared memory caching, database recovery, and replication for highly
-available systems. DB supports C, C++, Java, PHP, and Perl APIs. It is available for a
-wide variety of UNIX platforms as well as Windows XP, Windows NT, and Windows '95 (MSVC 6 and 7).
-[Homepage] http://www.sleepycat.com/

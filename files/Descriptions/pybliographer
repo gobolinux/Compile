@@ -1,2 +1,0 @@
-[Description] Pybliographer is a tool for managing bibliographic databases. It supports several bibliography formats (BibTeX, Refer, Medline, ISI, Ovid) and can be used for searching, editing, reformatting, etc, through its nice graphical interface for GNOME. Due to its nature, it can be extended to many uses (generating HTML pages according to bibliographic searches, etc). It is provided with sample scripts.
-[Homepage] http://pybliographer.org/

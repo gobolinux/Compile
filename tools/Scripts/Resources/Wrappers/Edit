@@ -1,7 +1,0 @@
-#!/bin/bash
-[ "$EDITOR"        ] && exec $EDITOR "$@"
-[ "`which mcedit 2> /dev/null`" ] && exec mcedit "$@"
-[ "`which nano 2> /dev/null`"   ] && exec nano "$@"
-[ "`which vi 2> /dev/null`"     ] && exec vi "$@"
-echo "No text editor was found."
-echo "Please set the EDITOR environment variable."
