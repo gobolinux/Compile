@@ -636,7 +636,7 @@ fi
 # Download required archives to ./Archives
 #############################################################################
 
-Compile --batch --no-build ${crossopts} ${name} ${version} || Die "Fetching recipe(s) for ${name} ${version} failed"
+Compile --no-build ${crossopts} ${name} ${version} || Die "Fetching recipe(s) for ${name} ${version} failed"
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
