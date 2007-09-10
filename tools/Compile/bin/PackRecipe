@@ -65,7 +65,7 @@ handle_description() {
          sourcedir="$compileSourcesDir/$(echo $name | tr '[:upper:]' '[:lower:]')-$version"
          if [ -d "$sourcedir" ]
          then
-            for licensefile in $sourcedir/COPYING* $sourcedir/LICENSE*
+            for licensefile in $sourcedir/COPYING* $sourcedir/LICENSE* $sourcedir/license*
             do
                if [ -e $licensefile ]
                then
