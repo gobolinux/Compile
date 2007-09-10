@@ -636,76 +636,7 @@ fi
 # Download required archives to ./Archives
 #############################################################################
 
-function fetch_included_recipes() {
-   local ipkg="$2"
-   local ver="$3"
-   local recipedirs="$1/../../"
-
-   if [ "$localrepository" ]
-   then
-       recipedirs[0]=${compileLocalRecipesDir}
-       recipedirs[1]=${compileGetRecipeDir}
-   fi
-
-   for dir in ${recipedirs[@]}
-   do
-      pushd "$dir" &> /dev/null
-      pkg=`ls | grep -i "^$ipkg$"`
-      popd &> /dev/null
-      [ ! "$pkg" ] && continue
-      fetch_archive_off_recipe "`GuessLatest $dir/$pkg/$ver*`" && return || Die
-   done
-   Die "Can't find recipe for $ipkg"
-}
-
-function recipe_has_url() {
-    grep -q "^url=\|^urls=\|^cvs=\|^svn=" "$1" && return 0
-    return 1
-}
-
-function fetch_archive_off_recipe() {
-   (
-      unset is_meta
-      unset include
-      source "$1/Recipe"
-      rawversion=`echo $version | sed -e 's,^cvs-r.*,cvs,1' -e 's,^svn-r.*,svn,1'`
-      save_directory=""
-      if [ "$rawversion" = "cvs" -o "$rawversion" = "svn" ]
-      then
-         if Is_Entry "cross-compile" 
-         then savedir="$root/Files/Compile/Sources-$arch_conf"
-         else savedir="$root/Files/Compile/Sources"
-         fi
-         if [ -z "$dir" ]
-         then save_directory="--save-directory ${name}-${version}"
-         else save_directory="--save-directory $(dirname ${dir})"
-         fi
-         [ "$localrepository" ] && savedir=`echo $savedir | sed "s,^$root,,g"`
-      else
-         savedir="$root/Files/Compile/Archives"
-      fi
-      if recipe_has_url "$1/Recipe"
-      then FetchArchive --save-to "$savedir" $save_directory "$1/Recipe" || Die "Error fetching archive."
-      fi
-      if [ -f "$1/$recipesubdir/Recipe" ] && recipe_has_url "$1/$recipesubdir/Recipe"
-      then FetchArchive --save-to "$savedir" $save_directory "$1/$recipesubdir/Recipe" || Die "Error fetching archive."
-      fi
-      if [ -f "$1/$recipesubdir/Recipe" ]
-      then source "$1/$recipesubdir/Recipe"
-      fi
-      if [ "$is_meta" = "yes" -o "$recipe_type" = "meta" ]
-      then
-         for pkgver in "${include[@]}"
-         do
-            ipkg="${pkgver%--*}"
-            ver="${pkgver#*--}"
-            fetch_included_recipes "$1" "$ipkg" "$ver"
-         done
-      fi
-   ) || Die
-}
-
-fetch_archive_off_recipe "${recipedir}"
+Compile --batch --no-build ${crossopts} ${name} ${version} || Die "Fetching recipe(s) for ${name} ${version} failed"
 
 #############################################################################
 # Setting LD_LIBRARY_PATH variable which will be used on chrooted operations
