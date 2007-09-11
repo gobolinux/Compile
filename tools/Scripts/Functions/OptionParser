@@ -352,7 +352,7 @@ function Parse_Options() {
                Log_Error "Unknown option: $opt"
                exit 1
             fi
-         else
+         else # double dash
             # go through the string of short options
             for (( k = 1; k < ${#option} ; k++ ))
             do
@@ -401,22 +401,22 @@ function Parse_Options() {
             done
             export parsedArguments=$[parsedArguments+1]
          fi
-      else
+      else # dash found
          Add_Argument "$option"
       fi
-      if Boolean "help"
-      then Show_Help
-      fi
-      if Boolean "version"
-      then Show_Version
-      fi
-      if Boolean "list-options"
-      then List_Options
-      fi
-      if Boolean "verbose"
-      then Import LogVerbose
-      fi
    done
+   if Boolean "help"
+   then Show_Help
+   fi
+   if Boolean "version"
+   then Show_Version
+   fi
+   if Boolean "list-options"
+   then List_Options
+   fi
+   if Boolean "verbose"
+   then Import LogVerbose
+   fi
 }
 
 Add_Option_Boolean "h" "help" "Shows this help."
