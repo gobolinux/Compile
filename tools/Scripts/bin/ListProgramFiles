@@ -13,6 +13,7 @@ helpOnNoArguments=yes
 scriptUsage="<program> [<version>] | <version_directory>"
 Add_Option_Boolean "f" "files" "List files only (equivalent to -type f in 'find')"
 Add_Option_Boolean "p" "path" "Return full path, including the programs directory"
+Add_Option_Boolean "n" "null" "Separate files with null instead of newline."
 Parse_Options "$@"
 program="$(Arg 1)"
 version="$(Arg 2)"
@@ -46,6 +47,8 @@ else
    programpath="*"
 fi
 
+Boolean "null" && printcommand="-print0" || printcommand="-print"
+
 find ${programpath} \( -path "CVS" \
       -or -path "*/CVS" \
-      -or -path "${programpath}Resources/SettingsBackup*" \) -prune -or $type -print0
+      -or -path "${programpath}Resources/SettingsBackup*" \) -prune -or ${type} ${printcommand}

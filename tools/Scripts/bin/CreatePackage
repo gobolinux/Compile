@@ -141,7 +141,7 @@ fi
 [ "$tree_symlinked" = "yes" ] && Quiet pushd `RealPath ${goboPrograms}/$package/$versionnumber`/../..
 if { Boolean "personal-backup" ;} && [ "$anysettings" ]
 then
-   ListProgramFiles --path ${package} ${versionnumber} | tar cvpf "$targetdir/$packagefile" --files-from - --no-recursion --null 1>&2
+   ListProgramFiles --path --null ${package} ${versionnumber} | tar cvpf "$targetdir/$packagefile" --files-from - --no-recursion --null 1>&2
    [ "$tree_symlinked" = "yes" ] && Quiet popd
    
    # would make sense as personal-backup.  CJC
@@ -150,7 +150,7 @@ then
 else
    Boolean "gzip" && option="z" || option="j"
    Boolean "gzip" && extension="gz" || extension="bz2"
-   ListProgramFiles --path ${package} ${versionnumber} | tar cvpf$option "$targetdir/$packagefile".$extension --files-from - --no-recursion --null 1>&2
+   ListProgramFiles --path --null ${package} ${versionnumber} | tar cvpf$option "$targetdir/$packagefile".$extension --files-from - --no-recursion --null 1>&2
    [ "$tree_symlinked" = "yes" ] && Quiet popd
 fi
 
