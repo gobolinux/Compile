@@ -48,11 +48,6 @@ function Is_GoboLinux_Recipe() {
    sed -r 's/^[0-9A-Za-z_.]+--[0-9A-Za-z_.]+(-r[0-9]*)?--[rR]ecipe.tar.bz2/d' )"
 }
 
-function Make_Directory() {
-    Parameters "$@" dir
-    mkdir -p "$dir"
-}
-
 function Is_Empty_Directory() {
    local anyfiles
    anyfiles=$(ls "$1" 2> /dev/null)
