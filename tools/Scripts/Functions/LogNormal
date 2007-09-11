@@ -3,6 +3,14 @@
 export logMode="Normal"
 export logLevel=${logLevelNormal}
 
+eval "exec $questionFD>&-"
+eval "exec $verboseFD>&-"
+eval "exec $normalFD>&-"
+eval "exec $terseFD>&-"
+eval "exec $errorFD>&-"
+eval "exec $debugFD>&-"
+eval "exec $logFD>&-"
+
 eval "exec $questionFD<&2"
 eval "exec $verboseFD>/dev/null"
 eval "exec $normalFD<&2"
