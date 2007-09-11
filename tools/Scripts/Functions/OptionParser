@@ -1,7 +1,5 @@
 #!/bin/bash (source)
 
-[ "$COLUMNS" ] || export COLUMNS=80
-
 Import String
 Import Process
 
