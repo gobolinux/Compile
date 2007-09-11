@@ -17,6 +17,7 @@ helpOnNoArguments=yes
 scriptUsage="<package> [<version>]"
 scriptNotes="If no version is specified, Current is assumed. "
 Add_Option_Boolean "s" "store" "Store the information in Resources/BuildInformation. Default is standard output."
+Add_Option_Boolean "a" "all" "Search all files, not just standard directories."
 
 Parse_Options "$@"
 
