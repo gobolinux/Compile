@@ -19,7 +19,7 @@ function our_which() {
    return 1
 }
 
-CURRENT_SCRIPTS_VERSION=2.6.5 # This variable is automatically set by Make
+CURRENT_SCRIPTS_VERSION=2.7.0 # This variable is automatically set by Make
 hostSystemDependencies=(
    sh
    sed
