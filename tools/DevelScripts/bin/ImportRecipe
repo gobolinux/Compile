@@ -25,9 +25,9 @@ Parse_Options "$@"
 # ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
 # ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
-Parse_Conf CompileSubversion.conf
 Parse_Conf Compile/Compile.conf
-
+Parse_Conf --mandatory CompileSubversion.conf
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run ImportRecipe again."
 ### Cleanup ###################################################################
 
 trap do_cleanup EXIT
@@ -59,11 +59,11 @@ if [ "$revision" ]
 then Die "A recipe submitted to the trunk should not have a revision. Not adding it."
 fi
 
-if [ -d $compileDir/Subversion ]
+if [ -d ${compileSubversionLocalDir} ]
 then
-   [ -d $compileDir/Subversion/trunk ] && {
-      [ -w $compileDir/Subversion/trunk ] || Die "Need write permissions to $compileDir/Subversion/trunk."
-      [ -w $compileDir/Subversion/revisions ] || Die "Need write permissions to $compileDir/Subversion/revisions."
+   [ -d ${compileSubversionLocalTrunk} ] && {
+      [ -w ${compileSubversionLocalTrunk} ] || Die "Need write permissions to ${compileSubversionLocalTrunk}."
+      [ -w ${compileSubversionLocalRevisions} ] || Die "Need write permissions to ${compileSubversionLocalRevisions}."
    }
 else
    [ -w $compileDir ] || Die "Need write permissions to $compileDir."
@@ -89,10 +89,9 @@ then
    if Ask "You don't seem to have a copy of the svn trunk tree. Fetch it?"
    then
       Log_Normal "Calling 'svn checkout'."
-      Quiet pushd $compileDir
-      mkdir Subversion
-      cd Subversion
-      svn checkout --non-recursive $compileSubversion/trunk || Die "Error doing the svn checkout."
+      mkdir ${compileSubversionLocalDir}
+      Quiet pushd ${compileSubversionLocalDir}
+      svn checkout --non-recursive $compileSubversionServerRepository/trunk || Die "Error doing the svn checkout."
       Quiet popd
       Log_Normal "Checkout finished."
       checkedout=yes
@@ -107,7 +106,7 @@ if [ ! "$existingprogram" ]
 then
    Log_Normal "Trying to checkout $program..."
    Quiet pushd $trunk
-   svn checkout "$compileSubversion/trunk/$program"
+   svn checkout "$compileSubversionServerRepository/trunk/$program"
    Quiet popd
    checkedout=yes
 fi

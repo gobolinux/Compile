@@ -8,6 +8,7 @@ Import OptionParser
 
 Parse_Conf Compile/Compile.conf
 Parse_Conf CompileSubversion.conf
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run PutRecipe again."
 
 ### Options ###################################################################
 
@@ -24,8 +25,8 @@ Parse_Options "$@"
 mkdir -p "$compileLocalRecipesDir"
 [ "$compilePackedRecipesDir" ] || compilePackedRecipesDir="$goboPrefix/Files/Compile/PackedRecipes"
 mkdir -p "$compilePackedRecipesDir"
-[ "$compileLocalTrunk" ] || compilePackedRecipesDir="$goboPrefix/Files/Compile/Subversion/trunk"
-mkdir -p "$compileLocalTrunk"
+[ "$compileSubversionLocalTrunk" ] || compileSubversionLocalTrunk="$goboPrefix/Files/Compile/Subversion/trunk"
+mkdir -p "$compileSubversionLocalTrunk"
 
 if [ -z "$SVN_EDITOR" -a -z "$VISUAL" -a -z "$EDITOR" ]
 then
@@ -92,7 +93,7 @@ version=`basename $tarball | sed 's,\(.*\)--\(.*\)--.*,\2,g'`
 # Merge the recipe into the local trunk
 ImportRecipe $tarball || exit 1
 
-Quiet pushd $compileLocalTrunk/$program/$version
+Quiet pushd $compileSubversionLocalTrunk/$program/$version
 contextlines=`svn diff --non-interactive | wc -l`
 Quiet popd
 programlist="$program $programlist"

@@ -27,8 +27,9 @@ Parse_Options "$@"
 # ${goboSettings}/Scripts/INSERT_NAME_HERE.conf or
 # ${goboUserSettings}/Scripts/INSERT_NAME_HERE.conf 
 
-Parse_Conf CompileSubversion.conf
 Parse_Conf Compile/Compile.conf
+Parse_Conf CompileSubversion.conf
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run PublishRevision again."
 
 unset batch
 Boolean "batch" && batch=yes
@@ -146,10 +147,9 @@ then
    if Ask "You don't seem to have a copy of the svn revisions tree. Fetch it?"
    then
       Log_Normal "Calling 'svn checkout'."
-      Quiet pushd $compileDir
-      mkdir -p Subversion
-      cd Subversion
-      svn checkout --non-recursive $compileSubversion/revisions || Die "Error doing the svn checkout."
+      mkdir ${compileSubversionLocalDir}
+      Quiet pushd ${compileSubversionLocalDir}
+      svn checkout --non-recursive $compileSubversionServerRepository/revisions || Die "Error doing the svn checkout."
       Quiet popd
       Log_Normal "Checkout finished."
       checkedout=yes
@@ -164,7 +164,7 @@ if [ ! "$existingprogram" ]
 then
    Log_Normal "Trying to checkout $program..."
    Quiet pushd $revisions
-   svn checkout "$compileSubversion/revisions/$program"
+   svn checkout "$compileSubversionServerRepository/revisions/$program"
    Quiet popd
    checkedout=yes
 fi
@@ -173,7 +173,7 @@ if [ ! "`ls "$trunk/$program"`" ]
 then
    Log_Normal "No versions in trunk. Checking out..."
    Quiet pushd $trunk
-   svn checkout "$compileSubversion/trunk/$program"
+   svn checkout "$compileSubversionServerRepository/trunk/$program"
    Quiet popd
 fi
 

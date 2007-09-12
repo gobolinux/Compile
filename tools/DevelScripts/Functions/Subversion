@@ -1,13 +1,13 @@
 #!/bin/sh (syntax highlighting marker)
 
 function Get_Local_Trunk() {
-   [ -d "$compileLocalTrunk/.svn" ] || return 1
-   echo "$compileLocalTrunk"
+   [ -d "$compileSubversionLocalTrunk/.svn" ] || return 1
+   echo "$compileSubversionLocalTrunk"
 }
 
 function Get_Local_Revisions() {
-   [ -d "$compileLocalRevisions/.svn" ] || return 1
-   echo "$compileLocalRevisions"
+   [ -d "$compileSubversionLocalRevisions/.svn" ] || return 1
+   echo "$compileSubversionLocalRevisions"
 }
 
 function Subversion_Status() {
