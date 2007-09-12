@@ -415,16 +415,8 @@ function Parse_Options() {
    if Boolean "verbose"
    then Import LogVerbose
    fi
-   if Boolean "quiet"
-   then Import LogQuiet
-   fi
-   if Boolean "very-quiet"
-   then Import LogVeryQuiet
-   fi
 }
 
 Add_Option_Boolean "h" "help" "Shows this help."
 Add_Option_Boolean "" "version" "Show program version."
-Add_Option_Boolean "q" "quiet" "Enable quiet mode."
-Add_Option_Boolean "Q" "very-quiet" "Even quieter mode."
 Add_Option_Boolean "v" "verbose" "Enable verbose mode."
