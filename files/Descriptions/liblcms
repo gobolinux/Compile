@@ -1,6 +1,0 @@
-[Name]  liblcms
-[Summary]  Libraries for the little CMS engine
-[Description]  This is a small engine for doing color management work.
-[Suse Category]  System/Libraries
-[License]  LGPL, Other License(s), see package
-[Homepage]  http://www.littlecms.com/

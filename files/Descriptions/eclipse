@@ -1,6 +1,0 @@
-[Name]  eclipse
-[Summary]  Eclipse Platform and Java IDE
-[Description]  The Eclipse Platform is designed for building integrated development environments (IDEs) which can be extended by custom plugins. The base distribution also contains a full-featured Java development environment.
-[Suse Category]  Development/Tools/IDE
-[License]  Other License(s), see package
-[Homepage]  http://www.eclipse.org

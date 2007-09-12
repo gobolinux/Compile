@@ -1,5 +1,0 @@
-[Name] Snes9x
-[Summary] Portable, freeware Super Nintendo Entertainment System(SNES) emulator
-[License] Freeware
-[Description] Snes9X is a portable, freeware Super Nintendo Entertainment System (SNES) emulator. It basically allows you to play most games designed for the SNES and Super Famicom Nintendo game systems on your PC or Workstation; they include some real gems that were only ever released in Japan. Snes9X is coded in C++, with three assembler CPU emulation cores on the i386 Linux, MS-DOS and Windows ports.
-[Homepage] http://www.snes9x.com

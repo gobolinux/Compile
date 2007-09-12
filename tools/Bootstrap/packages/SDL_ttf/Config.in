@@ -1,2 +1,0 @@
-config PKG_SDL_TTF
-    bool "SDL TTF"

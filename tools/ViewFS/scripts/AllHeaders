@@ -1,6 +1,0 @@
-#!/bin/sh
-
-for i in src/*.c
-do
-   scripts/GenerateHeader $i
-done

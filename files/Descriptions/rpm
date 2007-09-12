@@ -1,5 +1,0 @@
-[Name] RPM
-[Summary] Red Hat's package management system
-[License] GNU General Public License (GPL)
-[Description] The Red Hat Package Manager (RPM) is a powerful command line driven package management system capable of installing, uninstalling, verifying, querying, and updating software packages. Each software package consists of an archive of files along with information about the package like its version, a description, etc. It also includes the RPM C library and header files. These development files will simplify the process of writing programs which manipulate RPM packages and databases and are intended to make it easier to create graphical package managers or any other tools that need an intimate knowledge of RPM packages in order to function.
-[Homepage] http://www.rpm.org/

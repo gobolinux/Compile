@@ -1,5 +1,0 @@
-[Name] emelFM
-[Summary] Two-Window File Manager
-[License] GNU General Public License (GPL)
-[Description] emelFM is a file manager that implements the popular two-pane design. It features a simple GTK+ interface, a flexible filetyping scheme, and a built-in command line for executing commands without opening an xterm.
-[Homepage] http://emelfm.sourceforge.net/

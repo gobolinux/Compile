@@ -1,6 +1,0 @@
-lang_net_dhcp_entry="Configuração automática via DHCP"
-lang_net_manual_entry="Configuração manual de IP, máscara e DNS"
-lang_net_manual_ip="Endereço IP"
-lang_net_manual_mask="Máscara"
-lang_net_manual_gateway="Gateway"
-lang_net_manual_dns="DNS primário"

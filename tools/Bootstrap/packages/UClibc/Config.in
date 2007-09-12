@@ -1,2 +1,0 @@
-config PKG_UCLIBC
-    bool "uClibc"

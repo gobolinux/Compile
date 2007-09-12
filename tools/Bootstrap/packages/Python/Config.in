@@ -1,3 +1,0 @@
-config PKG_PYTHON
-    bool "Python"
-    default n

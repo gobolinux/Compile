@@ -1,5 +1,0 @@
-[Name] bbppp
-[Summary] A PPP dialer for the Blackbox window manager.
-[License] GNU General Public License (GPL)
-[Description] Bbppp is a minimalist PPP dialer designed for use with the Blackbox window manager (though it should be usable with any X wm). While it is minimalist in that it takes up very little screen real estate, it is highly configurable. It also has a throughput rate window, which shows Kb/s transfer over the PPP link in realtime.
-[Homepage] http://bbtools.windsofstorm.net/
