@@ -29,7 +29,7 @@ Parse_Options "$@"
 
 Parse_Conf Compile/Compile.conf
 Parse_Conf CompileSubversion.conf
-[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run PublishRevision again."
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run 'UpdateSettings develscripts' before trying to run PublishRevision again."
 
 unset batch
 Boolean "batch" && batch=yes

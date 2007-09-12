@@ -27,7 +27,7 @@ Parse_Options "$@"
 
 Parse_Conf Compile/Compile.conf
 Parse_Conf --mandatory CompileSubversion.conf
-[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run ImportRecipe again."
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run 'UpdateSettings develscripts' before trying to run ImportRecipe again."
 ### Cleanup ###################################################################
 
 trap do_cleanup EXIT

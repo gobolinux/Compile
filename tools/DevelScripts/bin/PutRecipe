@@ -8,7 +8,7 @@ Import OptionParser
 
 Parse_Conf Compile/Compile.conf
 Parse_Conf CompileSubversion.conf
-[ -z "${compileSubversionLocalDir}" ] && Die "You must run \"UpdateSettings develscripts\" before trying to run PutRecipe again."
+[ -z "${compileSubversionLocalDir}" ] && Die "You must run 'UpdateSettings develscripts' before trying to run PutRecipe again."
 
 ### Options ###################################################################
 
