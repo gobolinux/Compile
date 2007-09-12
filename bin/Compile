@@ -380,12 +380,10 @@ Check_Dir_Variable compilePackedRecipesDir
 ##################################################
 
 scriptsversion=`Get_Version Scripts Current`
-major=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
-middle=`echo $scriptsversion | sed 's/^[0-9]*\.\([0-9]*\).*$/\1/g'`
 
 if echo "$scriptsversion" | grep -q CVS || \
    echo "$scriptsversion" | grep -q GIT || \
-   [ "`GuessLatest $scriptsversion 2.6.5`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.7.0`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
