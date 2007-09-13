@@ -296,9 +296,15 @@ else
    then
       Log_Question "Package signed with unknown signature.  Unable to verify package"
       Ask_Continue "Continue install?"
-   elif [ $result -eq 1 ] || [ $result -eq 3 ] 
+   elif [ $result -eq 3 ] 
    then
-      Log_Error "Invalid signature.  Package has been modified"
+      Log_Error "Invalid signature.  FileHash could not be verified."
+      Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
+      exit 1
+   fi
+   elif [ $result -eq 1 ]
+   then
+      Log_Error "Invalid FileHash.  Package has been modified"
       Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
       exit 1
    fi
