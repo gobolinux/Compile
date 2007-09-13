@@ -336,7 +336,13 @@ fi
 
 ################################################################################
 
-if [ -f $current/Resources/UnmanagedFiles ] && { { Is_Entry "unmanaged" "ask" && Ask "Do you want to install the unmanaged files?"; } || Is_Entry "unmanaged" "install"; }
+if [ -f $current/Resources/UnmanagedFiles ] && {
+   { Is_Entry "unmanaged" "ask" && {
+        Log_Normal "The program wishes to install files to these unmanaged locations:"
+        cat $current/Resources/UnmanagedFiles
+        Ask "Do you want to install the unmanaged files?"
+     }
+   } || Is_Entry "unmanaged" "install"; }
 then
    Log_Normal "Installing unmanaged files..."
    Install_Unmanaged_Files "$current/Resources/UnmanagedFiles" "$current/Resources/Unmanaged"
