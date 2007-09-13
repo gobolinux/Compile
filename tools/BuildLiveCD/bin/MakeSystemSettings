@@ -41,7 +41,8 @@ lp:x:9:
 dialout:x:10:
 audio:x:11:
 nobody:x:12:
-uucp:x:15
+cdrom:x:13:
+uucp:x:15:
 fibo:x:21:
 users:x:100:
 ftp:x:101:
