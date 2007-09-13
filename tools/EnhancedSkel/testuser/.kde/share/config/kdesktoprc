@@ -17,7 +17,7 @@ Pattern=
 Program=
 ReverseBlending=false
 UseSHM=false
-Wallpaper=/Files/Wallpapers/WallpaperQue.png
+Wallpaper=/Files/Wallpapers/WallpaperMolfar6.png
 WallpaperList=
 WallpaperMode=Scaled
 
@@ -30,7 +30,7 @@ AutoLineUpIcons=true
 
 [KFileDialog Settings]
 Automatic Preview=true
-Recent Files=/Files/Wallpapers/WallpaperQue.png
+Recent Files=/Files/Wallpapers/WallpaperMolfar6.png
 
 [Menubar]
 ShowMenubar=false
