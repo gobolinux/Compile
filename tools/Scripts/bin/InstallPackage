@@ -301,7 +301,6 @@ else
       Log_Error "Invalid signature.  FileHash could not be verified."
       Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
       exit 1
-   fi
    elif [ $result -eq 1 ]
    then
       Log_Error "Invalid FileHash.  Package has been modified"
