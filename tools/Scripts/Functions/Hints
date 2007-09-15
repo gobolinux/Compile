@@ -9,7 +9,6 @@
 # Date::   10 June 2006
 
 Import Log
-Import LogVerbose
 Import File
 
 # This version of Hints_For exists solely to be replaced by Load_Hints
