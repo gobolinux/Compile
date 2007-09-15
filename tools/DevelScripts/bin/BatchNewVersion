@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ShowPackages recipe '<' tracked 2> /dev/null | \
 while read line
 do 
