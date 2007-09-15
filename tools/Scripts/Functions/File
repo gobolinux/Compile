@@ -136,7 +136,7 @@ GPG_gobo_keyring="${goboPrograms}/Scripts/Current/Data/gpg/goboring.gpg"
 function Gen_FileHash() {
    Parameters "$@" file_prefix hashfile
    local dname=`dirname $hashfile`
-   $sudo_exec rm -f "$hashfile"
+   $sudo_exec rm -f -- "$hashfile"
    # Validate password
    $sudo_validate
    Assert_Dir $dname
