@@ -132,7 +132,7 @@ function do_symlink() {
       then
          $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
          for file in "${unmanaged_files[@]}"
-         do $sudo_exec sh -c "echo $file >> $target/Resources/UnmanagedFiles"
+         do echo $file | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
          done
       fi
    fi
@@ -179,11 +179,11 @@ function install_extras() {
 
    [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix"
    [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix"
-   [ "$revision" ] && echo "$revision" > "$installprefix/Resources/Revision"
+   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null
 
    if [ "$app" = "$appname" ]
    then
-      $sudo_exec sh -c "CheckDependencies --mode=convert $app $version recipe $recipedir > \"$installprefix/Resources/Dependencies\""
+      $sudo_exec CheckDependencies --mode=convert $app $version recipe $recipedir | $sudo_exec tee -a "$installprefix/Resources/Dependencies" >/dev/null
    fi
 
    if [ "$app" ]
@@ -216,8 +216,8 @@ function wrapup() {
       Quiet mkdir -p $target/Resources
 
       if [ ! -z "$cross_uname_m" ]
-      then $sudo_exec sh -c "echo \"$cross_uname_m\" > \"$target/Resources/Architecture\""
-      else $sudo_exec sh -c "echo \"$(Get_Architecture)\" > \"$target/Resources/Architecture\""
+      then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
+      else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
       fi
 
       Log_Normal "Generating package's build information..."
