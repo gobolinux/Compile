@@ -3,7 +3,7 @@
 . GoboPath
 # print banner
 cat >&2 <<EOF
-SuggestUpdates 1.4a - check for known newer versions
+SuggestUpdates - check for known newer versions
  (Copyright 2005 MJ Ray. Released under GNU GPL v2.)
 
 EOF
@@ -30,15 +30,13 @@ while [ -n "$*" ] ; do
   shift
 done
 
-versionsort() {
-  sort -n -t. -k1 -k2 -k3 -k4
-}
-
 # get list of latest versions
 typeset -A latest
-GetAvailable $limit | versionsort | while read type pkg ver junk ; do
-  latest["$pkg"]="$ver"
+GetAvailable $limit | while read type pkg ver junk ; do
+  latest["$pkg"]="$latest["$pkg"] $ver"
 done
+
+setopt sh_word_split
 
 # Iterate over installed programs, reading Current symlink
 find ${goboPrograms}/ -maxdepth 2 -mindepth 2 -name Current -printf '%h %l\n' | \
@@ -46,11 +44,11 @@ find ${goboPrograms}/ -maxdepth 2 -mindepth 2 -name Current -printf '%h %l\n' | 
   while read prog ver junk ; do
     # deduce whether it is the newest version
     newver="$latest["$prog"]"
-    newnewver=$(echo "$ver\n$newver" | versionsort | tail -n 1)
+    newnewver=$(GuessLatest $ver $newver)
     [ -n "$debug" ] && echo "  # Debug: Is $prog $newver > $ver?"
     # output update message if needed
-    if [ "$newver" != "" -a "$newnewver" != "$ver" -a "$ver" != "$newver" ] ; then
-      echo "'$code' $prog $newver #(current: $ver)"
+    if [ "$newver" != "" -a "$newnewver" != "$ver" ] ; then
+      echo "'$code' $prog $newnewver #(current: $ver)"
       updates="x$updates"
     fi
   done
