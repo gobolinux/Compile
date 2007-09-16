@@ -63,6 +63,10 @@ handle_description() {
          rm $description
          license=""
          sourcedir="$compileSourcesDir/$(echo $name | tr '[:upper:]' '[:lower:]')-$version"
+         if [ ! -d "$sourcedir" ]
+         then
+            sourcedir="$compileSourcesDir/$name-$version"
+         fi
          if [ -d "$sourcedir" ]
          then
             for licensefile in $sourcedir/COPYING* $sourcedir/LICENSE* $sourcedir/license*
@@ -93,6 +97,9 @@ handle_description() {
                   c46bda00ffbb0ba1dac22f8d087f54d9) newlicense="GNU Library General Public License version 2" ;;
                   # LGPL2.1
                   fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  d7b37bf80a3df5a65b355433ae36d206) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  # MPL1.1
+                  bfe1f75d606912a4111c90743d6c7325) newlicense="Mozilla Public License 1.1" ;;
                   *)
                      Log_Terse "Could not autodetermine licensing for writing the Description file."
                      Ask_Continue "Press Enter to view the license file $licensefile."
@@ -163,10 +170,26 @@ pack_recipe() {
 
    if create_tarball
    then
-      Boolean "no-lint" || RecipeLint $noweb "$tarball"
-      Log_Normal "Packed $tarball"
+      if ! Boolean "no-lint"
+      then 
+         RecipeLint $noweb "$tarball"
+         recipestatus=$?
+         if [ "$recipestatus" -eq 1 ]
+         then
+            Log_Error "RecipeLint reported warnings in $name $version."
+            if ! Ask "Proceed and pack it anyway?"
+            then return
+            fi
+         elif [ "$recipestatus" -eq 2 ]
+         then
+            Log_Error "RecipeLint reported errors in $name $version from trunk. Not packing it."
+            rm "$tarball"
+            return
+         fi
+      fi
+      Log_Normal "Packed $tarball."
    else
-      Log_Error "Failed packing $tarball"
+      Log_Error "Failed packing $tarball."
    fi
 }
 
