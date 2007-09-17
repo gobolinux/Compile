@@ -143,20 +143,21 @@ recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
 $sudo mkdir -p $recipedir
 [ "$sudo" ] && $sudo chown $USER $recipedir
 
+recipefile="$recipedir/Recipe"
 
-${sudo} rm -f "$recipedir/Recipe"
+${sudo} rm -f "$recipefile"
 
 if [ "$compileRecipeAuthor" != "" ]
-then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipedir/Recipe"
-     echo "# Recipe for version $versionnumber by $compileRecipeAuthor, on" `date` >> "$recipedir/Recipe"
+then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipefile"
+     echo "# Recipe for version $versionnumber by $compileRecipeAuthor, on" `date` >> "$recipefile"
 else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/Compile/Compile.conf"
 fi
 
-echo "compile_version=$scriptVersion" >> "$recipedir/Recipe"
+echo "compile_version=$scriptVersion" >> "$recipefile"
 if [ "$cvs" = "yes" ]
 then
-   echo "cvs=$cvs_server" >> "$recipedir/Recipe"
-   echo "cvs_module=$cvs_module" >> "$recipedir/Recipe"
+   echo "cvs=$cvs_server" >> "$recipefile"
+   echo "cvs_module=$cvs_module" >> "$recipefile"
 
    Quiet pushd "$compileSourcesDir"
    cvs -d "$cvs_server" checkout "$cvs_module"
@@ -165,7 +166,7 @@ then
    Quiet popd
 elif [ "$svn" = "yes" ]
 then
-   echo "svn=\"$svn_uri\"" >> "$recipedir/Recipe"
+   echo "svn=\"$svn_uri\"" >> "$recipefile"
 
    Quiet pushd "$compileSourcesDir"
    svn checkout $svn_uri "${packagename}-svn"
@@ -173,7 +174,7 @@ then
    find "${packagename}-svn" >> "$file_contents"
    Quiet popd
 else
-   echo "url=\"$url\"" >> "$recipedir/Recipe"
+   echo "url=\"$url\"" >> "$recipefile"
 
    Quiet pushd "$compileArchivesDir"
    basefile="$(basename "$source_url")"
@@ -189,7 +190,7 @@ else
          then
             basefile="$filename"
             file="$PWD/$basefile"
-            echo "file=\"$basefile\"" >> "$recipedir/Recipe"
+            echo "file=\"$basefile\"" >> "$recipefile"
          fi
          rm $file_headers
       fi
@@ -209,8 +210,8 @@ else
    fi
    Quiet popd
    
-   echo "file_size="`Get_Size "$file"` >> "$recipedir/Recipe"
-   echo "file_md5="`Get_MD5 "$file"` >> "$recipedir/Recipe"
+   echo "file_size="`Get_Size "$file"` >> "$recipefile"
+   echo "file_md5="`Get_MD5 "$file"` >> "$recipefile"
    
    # TODO: report if multiple directories, tell the user to verify it
    file_contents=`Temporary_File`
@@ -220,7 +221,7 @@ else
    bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/[^/]*$,,'`
    if [ -n "$bdir" -a "$bdir" != "$bname" ]
    then
-      echo "dir='$bdir'" >> "$recipedir/Recipe"
+      echo "dir='$bdir'" >> "$recipefile"
    fi
 fi
 
@@ -228,18 +229,18 @@ if grep -q "configure.in$" "$file_contents" \
 || grep -q "configure.ac$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
-   echo "recipe_type=configure" >> "$recipedir/Recipe"
+   echo "recipe_type=configure" >> "$recipefile"
    if ! grep -q "configure$" "$file_contents"
-   then echo "autogen_before_configure=yes" >> "$recipedir/Recipe"
+   then echo "autogen_before_configure=yes" >> "$recipefile"
    fi
 elif grep -q "/configure$" "$file_contents"
 then
    Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
-   echo "recipe_type=configure" >> "$recipedir/Recipe"
+   echo "recipe_type=configure" >> "$recipefile"
 elif grep -q "Makefile.PL$" "$file_contents" || grep -q "Build.PL$" "$file_contents" 
 then
    Log_Normal "$packagename $versionnumber seems to be a Perl module."
-   echo "recipe_type=perl" >> "$recipedir/Recipe"
+   echo "recipe_type=perl" >> "$recipefile"
    echo $packagename | grep -q "^Perl-" || {
       perlprefixed="$compileLocalRecipesDir/Perl-$packagename"
       notprefixed=$(readlink -f "$recipedir/..")
@@ -255,25 +256,25 @@ then
 elif grep -q "Imakefile$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on imake."
-   echo "recipe_type=xmkmf" >> "$recipedir/Recipe"
+   echo "recipe_type=xmkmf" >> "$recipefile"
 elif grep -q "SConstruct$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on SCons."
-   echo "recipe_type=scons" >> "$recipedir/Recipe"
+   echo "recipe_type=scons" >> "$recipefile"
 elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -iq makefile && \
        grep -q "\.py$" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on Python."
-   echo "recipe_type=python" >> "$recipedir/Recipe"
+   echo "recipe_type=python" >> "$recipefile"
 else
    basemakefile=`grep -i "^[^/]*/Makefile$" "$file_contents" 2>/dev/null`
    if [ "$basemakefile" ]
    then
       Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
-      echo "recipe_type=makefile" >> "$recipedir/Recipe"
+      echo "recipe_type=makefile" >> "$recipefile"
       aunpack "$file" "$basemakefile"
       if [ "$basemakefile" != "Makefile" ]
-      then echo "makefile='$(basename $basemakefile)'" >> "$recipedir/Recipe"
+      then echo "makefile='$(basename $basemakefile)'" >> "$recipefile"
       fi
       makevars=()
       for var in BASEDIR DESTDIR PREFIX basedir destdir prefix
@@ -296,12 +297,12 @@ else
       done
       if [ "${makevars[*]}" ]
       then
-         echo "make_variables=(" >> "$recipedir/Recipe"
+         echo "make_variables=(" >> "$recipefile"
          for mv in "${makevars[@]}"
          do
-            echo "   $mv" >> "$recipedir/Recipe"
+            echo "   $mv" >> "$recipefile"
          done
-         echo ")" >> "$recipedir/Recipe"
+         echo ")" >> "$recipefile"
       else
          Log_Normal "No variables detected. Do you want to look at the top Makefile? (Y/n)"
          read
