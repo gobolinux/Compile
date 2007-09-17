@@ -437,7 +437,14 @@ class Freshen < GoboApplication
 			end
 			
 			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
-				return readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
+				deps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
+				builddeps = []
+				# Skip Glibc BuildDependencies because they cause cycles in the graph, and you can't
+				# build anything without them anyway (e.g. Autoconf).
+				if "#{prog}" != 'Glibc' &&  File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/BuildDependencies")
+					builddeps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/BuildDependencies")
+				end
+				return deps | builddeps
 			end
 		end
 		# Try fetching package dependencies
