@@ -40,6 +40,12 @@ function Assert_Dir() {
    fi
 }
 
+# Return status:
+# 0 - Files were verified and are okay.
+# 1 - Files are corrupted: must delete.
+# 2 - Files look incomplete or cannot be verified:
+#     may delete or try to continue download.
+# 3 - Files are missing.
 function Verify_Files() {
    local myfiles=($1)
    local sizes=($2)
@@ -57,6 +63,7 @@ function Verify_Files() {
          if [ -n "$file_size" ] && [ "$file_size" != "$siz" ]
          then
             Log_Terse "Warning: $file is either not complete or corrupted."
+            return 2
          elif [ -n "$file_size" ]
          then
             if [ -z "$file_md5" ]
@@ -74,6 +81,7 @@ function Verify_Files() {
             if [ -z "$file_md5" ]
             then
                Log_Terse "Warning: no file size or MD5 checksum. File cannot be verified"
+               return 2
             elif [ "$file_md5" = "$md5" ]
             then
                Log_Normal "Warning: file size could not be verified but $file matches MD5 checksum."
@@ -82,6 +90,8 @@ function Verify_Files() {
                return 1
             fi
          fi
+      else
+         return 3
       fi
    done
    return 0

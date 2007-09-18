@@ -110,10 +110,20 @@ for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
 
-   Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}" || \
-   if Boolean "batch" || Ask "Remove and download again?"
-   then rm -f ${file}
-   else continue
+   Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}"
+   result=$?
+   if [ "$result" = "0" ]
+   then
+      continue
+   elif [ "$result" = "1" ]
+   then
+      rm -f -- ${file}
+   elif [ "$result" = "2" ]
+   then
+      if Boolean "batch" || Ask "Remove and download again?"
+      then rm -f ${file}
+      else continue
+      fi
    fi
 
    function wget_url() {
