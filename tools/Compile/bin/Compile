@@ -783,7 +783,7 @@ else
    then
       in_host FetchArchive $verbose $batch "$recipe" $archrecipe || Die "Error fetching archive(s)."
    else
-      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" || Die "Files are corrupted and new versions will not be fetched. Exiting."
+      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" || Die "Files are not available. Exiting."
    fi
 
    pfiles=`
