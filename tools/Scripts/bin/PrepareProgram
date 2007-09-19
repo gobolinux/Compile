@@ -52,13 +52,6 @@ function build_change() {
    echo "/-L/!s/"$1"/"$2"/g;"
 }
 
-function color_command() {
-   mtailrc=$1
-   shift
-   "$@" 2>&1 | mtail --config=${mtailrc} -q
-   return ${PIPESTATUS[0]}
-}
-
 make_symlink() {
     local bname=`basename $1`
     Exists "${baseprogramdir}/${bname}" && ln -nsf "${baseprogramdir}/${bname}" "$1"
@@ -282,7 +275,10 @@ eval `Args_To_Array args 3`
 if [ "$goboIndex" ]
 then args=(`echo ${args[@]} | sed "s,$programdir,$goboIndex,g"`)
 fi
-color_command "`Find_Conf configure.mtailrc`" \
-  "$configureprogram" "${configure_options[@]}" "${args[@]}" >&$normalFD || Die "configure failed."
+
+"$configureprogram" "${configure_options[@]}" "${args[@]}" >&$normalFD 2>&1 | Color_Output configure
+if [ "${PIPESTATUS[0]}" != 0 ]
+then Die "configure failed."
+fi
 
 exit 0
