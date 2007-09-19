@@ -37,6 +37,7 @@ echo "        ${mp}/System/Kernel/Status ..."
 mount -o bind /System/Kernel/Status ${mp}/System/Kernel/Status
 
 echo "Chrooting into ${mp} "
+chroot ${mp} ldconfig
 chroot ${mp}
 sync
 
