@@ -528,7 +528,7 @@ function Dependencies_File() {
 # Whenever you need to strip ${goboPrograms} off from a path,
 # use this function. It's the bullet-proof way to do so.
 function Strip_Gobo_Programs() {
-   sed "s@^${goboPrograms}@@;s@^$(readlink -f ${goboPrograms})@@;s@^/*@@"
+   sed "s@^${goboPrograms}@@;s@^$(readlink -f ${goboPrograms})@@;s@^/Programs\(/[^/]*/[^/]*/[^/]*/[^/]*\)@\1@;s@^/*@@"
 }
 
 # Inspect to which package a linked file points to
@@ -551,6 +551,7 @@ conflocations=(
    "${goboSettings}"
    "${scriptPath}"
    "/System/Settings/Scripts"
+   "/System/Settings/$progname"
 )
 
 function Find_Conf() {
