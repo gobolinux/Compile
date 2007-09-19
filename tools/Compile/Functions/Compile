@@ -69,7 +69,7 @@ function Verify_Files() {
             if [ -z "$file_md5" ]
             then
                Log_Normal "Warning: no MD5 checksum."
-               Log_Normal "Assuming $file is complete based only in size."
+               Log_Normal "Assuming $file is complete based only on size."
             elif [ "$file_md5" = "$md5" ]
             then
                Log_Verbose "$file is complete and matches MD5 checksum."
@@ -80,7 +80,7 @@ function Verify_Files() {
          else
             if [ -z "$file_md5" ]
             then
-               Log_Terse "Warning: no file size or MD5 checksum. File cannot be verified"
+               Log_Terse "Warning: no file size or MD5 checksum. $file cannot be verified"
                return 2
             elif [ "$file_md5" = "$md5" ]
             then
