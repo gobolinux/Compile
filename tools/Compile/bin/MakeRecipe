@@ -158,14 +158,17 @@ if [ "$cvs" = "yes" ]
 then
    echo "cvs=$cvs_server" >> "$recipefile"
    echo "cvs_module=$cvs_module" >> "$recipefile"
-   checkoutdir="$compileArchivesDir/$packagename-cvs"
+   checkoutdir="$compileSourcesDir/$packagename-cvs"
+   fetchparams="--save-to $compileSourcesDir"
 elif [ "$svn" = "yes" ]
 then
    echo "svn=\"$svn_uri\"" >> "$recipefile"
-   checkoutdir="$compileArchivesDir/$packagename-svn"
+   checkoutdir="$compileSourcesDir/$packagename-svn"
+   fetchparams="--save-to $compileSourcesDir"
 else
    echo "url=\"$url\"" >> "$recipefile"
    file="$compileArchivesDir/$(basename "$source_url")"
+   fetchparams="--save-to $compileArchivesDir"
    if { ! Boolean "no-fetch" ;} && Starts_With "http" "$source_url"
    then
       # Detect URLs that feature redirects, like funky "...download.php?pkg=1234" URLs.
@@ -184,7 +187,7 @@ fi
 
 if ! Boolean "no-fetch"
 then
-   FetchArchive "$recipefile" || Die "Could not fetch sources."
+   FetchArchive $fetchparams "$recipefile" || Die "Could not fetch sources."
 elif ! [ -e "$file" ]
 then
    Die "--no-fetch used, but file is not available."
