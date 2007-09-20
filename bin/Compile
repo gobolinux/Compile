@@ -1035,9 +1035,9 @@ build_python_options() {
 if [ "$recipe_type" = "python" ]
 then
    Quiet python -V || Die "This is a python type recipe and you don't seem to have python installed."
-   [ "$PYTHONPATH" ] || Die "Environment variable PYTHONPATH is not set. Set it to something like '.:$goboLibraries/python2.3/site-packages'."
    build_tree_if "true"
-   sitepackages="$target/lib/python${PYTHONPATH##*/python}"
+   pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
+   sitepackages="${target}/lib/python${pythonversion}"
    mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
    then
