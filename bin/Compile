@@ -1010,9 +1010,7 @@ build_python_options() {
    else
       case "$1" in
       build)
-         default_python_options=(
-            "--build-base $target"
-         )
+         default_python_options=()
          ;;
       build_ext)
          default_python_options=(
