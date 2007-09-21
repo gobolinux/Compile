@@ -39,6 +39,8 @@ class Freshen < GoboApplication
 		@packages = nil
 		@minVersion = Hash.new
 		@maxVersion = Hash.new
+		@minVerBy = Hash.new
+		@maxVerBy = Hash.new
 		settingspath = File.expand_path("#{@dirname}/../../Settings/Freshen") + "/Freshen.conf"
 		settingspath = File.expand_path("#{@dirname}/../Settings/Freshen") + "/Freshen.conf" if !File.exists?(settingspath)
 		@config = GoboParseConfig.new(settingspath)

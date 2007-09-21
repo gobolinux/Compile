@@ -72,7 +72,7 @@ class Freshen < GoboApplication
 		(s.gsub(/.{1,#{wwl}}(?:\s|\Z)/){($& + 5.chr).gsub(/\n\005/,"\n").gsub(/\005/,"\n")}).gsub("\n","\n"+" "*(n-1)).strip
 	end
 	
-	def setMinMax(prog, vers)
+	def setMinMax(prog, vers, dependant="")
 		return if !vers || vers == '' || !prog || prog=='' || prog[0,1] == '#'
 		parts = vers.split(' ')
 		if parts.length == 1 # Exact version, treat as >=
@@ -83,10 +83,12 @@ class Freshen < GoboApplication
 			if $1=='>=' || $1=='>'
 				if !@minVersion[prog] || @minVersion[prog] < v
 					@minVersion[prog] = v
+					@minVerBy[prog] = dependant
 				end
 			elsif $1=='<=' || $1=='<'
 				if !@maxVersion[prog] || @maxVersion[prog] > v
 					@maxVersion[prog] = v
+					@maxVerBy[prog] = dependant
 				end
 			end
 			''
@@ -95,10 +97,10 @@ class Freshen < GoboApplication
 		end
 	end
 	
-	def readDependencyFile(fn)
+	def readDependencyFile(fn, progname="")
 		r = File.readlines(fn).collect {|ln|
 			first, junk = ln.strip.split(' ', 2)
-			setMinMax(first, junk)
+			setMinMax(first, junk, progname)
 			first
 		}-[""]
 		r.delete_if {|l|
@@ -376,6 +378,26 @@ class Freshen < GoboApplication
 			}
 		end
 		versInUse = Hash.new
+		
+		# Try to recover from cyclic graphs
+		begin
+			toupdate = dephash.tsort
+		rescue TSort::Cyclic
+			# Extract the cyclic components
+			"#{$!}" =~ /\[.+\]/
+			comp = nil
+			eval "comp = #{$&}"
+			logError "#{$!}"
+			logError "Attempting to resolve graph cycle (warning: may cause infinite loop. Use Ctrl-C to terminate)"
+			comp.each {|a|
+				if !@progs[a].nil? && @progs[a] >= @minVersion[a]
+					comp.each {|b|
+						dephash[b] -= [a]
+					}
+				end
+			}
+			retry
+		end
 		toupdate = dephash.tsort.delete_if {|x|
 			nv = getNewestAvailableVersion(x) unless x.nil?||x==""
 			versInUse[x] = nv
@@ -397,7 +419,7 @@ class Freshen < GoboApplication
 		
 		@maxVersion.each {|prog, ver|
 			if ver<=@minVersion[prog]
-				logError "Error: Minimum version for #{prog} is incompatible with maximum (#{@minVersion[prog]}>=#{ver})."
+				logError "Error: Minimum version for #{prog} is incompatible with maximum (#{@minVersion[prog]} (required by #{@minVerBy[prog]}) >= #{ver} (required by #{@maxVerBy[prog]}))."
 			end
 		}
 		
@@ -437,12 +459,12 @@ class Freshen < GoboApplication
 			end
 			
 			if File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
-				deps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies")
+				deps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/Dependencies", "#{prog}")
 				builddeps = []
 				# Skip Glibc BuildDependencies because they cause cycles in the graph, and you can't
 				# build anything without them anyway (e.g. Autoconf).
 				if "#{prog}" != 'Glibc' &&  File.exists?("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/BuildDependencies")
-					builddeps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/BuildDependencies")
+					builddeps = readDependencyFile("#{@compileConfig['compileGetRecipeDir']}/#{prog}/#{rver}/Resources/BuildDependencies", "#{prog}")
 				end
 				return deps | builddeps
 			end
@@ -457,7 +479,7 @@ class Freshen < GoboApplication
 			}
 		end
 		if File.exists?("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
-			return readDependencyFile("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
+			return readDependencyFile("#{@config['tmpDir']}/dependencies-#{prog}--#{ver}", "#{prog}")
 		else
 			system("touch #{@config['tmpDir']}/dependencies-#{prog}--#{ver}")
 		end
