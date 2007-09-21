@@ -106,7 +106,7 @@ GNU General Public License for more details."
       self.usage       = "[<opts>] [<list>]"
       self.example     = "-U -l 5 -R"
       self.helpOnNoArguments = false
-      @version         = "2.2.7"
+      @version         = "2.2.8"
       self.notes = <<END_OF_NOTES
 Run with no arguments, Freshen outputs a list of updates in the form:
 [I#{Screen.colour['cyan']}U#{Screen.colour['normal']}X] #{Screen.colour['red']}Foo 2.0#{Screen.colour['normal']}                                                                1.0
