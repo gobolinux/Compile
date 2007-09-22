@@ -1,0 +1,2 @@
+config PKG_BITCHX
+    bool "BitchX"
