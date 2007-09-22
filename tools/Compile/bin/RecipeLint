@@ -738,11 +738,14 @@ test_resources() {
          if [ "$progname" = "$nothname" ]
          then
             if Boolean "no-web"
-	    then
-		WARN "Dependency $prog not available locally (web access disabled)."
-	    else
-		ERROR "Dependency $prog not available."
-	    fi
+            then
+               WARN "Dependency $prog not available locally (web access disabled)."
+            else
+               if ! wget -q -O /dev/null http://svn.gobolinux.org/recipes/revisions/$prog
+               then ERROR "Dependency $prog not available."
+               else WARN  "Dependency $prog is not available for public access yet."
+               fi
+            fi
             j=$[j+1]
          else
             WARN "Dependency $prog has no recipe."
