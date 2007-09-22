@@ -591,13 +591,6 @@ function Parse_Conf() {
    fi
 }
 
-# Sudo for people who lack root
-function Bypass_Superuser() {
-   Log_Normal "Bypassing 'sudo' call"
-   $*
-   return $?
-}
-
 # Some simple define for sudo
 sudo_exec="sudo -u #0"
 sudo_validate="sudo -u `whoami` true"
@@ -605,7 +598,7 @@ sudo_validate="sudo -u `whoami` true"
 # If we can't sudo, we shouldn't try .
 if [ $ROOTLESS_GOBOLINUX ]
 then
-   sudo_exec="Bypass_Superuser"
+   sudo_exec=""
    sudo_validate=""
 fi
 
