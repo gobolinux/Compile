@@ -675,7 +675,7 @@ test_recipe() {
    grep -q "\$target/../Variable" Recipe && {
       WARN "Recipe uses old \$target/../Variable idiom. Use \$variable_target."
    }
-   sed 's,#.*,,g' Recipe | grep -q "/System" && {
+   sed 's,#.*,,g' Recipe | grep "/System[^\.]" && {
       ERROR "Recipe references /System tree explicitly. Use \$<gobo environment variable>."
    }
    sed 's,#.*,,g' Recipe | grep "wget" | grep -q -v "url=\|urls=" && {
