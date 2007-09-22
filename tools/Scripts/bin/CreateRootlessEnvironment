@@ -160,7 +160,8 @@ fi
 
 export PYTHONPATH=${goboPrefix}/System/Links/Libraries/python2.3/site-packages:${goboPrefix}/System/Links/Libraries/python2.4/site-packages${PYTHONPATH:+:$PYTHONPATH}
 
-export PKG_CONFIG_PATH=${goboPrefix}/System/Links/Libraries/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}
+export PKG_CONFIG_PATH=${goboPrefix}/System/Links/Libraries/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}:/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
+
 export LD_LIBRARY_PATH="${goboPrefix}/System/Links/Libraries${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 # Without calling cd, prompt does not display ~, but ${HOME}
