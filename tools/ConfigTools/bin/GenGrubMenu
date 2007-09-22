@@ -3,13 +3,6 @@
 import os
 import sys
 
-#TODO: 
-# - tranformar em bash?
-# - pegar as particoes windows decentemente
-# - ver se o cara jah tem um grub?
-# - corrigir a numeracao dos devices grub (hdd pode mesmo ser (hd0))
-
-
 dvorak_keymap="""
 # GRUB qwerty->dvorak keymap v1.0 - Matthew Mueller <donut@azstarnet.com>
 # latest ver @ http://www.azstarnet.com/~donut/programs/
@@ -148,17 +141,16 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 	if genGraphicDesktop :
 		o += '\n'
 		o += 'title '+tr('GoboLinux - Graphic Desktop') + '\n'
-		o += 'kernel %s/System/Kernel/Boot/kernel video=vesafb:off root=/dev/%s Boot=Graphic'%(grubFormatTarget,targetPartition) + '\n'
+		o += 'kernel %s/System/Kernel/Boot/kernel vga=0 root=/dev/%s Boot=Graphic'%(grubFormatTarget,targetPartition) + '\n'
 
 	o += '\n'
 	o += 'title '+tr('GoboLinux - Console') + '\n'
-	o += 'kernel %s/System/Kernel/Boot/kernel video=vesafb:off root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
+	o += 'kernel %s/System/Kernel/Boot/kernel vga=0 root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
 
 	o += '\n'
 	o += 'title '+tr('GoboLinux - Framebuffer Console') + '\n'
-	o += 'kernel %s/System/Kernel/Boot/kernel root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
+	o += 'kernel %s/System/Kernel/Boot/kernel vga=791 root=/dev/%s'%(grubFormatTarget,targetPartition) + '\n'
 	
-	# TODO: verificar isto:
 	for partition in bootableWindowsPartitions:
 		o += '\n'
 		o += 'title Other OS at %s'%partition + '\n'
@@ -167,8 +159,6 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 		o += 'chainloader +1' + '\n'
 
 	return o
-	#safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', o, logger)
-
 
 if __name__ == '__main__' :
 	if len(sys.argv) < 3 :
