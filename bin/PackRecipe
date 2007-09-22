@@ -85,6 +85,7 @@ handle_description() {
                   # GPL2 Temple Place
                   94d55d512a9ba36caa9b7df079bae19f) newlicense="GNU General Public License version 2" ;;
                   393a5ca445f6965873eca0259a17f833) newlicense="GNU General Public License version 2" ;;
+                  fdafc691aa5fb7f8e2a9e9521fef771b) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Linux kernel
                   d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
                   # LGPL2 Mass Ave
