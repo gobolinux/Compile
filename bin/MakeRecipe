@@ -200,7 +200,10 @@ then
    
    # TODO: report if multiple directories, tell the user to verify it
    file_contents=`Temporary_File`
-   als -q "$file" >> "$file_contents"
+   if Ends_With ".zip" "$file"
+   then unzip -lqq "$file" | cut -b 29- >> "$file_contents"
+   else als -q "$file" >> "$file_contents"
+   fi
 
    # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
    bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/[^/]*$,,'`
