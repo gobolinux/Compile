@@ -185,6 +185,7 @@ source "packages/Udev/Config.in"
 comment ""
 source "packages/KBD/Config.in"
 source "packages/Ncurses/Config.in"
+source "packages/Readline/Config.in"
 source "packages/Bash/Config.in"
 endmenu
 
