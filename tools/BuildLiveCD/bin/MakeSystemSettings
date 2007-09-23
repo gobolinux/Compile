@@ -1,20 +1,7 @@
 #!/bin/sh
 
 function write_file() {
-#    if ! [ -e "$1" ]
-#    then
       cat > "$1"
-#    else
-#       mv "$1" "$1.old"
-#       cat > "$1"
-#       if diff "$1" "$1.old"
-#       then
-#          rm "$1"
-#          mv "$1.old" "$1"
-#       else
-#          rm "$1.old"
-#       fi
-#    fi
 }
 
 write_file GoboLinuxVersion <<EOF
@@ -44,11 +31,23 @@ nobody:x:12:
 cdrom:x:13:
 uucp:x:15:
 fibo:x:21:
+postfix:x:32:
+postdrop:x:33:postfix
 users:x:100:
 ftp:x:101:
 cdrecord:x:102:
 video:x:103:
 sshd:x:104:
+httpd:x:105:
+mysql:x:106:
+cron:x:107:
+slocate:x:108:
+haldaemon:x:109:
+messagebus:x:110:
+mail:x:111:
+postgres:x:112:
+clamav:x:113:
+cyrus-imapd:x:114:
 EOF
 
 write_file hosts <<EOF
@@ -64,6 +63,15 @@ uucp:x:15:15:uucp:/var/spool/uucp:
 ftp:x:14:50::/var/ftp/tmp:
 fibo:x:21:21::/tmp:/bin/zsh
 sshd:x:22:104::/var/empty:/bin/false
+httpd:x:23:105::/var/empty:/bin/false
+mysql:x:24:106::/var/empty:/bin/false
+fcron:x:25:107::/var/empty:/bin/false
+haldaemon:x:26:109::/var/empty:/bin/false
+messagebus:x:27:110::/var/empty:/bin/false
+postgres:x:28:112::/var/empty:/bin/false
+clamav:x:29:113::/var/empty:/bin/false
+cyrus-imapd:x:30:114::/var/empty:/bin/false
+postfix:x:32:32::/var/empty:/bin/false
 EOF
 
 write_file resolv_conf <<EOF
