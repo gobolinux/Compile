@@ -62,16 +62,16 @@ news:x:9:13:news:/usr/lib/news:
 uucp:x:15:15:uucp:/var/spool/uucp:
 ftp:x:14:50::/var/ftp/tmp:
 fibo:x:21:21::/tmp:/bin/zsh
-sshd:x:22:104::/var/empty:/bin/false
-httpd:x:23:105::/var/empty:/bin/false
-mysql:x:24:106::/var/empty:/bin/false
-fcron:x:25:107::/var/empty:/bin/false
-haldaemon:x:26:109::/var/empty:/bin/false
-messagebus:x:27:110::/var/empty:/bin/false
-postgres:x:28:112::/var/empty:/bin/false
-clamav:x:29:113::/var/empty:/bin/false
-cyrus-imapd:x:30:114::/var/empty:/bin/false
-postfix:x:32:32::/var/empty:/bin/false
+sshd:x:22:104::/var/empty:/bin/nologin
+httpd:x:23:105::/var/empty:/bin/nologin
+mysql:x:24:106::/var/empty:/bin/nologin
+fcron:x:25:107::/var/empty:/bin/nologin
+haldaemon:x:26:109::/var/empty:/bin/nologin
+messagebus:x:27:110::/var/empty:/bin/nologin
+postgres:x:28:112::/var/empty:/bin/nologin
+clamav:x:29:113::/var/empty:/bin/nologin
+cyrus-imapd:x:30:114::/var/empty:/bin/nologin
+postfix:x:32:32::/var/empty:/bin/nologin
 EOF
 
 write_file resolv_conf <<EOF
