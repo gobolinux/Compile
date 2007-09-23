@@ -192,7 +192,8 @@ echo "BuildRoot: Building root $root..."
 #
 function create_dir() {
    [ -d "$1" ] || mkdir -p "$1"
-   [ "$2" ] && chmod $2 "$1"
+   [ "$2" ] && chown $2 "$1"
+   [ "$3" ] && chmod $3 "$1"
    true
 }
 
@@ -214,7 +215,7 @@ create_dir $root/System/Variable/run
 create_dir $root/System/Variable/lock
 create_dir $root/System/Variable/spool
 create_dir $root/System/Variable/cache
-create_dir $root/System/Variable/empty
+create_dir $root/System/Variable/empty 0 0755
 create_dir $root/System/Variable/lib
 create_dir $root/System/Variable/lib/misc
 create_dir $root/System/Kernel
