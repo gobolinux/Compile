@@ -55,7 +55,6 @@ function cleanup() {
       chmod ${mod[${i}]} "${fiboprograms[${i}]}"
       chown ${own[${i}]} "${fiboprograms[${i}]}" 
       chgrp ${grp[${i}]} "${fiboprograms[${i}]}" 
-      echo ${mod[${i}]} ${own[${i}]} ${grp[${i}]} "${fiboprograms[${i}]}"
    done
 
    Log_Verbose "Cleaning up mounts..."
