@@ -43,7 +43,9 @@ endfunction
 
 au FileType c,cpp,h,java,perl,python call Cfunctions()
 au FileType tex,bib call Texfunctions()
-inoremap <tab> <c-r>=InsertTabWrapper()<cr>
+
+" Turn Tab into auto-completion.
+" inoremap <tab> <c-r>=InsertTabWrapper()<cr>
 
 
 " Resizes the window of the current buffer
