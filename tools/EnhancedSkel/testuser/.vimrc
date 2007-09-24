@@ -41,8 +41,9 @@ function InsertTabWrapper()
 	endif
 endfunction
 
-au FileType c,cpp,h,java,perl,python call Cfunctions()
-au FileType tex,bib call Texfunctions()
+" Auto-brackets for some languages:
+" au FileType c,cpp,h,java,perl,python call Cfunctions()
+" au FileType tex,bib call Texfunctions()
 
 " Turn Tab into auto-completion.
 " inoremap <tab> <c-r>=InsertTabWrapper()<cr>
