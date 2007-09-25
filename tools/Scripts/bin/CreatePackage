@@ -58,6 +58,12 @@ versionnumber=`String_Version $versionnumber`
 Is_Directory "${goboPrograms}/$package/$versionnumber" || Die "Package $package version $versionnumber does not exist."
 Is_Link "${goboPrograms}/$package/$versionnumber" && tree_symlinked=yes
 
+if [ -e "${goboPrograms}/$package/$versionnumber/Makefile" ]
+then
+   Log_Terse "Package contains a Makefile at the root; looks like a Gobo system package."
+   Log_Terse "You should pack those running 'make VERSION=x.y.z'"
+   Ask_Continue "Proceed with CreatePackage anyway?"
+fi
 
 Log_Normal "Creating package for ${package} ${versionnumber}."
 
