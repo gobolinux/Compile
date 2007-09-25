@@ -57,9 +57,40 @@ TEXT_MAIN=`
    tr "whole list of choices."
 `
 
+defaults_for_language=(
+"qwerty/us.map" ""
+)
+
+case "$LANG" in
+en_US)
+   defaults_for_language=(
+   "qwerty/us.map" ""
+   )
+   ;;
+pt_BR)
+   defaults_for_language=(
+   "qwerty/br-abnt2.map" ""
+   )
+   ;;
+de_DE)
+   defaults_for_language=(
+   "qwertz/de.map" ""
+   "qwertz/de-latin1-nodeadkeys.map" ""
+   "qwertz/de-latin1.map" ""
+   "qwertz/de_CH-latin1.map" ""
+   )
+   ;;
+hu_HU)
+   defaults_for_language=(
+   "qwertz/hu.map" ""
+   "qwertz/hu101.map" ""
+   )
+   ;;
+esac
+
 dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   22 60 11 \
-  "qwerty/br-abnt2.map" "" \
+  "${defaults_for_language[@]}" \
   "dvorak/dvorak.map" "" \
   "qwerty/us.map" "" \
   "qwerty/us-acentos.map" "" \
