@@ -3,31 +3,31 @@
     <name>@default</name>
     <message>
         <source>Keyboard map selection</source>
-        <translation>Billentyûzetkiosztás kiválasztása</translation>
+        <translation>Billentyzetkiosztï¿½ kivï¿½asztï¿½a</translation>
     </message>
     <message>
         <source>You may select one of the following keyboard maps.</source>
-        <translation>Kiválaszthatsz egyet a következõ billentyûzetkiosztásokból.</translation>
+        <translation>Kivï¿½aszthatsz egyet a kï¿½etkezï¿½billentyzetkiosztï¿½okbï¿½.</translation>
     </message>
     <message>
         <source>If you do not select a keyboard map, us.map</source>
-        <translation>Ha nem választasz semmit, az alapértelmezett &apos;us.map&apos;</translation>
+        <translation>Ha nem vï¿½asztasz semmit, az alapï¿½telmezett &apos;us.map&apos;</translation>
     </message>
     <message>
         <source>If you do not select a keyboard map, &apos;us.map&apos;</source>
-        <translation>Ha nem választasz semmit, az alapértelmezett &apos;us.map&apos;</translation>
+        <translation type="obsolete">Ha nem vï¿½asztasz semmit, az alapï¿½telmezett &apos;us.map&apos;</translation>
     </message>
     <message>
         <source>(the US keyboard map) is the default.  Use the UP/DOWN</source>
-        <translation>(az US billentyûzetkiosztás) érvényes. Használd a FEL/LE kurzorbillentyûket</translation>
+        <translation>(az US billentyzetkiosztï¿½) ï¿½vï¿½yes. Hasznï¿½d a FEL/LE kurzorbillentyket</translation>
     </message>
     <message>
         <source>arrow keys and PageUp/PageDown to scroll through the</source>
-        <translation>és a PageUp/PageDown gombokat választásod során az</translation>
+        <translation>ï¿½ a PageUp/PageDown gombokat vï¿½asztï¿½od sorï¿½ az</translation>
     </message>
     <message>
         <source>whole list of choices.</source>
-        <translation>egész lista áttekintéséhez.</translation>
+        <translation>egï¿½z lista ï¿½tekintï¿½ï¿½ez.</translation>
     </message>
 </context>
 </TS>
