@@ -783,7 +783,13 @@ else
    then
       in_host FetchArchive $verbose $batch "$recipe" $archrecipe || Die "Error fetching archive(s)."
    else
-      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" || Die "Files are not available. Exiting."
+      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
+      result=$?
+      case $result in
+      1) Die "Files are corrupted. Exiting.";;
+      2) Ask_Continue "Continue anyway?";;
+      3) Die "Files are not available. Exiting.";;
+      esac
    fi
 
    pfiles=`
