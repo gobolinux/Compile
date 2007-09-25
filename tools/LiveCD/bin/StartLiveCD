@@ -5,17 +5,23 @@ source StartFunctions
 
 export LANG=en_US
 
-######################################
-# start the udev daemon
-######################################
-msg "Starting Udev"
-/System/Links/Tasks/Udev
+clear
 
 ######################################
 # change console font
 ######################################
 msg "Setting console font"
 setfont /Files/Fonts/Console/lode-lat1u-16.psf.gz
+
+######################################
+# start the udev daemon
+######################################
+msg "Starting Udev"
+mount /System/Kernel/Objects
+mount /System/Kernel/Status
+/System/Links/Tasks/Udev
+msg "Starting log daemon"
+syslogd
 
 ######################################
 # launch the loopback interface
@@ -102,3 +108,4 @@ cat ${goboPrograms}/LiveCD/Current/Data/Language/Welcome_${LANG}
 ######################################
 inittablnk=${goboPrograms}/BootScripts/Settings/inittab
 ln -nfs $inittablnk ${goboSettings}/inittab
+
