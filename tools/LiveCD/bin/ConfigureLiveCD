@@ -27,7 +27,7 @@ fi
 ######################################
 mkdir ${goboTemp}/setup
 
-dialog --title "Language"  --menu "Choose your language"  10 46 4 \
+dialog --title "Language"  --menu "Choose your language"  11 46 4 \
      "en_US" "English"    \
      "pt_BR" "Português"  \
      "hu_HU" "Magyar"  \
