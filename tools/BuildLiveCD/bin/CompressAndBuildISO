@@ -208,7 +208,7 @@ then
       [ -z "$searchdirs" ] && searchdirs="$dirs"
       echo "Checking if $bn needs updating..."
       find $searchdirs -newer "$out" 2> /dev/null > /tmp/newer.txt
-      diffs=`cat /tmp/newer.txt | grep -v "^Programs/Glibc$\|^Programs/Glibc/Settings\|^Programs/Glibc/Settings/ld.so.cache$" | wc -l`
+      diffs=`cat /tmp/newer.txt | grep -v "^Programs/Glibc$\|^Programs/Glibc/Settings$\|^Programs/Glibc/Settings/ld.so.cache$" | wc -l`
       ld_so_cache_changed
       if [ $diffs -ne 0 ]
       then
