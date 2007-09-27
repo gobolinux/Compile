@@ -58,10 +58,11 @@ function cleanup() {
    done
 
    Log_Verbose "Cleaning up mounts..."
-   while read line
-   do
-      umount ${line}
-   done < <(mount | grep "^/Programs/.*/Resources/Unmanaged" | awk {'print $1'})
+   For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
+      umount $lhs
+      [ "$?" = "0" ] || error=true
+      '
+      [ "$error" = "false" ] || fibo_die "Unable to unmount map areas"
 
    if [ "$domount" = "1" ]
    then
@@ -175,7 +176,7 @@ For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
     mount -o bind $lhs $rhs
     [ "$?" = "0" ] || error=true
     '
-[ "$error" = "false" ] || fibo_die "Unable to mount map areas in chroot"
+[ "$error" = "false" ] || fibo_die "Unable to mount map areas in unmanaged directory"
 
 if Is_Entry_Set "directory" 
 then
