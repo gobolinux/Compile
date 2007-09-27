@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 function die() {
    echo "$@"
@@ -206,22 +206,27 @@ then
       blacklist="$4"
       bn=`basename "$out"`
       [ -z "$searchdirs" ] && searchdirs="$dirs"
-      echo "Checking if $bn needs updating..."
-      quiet pushd ../ROLayer
-      find $searchdirs -newer "$out" 2> /dev/null > /tmp/newer.txt
-      quiet popd
-      quiet pushd ../RWLayer
-      find $searchdirs -newer "$out" 2> /dev/null >> /tmp/newer.txt
-      quiet popd
-      diffs=`cat /tmp/newer.txt | grep -v "^Programs/Glibc$\|^Programs/Glibc/Settings$\|^Programs/Glibc/Settings/ld.so.cache$" | wc -l`
-      ld_so_cache_changed
-      if [ $diffs -ne 0 ]
+      diffs=0
+      if [ -e "$out" ]
       then
-         echo ==========
-         echo Changes:
-         echo ----------
-         cat /tmp/newer.txt
-         echo ==========
+         echo "Checking if $bn needs updating..."
+         pushd ../ROLayer
+         find $searchdirs -newer "$out" 2> /dev/null > /tmp/newer.txt
+         popd
+         pushd ../RWLayer
+         find $searchdirs -newer "$out" 2> /dev/null >> /tmp/newer.txt
+         popd
+         diffs=`cat /tmp/newer.txt | grep -v "^Programs/Glibc$\|^Programs/Glibc/Settings$\|^Programs/Glibc/Settings/ld.so.cache$" | wc -l`
+         ld_so_cache_changed
+         
+         if [ $diffs -ne 0 ]
+         then
+            echo ==========
+            echo Changes:
+            echo ----------
+            cat /tmp/newer.txt
+            echo ==========
+         fi
       fi
       if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
       then
@@ -230,7 +235,7 @@ then
       else
          echo "Mksquashfs not needed for $bn."
       fi
-      rm /tmp/newer.txt
+      rm -f /tmp/newer.txt
    }
 
    # Final actions on Environment
@@ -243,6 +248,13 @@ then
    time mksquashfs_on_demand ../ISO/GoboLinux-files.squashfs Files
 
    for i in $datadir/Packages-List-*; do 
+      squashfile=../ISO/`basename $i`.squashfs
+      if [ "$i" -nt "$squashfile" ]
+      then
+         echo "$i is more recent than $squashfile."
+         echo "Deleting $squashfile to force regeneration."
+         rm -f "$squashfile"
+      fi
       # Skip comments
       applist=`cat $i | cut -f1 -d' ' | grep -v "^#" | sort -u | while read i; do [ ! -z "$i" ] && echo $i; done`
       blackapplist=`cd Programs; for dir in *; do cat $i | cut -f1 -d' ' | grep -v "^#" | grep -q "^$dir$" || echo "-e $dir"; done`
@@ -250,7 +262,7 @@ then
       then continue
       fi
       searchdirs=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
-      time mksquashfs_on_demand ../ISO/`basename $i`.squashfs Programs "$searchdirs" "$blackapplist"
+      time mksquashfs_on_demand $squashfile Programs "$searchdirs" "$blackapplist"
    done
 
    contents=`ls | grep -v "Files\|Programs\|Users" | tr -s '\n' ' '`
