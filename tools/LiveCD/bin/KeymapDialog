@@ -59,17 +59,19 @@ TEXT_MAIN=`
 
 defaults_for_language=(
 "qwerty/us.map" ""
+"qwerty/us-acentos.map" ""
+"qwerty/uk.map" ""
 )
 
 case "$LANG" in
-en_US)
-   defaults_for_language=(
-   "qwerty/us.map" ""
-   )
-   ;;
 pt_BR)
    defaults_for_language=(
    "qwerty/br-abnt2.map" ""
+   "qwerty/br-abnt.map" ""
+   "qwerty/br-latin1-abnt2.map" ""
+   "qwerty/br-latin1-us.map" ""
+   "qwerty/pt-latin1.map" ""
+   "qwerty/pt-latin9.map" ""
    )
    ;;
 de_DE)
@@ -92,8 +94,6 @@ dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   22 60 11 \
   "${defaults_for_language[@]}" \
   "dvorak/dvorak.map" "" \
-  "qwerty/us.map" "" \
-  "qwerty/us-acentos.map" "" \
   "azerty/azerty.map" "" \
   "azerty/be-latin1.map" "" \
   "azerty/fr-latin1.map" "" \
@@ -109,7 +109,11 @@ dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   "fgGIod/tr_f-latin5.map" "" \
   "fgGIod/trf.map" "" \
   "qwerty/bg-cp1251.map" "" \
-  "qwerty/bg.map" "" \
+  "qwerty/bg-cp855.map" "" \
+  "qwerty/bg_bds-cp1251.map" "" \
+  "qwerty/bg_bds-utf8.map" "" \
+  "qwerty/bg_pho-cp1251.map" "" \
+  "qwerty/bg_pho-utf8.map" "" \
   "qwerty/br-abnt.map" "" \
   "qwerty/br-abnt2.map" "" \
   "qwerty/br-latin1-abnt2.map" "" \
@@ -139,6 +143,7 @@ dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   "qwerty/il-heb.map" "" \
   "qwerty/il-phonetic.map" "" \
   "qwerty/il.map" "" \
+  "qwerty/is-latin1-us.map" "" \
   "qwerty/is-latin1.map" "" \
   "qwerty/it-ibm.map" "" \
   "qwerty/it.map" "" \
@@ -177,8 +182,6 @@ dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   "qwerty/se-lat6.map" "" \
   "qwerty/sk-prog-qwerty.map" "" \
   "qwerty/sk-qwerty.map" "" \
-  "qwerty/speakup-jfw.map" "" \
-  "qwerty/speakupmap.map" "" \
   "qwerty/sr-cy.map" "" \
   "qwerty/sv-latin1.map" "" \
   "qwerty/tr_q-latin5.map" "" \
