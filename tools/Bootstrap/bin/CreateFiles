@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # there's no need to use cross-prefixed dirs here, as we already have
 # the variable '$prefix' being received as this script's first argument.

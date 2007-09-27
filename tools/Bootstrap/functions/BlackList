@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash (source)
 
 #
 # packages known to be broken or that shouldn't be installed through Compile

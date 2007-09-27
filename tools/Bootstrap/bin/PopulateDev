@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # Populates /System/Kernel/Devices with a few important devices

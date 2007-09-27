@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash (source)
 
 TOP_DIR=..
 shipped_dir=$TOP_DIR/recipes

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # InvokeCompile: parses .config and runs Compile for each pkg selected there

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #
 # After the system is cross-compiled, ensure that we have a sane

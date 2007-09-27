@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash (source)
 
 function get_native_arch() {
     arch=`uname -m`
