@@ -401,11 +401,11 @@ int main(int argc, char** argv) {
       exit(1);
    }
    goboPrefix = getenv("goboPrefix");
-   lenGoboPrograms = strlen(goboPrograms);
-   // if goboPrograms ends with a '/'
-   if (goboPrograms[lenGoboPrograms - 1] == '/')
-      lenGoboPrograms--;
    realpath(goboPrograms, realpathGoboPrograms);
+   lenGoboPrograms = strlen(realpathGoboPrograms);
+   // if goboPrograms ends with a '/'
+   if (realpathGoboPrograms[lenGoboPrograms - 1] == '/')
+      lenGoboPrograms--;
    if (argc < 2 || strcmp(argv[1], "--help") == 0) {
       fprintf(stderr, "Usage: %s <dir> [--overwrite] [--relative] [--no-follow] [--always-expand]\n", argv[0]);
       exit(1);
