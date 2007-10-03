@@ -147,7 +147,7 @@ then
    if Ask "You don't seem to have a copy of the svn revisions tree. Fetch it?"
    then
       Log_Normal "Calling 'svn checkout'."
-      mkdir ${compileSubversionLocalDir}
+      mkdir -p ${compileSubversionLocalDir}
       Quiet pushd ${compileSubversionLocalDir}
       svn checkout --non-recursive $compileSubversionServerRepository/revisions || Die "Error doing the svn checkout."
       Quiet popd
