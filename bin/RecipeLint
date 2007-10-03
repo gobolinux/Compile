@@ -27,9 +27,11 @@ then noweb=--no-web
 else noweb=
 fi
 
+workingdir=$PWD
 lintdir=`Temporary_Dir`
 
 function finish() {
+   cd $workingdir
    rm -rf $lintdir
    if [ $errors -gt 0 -o $warnings -gt 0 ]
    then
