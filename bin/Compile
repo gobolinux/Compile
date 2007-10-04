@@ -503,11 +503,10 @@ archreciperesources="$archsubdir/Resources"
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    Log_Normal "Checking dependencies..."
-   set -o pipefail
    selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress  "$app" "$versionandrevision" \
-     "recipe" "$recipedir" | awk '{ print $4 }' ) || Die "Aborted."
-   set +o pipefail
+     "recipe" "$recipedir") || Die "Aborted."
+   selecteddeps=$(echo "$selecteddeps" | awk '{ print $4 }' )
    for d_url in ${selecteddeps}
    do
       Compile $compileoptions --no-dependencies $d_url || exit $?
