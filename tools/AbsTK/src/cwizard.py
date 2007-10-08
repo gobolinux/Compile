@@ -138,7 +138,6 @@ class AbsCursesWizard(AbsWizard) :
 						stdscr.clear()
 						stdscr.addstr(0,0,"Knock, knock.")
 						stdscr.getch()
-						self.setValue('IntroText', open(".../...").read())
 						self.__drawScreen()
 				elif k == ord('0') :
 						setColor(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
