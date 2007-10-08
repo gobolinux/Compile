@@ -516,7 +516,7 @@ Crie uma usando &quot;gparted&quot; ou &quot;cfdisk&quot;</translation>
         <translation type="unfinished">Crie uma usando o &quot;gparted&quot; ou o &quot;cfdisk&quot;</translation>
     </message>
     <message>
-        <source>Bypass dependencies checking</source>
+        <source>Bypass dependencies check</source>
         <translation type="unfinished">Não verificar dependências</translation>
     </message>
     <message>
@@ -589,7 +589,7 @@ Crie uma usando &quot;gparted&quot; ou &quot;cfdisk&quot;</translation>
     </message>
     <message>
         <source>Updating X11 config file...</source>
-        <translation>Atualizando arquivo de configuração do X11...</translation>
+        <translation type="obsolete">Atualizando arquivo de configuração do X11...</translation>
     </message>
     <message>
         <source>Run &quot;GoboLinuxInstaller [qt|curses] install&quot; to perform installation.</source>

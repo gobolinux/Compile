@@ -94,7 +94,7 @@
         <translation>Minden olyan csomag megjelölése, melyek szükségesek egy már korábban bejelölt számára.</translation>
     </message>
     <message>
-        <source>Bypass dependencies checking</source>
+        <source>Bypass dependencies check</source>
         <translation>Függõségek vizsgálatának átlépése</translation>
     </message>
     <message>
@@ -290,8 +290,8 @@
         <translation>A jelszó ellenõrzése</translation>
     </message>
     <message>
-        <source>Annak vizsgálata, hogy a felsõ mezõ ugyanazt a jelszót tartalmazza-e.</source>
-        <translation>ÃœberprÃ¼ft ob die eingegebenen KennwÃ¶rter Ã¼berein stimmen.</translation>
+        <source>Annak vizsg&#xe1;lata, hogy a fels&#xf5; mez&#xf5; ugyanazt a jelsz&#xf3;t tartalmazza-e.</source>
+        <translation type="obsolete">ÃœberprÃ¼ft ob die eingegebenen KennwÃ¶rter Ã¼berein stimmen.</translation>
     </message>
     <message>
         <source>Additional users</source>
@@ -495,7 +495,7 @@
     </message>
     <message>
         <source>Updating X11 config file...</source>
-        <translation>Az X11 konfigurációs fájljainak aktualizálása...</translation>
+        <translation type="obsolete">Az X11 konfigurációs fájljainak aktualizálása...</translation>
     </message>
     <message>
         <source>Run &quot;GoboLinuxInstaller [qt|curses] install&quot; to perform installation.</source>
@@ -520,6 +520,10 @@
     <message>
         <source>Error generating OpenSSH keys.</source>
         <translation>Hiba lépett fel az OpenSSH kulcs generálásakor.</translation>
+    </message>
+    <message>
+        <source>Check if the above fields have the same password typed in.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

@@ -452,7 +452,7 @@ def fillUpDependencies() :
 
 def showSelectedSetSize() :
 	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
-	sum = 170000 # kbytes from system (40Mb), depot (6Mb) and files (124Mb)
+	sum = 130000 # kbytes from system (40Mb), depot (6Mb) and files (80Mb)
 	for package in packages :
 		if programSizes.has_key(package) :
 			sum = sum + programSizes[package]
@@ -474,7 +474,7 @@ packageSelection.addList('Profile', tr('Predefined sets of packages'), (['Base',
 packageSelection.addCheckList('Packages', tr('Select packages'), (profiles['Full'],  profiles['Typical']), tr('Mark the packages that should be installed in the system.'), showSelectedSetSize)
 packageSelection.addLabel('SpaceRequired',tr('Space required: %s')%'1.5GB', '', tr('Space required to install the selected packages'))
 packageSelection.addButton('',tr('Satisfy dependencies'), '', tr('Mark all packages in the list that are needed by the ones already marked.'), fillUpDependencies)
-packageSelection.addBoolean('BypassFillUpDependencies', tr('Bypass dependencies checking'), 0, tr("Check if you want to install only the above selected packages."))
+packageSelection.addBoolean('BypassFillUpDependencies', tr('Bypass dependencies check'), 0, tr("Check if you want to install only the above selected packages."))
 installer.addScreen(packageSelection)
 showSelectedSetSize()
 
@@ -711,6 +711,7 @@ try :
 
 	##############################################################################
 	##############################################################################
+
 	# Format partition
 	def formatPartition(partition, fileSystem) :
 		if fileSystem == 'ReiserFS' :

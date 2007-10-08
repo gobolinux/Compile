@@ -94,7 +94,7 @@
         <translation>Alle Pakete markieren, die von den bereits ausgewählten benötigt werden.</translation>
     </message>
     <message>
-        <source>Bypass dependencies checking</source>
+        <source>Bypass dependencies check</source>
         <translation>Prüfung der Abhängigkeiten umgehen</translation>
     </message>
     <message>
@@ -495,7 +495,7 @@
     </message>
     <message>
         <source>Updating X11 config file...</source>
-        <translation>Aktualisiere X11 Konfigurationsdatei...</translation>
+        <translation type="obsolete">Aktualisiere X11 Konfigurationsdatei...</translation>
     </message>
     <message>
         <source>Run &quot;GoboLinuxInstaller [qt|curses] install&quot; to perform installation.</source>
