@@ -190,7 +190,7 @@ then
    FetchArchive $fetchparams "$recipefile" || Die "Could not fetch sources."
 elif ! [ -e "$file" ]
 then
-   Die "--no-fetch used, but file is not available."
+   Die "--no-fetch used, but source archive is not available in ${compileArchivesDir}."
 fi
 
 if [ "$url" ]
