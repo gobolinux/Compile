@@ -452,7 +452,7 @@ def fillUpDependencies() :
 
 def showSelectedSetSize() :
 	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
-	sum = 130000 # kbytes from system (40Mb), depot (6Mb) and files (80Mb)
+	sum = 290000 # kbytes from system (102Mb) and files (180Mb)
 	for package in packages :
 		if programSizes.has_key(package) :
 			sum = sum + programSizes[package]
