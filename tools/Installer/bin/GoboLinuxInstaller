@@ -345,7 +345,7 @@ installer = Wizard('GoboLinux')
 
 if not partitionsList :
 	msg = tr('No valid partitions found')
-	msg = msg + '\n' + tr('Create one using "qtparted" or "cfdisk"')
+	msg = msg + '\n' + tr('Create one using "gparted" or "cfdisk"')
 	print msg
 	installer.showMessageBox(msg, ['Ok'])
 	installer.done()
@@ -461,7 +461,7 @@ def showSelectedSetSize() :
 	else :
 		s = '%0.1f'%(sum / (1024.0)) + 'MB'
 
-	installer.setValue('SpaceRequired', tr('Space required: %s'%(s)))
+	installer.setValue('SpaceRequired', tr('Space required: %s')%(s))
 
 def setProfile() :
 	profileNames, profileNameAndSize = installer.getValue('Profile')
