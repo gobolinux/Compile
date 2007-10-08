@@ -499,9 +499,9 @@ Você está pronto para proceder com a instalação.</translation>
     </message>
     <message>
         <source>No valid partitions found.
-Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
+Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
         <translation type="obsolete">Nenhuma partição foi encontrada
-Crie uma usando &quot;qtparted&quot; ou &quot;cfdisk&quot;</translation>
+Crie uma usando &quot;gparted&quot; ou &quot;cfdisk&quot;</translation>
     </message>
     <message>
         <source>Passwords typed match</source>
@@ -512,8 +512,8 @@ Crie uma usando &quot;qtparted&quot; ou &quot;cfdisk&quot;</translation>
         <translation type="unfinished">Nenhuma partição foi encontrada</translation>
     </message>
     <message>
-        <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
-        <translation type="unfinished">Crie uma usando o &quot;qtparted&quot; ou o &quot;cfdisk&quot;</translation>
+        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
+        <translation type="unfinished">Crie uma usando o &quot;gparted&quot; ou o &quot;cfdisk&quot;</translation>
     </message>
     <message>
         <source>Bypass dependencies checking</source>

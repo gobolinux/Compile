@@ -6,8 +6,8 @@
         <translation>Keine gültigen Partitionen gefunden</translation>
     </message>
     <message>
-        <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
-        <translation>Erstellen sie eine mittels &quot;qtparted&quot; oder &quot;cfdisk&quot;</translation>
+        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
+        <translation>Erstellen sie eine mittels &quot;gparted&quot; oder &quot;cfdisk&quot;</translation>
     </message>
     <message>
         <source>Welcome!</source>

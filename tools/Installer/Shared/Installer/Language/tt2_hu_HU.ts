@@ -6,8 +6,8 @@
         <translation>Nem találtam érvényes partíciót</translation>
     </message>
     <message>
-        <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
-        <translation>Csinálhatsz egyet a &quot;qtparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
+        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
+        <translation>Csinálhatsz egyet a &quot;gparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
     </message>
     <message>
         <source>Welcome!</source>
