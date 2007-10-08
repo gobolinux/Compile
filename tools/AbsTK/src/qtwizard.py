@@ -4,11 +4,31 @@ import sys
 from qttable import *
 #from qttable import QTable
 
+class NewQWizard(QWizard):
+	def __init__(self, qabswizard) :
+		QWizard.__init__(self)
+		self.qabswizard = qabswizard
+
+	def currentScreen(self):
+		i = self.indexOf(self.currentPage())
+		return self.qabswizard.screens[i]
+
+
+	def next(self):
+		screen = self.currentScreen()
+		if not screen.nextCB or screen.nextCB():
+			QWizard.next(self)
+
+	def finish(self):
+		screen = self.currentScreen()
+		if not screen.nextCB or screen.nextCB():
+			QWizard.finish(self)
+
 class AbsQtWizard(AbsWizard) :
 	def __init__(self, name) :
 		AbsWizard.__init__(self, name)
 		self.app = QApplication([])
-		self.qwizard = QWizard()
+		self.qwizard = NewQWizard(self)
 		self.qwizard.setCaption(name)
 		self.lastScreen = None
 		self.qwizard.setGeometry(QRect(50,50, 480, 400))
@@ -26,7 +46,7 @@ class AbsQtWizard(AbsWizard) :
 			i = QMessageBox.warning(self.qwizard, str(self.qwizard.caption())+' warning', message, buttons[0], buttons[1], buttons[2])
 		self.messageBoxPending = 0
 		return buttons[i]
-			
+
 	def start(self) :
 		self.app.setMainWidget(self.qwizard)
 		self.qwizard.show()
@@ -46,7 +66,7 @@ class AbsQtWizard(AbsWizard) :
 				#just one page yet
 				self.qwizard.finishButton().setText("&Ok")
 				self.qwizard.backButton().hide()
-			
+
 			self.qwizard.helpButton().hide()
 			self.lastScreen = absQtScreen
 			self.qwizard.setFinishEnabled(self.lastScreen.widget, 1)
@@ -75,10 +95,10 @@ class AbsQtWizard(AbsWizard) :
 		self.lastScreen = None
 		self.screens = []
 		self.qwizard.setGeometry(QRect(50,50, 480, 400))
-	
+
 	def __finish(self) :
 		self.app.exit(1)
-		
+
 	def __cancel(self) :
 		self.app.exit(0)
 
@@ -94,9 +114,14 @@ class AbsQtScreen(AbsScreen) :
 		self.setTitle(title)
 		self.fieldsTypes = {}
 
+		self.nextCB = None
+
 	def __registerField(self, name, widget, fieldType) :
 		self.fields[name] = widget
-		self.fieldsTypes[name] = fieldType 
+		self.fieldsTypes[name] = fieldType
+
+	def onValidate(self, nextCB):
+		self.nextCB = nextCB
 
 	def addImage(self, fileName) :
 		p = QPixmap()
@@ -119,17 +144,17 @@ class AbsQtScreen(AbsScreen) :
 					items, defaultValue = newValue
 					field.clear()
 					for item in items :
-						field.insertItem(item)      
+						field.insertItem(item)
 					try :
 						selectedIndex = items.index(defaultValue)
 					except :
 						selectedIndex = 0
-						
-					field.setSelected(selectedIndex, 1)	
+
+					field.setSelected(selectedIndex, 1)
 				else :
 					try :
 						selectedIndex = items.index(newValue)
-						field.setSelected(selectedIndex, 1)	
+						field.setSelected(selectedIndex, 1)
 					except :
 						pass
 			elif fieldType == 'QButtonGroup' :
@@ -137,7 +162,7 @@ class AbsQtScreen(AbsScreen) :
 			elif fieldType == 'QLineEdit' :
 				field.setText(newValue)
 			elif fieldType == 'QLabel' :
-				field.setText(newValue)			
+				field.setText(newValue)
 			elif fieldType == 'QTable' :
 				import types
 				if type(newValue) == types.ListType :
@@ -180,7 +205,7 @@ class AbsQtScreen(AbsScreen) :
 				else :
 					ret2 = ''
 				return (ret1,ret2)
-				
+
 			elif fieldType == 'QButtonGroup' :
 				ret = []
 				for i in range(field.count()) :
@@ -199,7 +224,7 @@ class AbsQtScreen(AbsScreen) :
 				return (ret1,ret2)
 			else :
 				return None
-		
+
 		else :
 			#!has_key...
 			return None
@@ -237,33 +262,32 @@ class AbsQtScreen(AbsScreen) :
 	def setTitle(self,title) :
 		self.widget.setCaption(title)
 
-
 	def addBoolean(self, fieldName, label = '', defaultValue = 0, toolTip = '', callBack = None) :
 		w = QCheckBox(self.widget,"w")
 		w.setText(label)
 		w.setChecked(defaultValue)
 		if toolTip :
-			QToolTip.add(w, toolTip)		
+			QToolTip.add(w, toolTip)
 		if fieldName :
-			self.__registerField(fieldName, w, 'QCheckBox') 
+			self.__registerField(fieldName, w, 'QCheckBox')
 		if callBack :
-			w.connect(w, SIGNAL('stateChanged(int)'), callBack)        
+			w.connect(w, SIGNAL('stateChanged(int)'), callBack)
 		self.__addWidget(w)
 
 	def addPassword(self, fieldName,label = '', defaultValue = '', toolTip = '', callBack = None) :
 		w = QLineEdit(self.widget,"w")
 		w.setText(defaultValue)
 		w.setEchoMode(QLineEdit.Password)
-		
+
 		if callBack :
 			w.connect(w, SIGNAL('lostFocus()'), callBack)
-		
+
 		if toolTip :
-			QToolTip.add(w, toolTip)		
-		
+			QToolTip.add(w, toolTip)
+
 		if fieldName :
-			self.__registerField(fieldName, w, 'QLineEdit')    
-		
+			self.__registerField(fieldName, w, 'QLineEdit')
+
 		if label :
 			layout = QHBoxLayout(None,0,6,"w")
 
@@ -272,25 +296,25 @@ class AbsQtScreen(AbsScreen) :
 			layout.addWidget(l)
 			layout.addWidget(w)
 
-			self.__addLayout(layout)      
+			self.__addLayout(layout)
 		else :
-			self.__addWidget(w)     
+			self.__addWidget(w)
 
 	def addLineEdit(self, fieldName,label = '', defaultValue = '', toolTip = '', callBack = None) :
 		w = QLineEdit(self.widget,"w")
 		w.setText(defaultValue)
-		
-		
+
+
 		if callBack :
 			#w.connect(w, SIGNAL('lostFocus()'), callBack)
 			w.connect(w, SIGNAL('textChanged( const QString & )'), callBack)
-		
+
 		if toolTip :
 			QToolTip.add(w, toolTip)
-		
+
 		if fieldName :
-			self.__registerField(fieldName, w, 'QLineEdit')      
-			
+			self.__registerField(fieldName, w, 'QLineEdit')
+
 		if label :
 			layout = QHBoxLayout(None,0,6,"w")
 
@@ -299,9 +323,9 @@ class AbsQtScreen(AbsScreen) :
 			layout.addWidget(l)
 			layout.addWidget(w)
 
-			self.__addLayout(layout)      
+			self.__addLayout(layout)
 		else :
-			self.__addWidget(w)      
+			self.__addWidget(w)
 
 
 	def addMultiLineEdit(self, fieldName = '', label = '', defaultValue = '', toolTip = '', callBack = None) :
@@ -318,14 +342,14 @@ class AbsQtScreen(AbsScreen) :
 		mle.setReadOnly(not fieldName)
 
 		gbLayout.addWidget(mle,0,0)
-		
+
 		if callBack :
 			mle.connect(mle, SIGNAL('textChanged()'), callBack)
-		
+
 		if toolTip :
 			QToolTip.add(w, toolTip)
 		if fieldName :
-			self.__registerField(fieldName, mle, 'QMultiLineEdit') 
+			self.__registerField(fieldName, mle, 'QMultiLineEdit')
 
 		self.__addWidget(w)
 		return
@@ -335,10 +359,10 @@ class AbsQtScreen(AbsScreen) :
 		w = QLabel(self.widget,"")
 		w.setText(label)
 		if toolTip :
-			QToolTip.add(w, toolTip)		
+			QToolTip.add(w, toolTip)
 		if fieldName :
-			self.__registerField(fieldName, w, 'QLabel')      
-		self.__addWidget(w)            
+			self.__registerField(fieldName, w, 'QLabel')
+		self.__addWidget(w)
 
 	def addButton(self, fieldName, label = '', defaultValue = '', toolTip = '', callBack = None) :
 		w = QPushButton(self.widget,"")
@@ -349,7 +373,7 @@ class AbsQtScreen(AbsScreen) :
 		if callBack :
 			w.connect(w,SIGNAL("released()"),callBack)
 
-		self.__addWidget(w) 
+		self.__addWidget(w)
 
 	def addList(self, fieldName, label = '', defaultValueTuple = ([],''), toolTip = '', callBack = None) :
 		items, defaultValue = defaultValueTuple
@@ -365,25 +389,25 @@ class AbsQtScreen(AbsScreen) :
 		w.setColumnLayout(0,Qt.Vertical)
 		w.setTitle(label)
 		if toolTip :
-			QToolTip.add(w, toolTip)		
+			QToolTip.add(w, toolTip)
 		gbLayout = QGridLayout(w.layout())
 		gbLayout.setAlignment(Qt.AlignTop)
 		if callBack :
 			w.connect(w,SIGNAL("highlighted (int)"),callBack)
 		lb = QListBox(w,"w")
 		for item in items :
-			lb.insertItem(item)      
+			lb.insertItem(item)
 		try :
 			selectedIndex = items.index(defaultValue)
 		except :
 			selectedIndex = 0
 		lb.setSelected(selectedIndex, 1)
 		if fieldName :
-			self.__registerField(fieldName, lb, 'QListBox')          
+			self.__registerField(fieldName, lb, 'QListBox')
 
 		gbLayout.addWidget(lb, 0, 0)
 		self.__addWidget(w)
-		return      
+		return
 
 	def addRadioList(self,fieldName, label = '', defaultValueTuple = ([],''), toolTip = '', callBack = None) :
 		items, defaultValue = defaultValueTuple
@@ -393,7 +417,7 @@ class AbsQtScreen(AbsScreen) :
 
 		if toolTip :
 			QToolTip.add(w, toolTip)
-					
+
 		bgLayout = QGridLayout(w.layout())
 		bgLayout.setAlignment(Qt.AlignTop)
 		try :
@@ -424,19 +448,19 @@ class AbsQtScreen(AbsScreen) :
 		gbLayout.setAlignment(Qt.AlignTop)
 		return gb, gbLayout
 
-	
+
 	#haaack:
 	#def mouseReleaseEvent (self, e) :
 	#	Q
 	#	mouseReleaseEvent()
-		
-	
+
+
 	def addCheckList(self,fieldName, label, defaultValueTuple = ([],[]), toolTip = '', callBack = None) :
 		items, defaultValue = defaultValueTuple
 		b, l = self.__createGroupBoxAndLayout(label)
 
 		w= AbsQtQTable(b, callBack)
-		
+
 		#w = QTable(b,"w")
 		#w.setResizePolicy(QTable.AutoOneFit)
 		#w.setSelectionMode(QTable.NoSelection)
@@ -449,16 +473,16 @@ class AbsQtScreen(AbsScreen) :
 		#w.setHScrollBarMode(QTable.AlwaysOff)
 
 		#w.horizontalHeader().setLabel(0, None)
-		
+
 		if callBack :
-			w.connect(w,SIGNAL("currentChanged(int,int)"),callBack)		
+			w.connect(w,SIGNAL("currentChanged(int,int)"),callBack)
 		#if callBack :
-			#w.connect(w,SIGNAL("clicked ( int , int , int , const QPoint &)"),callBack)		
+			#w.connect(w,SIGNAL("clicked ( int , int , int , const QPoint &)"),callBack)
 			#w.connect(w,SIGNAL("pressed( int , int , int , const QPoint &)"),callBack)
 			#this one have the best behaviour...
-			#w.connect(w,SIGNAL("currentChanged( int , int )"),callBack)		
-			
-				
+			#w.connect(w,SIGNAL("currentChanged( int , int )"),callBack)
+
+
 		if toolTip :
 			QToolTip.add(w, toolTip)
 		#w.setNumCols(self.nodeTable.numCols() + 1)
@@ -469,7 +493,7 @@ class AbsQtScreen(AbsScreen) :
 		for item in items :
 			#w.verticalHeader().setLabel(j,None)
 			#c = AbsQtQCheckTableItem(w, item)
-			
+
 			c = QCheckTableItem(w, item)
 			c.setChecked(item in defaultValue)
 			w.setItem(j, 0, c)
@@ -496,4 +520,3 @@ class AbsQtQTable (QTable) :
 		QTable.keyPressEvent(self, e)
 		if self.callBack :
 			self.callBack()
-	
