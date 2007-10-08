@@ -111,7 +111,7 @@ class AbsCursesWizard(AbsWizard) :
                         if not self.screens[self.currentScreen].processKey(k) :
                                 if k == curses.KEY_LEFT :
                                         if self.currentScreen > 0 :
-10                                                self.currentScreen = self.currentScreen - 1
+                                                self.currentScreen = self.currentScreen - 1
                                 elif k == curses.KEY_RIGHT :
                                         if self.currentScreen < len(self.screens) - 1 :
                                                 self.currentScreen = self.currentScreen + 1
