@@ -116,7 +116,7 @@ then
       then
          Log_Question "There is already a recipe for $packagename, at"
          Log_Question "$sameprogramrecipe"
-         [ ${sameprogramrecipe:0:1} = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
+         [ "${sameprogramrecipe:0:1}" = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
          if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
          then
             NewVersion "$packagename" "$versionnumber" "$source_url"
