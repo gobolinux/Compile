@@ -9,12 +9,18 @@ scriptCredits="Copyright (C) 2000-2003 Hisham Muhammad - Released under the GNU 
 scriptUsage="<from> <to> <files>"
 scriptExample="\"SimMcast\" \"simmcast\" *.java"
 Add_Option_Boolean "R" "recursive" "Perform change recursively in all files (overrides last parameter)."
+Add_Option_Boolean "B" "no-backup" "Do not create backup copies of the original files."
 Parse_Options "$@"
 
 two="`Arg 1 | sed 's%/%\\\\/%g'`"
 three="`Arg 2 | sed 's%/%\\\\/%g'`"
 
 eval `Args_To_Array files 3`
+
+if Boolean "no-backup"
+then suffix=''
+else suffix='~'
+fi
 
 {
 if Boolean "recursive"
@@ -24,5 +30,5 @@ fi
 } | cut -f 1 -d: | sort | uniq | while read file
 do
    Log_Verbose "$file"
-   sed -i\~ "s/$two/$three/g" "$file"
+   sed -i$suffix "s/$two/$three/g" "$file"
 done
