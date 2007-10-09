@@ -2,7 +2,6 @@ from wizard import *
 from qt import *
 import sys
 from qttable import *
-#from qttable import QTable
 
 class NewQWizard(QWizard):
 	def __init__(self, qabswizard) :
@@ -304,7 +303,6 @@ class AbsQtScreen(AbsScreen) :
 		w = QLineEdit(self.widget,"w")
 		w.setText(defaultValue)
 
-
 		if callBack :
 			#w.connect(w, SIGNAL('lostFocus()'), callBack)
 			w.connect(w, SIGNAL('textChanged( const QString & )'), callBack)
@@ -329,7 +327,6 @@ class AbsQtScreen(AbsScreen) :
 
 
 	def addMultiLineEdit(self, fieldName = '', label = '', defaultValue = '', toolTip = '', callBack = None) :
-
 		w = QGroupBox(self.widget,"groupBox"+fieldName)
 		w.setColumnLayout(0,Qt.Vertical)
 		w.setTitle(label)
@@ -448,52 +445,28 @@ class AbsQtScreen(AbsScreen) :
 		gbLayout.setAlignment(Qt.AlignTop)
 		return gb, gbLayout
 
-
-	#haaack:
-	#def mouseReleaseEvent (self, e) :
-	#	Q
-	#	mouseReleaseEvent()
-
-
 	def addCheckList(self,fieldName, label, defaultValueTuple = ([],[]), toolTip = '', callBack = None) :
 		items, defaultValue = defaultValueTuple
 		b, l = self.__createGroupBoxAndLayout(label)
 
 		w= AbsQtQTable(b, callBack)
-
-		#w = QTable(b,"w")
-		#w.setResizePolicy(QTable.AutoOneFit)
-		#w.setSelectionMode(QTable.NoSelection)
 		w.setNumCols(w.numCols() + 1)
-		#w.horizontalHeader().setLabel(w.numCols() - 1,label)
 		w.setShowGrid(0)
 		w.setColumnWidth(0, 800)
 		w.setLeftMargin(0)
 		w.setTopMargin(0)
-		#w.setHScrollBarMode(QTable.AlwaysOff)
-
-		#w.horizontalHeader().setLabel(0, None)
 
 		if callBack :
 			w.connect(w,SIGNAL("currentChanged(int,int)"),callBack)
-		#if callBack :
 			#w.connect(w,SIGNAL("clicked ( int , int , int , const QPoint &)"),callBack)
 			#w.connect(w,SIGNAL("pressed( int , int , int , const QPoint &)"),callBack)
-			#this one have the best behaviour...
-			#w.connect(w,SIGNAL("currentChanged( int , int )"),callBack)
-
 
 		if toolTip :
 			QToolTip.add(w, toolTip)
-		#w.setNumCols(self.nodeTable.numCols() + 1)
-		#w.horizontalHeader().setLabel(w.numCols() - 1,"Packed Size")
 
 		w.setNumRows(len(items))
 		j = 0
 		for item in items :
-			#w.verticalHeader().setLabel(j,None)
-			#c = AbsQtQCheckTableItem(w, item)
-
 			c = QCheckTableItem(w, item)
 			c.setChecked(item in defaultValue)
 			w.setItem(j, 0, c)
