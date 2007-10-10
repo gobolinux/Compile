@@ -29,7 +29,7 @@ if [ "$(Arg 2)" ]
 then versionnumber="$(Arg 2)"
 else versionnumber=`Get_Version "$programname" "Current"`
 fi
-
+[ -z "${versionnumber}" ] && Die "No current version found and no version specified."
 prefix="${goboPrograms}/$programname/$versionnumber"
 
 Is_Directory "$prefix" || Die "$programname version $versionnumber was not found."
