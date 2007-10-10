@@ -18,7 +18,6 @@ setfont /Files/Fonts/Console/lode-lat1u-16.psf.gz
 ######################################
 msg "Starting Udev"
 mount /System/Kernel/Objects
-mount /System/Kernel/Status
 /System/Links/Tasks/Udev
 msg "Starting log daemon"
 syslogd
@@ -41,7 +40,7 @@ done
 ######################################
 # Mount remaining filesystems
 ######################################
-mount -a -t tmpfs,devpts,usbfs
+mount -a -t tmpfs,usbfs
 
 ######################################
 # Initialize Users directory
