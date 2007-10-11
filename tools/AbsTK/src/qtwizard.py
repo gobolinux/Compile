@@ -334,7 +334,7 @@ class AbsQtScreen(AbsScreen):
 		gbLayout = QGridLayout(w.layout())
 		gbLayout.setAlignment(Qt.AlignTop)
 
-		mle = QMultiLineEdit(w, "w")
+		mle = QTextEdit(w,"w")
 		mle.setText(defaultValue)
 		mle.setReadOnly(not fieldName)
 
