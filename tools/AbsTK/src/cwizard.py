@@ -634,7 +634,7 @@ class CursesEntry(CursesWidget) :
                                 self.inside = 0
                                 if self.callBack != None :
                                         self.callBack()
-                        elif key >= 32 and key <= 126 :
+                        elif (key >= 32 and key <= 126) or (key >= 128 and key <= 255) :
                                 cur = self.cursor
                                 self.value = self.value[:cur] + chr(key) + self.value[cur:]
                                 self.cursor = cur + 1
