@@ -278,7 +278,7 @@ lines = safeFileReadLines('/System/Settings/modprobe.conf')
 
 cmd = 'EthInterfaces'
 interfaces = safeRun(cmd)
-
+interfaces = ['eth3','eth4']
 
 ###############################################################################
 ###############################################################################
@@ -531,6 +531,26 @@ installer.addScreen(localeOptions)
 ##############################################################################
 ##############################################################################
 # NET INTERFACES SCREENS
+
+def checkDHCP() :
+	# if the interface is configured as DHCP, disable Gateway and DNS edit
+	if installer.getValue('BootProto'+installer.getValue('GatewayInterface')[1]) :
+		installer.setEnabled('Gateway', 0)
+		installer.setEnabled('PrimaryDNS', 0)
+		installer.setEnabled('SecondaryDNS', 0)
+	else :
+		installer.setEnabled('Gateway', 1)
+		installer.setEnabled('PrimaryDNS', 1)
+		installer.setEnabled('SecondaryDNS', 1)
+		
+networkOptions = Screen(tr('General network settings'))
+networkOptions.addLineEdit('Gateway',      tr('Gateway IP:'), '192.168.1.1', tr('Default gateway: the IP which redirects requests to the outside world.') )
+networkOptions.addList('GatewayInterface', tr('Gateway interface:'),(interfaces,'eth0'), tr('The network interface through which the default gateway can be reached.'),checkDHCP )
+networkOptions.addLineEdit('PrimaryDNS',   tr('Primary DNS:'), '', tr('Primary server for solving hostnames. Contact your sysadmin or ISP for these.') )
+networkOptions.addLineEdit('SecondaryDNS', tr('Secondary DNS:'), '', tr('Fallback server for when the primary one fails to respond.') )
+# remember if the screen was added or not
+networkOptionsScreen = "not added"
+
 def useDHCPChanged() :
 	for interface in interfaces :
 		enable = not installer.getValue('BootProto'+interface)
@@ -538,6 +558,33 @@ def useDHCPChanged() :
 		installer.setEnabled('Netmask'+interface, enable)
 		installer.setEnabled('Broadcast'+interface, enable)
 
+def generalNetworkOptions() :
+	# registers if any interface is configured with static address
+	staticinterface = 0
+	global networkOptionsScreen
+	# go through all interfaces and see if any is configured as static
+	for interface in interfaces :
+		if not installer.getValue('BootProto'+interface) :
+			staticinterface = 1
+			
+	# if we have more than one interface or any interface is configured as static
+	# we should try and add the screen for general network options
+	if len(interfaces) > 1 or staticinterface == 1 :
+		if networkOptionsScreen == "not added" :
+			installer.addScreen(networkOptions,-1)
+			networkOptionsScreen = "added"
+	# we have only one interface configured as DHCP, so we remove general network
+	# options screen
+	elif staticinterface == 0 :
+		if networkOptionsScreen == "added" :
+			installer.removeScreen(networkOptions)
+			networkOptionsScreen = "not added"
+			
+	# update general options if any field should be disabled
+	checkDHCP()
+	return 1
+	
+	    
 for interface in interfaces :
 	interfaceScreen = Screen(tr('Settings for network interface %s')%(interface))
 	interfaceScreen.addBoolean('Automatic' + interface, tr('Enable interface on boot'), 1, tr('Should this network interface be brought up when the system is powered up?') )
@@ -552,22 +599,14 @@ for interface in interfaces :
 	interfaceScreen.addLineEdit('IP'+ interface,        tr('IP:'),'192.168.1.2', tr('The IP address of this computer in your network.') )
 	interfaceScreen.addLineEdit('Netmask'+ interface,   tr('Netmask:'),'255.255.255.0',  tr("Your network's netmask.") )
 	interfaceScreen.addLineEdit('Broadcast'+ interface, tr('Broadcast:'), '', tr("The broadcast address of this network (optional).") )
+	# if we're configuring the last interface we should call the function that adds general network options
+	if interface == interfaces[-1] :
+		interfaceScreen.onValidate(generalNetworkOptions)
 	installer.addScreen(interfaceScreen)
 	if useDHCP == 1:
 		installer.setEnabled('IP'+interface, False)
 		installer.setEnabled('Netmask'+interface, False)
 		installer.setEnabled('Broadcast'+interface, False)
-
-
-##############################################################################
-##############################################################################
-if interfaces :
-	networkOptions = Screen(tr('General network settings'))
-	networkOptions.addLineEdit('Gateway',      tr('Gateway IP:'), '192.168.1.1', tr('Default gateway: the IP which redirects requests to the outside world.') )
-	networkOptions.addList('GatewayInterface', tr('Gateway interface:'),(interfaces,'eth0'), tr('The network interface through which the default gateway can be reached.') )
-	networkOptions.addLineEdit('PrimaryDNS',   tr('Primary DNS:'), '', tr('Primary server for solving hostnames. Contact your sysadmin or ISP for these.') )
-	networkOptions.addLineEdit('SecondaryDNS', tr('Secondary DNS:'), '', tr('Fallback server for when the primary one fails to respond.') )
-	installer.addScreen(networkOptions)
 
 
 ###############################################################################
