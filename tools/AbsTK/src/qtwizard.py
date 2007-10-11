@@ -211,7 +211,7 @@ class AbsQtScreen(AbsScreen):
 					ret.append(str(field.find(i).text()))
 				return (ret, str(field.selected().text()))
 			elif fieldType == 'QLineEdit':
-				return str(field.text())
+				return unicode(field.text())
 			elif fieldType == 'QTable':
 				field.numRows()
 				ret1 = []
