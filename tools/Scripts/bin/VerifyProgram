@@ -57,7 +57,7 @@ then
    basedir=$goboTemp
 else
    package=`GuessProgramCase $(Arg 1) $(Arg 2)`
-   if [ "$2" ]
+   if [ "$(Arg 2)" ]
    then version=`Get_Version "$package" "$(Arg 2)"`
    else version=`Get_Version "$package" "Current"`
    fi
