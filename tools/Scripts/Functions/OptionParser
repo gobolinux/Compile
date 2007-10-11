@@ -332,13 +332,6 @@ function Parse_Options() {
                         eval val=\$$i
                         export parsedArguments=$[parsedArguments+1]
                      fi
-                     if [ -z "$val" ]
-                     then
-                        # we reached the end of the line without finding a value to assign
-                        Log_Error "Unknown option: $opt requires an argument."
-                        Show_Help
-                        exit 1
-                     fi
                      optionsStateList[j]="$val"
                      ;;
                   esac
@@ -377,13 +370,6 @@ function Parse_Options() {
                            i=$[i+1]
                            eval val=\$$i
                            export parsedArguments=$[parsedArguments+1]
-                        fi
-                        if [ -z "$val" ]
-                        then
-                           # we didn't find any value to assign, so we die
-                           Log_Error "Unknown option: $opt requires an argument."
-                           Show_Help
-                           exit 1
                         fi
                         optionsStateList[j]="$val"
                         break 2
