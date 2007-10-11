@@ -41,13 +41,7 @@ ThemeAfter() {
 ThemeFinish() {
    if [ -p "$fifo" ]
    then
-      echo done > $fifo
-      kill $fifopid &> /dev/null
-      echo "]HOME"
-      clear
-      echo "]HOME"
-      usleep 250000
-      clear
+      echo fifo_done > $fifo
    fi
    {
    echo "]CATALOG"
@@ -77,12 +71,11 @@ ThemeInit() {
       ThemeStdoutStream=$fifo
       ThemeStderrStream=$fifo
       {
-         cmd=
-         while [ ! "$cmd" = "done" ]
-         do
+         for ((;;))
+	 do
             read < $fifo
-            rep=`echo $REPLY | tr [:lower:] [:upper:]`
-            echo $rep
+	    [ "$REPLY" = "fifo_done" ] && exit 
+            echo $REPLY | tr [:lower:] [:upper:]
          done
       } &
       fifopid=$!
