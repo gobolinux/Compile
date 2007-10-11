@@ -541,11 +541,22 @@ def useDHCPChanged() :
 for interface in interfaces :
 	interfaceScreen = Screen(tr('Settings for network interface %s')%(interface))
 	interfaceScreen.addBoolean('Automatic' + interface, tr('Enable interface on boot'), 1, tr('Should this network interface be brought up when the system is powered up?') )
-	interfaceScreen.addBoolean('BootProto'+ interface,  tr('Automatic configuration via DHCP'), 0, tr('Select this if your network server is configured to use the DHCP protocol.'), useDHCPChanged )
+	useDHCP = 0
+	# Detect the live-CD default attempt for DHCP
+	if interface == "eth0":
+		useDHCP = os.system("ps aux | grep '[d]hcpcd' | grep -qv 'eth'")
+	# Also detect hand-launched dhcpcd
+	if os.system("ps aux | grep '[d]hcpcd' | grep -q '%s'" % interface) == 0:
+		useDHCP = 1
+	interfaceScreen.addBoolean('BootProto'+ interface,  tr('Automatic configuration via DHCP'), useDHCP, tr('Select this if your network server is configured to use the DHCP protocol.'), useDHCPChanged )
 	interfaceScreen.addLineEdit('IP'+ interface,        tr('IP:'),'192.168.1.2', tr('The IP address of this computer in your network.') )
 	interfaceScreen.addLineEdit('Netmask'+ interface,   tr('Netmask:'),'255.255.255.0',  tr("Your network's netmask.") )
 	interfaceScreen.addLineEdit('Broadcast'+ interface, tr('Broadcast:'), '', tr("The broadcast address of this network (optional).") )
 	installer.addScreen(interfaceScreen)
+	if useDHCP == 1:
+		installer.setEnabled('IP'+interface, False)
+		installer.setEnabled('Netmask'+interface, False)
+		installer.setEnabled('Broadcast'+interface, False)
 
 
 ##############################################################################
