@@ -57,7 +57,7 @@ handle_description() {
    if ! [ -e "$description" ]
    then
       mkdir -p $name/$version/Resources/
-      DescribeProgram $name > "$description"
+      DescribeProgram -m ascii $name > "$description"
       if [ `cat $description | wc -c` -eq 0 ]
       then
          rm $description
