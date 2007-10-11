@@ -835,7 +835,7 @@ try :
 
 	def generateOptionsFile() :
 		comments = {}
-		comments['BootTheme'] = '#BootTheme=AppleII\n#BootTheme=CheckList\n#BootTheme=Hat\n#BootTheme=LPP\n#BootTheme=Progress\n#BootTheme=Quotes\n#BootTheme=ScanDisk\n#BootTheme=Slack\n#BootTheme=SplitScreen'
+		comments['BootTheme'] = '#BootTheme=AppleII\n#BootTheme=CheckList\n#BootTheme=Hat\n#BootTheme=Progress\n#BootTheme=Progress-II\n#BootTheme=Progress-III\n#BootTheme=Quotes\n#BootTheme=ScanDisk\n#BootTheme=Slack\n#BootTheme=SplitScreen'
 		comments['ClockMode'] = '#ClockMode=GMT\n#ClockMode=LocalTime'
 
 		comments['KeymapLayout'] = '#KeymapLayout=br-abnt2\n#KeymapLayout=us\n#KeymapLayout=dvorak.map'
