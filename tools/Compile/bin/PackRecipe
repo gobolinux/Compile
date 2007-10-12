@@ -119,6 +119,11 @@ handle_description() {
          if [ "$license" = "" ]
          then license="***REPLACE THIS WITH THE NAME OF THE LICENSE***"
          fi
+         if ! [ "$EDITOR" ] 
+         then
+            Log_Terse "EDITOR variable is not set. Can't edit description."
+            return 0
+         fi
 cat <<EOF > $description
 [Name] $name
 [Summary] ***REPLACE THIS WITH A SHORT ONE LINE DESCRIPTION***
