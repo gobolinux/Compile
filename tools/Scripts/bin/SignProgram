@@ -95,7 +95,7 @@ fi
 
 if [ "$filepath" ]
 then
-   Log_Normal "Re-packing signed $filepath..."
+   Log_Normal "Re-packing signed $filepath ..."
    mv $filepath $filepath.bk
    tar -cjf $filepath -C$prefix $package/$version || Die "Error re-packing $filepath ($package $version)"
    rm -f $filepath.bk
