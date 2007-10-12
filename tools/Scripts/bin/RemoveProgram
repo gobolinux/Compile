@@ -45,7 +45,7 @@ Is_Real_Nonempty_Directory "${goboPrograms}/${program}/${version}/Shared/applica
 Is_Real_Nonempty_Directory "${goboPrograms}/${program}/Settings/gconf/schemas" && Uninstall_GConf_Schemas "$program"
 
 Log_Normal "Removing ${goboPrograms}/${program}/${version}..."
-if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
+if [ -f ${goboPrograms}/${program}/${version}/Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
    { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$program/$version/Resources/UnmanagedFiles"
 fi

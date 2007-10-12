@@ -49,7 +49,7 @@ filesdir=$(Get_System_Paths "$disabled")
 Log_Normal "Removing links..."
 echo "$filesdir" | RemoveBroken || Die "Couldn't cleanup links."
 
-if [ -f ./Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
+if [ -f ${disabled}/Resources/UnmanagedFiles ] && ! Is_Entry "unmanaged" "keep"
 then
    { Is_Entry "unmanaged" "ask" && ! Ask "There are unmanaged files present. Do you want to remove them?"; } || Uninstall_Unmanaged_Files "${goboPrograms}/$programname/$versionnumber-Disabled/Resources/UnmanagedFiles"
 fi
