@@ -181,13 +181,13 @@ pack_recipe() {
          then
             Log_Error "RecipeLint reported warnings in $name $version."
             if ! Ask "Proceed and pack it anyway?"
-            then return
+            then return 1
             fi
          elif [ "$recipestatus" -eq 2 ]
          then
             Log_Error "RecipeLint reported errors in $name $version from trunk. Not packing it."
             rm "$tarball"
-            return
+            return 1
          fi
       fi
       Log_Normal "Packed $tarball."
