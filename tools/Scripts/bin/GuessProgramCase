@@ -32,46 +32,68 @@ fi
 program="$(Arg 1)"
 version="$(Arg 2)"
 
-if [ -e "$goboPrograms/$program/$version" ]
-then
-   # Case 1: we have a perfect match (version can be "")
-   echo $program
-else 
-   pushd $goboPrograms &> /dev/null
-   ds=`find . -maxdepth 1 -iname "$program" | cut -b3-`
-   popd &> /dev/null
-   
-   if [ `echo $ds | wc -w` = "1" ]
+look_in() {
+   dir="$1"
+
+   if [ -e "$dir/$program/$version" ]
    then
-      # Case 2: there is only one matching program installed
-      echo $ds
-   elif [ `echo $ds | wc -w` = "0" ]
-   then
-      # Case 3: there is no matching program installed (should GetAvailable be called?)
+      # Case 1: we have a perfect match (version can be "")
       echo $program
-   elif [ ! "$version" ]
-   then
-      tokens=($ds) # WTF?
-      # Case 4: there is more than one matching program, and we DON'T care about version
-      echo ${tokens[0]}
-   else    
-      found=
-      for d in $ds
-      do
-         if [ -e "$goboPrograms/$d/$version" ] 
-         then
-            # Case 5: We found a matching program + desired version
-            echo $d
-            found=1
-            break
-         fi
-      done
-      if [ ! "$found" ]
+   else 
+      pushd $dir &> /dev/null
+      ds=`find . -maxdepth 1 -iname "$program" | cut -b3-`
+      popd &> /dev/null
+      
+      if [ `echo $ds | wc -w` = "1" ]
       then
-         tokens=($ds) 
-         # Case 5: We did not found a matching version, so we return any matching 
-         #         program (should GuessLatest be called?)
+         # Case 2: there is only one matching program installed
+         echo $ds
+      elif [ `echo $ds | wc -w` = "0" ]
+      then
+         # Case 3: there is no matching program installed (should GetAvailable be called?)
+         return 1
+      elif [ ! "$version" ]
+      then
+         tokens=($ds) # WTF?
+         # Case 4: there is more than one matching program, and we DON'T care about version
          echo ${tokens[0]}
+      else    
+         found=
+         for d in $ds
+         do
+            if [ -e "$dir/$d/$version" ] 
+            then
+               # Case 5: We found a matching program + desired version
+               echo $d
+               found=1
+               break
+            fi
+         done
+         if [ ! "$found" ]
+         then
+            tokens=($ds) 
+            # Case 5: We did not found a matching version, so we return any matching 
+            #         program (should GuessLatest be called?)
+            echo ${tokens[0]}
+         fi
       fi
    fi
-fi
+   return 0
+}
+
+# First try, look in installed programs.
+look_in "$goboPrograms" && exit 0
+
+# Second try, look in recipes.
+# Running this at the top of the script makes it noticeably slower,
+# even on a modern (as of 2007) machine! It's probably time
+# to break the GoboLinux module into smaller pieces.
+Import GoboLinux
+Parse_Conf Compile/Compile.conf
+for dir in "${compileRecipeDirs[@]}"
+do
+   look_in "$dir" && exit 0
+done
+
+# Give up, return unchanged.
+echo "$program"
