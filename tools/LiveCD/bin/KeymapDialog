@@ -41,7 +41,6 @@
 source GoboPath
 
 function tr() {
-   echo Translate "$1" "${goboPrograms}/LiveCD/Current/Data/Language/tt2_${LANG}.ts" "${LANG}" 1>&2
    Translate "$1" "${goboPrograms}/LiveCD/Current/Data/Language/tt2_${LANG}.ts" "${LANG}"
 }
 
@@ -90,7 +89,10 @@ hu_HU)
    ;;
 esac
 
-dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
+while : 
+do
+
+dialog --nocancel --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   22 60 11 \
   "${defaults_for_language[@]}" \
   "dvorak/dvorak.map" "" \
@@ -209,3 +211,7 @@ dialog --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
   "qwertz/sk-prog-qwertz.map" "" \
   "qwertz/sk-qwertz.map" "" \
   "qwertz/slovene.map" "" 
+  
+[ "$?" = 0 ] && exit 0
+  
+done
