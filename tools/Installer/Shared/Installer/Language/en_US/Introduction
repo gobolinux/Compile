@@ -18,5 +18,5 @@ Note that to install GoboLinux you need an
 available partition on your hard disk (this 
 installer will not modify your partition table).
 If you need to check out or reconfigure your 
-partitions, use QtParted on the graphical 
+partitions, use GParted on the graphical 
 environment or cfdisk in the console.

@@ -24,6 +24,6 @@ GoboLinux zu installieren (dieses
 Installationsprogramm wird ihre
 Partitionstabelle nicht verändern).
 Falls sie ihre Partitionen ansehen oder neu
-konfigurieren möchten benutzen sie QtParted
+konfigurieren möchten benutzen sie GParted
 in der graphischen Umgebung oder cfdisk auf
 der Konsole.

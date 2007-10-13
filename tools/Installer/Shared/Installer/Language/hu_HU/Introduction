@@ -16,5 +16,5 @@ Megjegyzendõ, hogy a GoboLinux telepítéséhez
 szükséged van egy hozzáférhetõ partícióra a merevlemezeden
 (ez a telepítõprogram ugyanis nem módosítja a partíciós tábládat).
 Amennyiben meg akarod vizsgálni illetve módosítani óhajtod
-a partícióidat, használd a QtParted programot a grafikus környezetben,
+a partícióidat, használd a GParted programot a grafikus környezetben,
 vagy a cfdisk-et konzol üzemmódban.

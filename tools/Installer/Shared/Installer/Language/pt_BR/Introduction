@@ -17,4 +17,4 @@ Note que para instalar GoboLinux você precisa de
 uma partição no seu disco rígido (este instalador
 não irá modificar sua tabela de partições). Se você
 precisar checar ou reconfigurar suas partições, use
-o QtParted no ambiente gráfico ou o cfdisk no console.
+o GParted no ambiente gráfico ou o cfdisk no console.
