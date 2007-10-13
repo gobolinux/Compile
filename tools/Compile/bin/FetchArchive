@@ -32,7 +32,7 @@ sourcedir=$(Entry "save-directory")
 
 if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
-else sudo="sudo -u #0"
+else sudo="sudo -u \#0"
 fi
 
 if wget --help | grep -q no-check-certificate

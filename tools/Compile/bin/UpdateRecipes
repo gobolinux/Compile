@@ -34,7 +34,7 @@ Parse_Options "$@"
 
 if Is_Writable "$compileGetRecipeDir"
 then sudo=
-else sudo="sudo -u #0"
+else sudo="sudo -u \#0"
 fi
 
 ##################################################
