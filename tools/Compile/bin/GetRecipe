@@ -41,7 +41,7 @@ Check_Dir_Variable compileGetRecipeDir
 
 if Is_Writable "$compileGetRecipeDir" || [ "$compileDisableSudo" = "yes" ]
 then sudo=
-else sudo="sudo -u \#0"
+else sudo="sudo -u #0"
 fi
 
 if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
