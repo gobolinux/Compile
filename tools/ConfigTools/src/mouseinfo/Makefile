@@ -4,7 +4,7 @@ CFLAGS=-Wall -I.
 all: mouseinfo
 
 clean:
-	rm -f *.o *~ ../../bin/raw_mouseinfo
+	rm -f *.o *~
 
 mouseinfo: kudzu.o mouseinfo.o psaux.o serial.o usb.o
 	$(CC) kudzu.o mouseinfo.o psaux.o serial.o usb.o -o ../../bin/raw_mouseinfo
