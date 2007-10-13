@@ -1,4 +1,4 @@
-Bem-Vindo ao instalador do GoboLinux!
+Boas vindas ao instalador do GoboLinux!
 
 Siga os passos para ter o sistema instalado no 
 seu disco rígido. Neste instalador você poderá 
@@ -16,5 +16,5 @@ procede de uma única vez ao final.
 Note que para instalar GoboLinux você precisa de 
 uma partição no seu disco rígido (este instalador
 não irá modificar sua tabela de partições). Se você
-precisar checar ou reconfigurar suas partições, use
+precisar verificar ou reconfigurar suas partições, use
 o GParted no ambiente gráfico ou o cfdisk no console.
