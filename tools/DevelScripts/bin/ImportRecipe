@@ -61,10 +61,10 @@ fi
 
 if [ -d ${compileSubversionLocalDir} ]
 then
-   [ -d ${compileSubversionLocalTrunk} ] && {
-      [ -w ${compileSubversionLocalTrunk} ] || Die "Need write permissions to ${compileSubversionLocalTrunk}."
-      [ -w ${compileSubversionLocalRevisions} ] || Die "Need write permissions to ${compileSubversionLocalRevisions}."
-   }
+   Quiet mkdir -p ${compileSubversionLocalTrunk}
+   Quiet mkdir -p ${compileSubversionLocalRevisions}
+   [ -w ${compileSubversionLocalTrunk} ] || Die "Need write permissions to ${compileSubversionLocalTrunk}."
+   [ -w ${compileSubversionLocalRevisions} ] || Die "Need write permissions to ${compileSubversionLocalRevisions}."
 else
    [ -w $compileDir ] || Die "Need write permissions to $compileDir."
 fi
@@ -89,7 +89,7 @@ then
    if Ask "You don't seem to have a copy of the svn trunk tree. Fetch it?"
    then
       Log_Normal "Calling 'svn checkout'."
-      mkdir ${compileSubversionLocalDir}
+      mkdir -p ${compileSubversionLocalDir}
       Quiet pushd ${compileSubversionLocalDir}
       svn checkout --non-recursive $compileSubversionServerRepository/trunk || Die "Error doing the svn checkout."
       Quiet popd
