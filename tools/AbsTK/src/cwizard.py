@@ -229,6 +229,7 @@ class CursesList(CursesWidget) :
       self.first = 0
       self.items = items
       self.value = 0
+      self.scrollH = 0
       for i in range(len(items)) :
          if items[i] == defaultValue :
             self.value = i
@@ -237,7 +238,8 @@ class CursesList(CursesWidget) :
       self.label = label
       self.callBack = callBack
       self.tooltip = tooltip
-      self.scrollH = 0
+      if self.value >= self.first + self.height:
+         self.first = self.value
 
    def setEnabled(self, enabled) :
       self.enabled = enabled
@@ -252,7 +254,7 @@ class CursesList(CursesWidget) :
          self.value = 0
 
 
-   #detsch ([:] para copiar a lista, e nao passar a referencia)
+   #detsch ([:] to copy the list instead of passing a reference)
    def getValue(self) :
       if len(self.items) >  self.value:
          v = self.items[self.value]
@@ -277,7 +279,6 @@ class CursesList(CursesWidget) :
          attr = self.makeAttr(self.inside, self.enabled, widgetColor, widgetColor)
          drawable.subwin(self.height-1, self.width, y+1, x).border()
          i = self.first
-         #detsch (max(----,1)
          drawable.addstr(y+(((self.value+0.0)/max(len(self.items),1))*(self.height-3))+2, x+self.width-1, "*")
          ypos = y+2
          for item in self.items[i:i+5] :
