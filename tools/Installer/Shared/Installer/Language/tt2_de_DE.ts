@@ -259,7 +259,7 @@
     </message>
     <message>
         <source>Passwords typed match</source>
-        <translation>Eingegebene Kennwörter stimmen überein</translation>
+        <translation type="obsolete">Eingegebene Kennwörter stimmen überein</translation>
     </message>
     <message>
         <source>Login:</source>
@@ -287,11 +287,11 @@
     </message>
     <message>
         <source>Check Password</source>
-        <translation>Kennwort überprüfen</translation>
+        <translation type="obsolete">Kennwort überprüfen</translation>
     </message>
     <message>
         <source>Check if the above fields have the same password typed in.</source>
-        <translation>Überprüft ob die eingegebenen Kennwörter überein stimmen.</translation>
+        <translation type="obsolete">Überprüft ob die eingegebenen Kennwörter überein stimmen.</translation>
     </message>
     <message>
         <source>Additional users</source>
@@ -520,6 +520,19 @@
     <message>
         <source>Error generating OpenSSH keys.</source>
         <translation>Fehler beim Erstellen der OpenSSH Schlüssel.</translation>
+    </message>
+    <message>
+        <source>Password is not allowed to be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No normal users are added. Do you want to continue anyway?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Your installation will only have a superuser defined.
+ It is recommended that one adds at least one additional user for normal use.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

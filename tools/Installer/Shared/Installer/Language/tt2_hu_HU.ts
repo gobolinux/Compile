@@ -259,7 +259,7 @@
     </message>
     <message>
         <source>Passwords typed match</source>
-        <translation>A megadott jelszó elfogadva</translation>
+        <translation type="obsolete">A megadott jelszó elfogadva</translation>
     </message>
     <message>
         <source>Login:</source>
@@ -287,7 +287,7 @@
     </message>
     <message>
         <source>Check Password</source>
-        <translation>A jelszó ellenõrzése</translation>
+        <translation type="obsolete">A jelszó ellenõrzése</translation>
     </message>
     <message>
         <source>Annak vizsg&#xe1;lata, hogy a fels&#xf5; mez&#xf5; ugyanazt a jelsz&#xf3;t tartalmazza-e.</source>
@@ -523,6 +523,19 @@
     </message>
     <message>
         <source>Check if the above fields have the same password typed in.</source>
+        <translation type="obsolete"></translation>
+    </message>
+    <message>
+        <source>Password is not allowed to be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No normal users are added. Do you want to continue anyway?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Your installation will only have a superuser defined.
+ It is recommended that one adds at least one additional user for normal use.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

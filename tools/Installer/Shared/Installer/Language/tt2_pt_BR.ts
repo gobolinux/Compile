@@ -451,11 +451,11 @@ Você está pronto para proceder com a instalação.</translation>
     </message>
     <message>
         <source>Check Password</source>
-        <translation type="unfinished">Verificar Senha</translation>
+        <translation type="obsolete">Verificar Senha</translation>
     </message>
     <message>
         <source>Check if the above fields have the same password typed in.</source>
-        <translation type="unfinished">Verifica se os campos acima contém a mesma senha.</translation>
+        <translation type="obsolete">Verifica se os campos acima contém a mesma senha.</translation>
     </message>
     <message>
         <source>Copying advanced applications settings for user %s...</source>
@@ -505,7 +505,7 @@ Crie uma usando &quot;gparted&quot; ou &quot;cfdisk&quot;</translation>
     </message>
     <message>
         <source>Passwords typed match</source>
-        <translation type="unfinished">Senhas digitadas conferem</translation>
+        <translation type="obsolete">Senhas digitadas conferem</translation>
     </message>
     <message>
         <source>No valid partitions found</source>
@@ -626,6 +626,19 @@ Crie uma usando &quot;gparted&quot; ou &quot;cfdisk&quot;</translation>
     <message>
         <source>Error generating OpenSSH keys.</source>
         <translation>Erro gerando chaves OpenSSH.</translation>
+    </message>
+    <message>
+        <source>Password is not allowed to be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No normal users are added. Do you want to continue anyway?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Your installation will only have a superuser defined.
+ It is recommended that one adds at least one additional user for normal use.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
