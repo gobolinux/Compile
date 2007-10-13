@@ -157,7 +157,9 @@ function Can_Sign() {
       Log_Verbose "gpg not found."
       return 1
    }
-   [ -n "$($gpg -n --list-secret-keys)" ]
+   secretkeys=$($gpg -n --list-secret-keys 2>/dev/null)
+   exitcode=$?
+   [ -n "${secretkeys}" -a ${exitcode} -eq 0 ]
 }
 
 function Sign_File() {
