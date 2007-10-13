@@ -326,6 +326,15 @@ d = re.compile(r'\b[a-z]+\b')
 discsList = filter(lambda x:d.match(x) and not 'loop' in x,devicesList)
 discsList.sort()
 
+for disc in discsList :
+	device = '/System/Kernel/Devices/'+disc.split(' ')[0]
+	partitionfilter = re.compile(r'^/.*')
+	partitions = filter(lambda x:partitionfilter.match(x) and not 'loop' in x,os.popen('fdisk -l %s'%device).readlines())
+	for partition in partitions :
+		part = partition.split()
+		if part[4] == '82' :
+			safeRun('mkswap %s'%part[0])
+			safeRun('swapon %s'%part[0])
 
 #partitionsList = filter(lambda x:x.find('part') > -1,devicesList)
 #partitionsList.sort()
