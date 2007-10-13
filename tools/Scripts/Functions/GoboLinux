@@ -9,7 +9,6 @@ function Get_Architecture() {
    case "$arch" in
 	   arm*) arch=arm ;;
 	   "Power Macintosh") arch=ppc ;;
-	   i386) [ "`uname -s`" = "Darwin" ] && arch=i686 ;;
    esac
 
 	kernelType="`uname -s`"
@@ -594,7 +593,7 @@ function Parse_Conf() {
 }
 
 # Some simple define for sudo
-sudo_exec="sudo -u \#0"
+sudo_exec="sudo -u \"#0\""
 sudo_validate="sudo -u `whoami` true"
 
 # If we can't sudo, we shouldn't try .
