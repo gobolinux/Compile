@@ -57,6 +57,7 @@
 5032	./Gnupg
 2176	./Gnuplot
 92	./GoboHide
+1537	./GParted
 972	./GPhoto2
 532	./GPM
 380	./Grep
@@ -157,7 +158,6 @@
 10092	./PyQt
 34796	./Python
 52872	./Qt
-732	./QtParted
 1132	./Readline
 1068	./ReiserFSProgs
 408	./RP-PPPoE

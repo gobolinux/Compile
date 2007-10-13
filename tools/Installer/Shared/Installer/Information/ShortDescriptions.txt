@@ -54,6 +54,7 @@ Glade :: A user interface builder for GTK+ and Gnome
 GLib :: Core library that forms the basis of GTK+ and GNOME
 Glibc :: Gnu C Library
 GoboHide :: GoboLinux program for concealing and managing the legacy tree.
+GParted :: A graphical partitioner. Uses Parted as backend.
 GPM :: (General Purpose Mouse) A mouse server for the console
 Grep :: Globally search for Regular Expression and Print - Finds lines that match entered patterns
 Groff :: Document formatting system
@@ -133,7 +134,6 @@ PyGTK :: Python Bindings for the GTK Widget Set
 PyQt :: Python Bindings for the Qt Toolkit
 Python :: An interpreted, interactive, object-oriented programming language
 Qt :: Toolkit for GUI developers
-QtParted :: A Partition Magic clone written in C++ using the Qt toolkit.
 Readline :: Lets users edit command lines as they are typed in
 ReiserFSProgs :: User-level tools for ReiserFS filesystems
 RHPL :: Red Hat Python Libraries
