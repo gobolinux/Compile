@@ -686,7 +686,7 @@ def checkAddedUsers() :
 		if answer == 'Yes' :
 			return 1
 		elif answer == 'Info' :
-			x = installer.showMessageBox(tr('Your installation will only have a superuser defined. It is recommended that one adds at least one additional user for normal use.'), ['Ok'])
+			x = installer.showMessageBox(tr('Your installation will only have a superuser defined.\n It is recommended that one adds at least one additional user for normal use.'), ['Ok'])
 		else :
 			return 0
 	else :
