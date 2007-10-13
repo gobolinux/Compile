@@ -66,6 +66,26 @@ else :
 
 reallyInstall = ('install' in sys.argv)
 
+###############################################################################
+###############################################################################
+#               LOCALE-DEPENDENT INFO
+###############################################################################
+###############################################################################
+
+if os.environ.has_key('LANG') :
+	lang = os.environ['LANG']
+else :
+	lang = 'en_US'
+
+consoleFont = '/Files/Fonts/Console/lode-lat1u-16.psf.gz'
+defaultZone = ''
+
+# Configure known locale settings
+if lang == 'pt_BR' :
+	defaultZone = 'America/Sao_Paulo'
+elif lang == 'hu_HU' :
+	consoleFont = '/Programs/KBD/Settings/kbd/consolefonts/lat2-16.psfu.gz'
+	defaultZone = 'Europe/Budapest'
 
 ###############################################################################
 ###############################################################################
@@ -319,7 +339,7 @@ discsList.sort()
 cmd = 'cd /Programs/Glibc/Current/Shared/zoneinfo; find -type f'
 locales = os.popen(cmd).readlines()
 for i in range(len(locales)) :
-	locales[i] = locales[i][2:].strip()
+	locales[i] = locales[i][2:].strip().replace('_', ' ')
 locales.sort()
 
 ###############################################################################
@@ -327,11 +347,6 @@ locales.sort()
 #               DEFINING TRANSLATOR
 ###############################################################################
 ###############################################################################
-
-if os.environ.has_key('LANG') :
-	lang = os.environ['LANG']
-else :
-	lang = 'en_US'
 
 t = AbsTranslator(shared+'Language/tt2_%s.ts'%(lang), lang)
 
@@ -512,15 +527,6 @@ def updateLocaleList() :
 	selectedLocale = installer.getValue('ZoneInfo')[1]
 	localesToShow  = [ l for l in locales if l.lower().find(filterString.lower()) > -1 ]
 	installer.setValue('ZoneInfo',(localesToShow,selectedLocale))
-
-
-# Configure known locale settings
-if lang == 'pt_BR' :
-	defaultZone = 'America/Sao_Paulo'
-elif lang == 'hu_HU' :
-	defaultZone = 'Europe/Budapest'
-else :
-	defaultZone = ''
 
 localeOptions = Screen(tr('Time zone'))
 localeOptions.addList('ZoneInfo', tr('Time zone'), (locales,defaultZone), tr('Select the time zone where you are at') )
@@ -895,6 +901,8 @@ try :
 	log('Creating "BootOptions" file...')
 
 	def generateOptionsFile() :
+		global consoleFont
+	
 		comments = {}
 		comments['BootTheme'] = '#BootTheme=AppleII\n#BootTheme=CheckList\n#BootTheme=Hat\n#BootTheme=Progress\n#BootTheme=Progress-II\n#BootTheme=Progress-III\n#BootTheme=Quotes\n#BootTheme=ScanDisk\n#BootTheme=Slack\n#BootTheme=SplitScreen'
 		comments['ClockMode'] = '#ClockMode=GMT\n#ClockMode=LocalTime'
@@ -914,11 +922,6 @@ try :
 #     alias sound-slot-0 snd-via82xx
 # (replacing the module names above by those that match your
 # hardware, of course).
-
-#UserDefinedModules=(
-#   "example_module1"
-#   "example_module2 parameter1=value parameter2=value"
-#)
 """
 
 		o = ''
@@ -948,8 +951,11 @@ try :
 
 		mouseLines = MouseInfo.getMouseOptions('BootOptions')
 		o += mouseLines
-		o += 'ConsoleFont=/Files/Fonts/Console/lode-lat1u-16.psf.gz' + '\n'
+		o += 'ConsoleFont=' + consoleFont + '\n'
 		o += comments['Modules']
+		# Make sure users have a /dev/dsp by default, and that they're allowed to remove it if they want/need. 
+		o += 'UserDefinedModules=(\n   snd-pcm-oss\n   snd-mixer-oss\n)\n'
+		o += '\n'
 
 		safeWriteToFile(destMountPoint+'/Programs/BootScripts/Settings/BootOptions', o, logger)
 
@@ -1125,7 +1131,7 @@ lo_Netmask=255.0.0.0
 	##############################################################################
 	# Zoneinfo
 	log(tr('Setting zoneinfo...'))
-	safeRun('chroot '+destMountPoint+' ln -sfn /Programs/Glibc/Current/Shared/zoneinfo/%s /Programs/Glibc/Settings/localtime'%installer.getValue('ZoneInfo')[1], 'zoneinfo', 0, logger)
+	safeRun('chroot '+destMountPoint+' ln -sfn /Programs/Glibc/Current/Shared/zoneinfo/%s /Programs/Glibc/Settings/localtime'%installer.getValue('ZoneInfo')[1].replace(' ','_'), 'zoneinfo', 0, logger)
 
 	##############################################################################
 	##############################################################################
