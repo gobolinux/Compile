@@ -662,7 +662,7 @@ function Install_Unmanaged_Files() {
       do
          local dname=$(dirname "${goboPrefix}/$line")
          mkdir -p "${dname}"
-         cp -af "${sourcedir}/${line}" "${dname}/"
+         Quiet cp -af "${sourcedir}/${line}" "${dname}/"
       done
    fi
 }
