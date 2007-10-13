@@ -27,11 +27,17 @@ fi
 ######################################
 mkdir ${goboTemp}/setup
 
-dialog --title "Language"  --menu "Choose your language"  11 46 4 \
+while :
+do
+
+dialog --nocancel --title "Language"  --menu "Choose your language"  11 46 4 \
      "en_US" "English"    \
      "pt_BR" "Português"  \
      "hu_HU" "Magyar"  \
      "de_DE" "Deutsch" 2> ${goboTemp}/setup/language
+
+[ "$?" = 0 ] && break
+done
 
 language=`cat ${goboTemp}/setup/language`
 if [ "$language" = "" ]
