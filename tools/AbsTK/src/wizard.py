@@ -83,10 +83,10 @@ class AbsTranslator :
 
 	def tr(self,s) :
 		if self.lang and self.doc :
-			rs = s.replace("'",'&apos;').replace("\\", '&quot')
+			rs = s.replace("'",'&apos;').replace("\\", '&quot;')
 			results = self.doc.xpathEval('/TS/context/message[source = \'%s\']/translation/text()'%(rs,))
 			if not results :
 			    return s
-			return results[0].content.replace('&apos;',"'").replace('&quot',"\\").decode('utf-8').encode(locale.getpreferredencoding())
+			return results[0].content.replace('&apos;',"'").replace('&quot;',"\\").decode('utf-8').encode(locale.getpreferredencoding())
 		else :
 			return s
