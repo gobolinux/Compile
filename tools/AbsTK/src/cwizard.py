@@ -118,7 +118,7 @@ class AbsCursesWizard(AbsWizard) :
                   if self.currentScreen < len(self.screens) - 1 :
                      self.currentScreen = self.currentScreen + 1
                   else :
-                     stdscr.addstr(maxY-3, 1, " Enter: Confirm       ", defaultColor)
+                     stdscr.addstr(maxY-3, 1, " Enter: Confirm            ", defaultColor)
                      stdscr.addstr(maxY-3, maxX-25, " -> Done ", widgetColor)
                      stdscr.move(maxY-1,maxX-1)
                      k = stdscr.getch()
@@ -329,7 +329,7 @@ class CursesList(CursesWidget) :
 class CursesTextBox(CursesWidget) :
 
    def __init__(self, label, defaultValue, callBack, tooltip) :
-      self.height = 10
+      self.height = 18
       self.width = maxX - 10
       self.first = 0
       self.label = label
