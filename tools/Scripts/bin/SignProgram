@@ -33,6 +33,8 @@ then
    GPG_opts="${GPG_opts} -u $localuser"
 fi
 
+Release_Superuser
+
 ########## Version ##########
 if Is_GoboLinux_Package "$(Arg 1)"
 then
@@ -47,8 +49,11 @@ then
    [ -d $prefix/$package/$version ] && rm -rf $prefix/$package/$version
    Log_Normal "Unpacking $filepath at $prefix..."
    tar -C$prefix -xvjf $filepath
-   sudo_exec=""
-   sudo_validate=""
+   if [ -w "$bn" ]
+   then
+      sudo_exec=""
+      sudo_validate=""
+   fi
    [ -d $prefix/$package/$version ] || Die "Error unpacking $filepath ($package $version)"
 else
    package=`GuessProgramCase $(Arg 1) $(Arg 2)`
@@ -63,8 +68,6 @@ else
    Is_Empty "$version" && Die "Couldn't find a proper version for $package."
    Is_Directory "$prefix/$package/$version" || Die "$package version $version is not a valid package."
 fi
-
-Release_Superuser
 
 ########## Functions ##########
 
@@ -96,10 +99,10 @@ fi
 if [ "$filepath" ]
 then
    Log_Normal "Re-packing signed $filepath ..."
-   mv $filepath $filepath.bk
-   tar -cjf $filepath -C$prefix $package/$version || Die "Error re-packing $filepath ($package $version)"
-   rm -f $filepath.bk
-   rm -rf $prefix/$package
+   $sudo_exec mv $filepath $filepath.bk
+   $sudo_exec tar -cjf $filepath -C$prefix $package/$version || Die "Error re-packing $filepath ($package $version)"
+   $sudo_exec rm -f $filepath.bk
+   $sudo_exec rm -rf $prefix/$package
 fi
 
 exit 0
