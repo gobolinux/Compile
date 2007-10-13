@@ -679,6 +679,19 @@ def removeUser() :
 		l.remove(v)
 	installer.setValue('Users',(l,''))
 
+def checkAddedUsers() :
+	userslist,selection = installer.getValue('Users')
+	if len(userslist) == 0 :
+		answer = installer.showMessageBox(tr('No normal users are added. Do you want to continue anyway?'), ['Yes','No','Info'])
+		if answer == 'Yes' :
+			return 1
+		elif answer == 'Info' :
+			x = installer.showMessageBox(tr('Your installation will only have a superuser defined. It is recommended that one adds at least one additional user for normal use.'), ['Ok'])
+		else :
+			return 0
+	else :
+		return 1
+
 usersScreen.addLineEdit('NewUserLogin',          tr('Login:'), '', tr('Type here the UNIX login for the user, e.g. "johnd"'))
 usersScreen.addPassword('NewUserPassword',       tr('Password:'), '', tr('Enter the password for this user.'))
 usersScreen.addPassword('NewUserPasswordRetyped',tr('Retype password:'), '', tr('Enter the same password as above, to verify for typing mistakes.'))
@@ -689,6 +702,7 @@ usersScreen.addBoolean ('NewUserEnableSudo',     tr('Enable super-user privilege
 usersScreen.addButton  ('',                      tr('Add user'), '', tr('Create an user account using the information entered above.'), addUser)
 usersScreen.addButton  ('',                      tr('Remove user'), '', tr('Remove the user that is currently selected in the list below.'), removeUser)
 usersScreen.addList('Users', tr('Added users'), ([], ''), tr('This is the list of users added so far.'))
+usersScreen.onValidate(checkAddedUsers)
 installer.addScreen(usersScreen)
 
 
