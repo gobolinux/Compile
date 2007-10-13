@@ -111,7 +111,8 @@ then
       fi
             
    else
-      sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null`
+      ignorelist="\--cvs\|--svn\|/cvs-r[0-9]*\|/svn-r[0-9]*"
+      sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null | grep -vi "$ignorelist"`
       if [ "$sameprogramrecipe" ]
       then
          Log_Question "There is already a recipe for $packagename, at"
