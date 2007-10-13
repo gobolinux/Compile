@@ -11,15 +11,11 @@
     </message>
     <message>
         <source>If you do not select a keyboard map, us.map</source>
-        <translation>Ha nem választasz semmit, az alapértelmezett &apos;us.map&apos;</translation>
-    </message>
-    <message>
-        <source>If you do not select a keyboard map, &apos;us.map&apos;</source>
-        <translation>Ha nem választasz semmit, az alapértelmezett &apos;us.map&apos;</translation>
+        <translation>Ha nem választasz semmit, az alapértelmezett &apos;hu.map&apos;</translation>
     </message>
     <message>
         <source>(the US keyboard map) is the default.  Use the UP/DOWN</source>
-        <translation>(az US billentyűzetkiosztás) érvényes. Használd a FEL/LE kurzorbillentyűket</translation>
+        <translation>(az HU billentyűzetkiosztás) érvényes. Használd a FEL/LE kurzorbillentyűket</translation>
     </message>
     <message>
         <source>arrow keys and PageUp/PageDown to scroll through the</source>

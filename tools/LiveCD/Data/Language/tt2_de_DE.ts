@@ -11,15 +11,11 @@
     </message>
     <message>
         <source>If you do not select a keyboard map, us.map</source>
-        <translation type="unfinished">Falls sie kein Tastaturlayout auswählen wird &apos;us.map&apos;</translation>
-    </message>
-    <message>
-        <source>If you do not select a keyboard map, &apos;us.map&apos;</source>
-        <translation type="obsolete">Falls sie kein Tastaturlayout auswählen wird &apos;us.map&apos;</translation>
+        <translation type="unfinished">Falls sie kein Tastaturlayout auswählen wird &apos;de-latin1.map&apos;</translation>
     </message>
     <message>
         <source>(the US keyboard map) is the default.  Use the UP/DOWN</source>
-        <translation type="unfinished">(das US-Layout) benutzt. Benutzen sie die AUF/AB</translation>
+        <translation type="unfinished">(das DE-Layout) benutzt. Benutzen sie die AUF/AB</translation>
     </message>
     <message>
         <source>arrow keys and PageUp/PageDown to scroll through the</source>

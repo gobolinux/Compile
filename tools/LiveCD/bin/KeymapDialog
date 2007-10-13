@@ -75,9 +75,9 @@ pt_BR)
    ;;
 de_DE)
    defaults_for_language=(
+   "qwertz/de-latin1.map" ""
    "qwertz/de.map" ""
    "qwertz/de-latin1-nodeadkeys.map" ""
-   "qwertz/de-latin1.map" ""
    "qwertz/de_CH-latin1.map" ""
    )
    ;;
@@ -93,7 +93,7 @@ while :
 do
 
 dialog --nocancel --title "${TITLE_MAIN}"  --menu "${TEXT_MAIN}" \
-  22 60 11 \
+  22 65 11 \
   "${defaults_for_language[@]}" \
   "dvorak/dvorak.map" "" \
   "azerty/azerty.map" "" \
