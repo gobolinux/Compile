@@ -27,7 +27,7 @@ Parse_Conf Compile.conf
 
 if Is_Writable "$compileLocalRecipesDir/$packagename" 
 then sudo=
-else sudo="sudo -u \#0"
+else sudo="sudo -u #0"
 fi
 
 if wget --help | grep -q no-check-certificate
