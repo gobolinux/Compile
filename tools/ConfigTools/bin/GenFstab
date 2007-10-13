@@ -166,7 +166,7 @@ function gen_config() {
             mountoptions="pri=1"
             checks="0 0"
             ;;
-         "5") continue;;
+         "5"|"88") continue;;
          *)
             [ -z "${comment}" ] && comment="# Additional partition."
             [ -z "${mountpoint}" ] && mountpoint="/Mount/$(Uppercase ${drive})${partitionnumber}"
