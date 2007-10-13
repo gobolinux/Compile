@@ -327,6 +327,100 @@ class CursesList(CursesWidget) :
             return 1
       return 0
 
+class CursesDropList(CursesWidget) :
+
+   def __init__(self, label, items, defaultValue, callBack, tooltip) :
+      self.height = 1
+      self.width = maxX - 10
+      self.first = 0
+      self.items = items
+      self.value = 0
+      self.maxitemlength = len(items[0])
+      for i in range(len(items)) :
+         if items[i] == defaultValue :
+            self.value = i
+	    self.maxitemlength = max(self.maxitemlength,len(self.items[i]))
+      self.inside = 0
+      self.enabled = 1
+      self.label = label
+      self.callBack = callBack
+      self.tooltip = tooltip
+      self.scrollH = 0
+
+   def setEnabled(self, enabled) :
+      self.enabled = enabled
+      if not enabled :
+         self.inside = 0
+
+   def setValue(self, value) :
+      v = self.value
+      try :
+         self.value = self.items.find(value)
+      except :
+         self.value = v
+
+   def getValue(self) :
+      if len(self.items) > self.value:
+         return self.items[self.value]
+      else :
+         return self.items[0]
+
+   def draw(self, drawable, x, y) :
+      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
+      drawable.addstr(y, x, '%s :'%self.label, attr)
+      pos = x+len(self.label)+3
+      drawable.addstr(y, pos, self.items[self.value], attr)
+      self.x = x
+      self.y = y
+
+   def processKey(self, key) :
+      if key == 10 and self.enabled :
+         areaX = min(maxX-6-self.maxitemlength,self.x+len(self.label)+3)
+         areaY = max(6,self.y-(min(8,len(self.items)+2)/2)+1)
+         areaHeight = min(8,len(self.items))
+         areaWidth = min(maxX-14,self.maxitemlength)
+         area = stdscr.subwin(areaHeight+2, areaWidth+4, areaY, areaX)
+         area.clear()
+         area.box()
+         area.keypad(1)
+         k = 0
+         sel = self.value
+         while True :
+            offset = 0
+            if len(self.items) > areaHeight :
+               offset = sel - (areaHeight / 2)
+            for i in range(min(len(self.items),areaHeight)) :
+               if i+offset == sel :
+                  attr = widgetColor
+               else :
+                  attr = buttonColor
+               area.addstr(i+1, 1, self.items[offset+i], attr)
+	       for j in range(self.maxitemlength-len(self.items[offset+i])) :
+                  area.addstr(i+1,len(self.items[offset+i])+j+1,' ', attr)
+            area.refresh()
+            k = area.getch()
+            if k == curses.KEY_UP :
+               sel = sel - 1
+               if sel == - 1 :
+                  sel = len(self.items) - 1
+            elif k == curses.KEY_DOWN :
+               sel = sel + 1
+               if sel == len(self.items):
+                  sel = 0
+            elif k == 10
+               self.value = sel
+               if self.callBack != None :
+                  self.callBack()
+               break
+         global uglyHack
+         uglyHack = 1
+         return 0 
+      elif key == curses.KEY_UP :
+         return -1
+      elif key == curses.KEY_DOWN or key == 9 :
+         return 1
+      return 0
+
 class CursesTextBox(CursesWidget) :
 
    def __init__(self, label, defaultValue, callBack, tooltip) :
@@ -780,6 +874,10 @@ class AbsCursesScreen(AbsScreen) :
    #detsch
    def addList(self, fieldName, label, defaultValueTuple = ([],''), tooltip = "I DON'T HAVE A TOOLTIP", callBack = None) :
       w = CursesList(label, defaultValueTuple[0], defaultValueTuple[1], callBack, tooltip)
+      self.__addWidget(fieldName, w)
+
+   def addDropList(self, fieldName, label='', defaultValueTuple=([],''), tooltip='', callBack=None) :
+      w = CursesDropList(label, defaultValueTuple[0], defaultValueTuple[1], callBack, tooltip)
       self.__addWidget(fieldName, w)
 
    def addBoolean(self, fieldName, label, defaultValue = 0, tooltip = "I DON'T HAVE A TOOLTIP", callBack = None) :

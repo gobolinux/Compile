@@ -158,6 +158,8 @@ class AbsQtScreen(AbsScreen):
 						pass
 			elif fieldType == 'QButtonGroup':
 				pass
+			elif fieldType == 'QDropList':
+				field.setCurrentText(newValue)
 			elif fieldType == 'QLineEdit':
 				field.setText(newValue)
 			elif fieldType == 'QLabel':
@@ -195,6 +197,8 @@ class AbsQtScreen(AbsScreen):
 
 			if fieldType == 'QCheckBox':
 				return int(field.isChecked())
+			if fieldType == 'QDropList':
+				return unicode(field.currentText())
 			elif fieldType == 'QListBox':
 				ret1 = []
 				for i in range(field.count()):
@@ -405,6 +409,23 @@ class AbsQtScreen(AbsScreen):
 		gbLayout.addWidget(lb, 0, 0)
 		self.__addWidget(w)
 		return
+
+	def addDropList(self, fieldName, label='', defaultValueTuple=([],''), toolTip='', callBack=None):
+		items, defaultValue = defaultValueTuple
+		w = QComboBox(self.widget,"w")
+		w.setEditable(0)
+		if toolTip:
+			QToolTip.add(w, toolTip)
+
+		for item in items :
+			w.insertItem(item)
+		if defaultValue :
+			w.setCurrentText(defaultValue)
+		if fieldName :
+			self.__registerField(fieldName, w, 'QDropList')
+		if callBack :
+			w.connect(w, SIGNAL("released(int)"), callBack)
+		self.__addWidget(w)
 
 	def addRadioList(self, fieldName, label='', defaultValueTuple=([],''), toolTip='', callBack=None):
 		items, defaultValue = defaultValueTuple
