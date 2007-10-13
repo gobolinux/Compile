@@ -613,24 +613,21 @@ for interface in interfaces :
 ###############################################################################
 superUserScreen = Screen(tr('Super-user settings'))
 
-def matchSuperUserPasswords() :
-	if installer.getValue('SuperUserPassword') != installer.getValue('SuperUserPasswordRetyped') :
-		x = installer.showMessageBox(tr('Passwords typed do not match'), ['Ok'])
-		installer.setValue('SuperUserPasswordRetyped', '')
-		installer.setValue('SuperUserPassword', '')
-	else :
-		x = installer.showMessageBox(tr('Passwords typed match'), ['Ok'])
-
 def checkSuperUserPasswords() :
 	if installer.getValue('SuperUserPassword') != installer.getValue('SuperUserPasswordRetyped') :
 		x = installer.showMessageBox(tr('Passwords typed do not match'), ['Ok'])
 		installer.setValue('SuperUserPasswordRetyped', '')
 		installer.setValue('SuperUserPassword', '')
+	else :
+		if installer.getValue('SuperUserPassword') == '' :
+			x = installer.showMessageBox(tr('Password is not allowed to be empty.'), ['Ok'])
+		else :
+			return 1
 
 superUserScreen.addLineEdit('SuperUserLogin',tr('Login:'),'root', tr('Select the account name for the superuser.') )
 superUserScreen.addPassword('SuperUserPassword', tr('Password:'), '', tr('Enter the password for the superuser.') )
-superUserScreen.addPassword('SuperUserPasswordRetyped', tr('Retype password:'), '', tr('Enter the same password as above, to verify for typing mistakes.'), checkSuperUserPasswords )
-superUserScreen.addButton('',tr('Check Password'), '', tr('Check if the above fields have the same password typed in.'), matchSuperUserPasswords)
+superUserScreen.addPassword('SuperUserPasswordRetyped', tr('Retype password:'), '', tr('Enter the same password as above, to verify for typing mistakes.') )
+superUserScreen.onValidate(checkSuperUserPasswords)
 installer.addScreen(superUserScreen)
 
 
