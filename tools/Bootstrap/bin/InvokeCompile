@@ -185,7 +185,7 @@ do
 done
 
 dirname="$prefix/$goboPrograms/TinyScripts"
-if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "y" ]
+if [ ! -d "$dirname" -a ! "$NATIVE_COMPILATION" ]
 then
     pkg_name=TinyScripts
     local_recipe=`GetRecipe $pkg_name`

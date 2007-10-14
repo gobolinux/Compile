@@ -65,7 +65,7 @@ mount -o bind $goboDevices $prefix/$goboDevices
 # Install the Scripts package
 #
 dirname="$prefix/$goboPrograms/Scripts"
-if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
+if [ ! -d "$dirname" -a "$NATIVE_COMPILATION" ]
 then
     Log_Normal "Installing the Scripts package..."
     cp -a $goboPrograms/Scripts $prefix/$goboPrograms
@@ -79,7 +79,7 @@ fi
 # Install the Compile package
 #
 dirname="$prefix/$goboPrograms/Compile"
-if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
+if [ ! -d "$dirname" -a "$NATIVE_COMPILATION" ]
 then
     Log_Normal "Installing the Compile package..."
     cp -a $goboPrograms/Compile $prefix/$goboPrograms
@@ -93,7 +93,7 @@ fi
 # Install the BootScripts package
 #
 dirname="$prefix/$goboPrograms/BootScripts"
-if [ ! -d "$dirname" -a "$TARGET_EMBEDDED" = "n" ]
+if [ ! -d "$dirname" -a "$NATIVE_COMPILATION" ]
 then
     Log_Normal "Installing the BootScripts package..."
     cp -a $goboPrograms/BootScripts $prefix/$goboPrograms

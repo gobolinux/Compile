@@ -35,7 +35,7 @@ config CROSS_ARM_SOFT_FLOAT
 	---help---
 	  Run a toolchain to generate a distribution suitable for ARM processors
 	  based on GCC's soft-float library. Use this if you have a working
-	  Cross-ARM-SoftFP.conf and your platform doesn't have a FPU.
+	  Cross-ARM-SoftFP-$TOOLCHAIN.conf and your platform doesn't have a FPU.
 
 config CROSS_SH4
 	prompt "SH-4 target"
@@ -76,24 +76,54 @@ config SH4_ST7100
 endchoice
 
 choice
-	prompt "Target profile"
-	default TARGET_EMBEDDED
+	prompt "Toolchain"
+	depends on ! NATIVE_COMPILATION
+	default GLIBC_TOOLCHAIN
 
-config TARGET_EMBEDDED
-	prompt "Embedded platform"
+config GLIBC_TOOLCHAIN
+	prompt "Glibc Toolchain"
 	bool
 	---help---
-	  Select this if the distribution is going to be generated to be used on
-	  an embedded platform. This will reduce a lot the number of packages to
-	  be compiled, given that no development tools will be available on it.
+	  Select this if the distribution generated will be used in a desktop
+	  platform.
 
-config TARGET_DESKTOP
-	prompt "Desktop platform"
+	  This option requires a file named Cross-$ARCH-Glibc.conf inside
+	  /System/Settings/Compile/Cross, configured and pointing to your 
+	  Glibc toolchain.
+
+config UCLIBC_TOOLCHAIN
+	prompt "uClibc Toolchain"
 	bool
 	---help---
-	  Select this if the distribution is going to be generated to be used on
-	  a desktop system.
-      
+	  Select this if the distribution generated will be used in an embedded 
+	  platform.
+
+	  This option requires a file named Cross-$ARCH-uClibc.conf inside
+	  /System/Settings/Compile/Cross, configured and pointing to your 
+	  uClibc toolchain.
+
+config DIETLIBC_TOOLCHAIN
+	prompt "DietLibc Toolchain"
+	bool
+	---help---
+	  Select this if the distribution generated will be used in an embedded 
+	  platform.
+
+	  This option requires a file named Cross-$ARCH-DietLibc.conf inside
+	  /System/Settings/Compile/Cross, configured and pointing to your 
+	  DietLibc toolchain.
+
+config NEWLIB_TOOLCHAIN
+	prompt "Newlib Toolchain"
+	bool
+	---help---
+	  Select this if the distribution generated will be used in an embedded 
+	  platform.
+
+	  This option requires a file named Cross-$ARCH-Newlib.conf inside
+	  /System/Settings/Compile/Cross, configured and pointing to your 
+	  Newlib toolchain.
+
 endchoice
 
 choice
@@ -348,7 +378,7 @@ endmenu
 #############################################
 menu "Shrink Options"
 #############################################
-depends on TARGET_EMBEDDED
+depends on ! NATIVE_COMPILATION
 config SHRINK_ALL
     bool "Remove and shrink as much as possible"
     select SHRINK_HEADERS

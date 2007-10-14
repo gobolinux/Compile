@@ -9,9 +9,14 @@ function get_native_arch() {
 }
 
 function get_chosen_arch() {
-    [ "$CROSS_SH4" = "y" ] && echo SH4
-    [ "$CROSS_ARM" = "y" ] && echo ARM
-    [ "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo ARM-SoftFP
+    [ "$CROSS_SH4" ]            && platform=SH4
+    [ "$CROSS_ARM" ]            && platform=ARM
+    [ "$CROSS_ARM_SOFT_FLOAT" ] && platform=ARM-SoftFP
+    [ "$GLIBC_TOOLCHAIN" ]      && toolchain=Glibc
+    [ "$UCLIBC_TOOLCHAIN" ]     && toolchain=uClibc
+    [ "$DIETLIBC_TOOLCHAIN" ]   && toolchain=DietLibc
+    [ "$NEWLIB_TOOLCHAIN" ]     && toolchain=Newlib
+    echo $platform-$toolchain
 }
 
 function get_recipe_arch() {
