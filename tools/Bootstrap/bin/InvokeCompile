@@ -25,65 +25,6 @@ source $TOP_DIR/functions/Platforms
 # Cross-compiling variables
 source $dot_config
 
-
-# TODO: the headers script have shown to be broken on many releases I've tested.
-#       we're relying on the existence of a binary package for now.
-function make_headers() {
-    dirname="$prefix/$goboPrograms/Linux-Headers"
-    [ -d "$dirname" ] && return
-	
-    Log_Normal "Creating the Linux-Headers package..."
-    kernelArch=`get_kernel_arch`
-
-    wget -nv -O /tmp/finger_banner http://www.kernel.org/kdist/finger_banner || exit 1
-    latest_kernel_version=`cat /tmp/finger_banner | head -n1 | cut -d: -f2 | awk {'print $1'}`
-    rm -f /tmp/finger_banner
-
-    Quiet pushd "$TOP_DIR/bin"
-    ./MakeKernelHeaders "$latest_kernel_version" $kernelArch $dirname
-    Quiet popd
-
-    export goboCrossCompiling=yes
-    SymlinkProgram $symlink_options Linux-Headers
-    unset goboCrossCompiling goboPrefix
-    Parse_Conf Directories.conf
-}
-
-function download_headers() {
-    dirname="$prefix/$goboPrograms/Linux-Headers"
-    [ -d "$dirname" ] && return
-	
-    Log_Normal "Downloading the Libc Headers package..."
-
-    if [ "$uname_m" = "i686" ]
-    then repository="http://gobo.calica.com/packages/official"
-    else repository="http://gobo.calica.com/packages/$uname_m"
-    fi
-    
-    # download the headers package
-    # TODO: Add multi-architecture support to FindPackage and use it instead of wget
-
-    mkdir -p $TOP_DIR/chroot/Clean/$recipe_arch
-
-    kernel_version=$KERNEL_HEADERS_VERSION
-    download_dir="`readlink -f $TOP_DIR/chroot/Clean/$recipe_arch`"
-    filename=Linux-Headers--$kernel_version--$uname_m.tar.bz2
-    Quiet pushd $download_dir
-    wget -nv -c $repository/$filename || exit 1
-    Quiet popd
-    
-    # uncompress it
-    Quiet pushd "$prefix/$goboPrograms"
-    tar jxvf $download_dir/Linux-Headers--$kernel_version--$uname_m.tar.bz2
-    Quiet popd
-     
-    # symlink it
-    export goboCrossCompiling=yes
-    SymlinkProgram $symlink_options Linux-Headers
-    unset goboCrossCompiling goboPrefix
-    Parse_Conf Directories.conf
-}
-
 function download_meta() {
     unset is_meta
     unset include
@@ -243,7 +184,9 @@ do
 
     # Create the Linux-Headers package, as it's needed by Glibc
     if [ "$pkg_name" = "Glibc" ]
-    then [ "$NATIVE_COMPILING" = "y" ] && make_headers || download_headers
+    then
+        headersrecipe=`GetRecipe Linux-Headers`
+        chroot_compile $headersrecipe
     fi
     chroot_compile $local_recipe
 done
