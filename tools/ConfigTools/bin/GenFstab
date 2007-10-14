@@ -82,14 +82,14 @@ function gen_config() {
    drive="${1}"
    device="${2}"
    # we don't want to generate entries for USB disks
-   [ "$(udevinfo --query=env --path=/block/${drive} | grep ID_BUS | sed 's/[^=]*=\(.*\)/\1/')" == "usb" ] && return
+   bus="$(udevinfo --query=env --path=/block/${drive} | grep ID_BUS | sed 's/[^=]*=\(.*\)/\1/')"
 
    partitions=$(fdisk -l "${device}" 2>&1 | grep "^/")
    partitionlist=$(echo "$partitions" | awk {'print $1'} | tr "\n" " ")
    for partition in $partitionlist
    do
       [ "${partition}" = "" ] && continue
-
+      [ "${bus}" = "usb" -a "${partition}" != "${root}" ] && continue
       partitionnumber=$(echo "${partition}" | sed s/".*${drive}\(.*\)"/"\1"/)
       pt=$(fdisk -l | grep "${drive}${partitionnumber}")
       bootableflag=$(echo "${pt}" | awk {'print $2'})
