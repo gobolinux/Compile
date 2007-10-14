@@ -73,7 +73,6 @@ function chroot_compile() {
     if [ "$verbose_build" = "1" ]
     then ChrootCompile $common_options --verbose $local_recipe || exit 1
     else ChrootCompile $common_options $local_recipe || exit 1
-    #else ChrootCompile $common_options $local_recipe 2>&1 | grep -v $verbose_filter || exit 1
     fi
     
     # Uncompress and symlink
@@ -103,16 +102,10 @@ export NO_UNIONFS=1
 
 trap cleanup TERM INT STOP HUP EXIT
 
-# the verbose flag and the keywords which are going to be filtered from stdout
 [ "$CC" = "" ] && CC=gcc
 [ "$LD" = "" ] && LD=ld
 
 verbose_build=$1
-verbose_filter="configure\|checking\|Try\|config.status"
-verbose_filter="$verbose_filter\|Making\|Entering\|Leaving\|Nothing\|$CC\|$LD"
-verbose_filter="$verbose_filter\|/bin/make\|gawk"
-verbose_filter="$verbose_filter\|mkinstalldirs\|install"
-
 if [ "$verbose_build" = "1" ]
 then Log_Terse "Verbose build enabled"
 else Log_Terse "Verbose build disabled"
