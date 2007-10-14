@@ -1,6 +1,6 @@
 config PKG_LIBSTDC
     bool "LibStdC++"
-    depends on !PKG_GCC && !NATIVE_COMPILING
+    depends on !PKG_GCC && !NATIVE_COMPILATION
     default y
     ---help---
       This library is needed by C++ applications cross-compiled for the target

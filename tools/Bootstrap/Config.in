@@ -14,10 +14,10 @@ config HAVE_DOT_CONFIG
 
 choice
 	prompt "Cross-Compiling"
-	default NATIVE_COMPILING
+	default NATIVE_COMPILATION
 
-config NATIVE_COMPILING
-	prompt "Native compiling"
+config NATIVE_COMPILATION
+	prompt "Native compilation"
 	bool
 	---help---
 	  Do not cross-compile: generate a distribution suitable to the same 

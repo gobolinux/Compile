@@ -18,11 +18,11 @@ function get_recipe_arch() {
     [ "$CROSS_ARM" = "y" -o "$CROSS_ARM_SOFT_FLOAT" = "y" ] && echo arm
     [ "$CROSS_SH4" = "y" ] && echo sh4
     [ "$CROSS_PPC" = "y" ] && echo ppc
-    [ "$NATIVE_COMPILING" = "y" ] && get_native_arch
+    [ "$NATIVE_COMPILATION" = "y" ] && get_native_arch
 }
 
 function get_kernel_arch() {
-    if [ "$NATIVE_COMPILING" = "y" ]
+    if [ "$NATIVE_COMPILATION" = "y" ]
     then
         arch=`uname -m`
         case $arch in

@@ -22,7 +22,7 @@ trap cleanup TERM INT STOP HUP
 InstallDependencies || exit 1
 
 
-if [ "$NATIVE_COMPILING" = "y" ]
+if [ "$NATIVE_COMPILATION" = "y" ]
 then export arch_conf="Native"
 else export arch_conf=`get_chosen_arch`
 fi

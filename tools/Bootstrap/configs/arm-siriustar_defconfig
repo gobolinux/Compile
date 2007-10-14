@@ -6,7 +6,7 @@
 # Build options
 #
 HAVE_DOT_CONFIG=y
-# NATIVE_COMPILING is not set
+# NATIVE_COMPILATION is not set
 CROSS_ARM=y
 # CROSS_ARM_SOFT_FLOAT is not set
 # CROSS_SH4 is not set
