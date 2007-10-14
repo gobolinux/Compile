@@ -81,6 +81,8 @@ function gen_config() {
    lastpart=1
    drive="${1}"
    device="${2}"
+   # we don't want to generate entries for USB disks
+   [ "$(udevinfo --query=env --path=/block/${drive} | grep ID_BUS | sed 's/[^=]*=\(.*\)/\1/')" == "usb" ] && return
 
    partitions=$(fdisk -l "${device}" 2>&1 | grep "^/")
    partitionlist=$(echo "$partitions" | awk {'print $1'} | tr "\n" " ")
