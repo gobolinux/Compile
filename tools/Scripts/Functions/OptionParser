@@ -276,10 +276,6 @@ function List_Options() {
 function Parse_Options() {
    Add_Argument "$0"
 
-   if [ "$helpOnNoArguments" -a -z "$*" ]
-   then Show_Help
-   fi
-
    savedOptions=("$@")
    # loop through all arguments
    for (( i = 1; i <= $# ; i++ ))
@@ -389,6 +385,11 @@ function Parse_Options() {
          Add_Argument "$option"
       fi
    done
+   
+   if [ "$helpOnNoArguments" -a -z "$(Arg 1)" ]
+   then Show_Help
+   fi
+
    if Boolean "help"
    then Show_Help
    fi
