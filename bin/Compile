@@ -1224,6 +1224,7 @@ fi
 
 if [ "$recipe_type" = "manifest" ]
 then
+   Boolean "no-install" && exit
    build_tree_if "true"
    if is_function_set pre_install
    then pre_install || wrap_fail "pre_install failed."
