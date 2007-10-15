@@ -23,6 +23,7 @@ Add_Option_Boolean ""  "use-contrib" "Look in contrib store as well."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fullfit dependencies."
 Add_Option_Boolean "I" "no-install" "Do not install, only locate and fetch the package.
         Automatically enables '--keep'"
+Add_Option_Boolean "S" "no-symlink" "Do not create symbolic links in ${goboLinks}, just fetch and unpack the package."
 Add_Option_Boolean "k" "keep" "Do not remove downloaded packages."
 Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
         'keep', 'remove', 'ask' or 'cancel'." "ask"
@@ -30,7 +31,7 @@ Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
 "from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
-Add_Option_Boolean "S" "no-sign-check" "Do not check the signature."
+Add_Option_Boolean "C" "no-sign-check" "Do not check the signature."
 Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the package"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
   
@@ -46,6 +47,7 @@ fi
 unmanaged="--unmanaged $(Entry unmanaged)"
 Boolean "batch"      && batch="--batch"
 Boolean "keep"       && keep="--keep"
+Boolean "no-symlink" && nosymlink="--no-symlink"
 Boolean "no-install" && noinstall="--no-install" && keep="--keep"
 Boolean "use-contrib"&& contrib=",contrib_package"
 Boolean "no-sign-check" && nosigncheck="--no-sign-check"
@@ -73,13 +75,13 @@ then
 
       if mv ${goboTemp}/${filename} ${defaultLocalPackagesPaths[0]}/${filename} 
       then 
-         InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/${filename}
+         InstallPackage ${unmanaged} ${noinstall} ${nosymlink} ${nosigncheck} ${keep} ${batch} ${defaultLocalPackagesPaths[0]}/${filename}
       else
          Log_Error "Coud not move package."
-         InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
+         InstallPackage ${unmanaged} ${noinstall} ${nosymlink} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
       fi
    else
-      InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
+      InstallPackage ${unmanaged} ${noinstall} ${nosymlink} ${nosigncheck} ${keep} ${batch} ${goboTemp}/${filename}
       Log_Normal "Removing downloaded package ${goboTemp}/${filename}."
       rm -f -- ${goboTemp}/${filename}
    fi
@@ -119,7 +121,7 @@ then
          if [ "${found}" ]
          then 
             Log_Normal "Found package for ${name} ${version}: ${found}"
-            InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${nosymlink} ${nosigncheck} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for ${name} ${version} not found."
          fi
@@ -128,7 +130,7 @@ then
          if [ "${found}" ]
          then
             Ask_Continue "Installing ${found}"
-            InstallPackage ${unmanaged} ${noinstall} ${nosigncheck} ${keep} ${batch} "${found}"
+            InstallPackage ${unmanaged} ${noinstall} ${nosymlink} ${nosigncheck} ${keep} ${batch} "${found}"
          else
             Die_With $errorNotFound "Package for ${name} not found."
          fi
@@ -352,7 +354,7 @@ then
    Boolean "no-updatesettings" || UpdateSettings "$packagename" "$packageversion"
 fi
 
-SymlinkProgram ${unmanaged} "$packagename" "$packageversion"
+Boolean "no-symlink" || SymlinkProgram ${unmanaged} "$packagename" "$packageversion"
 
 [ "$package_verified" = "true" ] && Run_PostInstall "$packagename" "$packageversion" "" ""
 
