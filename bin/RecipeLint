@@ -244,6 +244,7 @@ cat Recipe | perl -e '
       include => "array",
       keep_existing_target => "bool",
       configure_options => "array",
+      cmake_options => "array",
       autogen_before_configure => "bool",
       build_variables => "array",
       install_variables => "array",
