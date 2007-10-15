@@ -33,10 +33,6 @@ Add_Option_Boolean "q" "quiet" "No output.  Check exit status for result."
 Add_Option_Boolean "W" "no-web" "Do not check remote keyserver for keys."
 Parse_Options "$@"
 
-[ -z "$(Arg 1)" ] && { 
-   ( Show_Help )
-   Die "No application specified"
-}
 ##### Run as original user
 Release_Superuser
 
