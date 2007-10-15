@@ -166,13 +166,6 @@ config NETWORK_NAMESERVER
 
 comment ""
 
-config KERNEL_HEADERS_VERSION
-	string "Kernel version for Linux-Headers package"
-	default "2.6.19"
-	---help---
-	  Specifies which kernel version to use for Linux-Headers package
-	  generation.
-
 config NEW_HOSTNAME
     string "Hostname"
     default "GoboLinux"
