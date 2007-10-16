@@ -119,7 +119,7 @@ function do_symlink() {
       then sandboxopts=()
       else sandboxopts=$(merge_array "sandbox_options")
       fi
-      subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
+      subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
       [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
