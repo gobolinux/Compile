@@ -6,8 +6,8 @@
         <translation>Nem találtam érvényes partíciót</translation>
     </message>
     <message>
-        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
-        <translation>Csinálhatsz egyet a &quot;gparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
+        <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
+        <translation type="obsolete">Csinálhatsz egyet a &quot;qtparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
     </message>
     <message>
         <source>Welcome!</source>
@@ -27,7 +27,7 @@
     </message>
     <message>
         <source>Target device selection</source>
-        <translation></translation>
+        <translation>A telepítés helyének kiválasztása</translation>
     </message>
     <message>
         <source>Root partition</source>
@@ -94,8 +94,8 @@
         <translation>Minden olyan csomag megjelölése, melyek szükségesek egy már korábban bejelölt számára.</translation>
     </message>
     <message>
-        <source>Bypass dependencies check</source>
-        <translation>Függõségek vizsgálatának átlépése</translation>
+        <source>Bypass dependencies checking</source>
+        <translation type="obsolete">Függõségek vizsgálatának átlépése</translation>
     </message>
     <message>
         <source>Check if you want to install only the above selected packages.</source>
@@ -522,20 +522,7 @@
         <translation>Hiba lépett fel az OpenSSH kulcs generálásakor.</translation>
     </message>
     <message>
-        <source>Check if the above fields have the same password typed in.</source>
-        <translation type="obsolete"></translation>
-    </message>
-    <message>
-        <source>Password is not allowed to be empty.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No normal users are added. Do you want to continue anyway?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Your installation will only have a superuser defined.
- It is recommended that one adds at least one additional user for normal use.</source>
+        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -552,6 +539,23 @@
     </message>
     <message>
         <source>Size of the swap file, in megabytes.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Bypass dependencies check</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Password is not allowed to be empty.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No normal users are added. Do you want to continue anyway?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Your installation will only have a superuser defined.
+ It is recommended that one adds at least one additional user for normal use.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
