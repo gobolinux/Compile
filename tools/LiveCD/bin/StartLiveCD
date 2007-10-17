@@ -23,6 +23,12 @@ msg "Starting log daemon"
 syslogd
 
 ######################################
+# load OSS compatibility for ALSA
+######################################
+modprobe snd-pcm-oss
+modprobe snd-mixer-oss
+
+######################################
 # launch the loopback interface
 ######################################
 msg "Launching the loopback interface"
