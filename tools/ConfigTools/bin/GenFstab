@@ -93,7 +93,7 @@ function gen_config() {
       partitionnumber=$(echo "${partition}" | sed s/".*${drive}\(.*\)"/"\1"/)
       pt=$(fdisk -l | grep "${drive}${partitionnumber}")
       bootableflag=$(echo "${pt}" | awk {'print $2'})
-      if [ ! -z "${extralist}" -a "$(echo ${extralist} | grep -q ${drive}${partitionnumber})" ]
+      if [ ! -z "${extralist}" -a -n "$(echo ${extralist} | grep ${drive}${partitionnumber})" ]
       then
          mountpoint=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\1"/)
 	 filesystem=$(echo "${extralist}" | sed -r s/".*${drive}${partitionnumber}\s*:([^:]*):([^:]*):([^:]*):([^,]*).*"/"\2"/)
