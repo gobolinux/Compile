@@ -93,7 +93,7 @@ def tr(s) :
 	return s
 
 def devToGrub(p) :
-	grub_dev = os.popen("dev2grub.sh /dev/"+p)
+	grub_dev = os.popen("dev2grub.sh "+p)
 	return grub_dev.readline().strip()
 
 def getSwapPartition() :
@@ -123,7 +123,7 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 		if len(l) > 1 and l[1] == '*' :
 			bootableWindowsPartitions.append(devToGrub(l[0]))
 
-	grubFormatTarget = devToGrub(targetPartition)
+	grubFormatTarget = devToGrub('/dev/'+targetPartition)
 	swapPartition = getSwapPartition()
 
 	o = ''
