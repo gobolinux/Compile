@@ -407,7 +407,7 @@ class CursesDropList(CursesWidget) :
                sel = sel + 1
                if sel == len(self.items):
                   sel = 0
-            elif k == 10
+            elif k == 10 :
                self.value = sel
                if self.callBack != None :
                   self.callBack()
