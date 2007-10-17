@@ -17,6 +17,7 @@ Import String
 scriptDescription="Automatic fstab generator."
 scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL."
 scriptUsage=""
+Add_Option_Entry "s" "swap-file" "A swap file to include in the generated fstab."
 Add_Option_Entry "x" "extra-list" "A list of predefined devices and mount points on the format <device>:<mount point>:[<filesystem>]:[<mount options>]:[<comment>], each entry separated by a comma." ""
 
 Parse_Options "$@"
@@ -254,3 +255,11 @@ do
      echo
    fi
 done
+
+if Is_Entry_Set "swap-file"
+then
+   swapfile=`Entry "swap-file"`
+   echo "# Swap file."
+   echo "$swapfile none swap defaults 0 0"
+   echo
+fi
