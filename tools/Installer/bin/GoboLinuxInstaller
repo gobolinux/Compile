@@ -297,8 +297,10 @@ for line in lines :
 lines = safeFileReadLines('/System/Settings/modprobe.conf')
 
 cmd = 'EthInterfaces'
-interfaces = safeRun(cmd)
-interfaces = ['eth3','eth4']
+if reallyInstall :
+	interfaces = safeRun(cmd)
+else :
+	interfaces = ['eth3','eth4']
 
 ###############################################################################
 ###############################################################################
