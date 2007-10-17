@@ -124,7 +124,7 @@ function UpdateProgress() {
          bar="${bar}Û"
       fi
    done
-   lastI=$[width]
+   lastI=$[i]
    Cursor Save
    GotoXY 1 $[ROWS-1]
    echo -en "\033[0m\033(U${bar}\033[0m\033D"

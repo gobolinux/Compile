@@ -42,6 +42,7 @@ fi
 ### Simulating /bin/BootScript ###
 
 source "$BootScriptsDir/Functions/BootScripts"
+source "/System/Settings/BootOptions"
 source "$themefile"
 
 # The smile has left your eyes...
