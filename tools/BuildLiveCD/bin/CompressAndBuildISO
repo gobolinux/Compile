@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export SHELL=/bin/bash
+
 function die() {
    echo "$@"
    exit 1
@@ -231,7 +233,7 @@ then
       if [ ! -e "$out" ] || [ $diffs -gt 0 ] || ld_so_cache_changed
       then
          echo "Creating squashfs compressed file $bn..."
-         nice -20 mksquashfs $dirs "$out" -noappend -keep-as-directory $blacklist
+         nice -20 mksquashfs $dirs $out -noappend -keep-as-directory $blacklist
       else
          echo "Mksquashfs not needed for $bn."
       fi
@@ -245,7 +247,7 @@ then
    # compress the uncompressed files into squashfs files
    mkdir -p Output/ISO
    quiet pushd Output/Environment
-   time mksquashfs_on_demand ../ISO/GoboLinux-files.squashfs Files
+   #time mksquashfs_on_demand ../ISO/GoboLinux-files.squashfs Files
 
    for i in $datadir/Packages-List-*; do 
       squashfile=../ISO/`basename $i`.squashfs
@@ -256,13 +258,16 @@ then
          rm -f "$squashfile"
       fi
       # Skip comments
-      applist=`cat $i | cut -f1 -d' ' | grep -v "^#" | sort -u | while read i; do [ ! -z "$i" ] && echo $i; done`
-      blackapplist=`cd Programs; for dir in *; do cat $i | cut -f1 -d' ' | grep -v "^#" | grep -q "^$dir$" || echo "-e $dir"; done`
+      applist=`cat $i | cut -f1 -d' ' | grep -v "^#" | sort -u | while read entry; do [ ! -z "$entry" ] && echo $entry; done`
+      searchdirs=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
       if [ -z "$applist" ]
       then continue
       fi
-      searchdirs=`for i in $applist; do echo Programs/$i; done | tr -s '\n' ' '`
-      time mksquashfs_on_demand $squashfile Programs "$searchdirs" "$blackapplist"
+      excludefile=`mktemp`
+      excludelist=`for entry in $applist; do echo -n "--ignore=$entry "; done`
+      \ls Programs $excludelist > $excludefile
+      time mksquashfs_on_demand $squashfile Programs "$searchdirs" "-ef $excludefile"
+      rm -f "$excludefile"
    done
 
    contents=`ls | grep -v "Files\|Programs\|Users" | tr -s '\n' ' '`
