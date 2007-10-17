@@ -326,6 +326,7 @@ d = re.compile(r'\b[a-z]+\b')
 discsList = filter(lambda x:d.match(x) and not 'loop' in x,devicesList)
 discsList.sort()
 
+hasSwap = False
 for disc in discsList :
 	device = '/System/Kernel/Devices/'+disc.split(' ')[0]
 	partitionfilter = re.compile(r'^/.*')
@@ -335,6 +336,7 @@ for disc in discsList :
 		if part[4] == '82' :
 			safeRun('mkswap %s'%part[0])
 			safeRun('swapon %s'%part[0])
+			hasSwap = True
 
 #partitionsList = filter(lambda x:x.find('part') > -1,devicesList)
 #partitionsList.sort()
@@ -414,8 +416,29 @@ def doFormatChanged() :
 deviceSelection.addBoolean('DoFormat',   tr('Format partition'), 0, tr('Erase all contents of the partition and prepare it to receive the new system?'), doFormatChanged)
 deviceSelection.addList('PartitionType', tr('File system'), (['ReiserFS', 'Ext2', 'Ext3'],  'ReiserFS'), tr('Which kind of file system should be used to format the root partition.') )
 deviceSelection.setEnabled('PartitionType', 0)
-installer.addScreen(deviceSelection)
 
+def doSwapFile() :
+	if installer.getValue('SwapFile') == 1 :
+		deviceSelection.setEnabled('SwapSize', 1)
+	else :
+		deviceSelection.setEnabled('SwapSize', 0)
+	try :
+		showSelectedSetSize()
+	except :
+		# Ignore first run when selected set is not built yet
+		pass
+
+deviceSelection.addBoolean('SwapFile', tr('Create a swap file'), 0, tr('Create a special file in the root partition to function as memory swap space'), doSwapFile)
+# FIXME: default number should be based on memory size and root partition size
+deviceSelection.addLineEdit('SwapSize', tr('Swap file size (in MB)'), str(256), tr('Size of the swap file, in megabytes.'))
+if not hasSwap :
+	deviceSelection.setValue('SwapFile', 1)
+	deviceSelection.setEnabled('SwapSize', 1)
+else :
+	deviceSelection.setValue('SwapFile', 0)
+	deviceSelection.setEnabled('SwapSize', 0)
+
+installer.addScreen(deviceSelection)
 
 ###############################################################################
 ###############################################################################
@@ -477,6 +500,8 @@ def fillUpDependencies() :
 def showSelectedSetSize() :
 	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
 	sum = 290000 # kbytes from system (102Mb) and files (180Mb)
+	if installer.getValue('SwapFile') == 1 :
+		sum = sum + (int(installer.getValue('SwapSize'))*1024)
 	for package in packages :
 		if programSizes.has_key(package) :
 			sum = sum + programSizes[package]
@@ -1042,6 +1067,12 @@ lo_Netmask=255.0.0.0
 
 	safeWriteToFile(destMountPoint+'/System/Settings/resolv.conf', o, logger)
 
+	# TODO: Create swap file if selected
+	if installer.getValue('SwapFile') == 1 :
+		size = int(installer.getValue('SwapSize'))
+		# ...
+		# create swap
+		# add it to fstab in the next step
 
 	##############################################################################
 	##############################################################################
