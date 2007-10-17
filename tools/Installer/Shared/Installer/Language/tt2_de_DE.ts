@@ -534,5 +534,21 @@
  It is recommended that one adds at least one additional user for normal use.</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Create a swap file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Create a special file in the root partition to function as memory swap space</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Swap file size (in MB)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Size of the swap file, in megabytes.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 </TS>
