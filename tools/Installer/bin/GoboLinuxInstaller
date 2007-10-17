@@ -1067,18 +1067,19 @@ lo_Netmask=255.0.0.0
 
 	safeWriteToFile(destMountPoint+'/System/Settings/resolv.conf', o, logger)
 
-	# TODO: Create swap file if selected
+	genFstabParams = ''
 	if installer.getValue('SwapFile') == 1 :
+		swapFileName = '/System/Variable/swap'
+		genFstabParams = '--swap-file '+swapFileName
 		size = int(installer.getValue('SwapSize'))
-		# ...
-		# create swap
-		# add it to fstab in the next step
+		safeRun('dd if=/dev/zero of=%s%s bs=1M count=%d'%(destMountPoint,swapFileName,size))
+		safeRun('mkswap %s%s' %(destMountPoint,swapFileName))
 
 	##############################################################################
 	##############################################################################
 	# Create fstab
 	log(tr('Generating /System/Settings/fstab...'))
-	cmd = 'GenFstab > %s/System/Settings/fstab'%destMountPoint
+	cmd = 'GenFstab %s > %s/System/Settings/fstab'%(genFstabParams,destMountPoint)
 	safeRun(cmd, 'fstab generation', 0, logger)
 
 	lines = safeFileReadLines(destMountPoint+'/System/Settings/fstab', logger)
