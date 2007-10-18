@@ -1,5 +1,5 @@
-# -*- encoding iso-8859-1 -*-
 import sys
+import locale
 
 #class AbsInterface :
 
@@ -86,9 +86,6 @@ class AbsTranslator :
 			results = self.doc.xpathEval('/TS/context/message[source = \'%s\']/translation/text()'%(rs,))
 			if not results :
 				return s
-			# FIXME: This really needs to use locale.getpreferredencoding(), but something
-			# else along the way is forcing things to work only with iso-8859-1. 
-			# For now this works, but will probably break when we add more languages.
-			return results[0].content.replace('&apos;',"'").replace('&quot;',"\\").decode('utf-8').encode('iso-8859-1')
+			return results[0].content.replace('&apos;',"'").replace('&quot;',"\\").decode('utf-8').encode(locale.getpreferredencoding())
 		else :
 			return s
