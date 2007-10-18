@@ -575,15 +575,17 @@ installer.addScreen(localeOptions)
 # NET INTERFACES SCREENS
 
 def checkDHCP() :
-	# if the interface is configured as DHCP, disable Gateway and DNS edit
-	if installer.getValue('BootProto'+installer.getValue('GatewayInterface')[1]) :
-		installer.setEnabled('Gateway', 0)
-		installer.setEnabled('PrimaryDNS', 0)
-		installer.setEnabled('SecondaryDNS', 0)
-	else :
-		installer.setEnabled('Gateway', 1)
-		installer.setEnabled('PrimaryDNS', 1)
-		installer.setEnabled('SecondaryDNS', 1)
+	global networkOptionsScreen
+	if networkOptionsScreen == "added" :
+		# if the interface is configured as DHCP, disable Gateway and DNS edit
+		if installer.getValue('BootProto'+installer.getValue('GatewayInterface')[1]) :
+			installer.setEnabled('Gateway', 0)
+			installer.setEnabled('PrimaryDNS', 0)
+			installer.setEnabled('SecondaryDNS', 0)
+		else :
+			installer.setEnabled('Gateway', 1)
+			installer.setEnabled('PrimaryDNS', 1)
+			installer.setEnabled('SecondaryDNS', 1)
 		
 networkOptions = Screen(tr('General network settings'))
 networkOptions.addLineEdit('Gateway',      tr('Gateway IP:'), '192.168.1.1', tr('Default gateway: the IP which redirects requests to the outside world.') )
@@ -633,7 +635,8 @@ for interface in interfaces :
 	useDHCP = 0
 	# Detect the live-CD default attempt for DHCP
 	if interface == "eth0":
-		useDHCP = os.system("ps aux | grep '[d]hcpcd' | grep -qv 'eth'")
+		if os.system("ps aux | grep '[d]hcpcd' | grep -qv 'eth'") == 0:
+			useDHCP = 1
 	# Also detect hand-launched dhcpcd
 	if os.system("ps aux | grep '[d]hcpcd' | grep -q '%s'" % interface) == 0:
 		useDHCP = 1
