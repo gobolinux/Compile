@@ -6,8 +6,8 @@
         <translation>Nem találtam érvényes partíciót</translation>
     </message>
     <message>
-        <source>Create one using &quot;qtparted&quot; or &quot;cfdisk&quot;</source>
-        <translation type="obsolete">Csinálhatsz egyet a &quot;qtparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
+        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
+        <translation type="obsolete">Csinálhatsz egyet a &quot;gparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
     </message>
     <message>
         <source>Welcome!</source>
@@ -23,7 +23,7 @@
     </message>
     <message>
         <source>Read this to learn more about the installation.</source>
-        <translation>Olvasd el ezt ahhoz, hogy többet megtudj a telepítésrõl.</translation>
+        <translation>Olvasd el ezt ahhoz, hogy többet megtudj a telepítésről.</translation>
     </message>
     <message>
         <source>Target device selection</source>
@@ -39,7 +39,7 @@
     </message>
     <message>
         <source>Warning, this will destroy all data in</source>
-        <translation>FIGYELMEZTETÉS! Ez minden adatot megsemmisít!</translation>
+        <translation>Figyelmeztetés! Ez minden adatot megsemmisít!</translation>
     </message>
     <message>
         <source>Format partition</source>
@@ -47,7 +47,7 @@
     </message>
     <message>
         <source>Erase all contents of the partition and prepare it to receive the new system?</source>
-        <translation>Töröljük a partíció adatait, és készítsük elõ az új rendszer számára?</translation>
+        <translation>Töröljük a partíció adatait, és készítsük elő az új rendszer számára?</translation>
     </message>
     <message>
         <source>File system</source>
@@ -63,7 +63,7 @@
     </message>
     <message>
         <source>Predefined sets of packages</source>
-        <translation>A csomagösszeállítások elõzetes kiválasztása</translation>
+        <translation>A csomagösszeállítások előzetes kiválasztása</translation>
     </message>
     <message>
         <source>Selecting one of these will reset the selections of the package list.</source>
@@ -87,7 +87,7 @@
     </message>
     <message>
         <source>Fill Up Dependencies</source>
-        <translation type="obsolete">Függõségek meghatározása</translation>
+        <translation type="obsolete">Függőségek meghatározása</translation>
     </message>
     <message>
         <source>Mark all packages in the list that are needed by the ones already marked.</source>
@@ -95,7 +95,7 @@
     </message>
     <message>
         <source>Bypass dependencies checking</source>
-        <translation type="obsolete">Függõségek vizsgálatának átlépése</translation>
+        <translation type="obsolete">Függőségek vizsgálatának átlépése</translation>
     </message>
     <message>
         <source>Check if you want to install only the above selected packages.</source>
@@ -103,15 +103,15 @@
     </message>
     <message>
         <source>Bootloader options</source>
-        <translation>A betöltésvezérlõ (bootloader) opciói</translation>
+        <translation>A betöltésvezérlő (bootloader) opciói</translation>
     </message>
     <message>
         <source>Install bootloader</source>
-        <translation>Betöltésvezérlõ (bootloader) telepítése</translation>
+        <translation>Betöltésvezérlő (bootloader) telepítése</translation>
     </message>
     <message>
         <source>Install GRUB in the MBR of your hard disk in order to load up the system.</source>
-        <translation>A GRUB telepítése a merevlemezed MBR-jébe, hogy a rendszer betöltõdése rendben megtörténhessen.</translation>
+        <translation>A GRUB telepítése a merevlemezed MBR-jébe, hogy a rendszer betöltődése rendben megtörténhessen.</translation>
     </message>
     <message>
         <source>Install at</source>
@@ -119,7 +119,7 @@
     </message>
     <message>
         <source>On the MBR of which disk should the bootloader be installed.</source>
-        <translation>Válaszd ki, hogy hová települjön a betöltésvezérlõ!</translation>
+        <translation>Válaszd ki, hogy hová települjön a betöltésvezérlő!</translation>
     </message>
     <message>
         <source>Boot GRUB in graphic mode</source>
@@ -127,7 +127,7 @@
     </message>
     <message>
         <source>Select this if you want a background image to be displayed in the bootloader screen.</source>
-        <translation type="obsolete">Válaszd ezt az opciót, ha háttérképet szeretnél megjeleníteni a betöltésvezérlõ képernyõjén.</translation>
+        <translation type="obsolete">Válaszd ezt az opciót, ha háttérképet szeretnél megjeleníteni a betöltésvezérlő képernyőjén.</translation>
     </message>
     <message>
         <source>General settings</source>
@@ -143,19 +143,19 @@
     </message>
     <message>
         <source>Keyboard map</source>
-        <translation>Billentyûzetkiosztás</translation>
+        <translation>Billentyűzetkiosztás</translation>
     </message>
     <message>
         <source>Select the layout type that matches your keyboard.</source>
-        <translation>Határozd meg a billentyûzeted kiosztását!</translation>
+        <translation>Határozd meg a billentyűzeted kiosztását!</translation>
     </message>
     <message>
         <source>Boot theme</source>
-        <translation>A betöltésvezérlõ kinézete</translation>
+        <translation>A betöltésvezérlő kinézete</translation>
     </message>
     <message>
         <source>The appearance of the boot process can be selected here.</source>
-        <translation>A betöltésvezérlõ által mutatott kép itt kiválasztható.</translation>
+        <translation>A betöltésvezérlő által mutatott kép itt kiválasztható.</translation>
     </message>
     <message>
         <source>BIOS clock is set in</source>
@@ -163,7 +163,7 @@
     </message>
     <message>
         <source>Use local time especially if your computer dual-boots with another OS.</source>
-        <translation>Használd a helyi idõt (local time) ha több operációs rendszer is van a gépedre installálva!</translation>
+        <translation>Használd a helyi időt (local time) ha több operációs rendszer is van a gépedre installálva.</translation>
     </message>
     <message>
         <source>Settings for network interface %s</source>
@@ -175,7 +175,7 @@
     </message>
     <message>
         <source>Should this network interface be brought up when the system is powered up?</source>
-        <translation>Aktiválandó-e ez a hálózati interfész automatikusan a rendszer betöltõdésekor?</translation>
+        <translation>Aktiválandó-e ez a hálózati interfész automatikusan a rendszer betöltődésekor?</translation>
     </message>
     <message>
         <source>Automatic configuration via DHCP</source>
@@ -227,15 +227,15 @@
     </message>
     <message>
         <source>The network interface through which the default gateway can be reached.</source>
-        <translation>A hálózati interfész, melyen át az alapértelmezett átjáró elérhetõ.</translation>
+        <translation>A hálózati interfész, melyen át az alapértelmezett átjáró elérhető.</translation>
     </message>
     <message>
         <source>Primary DNS:</source>
-        <translation>Elsõdleges DNS-szerver:</translation>
+        <translation>Elsődleges DNS-szerver:</translation>
     </message>
     <message>
         <source>Primary server for solving hostnames. Contact your sysadmin or ISP for these.</source>
-        <translation>Az elsõdleges szerver a hosztnevek kezelésére. Ha nem tudod, lépj kapcsolatba a rendszeradminisztrátoroddal</translation>
+        <translation>Az elsődleges szerver a hosztnevek kezelésére. Ha nem tudod, lépj kapcsolatba a rendszeradminisztrátoroddal</translation>
     </message>
     <message>
         <source>Secondary DNS:</source>
@@ -243,7 +243,7 @@
     </message>
     <message>
         <source>Fallback server for when the primary one fails to respond.</source>
-        <translation>Tartalék szerver arra az esetre, ha az elsõ nem válaszolna.</translation>
+        <translation>Tartalék szerver arra az esetre, ha az első nem válaszolna.</translation>
     </message>
     <message>
         <source>Super-user settings</source>
@@ -258,16 +258,8 @@
         <translation>A megadott jelszó nem elfogadható</translation>
     </message>
     <message>
-        <source>Passwords typed match</source>
-        <translation type="obsolete">A megadott jelszó elfogadva</translation>
-    </message>
-    <message>
         <source>Login:</source>
         <translation>Bejelentkezés:</translation>
-    </message>
-    <message>
-        <source>Select the account name for the superuser. Disabled in this release.</source>
-        <translation type="obsolete">Válassz egy felhasználónevet a rendszergazda számára. Jelenleg letiltott.</translation>
     </message>
     <message>
         <source>Password:</source>
@@ -283,15 +275,7 @@
     </message>
     <message>
         <source>Enter the same password as above, to verify for typing mistakes.</source>
-        <translation>Üsd be ugyanazt a jelszót mint korábban, ellenõrzendõ az esetleges elgépeléseket.</translation>
-    </message>
-    <message>
-        <source>Check Password</source>
-        <translation type="obsolete">A jelszó ellenõrzése</translation>
-    </message>
-    <message>
-        <source>Annak vizsg&#xe1;lata, hogy a fels&#xf5; mez&#xf5; ugyanazt a jelsz&#xf3;t tartalmazza-e.</source>
-        <translation type="obsolete">ÃœberprÃ¼ft ob die eingegebenen KennwÃ¶rter Ã¼berein stimmen.</translation>
+        <translation>Üsd be ugyanazt a jelszót mint korábban, ellenőrzendő az esetleges elgépeléseket.</translation>
     </message>
     <message>
         <source>Additional users</source>
@@ -467,11 +451,11 @@
     </message>
     <message>
         <source>Satisfy dependencies</source>
-        <translation>Függõségek vizsgálata</translation>
+        <translation>Függőségek vizsgálata</translation>
     </message>
     <message>
         <source>Filter:</source>
-        <translation>Szûrõ:</translation>
+        <translation>Szűrő:</translation>
     </message>
     <message>
         <source>Select the account name for the superuser.</source>
@@ -507,15 +491,15 @@
     </message>
     <message>
         <source>Time zone</source>
-        <translation>Idõzóna</translation>
+        <translation>Időzóna</translation>
     </message>
     <message>
         <source>Select the time zone where you are at</source>
-        <translation>Válaszd ki az idõzónádat</translation>
+        <translation>Válaszd ki az időzónádat</translation>
     </message>
     <message>
         <source>Narrow the selection by searching for a particular word</source>
-        <translation>Szûkítsd a kiválasztásodat amiben a szót keresed</translation>
+        <translation>Szűkítsd a kiválasztásodat amiben a szót keresed</translation>
     </message>
     <message>
         <source>Error generating OpenSSH keys.</source>
