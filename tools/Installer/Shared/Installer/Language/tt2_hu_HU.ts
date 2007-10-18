@@ -7,7 +7,7 @@
     </message>
     <message>
         <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
-        <translation type="obsolete">Csinálhatsz egyet a &quot;gparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
+        <translation>Csinálhatsz egyet a &quot;gparted&quot; vagy a &quot;cfdisk&quot; használatával</translation>
     </message>
     <message>
         <source>Welcome!</source>
@@ -504,10 +504,6 @@
     <message>
         <source>Error generating OpenSSH keys.</source>
         <translation>Hiba lépett fel az OpenSSH kulcs generálásakor.</translation>
-    </message>
-    <message>
-        <source>Create one using &quot;gparted&quot; or &quot;cfdisk&quot;</source>
-        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Create a swap file</source>
