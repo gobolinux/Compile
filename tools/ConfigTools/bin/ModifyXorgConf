@@ -76,6 +76,10 @@ then
   then
      Log_Normal "Your keymap layout is '$KeymapLayout'."
      case "$KeymapLayout" in
+     "be-latin1")
+        apply_ed 'Driver      "kbd"' '        Option "XkbModel" "pc104"'
+        apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "be"'
+        ;;
      "br-abnt2")
         apply_ed 'Driver      "kbd"' '        Option "XkbModel" "abnt2"'
         apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "br"'
