@@ -12,6 +12,10 @@ import os.path, sys, string, time, os, threading
 from PythonUtils import *
 
 goboUserSettings = getGoboVariable('goboUserSettings')
+if not goboUserSettings:
+	Log_Error("Unable to get $goboUserSettings value. Aborting.")
+	sys.exit(1)
+
 cacheDir = os.path.expanduser(goboUserSettings+'/cache/')
 
 def loadConfig() :
@@ -183,7 +187,7 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		return d
 
 	programs = os.listdir(directory)
-	
+
 	for i in range(len(programs)) :
 		p = programs[i]
 		if not os.path.isdir(directory+'/'+p):
@@ -192,12 +196,12 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		if current_only :
 			if not os.path.isdir(directory+'/'+p+'/'+'Current'):
 				continue
-			
+
 			try :
 				v = os.readlink(directory+'/'+p+'/'+'Current').split('/')[-1]
 			except :
 				continue
-			
+
 			u = directory+'/'+p+'/'+v
 			if os.access(u+'/'+'Resources/Revision', os.R_OK) :
 				f = open(u+'/'+'Resources/Revision')
