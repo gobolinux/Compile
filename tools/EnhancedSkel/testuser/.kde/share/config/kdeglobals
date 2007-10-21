@@ -8,6 +8,7 @@ Animated=true
 Size=32
 
 [General]
+XftAntialias=true
 background=239,239,239
 buttonBackground=221,223,228
 buttonForeground=0,0,0
