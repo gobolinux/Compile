@@ -1156,7 +1156,7 @@ lo_Netmask=255.0.0.0
 		cmd = cmd + ' ' + login
 		safeRun(cmd, '', 0, logger)
 		if addedUsers[login]['NewUserEnableSudo'] :
-			cmd = 'chroot %s usermod -G sys %s'%(destMountPoint,login)
+			cmd = 'chroot %s usermod -aG sys %s'%(destMountPoint,login)
 			safeRun(cmd, '', 0, logger)
 		elif addedUsers[login]['SuperSkel'] :
 			cmd = 'chroot %s rm -f /Users/%s/Desktop/Manager.desktop'%(destMountPoint,login)
