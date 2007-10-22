@@ -104,6 +104,8 @@ handle_description() {
                   fbc093901857fcd118f065f900982c24) newlicense="GNU Lesser General Public License version 2.1" ;;
                   # MPL1.1
                   bfe1f75d606912a4111c90743d6c7325) newlicense="Mozilla Public License 1.1" ;;
+                  # Apache License 2.0
+                  218532c6a293a0aef9ab37fe496c3cd2) newlicense="Apache License 2.0" ;;
                   *)
                      Log_Terse "Could not autodetermine licensing for writing the Description file."
                      Ask_Continue "Press Enter to view the license file $licensefile."
