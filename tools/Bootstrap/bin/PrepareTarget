@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TOP_DIR=..
-export PATH=$PATH:$TOP_DIR/functions
+export PATH=$PATH:.:$TOP_DIR/functions
 
 source PkgFunctions
 source ScriptFunctions
