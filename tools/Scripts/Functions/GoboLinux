@@ -666,7 +666,7 @@ function Install_Unmanaged_Files() {
          Quiet cp -af "${sourcedir}/${line}" "${dname}/"
 	 echo ${line} | grep -q "${goboModules}/$(uname -r)" && unmanagedkernelmodules="yes"
       done < <(cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs")
-      [ "${unmanagedkernelmodules}" == "yes" ] && echo "depmod -ae $(uname -r)" >&2
+      [ "${unmanagedkernelmodules}" == "yes" ] && depmod -ae $(uname -r)
    fi
 }
 
@@ -682,7 +682,7 @@ function Uninstall_Unmanaged_Files() {
          Quiet rmdir "${dname}"
 	 echo ${line} | grep -q "${goboModules}/$(uname -r)" && unmanagedkernelmodules="yes"
       done < <(cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs")
-      [ "${unmanagedkernelmodules}" == "yes" ] && echo "depmod -ae $(uname -r)" >&2
+      [ "${unmanagedkernelmodules}" == "yes" ] && depmod -ae $(uname -r)
    fi
 }
 
