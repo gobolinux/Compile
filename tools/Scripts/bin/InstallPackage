@@ -37,6 +37,14 @@ Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypa
   
 Parse_Options "$@"
 
+if [ -z "$ROOTLESS_GOBOLINUX" ] && ! sudo_validate
+then
+   Ask "You are trying to install $(Arg 1) as normal user without privileges.\n\
+Should a rootless environment be set up instead?" && {
+      CreateRootlessEnvironment && . ~/Programs/Rootless/Current/bin/StartRootless
+   }
+fi
+
 ### Operation #################################################################
 
 if [ "$goboInstall" = "" ]
