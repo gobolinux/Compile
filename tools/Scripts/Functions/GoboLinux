@@ -658,12 +658,15 @@ function Install_Unmanaged_Files() {
    Parameters "$@" unmanagedfilesfile sourcedir
    if [ -f "$unmanagedfilesfile" ]
    then
-      cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
+      unset unmanagedkernelmodules
+      while read line
       do
          local dname=$(dirname "${goboPrefix}/$line")
          mkdir -p "${dname}"
          Quiet cp -af "${sourcedir}/${line}" "${dname}/"
-      done
+	 echo ${line} | grep -q "${goboModules}/$(uname -r)" && unmanagedkernelmodules="yes"
+      done < <(cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs")
+      [ "${unmanagedkernelmodules}" == "yes" ] && echo "depmod -ae $(uname -r)" >&2
    fi
 }
 
@@ -671,12 +674,15 @@ function Uninstall_Unmanaged_Files() {
    Parameters "$@" unmanagedfilesfile
    if [ -f "$unmanagedfilesfile" ]
    then
-      cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs" | while read line
+      unset unmanagedkernelmodules
+      while read line
       do
          local dname=$(dirname "${goboPrefix}/$line")
          rm -f "${line}"
          Quiet rmdir "${dname}"
-      done
+	 echo ${line} | grep -q "${goboModules}/$(uname -r)" && unmanagedkernelmodules="yes"
+      done < <(cat "$unmanagedfilesfile" | grep -E -v "^(\./|/|)Programs")
+      [ "${unmanagedkernelmodules}" == "yes" ] && echo "depmod -ae $(uname -r)" >&2
    fi
 }
 
