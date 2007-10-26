@@ -8,7 +8,9 @@ PACKAGE_BASE=$(PACKAGE_ROOT)/$(VERSION)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 CVSTAG=`echo $(PROGRAM)_$(VERSION) | tr "[:lower:]" "[:upper:]" | sed  's,\.,_,g'`
 
-default:
+all:
+	cd bin && rm -f StopTask
+	cd bin && ln -nfs StartTask StopTask
 
 version_check:
 	@[ "$(VERSION)" = "" ] && { echo -e "Error: run make with VERSION=<version-number>.\n"; exit 1 ;} || exit 0
@@ -20,7 +22,7 @@ cleanup:
 verify:
 	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
-dist: version_check cleanup verify
+dist: all version_check cleanup verify
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
 	SignProgram $(PROGRAM)
