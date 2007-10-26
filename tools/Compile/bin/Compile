@@ -47,7 +47,7 @@ Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build
 Parse_Conf Compile.conf
 Parse_Options "$@"
 
-if [ -z "$ROOTLESS_GOBOLINUX" ] && ! sudo_validate
+if [ -z "$ROOTLESS_GOBOLINUX" ] && ! $sudo_validate
 then
    Ask "You are trying to compile $(Arg 1) as normal user without privileges.\n\
 Should a rootless environment be set up instead?" && {
