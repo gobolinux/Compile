@@ -67,7 +67,7 @@ else
       Log_Normal "Updating recipes from store $getRecipeStoreHttp"
       tmpls=$(wget $lsfile -O - 2>/dev/null)
       
-      for ${recipename} in ${tmpls}
+      for recipename in ${tmpls}
       do
          noext="$recipename"
          noext=${noext%--recipe.tar.bz2}
