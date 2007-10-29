@@ -143,10 +143,33 @@ function Gen_FileHash() {
    # Below may seem odd.  We can't just Verify_Superuser script because
    # gpg must run as normal user.
    Quiet pushd $file_prefix
-   $sudo_exec ListProgramFiles --files "$file_prefix" | grep -v "Resources/FileHash" | while read file
-   do
-      sha1sum "$file" | $sudo_exec tee -a "$hashfile" >&$verboseFD
-   done
+   $sudo_exec ListProgramFiles --files "$file_prefix" | $sudo_exec python -c """#
+import sys, os, os.path, sha
+
+def sha1sum_string(data):
+   s = sha.new()
+   s.update(data)
+   return s.hexdigest()
+
+def sha1sum_file(filename):
+   f = open(filename, 'r')
+   data = f.read()
+   f.close()
+   return sha1sum_string(data)
+
+print 'GoboLinux FileHash, version 2.0, SHA-1'
+
+for line in sys.stdin:
+   line = line.split('\n')[0]
+   if line == 'Resources/FileHash':
+      continue
+   if os.path.islink(line):
+      sum = sha1sum_string(os.readlink(line))
+   else:
+      sum = sha1sum_file(line)
+   print '%s %s' % (sum, line)
+
+""" | $sudo_exec tee -a "$hashfile" >&$verboseFD
    Quiet popd
 }
 
@@ -204,13 +227,33 @@ function Check_FileHash() {
    $sudo_exec ListProgramFiles --files "$prefix" | grep -v "$cleanhashfilename" | $sudo_exec python -c """#
 import re, os, string, os.path, sys
 
+import sha
+
+def sha1sum_string(data):
+   s = sha.new()
+   s.update(data)
+   return s.hexdigest()
+
+def sha1sum_file(filename):
+   f = open(filename, 'r')
+   data = f.read()
+   f.close()
+   return sha1sum_string(data)
+
 hashfile='$hash_file'
 
 file_checksums={}
 errors=0
 
 hashes = file(hashfile, 'r')
-for line in hashes:
+lines = hashes.readlines()
+
+version = 1
+if lines[0] == 'GoboLinux FileHash, version 2.0, SHA-1\n':
+   version = 2
+   lines = lines[1:]
+
+for line in lines:
    fields = re.split('\s+', line)
    key = fields[1]
    for i in xrange(2, len(fields)):
@@ -223,7 +266,13 @@ for line in sys.stdin:
    try:
       line = line.split('\n')[0]
       good_sum = file_checksums[line]
-      test_sum = re.split('\s+', os.popen('sha1sum \'%s\''%line).read().rstrip())[0]
+      if version == 1:
+         test_sum = sha1sum_file(line)
+      elif version == 2:
+         if os.path.islink(line):
+            test_sum = sha1sum_string(os.readlink(line))
+         else:
+            test_sum = sha1sum_file(line)
       del file_checksums[line]
       if good_sum != test_sum:
          print line, 'has been modified!'
