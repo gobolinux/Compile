@@ -923,8 +923,8 @@ try :
 	# Install GRUB...
 	def installGrub(targetDisc, targetPartition) :
 		o = ''
-		o += 'root %s'%GenGrubMenu.devToGrub(targetPartition) + '\n'
-		o += 'setup --prefix=/System/Kernel/Boot/grub %s'%GenGrubMenu.devToGrub(targetDisc) + '\n'
+		o += 'root %s'%GenGrubMenu.devToGrub('/dev/'+targetPartition) + '\n'
+		o += 'setup --prefix=/System/Kernel/Boot/grub %s'%GenGrubMenu.devToGrub('/dev/'+targetDisc) + '\n'
 
 		safeWriteToFile('/tmp/GRUB_INPUT', o, logger)
 		cmd = 'grub --batch < /tmp/GRUB_INPUT'
