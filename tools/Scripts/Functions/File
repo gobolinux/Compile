@@ -252,6 +252,10 @@ version = 1
 if lines[0] == 'GoboLinux FileHash, version 2.0, SHA-1\n':
    version = 2
    lines = lines[1:]
+elif lines[0].startswith('GoboLinux FileHash'):
+   format = lines[0].split('\n')[0]
+   print 'Unsupported FileHash format (%s), please upgrade Scripts.' % format
+   sys.exit(1)
 
 for line in lines:
    fields = re.split('\s+', line)
