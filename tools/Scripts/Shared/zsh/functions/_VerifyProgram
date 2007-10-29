@@ -1,0 +1,3 @@
+#compdef VerifyProgram
+
+_files -W ${goboPrefix}/Programs
