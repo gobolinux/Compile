@@ -26,8 +26,8 @@ scriptNotes="When updating a single program, $scriptName will download "\
 Add_Option_Boolean "a" "all" "Download contents of updated recipes. "\
 "By default, $scriptName will only fetch the recipe list and generate "\
 "empty recipe directories (except when updating a single program)."
-Add_Option_Boolean "l" "all-latest" "Like --all, but only fetch the latest
-versions of each recipe."
+Add_Option_Boolean "l" "all-latest" "Like --all, but only fetch the latest "\
+"versions of each recipe."
 Add_Option_Boolean "t" "thorough" "Check all availabe mirrors for updates. "\
 "By default, only the first working mirror (as configured in Compile.conf) is used."
 Parse_Options "$@"
