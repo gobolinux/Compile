@@ -386,10 +386,6 @@ function Parse_Options() {
       fi
    done
    
-   if [ "$helpOnNoArguments" -a -z "$(Arg 1)" ]
-   then Show_Help
-   fi
-
    if Boolean "help"
    then Show_Help
    fi
@@ -401,6 +397,9 @@ function Parse_Options() {
    fi
    if Boolean "verbose"
    then Import LogVerbose
+   fi
+   if [ "$helpOnNoArguments" -a -z "$(Arg 1)" ]
+   then Show_Help
    fi
 }
 
