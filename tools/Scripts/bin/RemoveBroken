@@ -17,10 +17,13 @@ else:
     files = sys.argv[1:]
 
 for filename in files :
-    if not os.access(filename, os.F_OK) :
-        try :
-            os.unlink(filename)
-            if verbose == 1 :
-               print filename
-        except :
-            print "Failed removing "+filename
+    try :
+        if os.lstat(filename) and not os.access(filename, os.F_OK) :
+            try :
+                os.unlink(filename)
+                if verbose == 1 :
+                   print filename
+            except :
+                print "Failed removing "+filename
+    except :
+	continue
