@@ -694,7 +694,7 @@ function String_Version() {
 
 function Get_System_Paths () {
    Parameters "$1" programpath
-   find ${programpath} |
+   find ${programpath} -mindepth 2 |
    sed -e "s, ,\\ ,g" \
    -e "s,${programpath}/lib/\(.*\),${goboLinks}/Libraries/\1,g" \
    -e "s,${programpath}/sbin/\(.*\),${goboLinks}/Executables/\1,g" \
