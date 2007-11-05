@@ -458,7 +458,7 @@ test_urls() {
                   gunzip --test $file || {
                      ERROR "Downloaded file $file is corrupted."
                   }
-               elif [ ${file%.bz2} != $file ]
+               elif [ ${file%.bz2} != $file -o ${file%.tbz2} != $file ]
                then
                   msg "Testing integrity of archive $file..."
                   bunzip2 --test $file || {
