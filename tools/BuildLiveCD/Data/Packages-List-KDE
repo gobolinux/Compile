@@ -4,8 +4,10 @@
 FAM               # KDE-Libs/KDE-Base recommended dependency
 LibNTLM           # KDE-Libs optional dependency
 DBus              # KDE-Base optional dependency
+DBus-Qt           # KDE-Base optional dependency
 DBus-GLib         # HAL dependency
 HAL               # KDE-Base optional dependency
+HAL-Info          # HAL dependency
 ##LibMusicbrainz  # KDE-Multimedia optional dependency
 #Speex            # KDE-Multimedia optional dependency
 LibTheora         # Xine-Lib dependency
