@@ -14,6 +14,7 @@ Import String
 # 4     No signature
 # 5     No FileHash (implies no signature)
 # 6     Signer unknown
+# 7     Unsuported file hash format
 
 GPG_opts="--keyring ${GPG_gobo_keyring}"
 
@@ -148,7 +149,12 @@ if Exists "${FileHash_loc}"
 then
    Boolean "quiet" || Log_Normal "Verifying FileHash..."
    output=$(Check_FileHash "${prefix}" "${FileHash_loc}")
-   if Failed
+   rtn=$?
+   if [ "$rtn" == 255 ]
+   then 
+      Boolean "quiet" || Log_Error "$output"
+      exit_with_error 7
+   elif [ "$rtn" != 0 ]
    then
       Boolean "quiet" || Log_Error "FileHash check failed: $output"
       exit_with_error 3

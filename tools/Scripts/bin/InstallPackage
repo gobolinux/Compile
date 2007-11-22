@@ -296,24 +296,28 @@ else
       package_verified="true"
    elif [ $result -eq 2 ]
    then
-      Log_Question "GnuPG not installed.  Unable to verify signature"
+      Log_Question "GnuPG not installed. Unable to verify signature"
       Ask_Continue "Continue install?"
    elif [ $result -eq 4 ] || [ $result -eq 5 ] 
    then
-      Log_Question "No signature.  Unable to verify package"
+      Log_Question "No signature. Unable to verify package"
       Ask_Continue "Continue install?"
    elif [ $result -eq 6 ] 
    then
-      Log_Question "Package signed with unknown signature.  Unable to verify package"
+      Log_Question "Package signed with unknown signature. Unable to verify package"
+      Ask_Continue "Continue install?"
+   elif [ $result -eq 7 ]
+   then
+      Log_Question "Package file hash generate with incompatible version of Scripts. Unable to verify package"
       Ask_Continue "Continue install?"
    elif [ $result -eq 3 ] 
    then
-      Log_Error "Invalid signature.  FileHash could not be verified."
+      Log_Error "Invalid signature. FileHash could not be verified."
       Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
       exit 1
    elif [ $result -eq 1 ]
    then
-      Log_Error "Invalid FileHash.  Package has been modified"
+      Log_Error "Invalid FileHash. Package has been modified"
       Log_Error "Suspect package in ${goboPrograms}/$packagename/$packageversion"
       exit 1
    fi
