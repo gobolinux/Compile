@@ -79,15 +79,36 @@ handle_description() {
                   8ca43cbc842c2336e835926c2166c28b) newlicense="GNU General Public License version 2" ;;
                   18810669f13b87348459e611d31ab760) newlicense="GNU General Public License version 2" ;;
                   7975d4f2e1ca1e9df4dcfd94c6e1ae48) newlicense="GNU General Public License version 2" ;;
+                  cbbd794e2a0a289b9dfcc9f513d1996e) newlicense="GNU General Public License version 2" ;;
+                  e2ab865bd66f4d8e34f31582339c911a) newlicense="GNU General Public License version 2" ;;
+                  0278281246c1e59af1ef0ae1784a4948) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Franklin St mentions Library
                   59530bdf33659b29e73d4adb9f9f6552) newlicense="GNU General Public License version 2" ;;
                   751419260aa954499f7abaabaa882bbe) newlicense="GNU General Public License version 2" ;;
+                  eb723b61539feef013de476e68b5c50a) newlicense="GNU General Public License version 2" ;;
+                  a21edfd959813dc8af8161fe3f7ffaa2) newlicense="GNU General Public License version 2" ;;
+                  4325afd396febcb659c36b49533135d4) newlicense="GNU General Public License version 2" ;;
+                  eee1a5a93345d061765a5df481d19b7a) newlicense="GNU General Public License version 2" ;;
+                  6d5a9d4c4d3af25cd68fd83e8a8cb09c) newlicense="GNU General Public License version 2" ;;
+                  6ddd5335ef96fb858a138230af773710) newlicense="GNU General Public License version 2" ;;
+                  8ef380476f642c20ebf40fecb0add2ec) newlicense="GNU General Public License version 2" ;;
+                  9ea3144f04c41cd2eada5d3f472e6ea5) newlicense="GNU General Public License version 2" ;;
+                  892f569a555ba9c07a568a7c0c4fa63a) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Temple Place
                   94d55d512a9ba36caa9b7df079bae19f) newlicense="GNU General Public License version 2" ;;
                   393a5ca445f6965873eca0259a17f833) newlicense="GNU General Public License version 2" ;;
                   fdafc691aa5fb7f8e2a9e9521fef771b) newlicense="GNU General Public License version 2" ;;
                   0636e73ff0215e8d672dc4c32c317bb3) newlicense="GNU General Public License version 2" ;;
                   a87895c4956801618eb9d3a4f8afe8f8) newlicense="GNU General Public License version 2" ;;
+                  c93c0550bd3173f4504b2cbd8991e50b) newlicense="GNU General Public License version 2" ;;
+                  5574c6965ae5f583e55880e397fbb018) newlicense="GNU General Public License version 2" ;;
+                  b0c80473f97008e42e29a9f80fcc55ff) newlicense="GNU General Public License version 2" ;;
+                  bae3019b4c6dc4138c217864bd04331f) newlicense="GNU General Public License version 2" ;;
+                  03b36fdd84f74b8d8189a202b980b67f) newlicense="GNU General Public License version 2" ;;
+                  7b0683f0a63b15f8cc8273f96fd564a9) newlicense="GNU General Public License version 2" ;;
+                  15fac19769be7c6091cda2f70757f064) newlicense="GNU General Public License version 2" ;;
+                  361b6b837cad26c6900a926b62aada5f) newlicense="GNU General Public License version 2" ;;
+                  878e3965c7b52d85827c75f5a2f3b314) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Linux kernel
                   d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
                   # LGPL2 Mass Ave
