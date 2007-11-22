@@ -159,3 +159,10 @@ Color() {
    [ "$3" ] && bold="1;" || bold="0;"
    echo -en '\033['${bold}$[fground+30]';'$[bground+40]'m'
 }
+
+SetFont() {
+   setfont "$1"
+   # Select user font mapping, needed for non-ISO-8859-1
+   # see man console_codes
+   echo -en "\033(K" > /dev/console
+}

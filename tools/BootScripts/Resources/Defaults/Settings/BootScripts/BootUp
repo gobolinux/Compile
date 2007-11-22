@@ -2,7 +2,7 @@
 Exec "Remounting root file system..."          mount -n -o remount,rw /
 Exec "Cleaning mtab and boot settings..."      rm -f "$goboSettings/mtab"*
 Exec "Cleaning up any stale lock files..."     eval "find $goboVariable/{run,lock}/ -type f | grep -v utmp | xargs -i rm -rf {}; rm -rf  $goboTemp/.X*-lock"
-Exec "Mounting system filesystems..."          mount -a -t sysfs,proc
+Exec "Mounting system filesystems..."          mount -a -t sysfs
 Exec "Starting Udev..."                        Udev Start
 
 #Daemon                                        /System/Links/Executables/sshd -D
@@ -13,7 +13,7 @@ Exec "Checking remaining file systems..."     fsck -p -C -T -A -R
 Exec "Hiding legacy tree..."                  GoboHide Start
 Exec "Setting clock..."                       SetClock Start
 Exec "Creating new mtab..."                   mount -o remount,rw /
-Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap
+Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap,nodevpts
 Exec "Activating all swap files/partitions..." swapon -a
 Exec "Linking kernel modules directory..."    ln -nfs "$goboModules"/`uname -r` "$goboLibraries"/modules/`uname -r`
 Exec "Setting hostname to $HostName..."       hostname "$HostName"
