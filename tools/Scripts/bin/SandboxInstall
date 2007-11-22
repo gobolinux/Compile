@@ -144,6 +144,7 @@ done
 if [ "$unionsandbox" ] 
 then
    sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
+   rm -rf -- "$sandbox_rw"
    map_settings="--map ${default_settings}=${settings}${unmanagedmap:+:${unmanagedmap}}"
    sandbox="UnionSandbox $verbose --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
 else
