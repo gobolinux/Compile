@@ -128,7 +128,7 @@ revision=`echo $version | sed -n 's/^.*-\(r[0-9]*\)$/\1/p'`
 echo "$pureversion" | egrep -q "^[0-9a-z_.]+$" || {
    ERROR "Version $pureversion contains invalid characters (only [0-9a-z._] allowed)."
 }
-echo "$pureversion" | grep -q "[0-9]\|^cvs$" || {
+echo "$pureversion" | grep -q "[0-9]\|^cvs\|^svn$" || {
    WARN "Version $pureversion does not contain digits, may be incorrect."
 }
 [ "$revision" ] && {
@@ -250,6 +250,7 @@ cat Recipe | perl -e '
       install_variables => "array",
       make_variables => "array",
       configure => "string",
+      make => "string",
       makefile => "string",
       build_target => "string",
       install_target => "string",
