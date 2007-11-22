@@ -30,7 +30,7 @@ Add_Option_Entry "s" "same" "What to do when unpackaging over the same version,
 Add_Option_Entry "o" "old" "What to do with a previously existing
         version of a package if found, 'keep', 'remove', 'ask' or 'cancel'." "keep"
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files "\
-"from package. Options available are \"ask\", \"remove\" and \"keep\"." "ask"
+"from package. Options available are \"ask\", \"install\" and \"skip\"." "ask"
 Add_Option_Boolean "C" "no-sign-check" "Do not check the signature."
 Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the package"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for packages, and bypass fetching of archives."
