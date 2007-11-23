@@ -136,7 +136,7 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 	o += '#timeout 5' + '\n'
 	
 	#if installer.getValue('EnableGraphicGRUB') :
-	o += 'gfxmenu /System/Kernel/Boot/grub/message\n'
+	o += 'gfxmenu %s/System/Kernel/Boot/grub/message'%(grubFormatTarget,targetPartition) + '\n'
 
 	if genGraphicDesktop :
 		o += '\n'
