@@ -165,27 +165,45 @@ then
    name="$(Arg 1)"
    version="$(Arg 2)"
 else
-   name=$(basename $(dirname $(Arg 1)))
-   version=$(basename $(Arg 1))
+   if [ -d "$(Arg 1)" ]
+   then
+      name=$(basename $(dirname $(Arg 1)))
+      version=$(basename $(Arg 1))
+   else
+      name="$(Arg 1)"
+      version=""
+   fi
 fi
 
 name=$(GuessProgramCase ${name})
 if [ "$localrepository" ]
-then
-   if Quiet ls ${compileLocalRecipesDir}/${name}/${version}*/Recipe
-   then 
-      recipedir="`GuessLatest ${compileLocalRecipesDir}/${name}/${version}*`"
-   elif Quiet ls ${compileGetRecipeDir}/${name}/${version}*/Recipe
+then trydirs=(${compileLocalRecipesDir} "${compileRecipeDirs[@]}" ${compileGetRecipeDir})
+else trydirs=(Recipes)
+fi
+
+for trydir in "${trydirs[@]}"
+do
+   recipedir="`GuessLatest $trydir/$name/$version*`"
+   if [ -e "$recipedir/Recipe" ]
    then
-      recipedir="`GuessLatest ${compileGetRecipeDir}/${name}/${version}*`"
+      setversion=$(basename "$recipedir")
+      if ! [ "$version" ]
+      then
+         # If it made a decision, check if it picked the right recipe
+         if ! Boolean "batch" && [ `ls $trydir/$name/$version* | wc -l` -gt 1 ]
+         then Ask_Continue "Will compile $name $setversion from $trydir..."
+         fi
+      fi
+      version="$setversion"
+      break
    else
-      Die "No such recipe (${name} ${version}) in local recipe directories"
+      recipedir=""
    fi
-else
-   if Quiet ls Recipes/${name}/${version}*/Recipe
-   then recipedir="`GuessLatest Recipes/${name}/${version}*`"
-   else Die "No such recipe (${name} ${version}) in ChrootCompile environment"
-   fi
+done
+
+if ! [ "$recipedir" ]
+then
+   Die "Could not find recipe for $name $version"
 fi
 
 echo "ChrootCompile: Compiling $name $version..."
@@ -519,10 +537,10 @@ do
       [ ! -e $root/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
       
       # for each program at dependencies list (no version handling)...
-      for i in `cat $root/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
+      for i in `cat $root/$goboPrograms/$dep/Current/Resources/Dependencies | grep -v '^[ ]*#' | cut -f1 -d' '`
       do
          # if the program is not already at dependencies list, append it and force extra recursion
-         if [ ! "`echo $hostdeps | grep -w  $i`" -a "$i" != '#' ]
+         if [ ! "`echo $hostdeps | grep -w  $i`" ]
          then
             echo "  Adding dependency $i"
             hostdeps="$hostdeps $i"
@@ -543,9 +561,12 @@ do
       load_dependency "$dep" "$targetrepository" "$targetarch"
       [ ! -e $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies ] && continue
 
-      for i in `cat $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies | cut -f1 -d' '`
+      # FIXME: There's (almost) duplicated right above...
+      # It took me quite a while to figure out what was going on
+      # when I fixed a bug above and didn't catch the same error here.
+      for i in `cat $targetroot/$goboPrograms/$dep/Current/Resources/Dependencies | grep -v '^[ ]*#' | cut -f1 -d' '`
       do
-         if [ ! "`echo $hostdeps | grep -w  $i`" -a "$i" != '#' ]
+         if [ ! "`echo $hostdeps | grep -w  $i`" ]
          then
             echo "  Adding dependency $i"
             targetdeps="$targetdeps $i"
