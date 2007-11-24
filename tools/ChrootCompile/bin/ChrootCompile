@@ -98,7 +98,7 @@ Boolean "verbose" && verbose="--verbose"
 if Boolean "setup-environment" || [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
     if [ ! -z "`ls`" ]
-    then Die "You need to create a directory from which you should run ChrootCompile in, where it will store its data files and create its chroot jails. Create an empty dir and run ChrootCompile from there."
+    then Die "You need to create a directory in which you should run ChrootCompile, where it will store its data files and create its chroot jails. Create an empty dir and run ChrootCompile from there."
     fi
     if [ "$chrootCompileDir" ]
     then dirname="$chrootCompileDir"
