@@ -57,7 +57,8 @@ export HISTCONTROL=ignoredups
 
 
 export               PATH="${goboPrefix}/System/Links/Executables${PATH:+:$PATH}"
-export            MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}"
+export            MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}$(man --path 2> /dev/null)"
+export            MANPATH="${MANPATH%:}"
 export           INFOPATH="${goboPrefix}/System/Links/Manuals/info${INFOPATH:+:$INFOPATH}"
 export     C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${C_INCLUDE_PATH:+:$C_INCLUDE_PATH}"
 export CPLUS_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${CPLUS_INCLUDE_PATH:+:$CPLUS_INCLUDE_PATH}"
