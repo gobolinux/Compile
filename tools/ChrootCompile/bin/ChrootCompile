@@ -11,7 +11,7 @@ Import OptionParser
 # Setting options
 #############################################################################
 scriptCredits="Copyright (C) 2005-2006 Hisham H. Muhammad. Released under the GNU GPL."
-scriptUsage="[options] <path_to_recipe>"
+scriptUsage="[options] { <recipe> [<version>] | <path_to_recipe> }"
 Add_Option_Boolean "l" "local-repository" "Look at the local repository for recipes." ""
 Add_Option_Boolean "n" "new-names" "Compile using new names from /System/Index hierarchy." ""
 Add_Option_Boolean "p" "local-programs" "Take entries from /Programs (use with care)." ""
@@ -98,7 +98,7 @@ Boolean "verbose" && verbose="--verbose"
 if Boolean "setup-environment" || [ ! -d BaseDependencies -a ! "$local_programs" ]
 then
     if [ ! -z "`ls`" ]
-    then Die "Your ChrootCompile dir is not empty. Please correct and then rerun ChrootCompile."
+    then Die "You need to create a directory from which you should run ChrootCompile in, where it will store its data files and create its chroot jails. Create an empty dir and run ChrootCompile from there."
     fi
     if [ "$chrootCompileDir" ]
     then dirname="$chrootCompileDir"
