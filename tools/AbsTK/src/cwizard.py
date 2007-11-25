@@ -86,7 +86,7 @@ class AbsCursesWizard(AbsWizard) :
       return options[sel]
 
    def __main(self, stdscr):
-      global defaultColor, disabledColor, titleColor, buttonColor, widgetColor
+      global defaultColor, disabledColor, titleColor, buttonColor, widgetColor, widgetDisabledColor
       # Frame the interface area at fixed VT100 size
       if self.currentScreen == -1 :
          return
@@ -133,10 +133,11 @@ class AbsCursesWizard(AbsWizard) :
                setColor(4, curses.COLOR_BLACK, curses.COLOR_CYAN)
                setColor(5, curses.COLOR_BLUE, curses.COLOR_GREEN)
                defaultColor = curses.color_pair(1)
-               disabledColor = curses.color_pair(2)
+               disabledColor = curses.color_pair(2) + curses.A_BOLD
                titleColor = curses.color_pair(3)
                buttonColor = curses.color_pair(4)
                widgetColor = curses.color_pair(5)
+               widgetDisabledColor = curses.color_pair(5) + curses.A_BOLD
                stdscr.clear()
                stdscr.addstr(0,0,"Knock, knock.")
                stdscr.getch()
@@ -148,10 +149,11 @@ class AbsCursesWizard(AbsWizard) :
                setColor(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
                setColor(5, curses.COLOR_BLACK, curses.COLOR_CYAN)
                defaultColor = curses.color_pair(1)
-               disabledColor = curses.color_pair(2)
+               disabledColor = curses.color_pair(2) + curses.A_BOLD
                titleColor = curses.color_pair(3)
                buttonColor = curses.color_pair(4)
                widgetColor = curses.color_pair(5)
+               widgetDisabledColor = curses.color_pair(5) + curses.A_BOLD
             elif k == 27 :
                return 0
 
@@ -190,13 +192,13 @@ class CursesWidget :
    def draw(self, drawable, x, y) :
       pass
 
-   def makeAttr(self, inside, enabled, on, off) :
+   def makeAttr(self, inside, enabled, off, on, usein=None) :
       if not enabled :
-         return off + curses.A_BOLD
-      elif inside :
-         return on + curses.A_BOLD
+         return off
       else :
-         return on + curses.A_NORMAL
+         if inside and usein:
+            return usein
+         return on
 
 class CursesLabel(CursesWidget) :
    def __init__(self, label) :
@@ -213,7 +215,7 @@ class CursesLabel(CursesWidget) :
       return self.label
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(0, 1, defaultColor, disabledColor)
+      attr = self.makeAttr(0, 1, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
       drawable.addstr(y, x, self.label, attr)
 
 class CursesList(CursesWidget) :
@@ -263,30 +265,32 @@ class CursesList(CursesWidget) :
       return (self.items[:], v)
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
-      drawable.addstr(y, x, self.label, attr)
+      attrdefault = self.makeAttr(self.inside, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
+      drawable.addstr(y, x, self.label, attrdefault)
       if self.isCompact :
-         attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
          pos = y+1
          for (item, i) in zip(self.items, range(len(self.items))) :
             if self.value == i:
-               drawable.addstr(pos, x, "(*) ", attr)
+               drawable.addstr(pos, x, "(*) ", attrdefault)
             else :
-               drawable.addstr(pos, x, "( ) ", attr)
-            drawable.addstr(pos, x+4, item, attr)
+               drawable.addstr(pos, x, "( ) ", attrdefault)
+            drawable.addstr(pos, x+4, item, attrdefault)
             pos = pos + 1
       else :
-         attr = self.makeAttr(self.inside, self.enabled, widgetColor, widgetColor)
-         drawable.subwin(self.height-1, self.width, y+1, x).border()
+         attrlist = self.makeAttr(self.inside, self.enabled, widgetDisabledColor, widgetColor)
+         attritem = self.makeAttr(self.inside, self.enabled, widgetDisabledColor, widgetColor + curses.A_STANDOUT, widgetColor + curses.A_STANDOUT + curses.A_BOLD)
+         w = drawable.subwin(self.height-1, self.width, y+1, x)
+         w.attrset(attrdefault)
+         w.border()
          i = self.first
-         drawable.addstr(y+(((self.value+0.0)/max(len(self.items),1))*(self.height-3))+2, x+self.width-1, "*")
+         drawable.addstr(y+(((self.value+0.0)/max(len(self.items),1))*(self.height-3))+2, x+self.width-1, "*", attrdefault)
          ypos = y+2
          for item in self.items[i:i+5] :
             cropItem = item[self.scrollH:self.width-2+self.scrollH].ljust(self.width-2)
             if self.value == i:
-               drawable.addstr(ypos, x+1, cropItem, attr + curses.A_STANDOUT)
+               drawable.addstr(ypos, x+1, cropItem, attritem)
             else :
-               drawable.addstr(ypos, x+1, cropItem, attr)
+               drawable.addstr(ypos, x+1, cropItem, attrlist)
             i = i + 1
             ypos = ypos + 1
 
@@ -366,7 +370,7 @@ class CursesDropList(CursesWidget) :
          return self.items[0]
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
+      attr = self.makeAttr(self.inside, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
       drawable.addstr(y, x, '%s :'%self.label, attr)
       pos = x+len(self.label)+3
       drawable.addstr(y, pos, self.items[self.value], attr)
@@ -447,7 +451,7 @@ class CursesTextBox(CursesWidget) :
       return string.join(self.value, "\n")
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
+      attr = self.makeAttr(self.inside, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
       drawable.addstr(y, x, self.label, attr)
       drawable.subwin(self.height-1, self.width, y+1, x).border()
       i = self.first
@@ -536,26 +540,30 @@ class CursesCheckList(CursesWidget) :
       return (self.items[:], result)
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
-      drawable.addstr(y, x, self.label, attr)
-      attr = self.makeAttr(self.inside, self.enabled, widgetColor, widgetColor)
+      attrdefault = self.makeAttr(self.inside, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
+      drawable.addstr(y, x, self.label, attrdefault)
+      attrlist = self.makeAttr(self.inside, self.enabled, widgetDisabledColor, widgetColor)
+      attritem = self.makeAttr(self.inside, self.enabled, widgetDisabledColor, widgetColor + curses.A_STANDOUT, widgetColor + curses.A_STANDOUT + curses.A_BOLD)
+
       curr = self.current
       i = self.first
       if self.isCompact :
          ypos = y+1
          xpos = x
       else :
-         drawable.subwin(self.height-1, self.width, y+1, x).border()
-         drawable.addstr(y+(((curr+0.0)/len(self.items))*(self.height-3))+2, x+self.width-1, "*")
+         w = drawable.subwin(self.height-1, self.width, y+1, x)
+         w.attrset(attrdefault)
+         w.border()
+         drawable.addstr(y+(((curr+0.0)/len(self.items))*(self.height-3))+2, x+self.width-1, "*", attrdefault)
          ypos = y+2
          xpos = x+1
       currItem = self.items[curr]
       for (item, value) in zip(self.items[i:i+(self.height-3)], self.value[i:i+(self.height-3)]) :
          cropItem = item[self.scrollH:self.width-6+self.scrollH].ljust(self.width-6)
          if item == currItem :
-            at = attr + curses.A_STANDOUT
+            at = attritem
          else :
-            at = attr
+            at = attrlist
          if value == 1:
             drawable.addstr(ypos, xpos, "[x] " + cropItem, at)
          else :
@@ -629,7 +637,7 @@ class CursesBoolean(CursesWidget) :
       return self.value
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(0, self.enabled, defaultColor, disabledColor)
+      attr = self.makeAttr(0, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
       if self.value == 1 :
          drawable.addstr(y, x, "[x] " + self.label, attr)
       else :
@@ -711,19 +719,22 @@ class CursesEntry(CursesWidget) :
       return self.value
 
    def draw(self, drawable, x, y) :
-      attr = self.makeAttr(self.inside, self.enabled, defaultColor, disabledColor)
+      attr = self.makeAttr(self.inside, self.enabled, disabledColor, defaultColor, defaultColor + curses.A_BOLD)
       field = self.value[:self.width].ljust(self.width)
       cur = self.cursor
       label = self.label + " ["
-      left = field[:cur]
-      mid = field[cur:cur+1]
-      right = field[cur+1:]
       drawable.addstr(y, x, label, attr)
-      drawable.addstr(y, x+len(label)+len(left)+len(mid)+len(right), "]", attr)
-      attr = self.makeAttr(self.inside, self.enabled, widgetColor, widgetColor)
-      drawable.addstr(y, x+len(label), left, attr)
-      drawable.addstr(y, x+len(label)+len(left), mid, attr + curses.A_STANDOUT)
-      drawable.addstr(y, x+len(label)+len(left)+len(mid), right, attr)
+      drawable.addstr(y, x+len(label)+len(field), "]", attr)
+      attr = self.makeAttr(self.inside, self.enabled, widgetDisabledColor, widgetColor, widgetColor + curses.A_STANDOUT + curses.A_BOLD)
+      if self.inside:
+         left = field[:cur]
+         mid = field[cur:cur+1]
+         right = field[cur+1:]
+         drawable.addstr(y, x+len(label), left, attr)
+         drawable.addstr(y, x+len(label)+len(left), mid, attr + curses.A_STANDOUT)
+         drawable.addstr(y, x+len(label)+len(left)+1, right, attr)
+      else:
+         drawable.addstr(y, x+len(label), field, attr)
 
    def processKey(self, key) :
       if self.inside :
@@ -924,9 +935,10 @@ setColor(3, curses.COLOR_YELLOW, curses.COLOR_BLUE)
 setColor(4, curses.COLOR_BLACK, curses.COLOR_WHITE)
 setColor(5, curses.COLOR_BLACK, curses.COLOR_CYAN)
 defaultColor = curses.color_pair(1)
-disabledColor = curses.color_pair(2)
+disabledColor = curses.color_pair(2) + curses.A_BOLD
 titleColor = curses.color_pair(3)
 buttonColor = curses.color_pair(4)
 widgetColor = curses.color_pair(5)
+widgetDisabledColor = curses.color_pair(5) + curses.A_BOLD
 
 stdscr.bkgd(" ",curses.color_pair(1))
