@@ -37,6 +37,8 @@ s%$goboPrograms/[^ /]*/*[^ /]*/*lib(/?)/*%$goboLibraries\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*lib([ '\''])%$goboLibraries/\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*include(/?)/*%$goboHeaders\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*include([ '\''])%$goboHeaders/\1%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*share(/?)/*%$goboShared\1%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*share([ '\''])%$goboShared/\1%g;
 " > "${current}"
 
    Boolean "backup" || rm -- "$old"
