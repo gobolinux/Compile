@@ -7,12 +7,12 @@ Import File
 
 ### Options ###################################################################
 
-scriptDescription="Convert a .la file created by libtool to make it GoboLinux-compliant."
-scriptCredits="Copyright (C) Hisham H. Muhammad 2003. Released under the GNU GPL."
+scriptDescription="Converts .la and .pc files created by libtool/pkgconfig to make them GoboLinux-compliant."
+scriptCredits="Copyright (C) Hisham H. Muhammad et al, 2003-2007. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<files...>"
-scriptExample="-b *.la"
-Add_Option_Boolean "b" "backup" "Keep a backup file of the original .la file."
+scriptExample="-b *.la *.pc"
+Add_Option_Boolean "b" "backup" "Keep a backup file of the original .la and .pc files."
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -22,7 +22,10 @@ n=$(Number_Of_Arguments)
 for (( i=1 ; i<=n ; i++))
 do
    current="$(Arg ${i})"
-   [ "${current##*.}" != "la" ] && continue || Log_Verbose "Converting ${current}..."
+   if [ "${current##*.}" != "la" -a "${current##*.}" != "pc" ] 
+   then continue
+   else Log_Verbose "Converting ${current}..."
+   fi
 
    old="${current}~"
    while [ -e "$old" ]
@@ -32,9 +35,11 @@ do
    cat "$old" | sed -r "
 s%$goboPrograms/[^ /]*/*[^ /]*/*lib(/?)/*%$goboLibraries\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*lib([ '\''])%$goboLibraries/\1%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*include(/?)/*%$goboHeaders\1%g;
+s%$goboPrograms/[^ /]*/*[^ /]*/*include([ '\''])%$goboHeaders/\1%g;
 " > "${current}"
 
    Boolean "backup" || rm -- "$old"
 done
 
-# Why the hell does libtool keep hardcoded paths?
+# Why the hell does libtool and pkgconfig keep hardcoded paths?
