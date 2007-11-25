@@ -220,10 +220,10 @@ then
       if [ -d "$current/lib" ]
       then
          Quiet pushd "$current/lib"
-         if ! [[ $((` ls *.la 2> /dev/null | wc -l`)) == 0 ]]
+         if [ "$(find . -name '*.la' -or -name '*.pc' | wc -l)" != "0" ]
          then
-            Log_Normal "Correcting libtool entries..."
-            find . -name '*.la' |xargs FixLibtoolLa
+            Log_Normal "Correcting directory references..."
+            find . -name '*.la' -or -name '*.pc' | xargs FixDirReferences
          fi
          Quiet popd
       fi
