@@ -307,6 +307,7 @@ else :
 
 devicesList = open('/System/Kernel/Status/partitions').readlines()[2:]
 temp = []
+devicesSizes = {}
 for device in devicesList :
 	l = device.split()
 	size = int(l[2])
@@ -317,6 +318,7 @@ for device in devicesList :
 		else :
 			c = name + ' (%0.1fMB)'%(size/1024.0)
 		temp.append(c)
+		devicesSizes[name] = size
 devicesList = temp
 
 import re
@@ -399,8 +401,29 @@ installer.addScreen(introduction)
 
 ##############################################################################
 ##############################################################################
-deviceSelection = Screen(tr('Target device selection'))
+def showSelectedSetSize() :
+	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
+	sum = 290000 # kbytes from system (102Mb) and files (180Mb)
+	for package in packages :
+		if programSizes.has_key(package) :
+			sum = sum + programSizes[package]
+	if sum > (1024 * 1024.0) :
+		s = '%0.2f'%(sum / (1024 * 1024.0)) + 'GB'
+	else :
+		s = '%0.1f'%(sum / (1024.0)) + 'MB'
+	targetSize=devicesSizes[installer.getValue('RootPartition')[1].split()[0]]
+	if targetSize > (1024 * 1024.0) :
+		formattedTargetSize = '%0.2f'%(targetSize / (1024 * 1024.0)) + 'GB'
+	else :
+		formattedTargetSize = '%0.1f'%(targetSize / (1024.0)) + 'MB'
+	if sum > targetSize :
+		percentage = '>100'
+	else :
+		percentage = (sum*100)/targetSize
+	installer.setValue('SpaceRequired', tr('Space required: %s (%s%% of %s)')%(s,percentage,formattedTargetSize))
+	return 1
 
+deviceSelection = Screen(tr('Target device selection'))
 deviceSelection.addList('RootPartition', tr('Root partition'), (partitionsList,''), tr('Which partition of your hard drive should the system be copied to?') )
 
 def doFormatChanged() :
@@ -418,6 +441,7 @@ def doFormatChanged() :
 deviceSelection.addBoolean('DoFormat',   tr('Format partition'), 0, tr('Erase all contents of the partition and prepare it to receive the new system?'), doFormatChanged)
 deviceSelection.addList('PartitionType', tr('File system'), (['ReiserFS', 'Ext2', 'Ext3'],  'ReiserFS'), tr('Which kind of file system should be used to format the root partition.') )
 deviceSelection.setEnabled('PartitionType', 0)
+deviceSelection.onValidate(showSelectedSetSize)
 
 def doSwapFile() :
 	if installer.getValue('SwapFile') == 1 :
@@ -445,6 +469,17 @@ installer.addScreen(deviceSelection)
 ###############################################################################
 ###############################################################################
 packageSelection = Screen(tr('Package selection'))
+
+def checkFitPackages() :
+	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
+	sum = 290000 # kbytes from system (102Mb) and files (180Mb)
+	for package in packages :
+		if programSizes.has_key(package) :
+			sum = sum + programSizes[package]
+	if sum > devicesSizes[installer.getValue('RootPartition')[1].split()[0]] :
+		x = installer.showMessageBox(tr('Selected packages does not fit target partition.\nEither deselect packages or go back and choose another target partition.'), ['Ok'])
+	else :
+		return 1
 
 def getPackageWithsizeAndDescription(packageName) :
 	tr = packageName
@@ -498,22 +533,6 @@ def fillUpDependencies() :
 	installer.setValue('Packages', (allWithSizes,newSelectedWithSize))
 	showSelectedSetSize()
 
-
-def showSelectedSetSize() :
-	packages = map(lambda x: x.split()[0], installer.getValue('Packages')[1])
-	sum = 290000 # kbytes from system (102Mb) and files (180Mb)
-	if installer.getValue('SwapFile') == 1 :
-		sum = sum + (int(installer.getValue('SwapSize'))*1024)
-	for package in packages :
-		if programSizes.has_key(package) :
-			sum = sum + programSizes[package]
-	if sum > (1024 * 1024.0) :
-		s = '%0.2f'%(sum / (1024 * 1024.0)) + 'GB'
-	else :
-		s = '%0.1f'%(sum / (1024.0)) + 'MB'
-
-	installer.setValue('SpaceRequired', tr('Space required: %s')%(s))
-
 def setProfile() :
 	profileNames, profileNameAndSize = installer.getValue('Profile')
 	profileName = profileNameAndSize.split()[0]
@@ -523,9 +542,10 @@ def setProfile() :
 
 packageSelection.addList('Profile', tr('Predefined sets of packages'), (['Base','Typical','Full'], 'Typical'), tr('Selecting one of these will reset the selections of the package list.'), setProfile)
 packageSelection.addCheckList('Packages', tr('Select packages'), (profiles['Full'],  profiles['Typical']), tr('Mark the packages that should be installed in the system.'), showSelectedSetSize)
-packageSelection.addLabel('SpaceRequired',tr('Space required: %s')%'1.5GB', '', tr('Space required to install the selected packages'))
+packageSelection.addLabel('SpaceRequired',tr('Space required: %s (available space: %s')%('1.5GB',installer.getValue('RootPartition')[1].split()[1]), '', tr('Space required to install the selected packages'))
 packageSelection.addButton('',tr('Satisfy dependencies'), '', tr('Mark all packages in the list that are needed by the ones already marked.'), fillUpDependencies)
 packageSelection.addBoolean('BypassFillUpDependencies', tr('Bypass dependencies check'), 0, tr("Check if you want to install only the above selected packages."))
+packageSelection.onValidate(checkFitPackages)
 installer.addScreen(packageSelection)
 showSelectedSetSize()
 
