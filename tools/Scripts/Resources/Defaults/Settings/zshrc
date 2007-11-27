@@ -36,7 +36,7 @@ export HISTSIZE=100
 export SAVEHIST=200
 export COLUMNS
 
-export MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}:$(man --path 2> /dev/null)"
+export MANPATH="${goboPrefix}/System/Links/Manuals${MANPATH:+:$MANPATH}:$(manpath 2> /dev/null)"
 export MANPATH="${MANPATH%:}"
 export INFOPATH="${goboPrefix}/System/Links/Manuals/info${INFOPATH:+:$INFOPATH}"
 export C_INCLUDE_PATH="${goboPrefix}/System/Links/Headers${C_INCLUDE_PATH:+:$C_INCLUDE_PATH}"
