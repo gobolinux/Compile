@@ -2,6 +2,7 @@
 
 import os
 import sys
+import re
 
 dvorak_keymap="""
 # GRUB qwerty->dvorak keymap v1.0 - Matthew Mueller <donut@azstarnet.com>
@@ -154,6 +155,8 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 	for partition in bootableWindowsPartitions:
 		o += '\n'
 		o += 'title Other OS at %s'%partition + '\n'
+		if not re.match('...0...',partition) :
+			o += 'map %s %s'%(re.sub(',[0-9]\)',')',partition),re.sub('[0-9],[0-9]\)','0)',partition)) + '\n'
 		o += 'rootnoverify %s'%partition + '\n'
 		o += 'makeactive' + '\n'
 		o += 'chainloader +1' + '\n'
