@@ -124,7 +124,7 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 		if len(l) > 1 and l[1] == '*' :
 			bootableWindowsPartitions.append(devToGrub(l[0]))
 
-	grubFormatTarget = devToGrub('/dev/'+targetPartition)
+	grubFormatTarget = re.sub('[1-9],','0,',devToGrub('/dev/'+targetPartition))
 	swapPartition = getSwapPartition()
 
 	o = ''
