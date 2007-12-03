@@ -8,3 +8,5 @@ Tk: Tcl-Tk
 Artofcode-Ghostscript: Ghostscript
 Gnu-Ghostscript: Ghostscript
 ESP-Ghostscript: Ghostscript
+GHC: GHC-Bin
+GHC-Bin: GHC
