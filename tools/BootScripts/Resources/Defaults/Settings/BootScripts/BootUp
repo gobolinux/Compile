@@ -30,5 +30,3 @@ Exec "Initializing network..."                Network Start
 Exec "Starting message bus..."                MessageBus Start
 Exec "Starting hardware abstraction layer..." HAL Start
 Exec "Loading keymap..."                      loadkeys "$KeymapLayout"
-
-Exec "
