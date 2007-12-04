@@ -27,5 +27,8 @@ Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastb
 #Exec "Starting PCMCIA daemon..."             PCMCIA Start
 Exec "Initializing network..."                Network Start
 #Exec "Loading sound settings..."              Alsactl Start
+Exec "Starting message bus..."                MessageBus Start
+Exec "Starting hardware abstraction layer..." HAL Start
 Exec "Loading keymap..."                      loadkeys "$KeymapLayout"
 
+Exec "
