@@ -62,7 +62,7 @@ function cleanup() {
       umount $lhs
       [ "$?" = "0" ] || error=true
       '
-      [ "$error" = "false" ] || fibo_die "Unable to unmount map areas"
+      [ "$error" = "false" ] || Log_Error "Unable to unmount map areas"
 
    if [ "$domount" = "1" ]
    then
