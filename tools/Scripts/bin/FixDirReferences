@@ -4,19 +4,21 @@ source ScriptFunctions
 Import Log
 Import OptionParser
 Import File
+Import GoboLinux
 
 ### Options ###################################################################
 
-scriptDescription="Converts .la and .pc files created by libtool/pkgconfig to make them GoboLinux-compliant."
+scriptDescription="Converts .{la,pc} files created by libtool/pkgconfig to make them GoboLinux-compliant."
 scriptCredits="Copyright (C) Hisham H. Muhammad et al, 2003-2007. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="<files...>"
 scriptExample="-b *.la *.pc"
-Add_Option_Boolean "b" "backup" "Keep a backup file of the original .la and .pc files."
+Add_Option_Boolean "b" "backup" "Keep a backup file of the original files before modifying them."
 Parse_Options "$@"
 
 ### Operation #################################################################
-Is_Writable "$PWD" || exit 0
+Parse_Conf Compile/Compile.conf || exit 1
+Is_Writable "$PWD" || exit 1
 
 n=$(Number_Of_Arguments)
 for (( i=1 ; i<=n ; i++))
@@ -39,8 +41,9 @@ s%$goboPrograms/[^ /]*/*[^ /]*/*include(/?)/*%$goboHeaders\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*include([ '\''])%$goboHeaders/\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*share(/?)/*%$goboShared\1%g;
 s%$goboPrograms/[^ /]*/*[^ /]*/*share([ '\''])%$goboShared/\1%g;
+s%$goboPrograms/[^ /]*/*[^ /]*%/usr%g;
+s%(-L|-I|-R)*$compileDir/[^ ]*%%g;
 " > "${current}"
-
    Boolean "backup" || rm -- "$old"
 done
 
