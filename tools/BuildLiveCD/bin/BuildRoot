@@ -288,8 +288,8 @@ create_link ../Manuals                   $root/System/Links/Shared/man
 
 mkdir -p "${root}"/../Checksums/
 
-mksettigs=`which MakeSystemSettings`
-if [ "`md5sum "$mksettigs"`" =  "`cat "${root}/../Checksums/MakeSystemSettings" 2> /dev/null`" ]
+mksettings=`which MakeSystemSettings`
+if [ "`md5sum "$mksettings"`" =  "`cat "${root}/../Checksums/MakeSystemSettings" 2> /dev/null`" ]
 then
    echo "Skipping MakeSystemSettings"
 else
@@ -299,7 +299,7 @@ else
    # MakeSystemSettings overwrites existing files
    MakeSystemSettings
    popd &> /dev/null
-   md5sum "$mksettigs" > "${root}/../Checksums/MakeSystemSettings"
+   md5sum "$mksettings" > "${root}/../Checksums/MakeSystemSettings"
 fi
 
 for packagelist in ${packagelists[@]}
@@ -320,18 +320,30 @@ do
    done
 done
 
-if [ ! -e "${root}/System/Links/Environment/Cache" -o "`find "${root}/System/Links/Environment/" -newer "${root}/System/Links/Environment/Cache" 2> /dev/null`" ] 
+cachefile=/System/Links/Environment/Cache
+if [ ! -e "${root}${cachefile}" -o "`find "${root}/System/Links/Environment/" -newer "${root}${cachefile}" 2> /dev/null`" ] 
 then
-   echo "Updating ${root}/System/Links/Environment/Cache..."
-   rm -f ${root}/System/Links/Environment/Cache
+   echo "Updating ${root}${cachefile}..."
+   echo -e "unset unsetvars\n[ ! \"\$goboSettings\" ] && unsetvars=true\n\nsource GoboPath\n" > ${root}${cachefile}
    for link in ${root}/System/Links/Environment/*--*
    do
       if [ -e ${link} ] 
       then
-         cat ${link} >> ${root}/System/Links/Environment/Cache || rm -f ${link}
-         echo >> ${root}/System/Links/Environment/Cache
+         cat ${link} >> ${root}${cachefile} || rm -f ${link}
+         echo >> ${root}${cachefile}
       fi
    done
+   unsetvars=(goboUserSettings goboUsers goboMount goboPrograms goboSystem goboScripts goboIndex goboManuals
+              goboLinks goboExecutables goboLibraries goboHeaders goboShared goboVariable goboSettings goboKernel
+              goboDaemons goboTasks goboEnvironment goboTemp goboBoot goboDevices goboStatus goboObjects
+              goboModules goboInstall)
+
+   echo -e "if [ \"\$unsetvars\" ]\nthen" >> ${root}${cachefile}
+   for var in "${unsetvars[@]}"
+   do
+       echo "  unset $var" >> ${root}${cachefile} 
+   done
+   echo -e "fi\n" >> ${root}${cachefile}
 else
    echo "Keeping ${root}/System/Links/Environment/Cache"
 fi
