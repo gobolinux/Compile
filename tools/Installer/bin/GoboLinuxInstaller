@@ -661,8 +661,8 @@ for interface in interfaces :
 	if os.system("ps aux | grep '[d]hcpcd' | grep -q '%s'" % interface) == 0:
 		useDHCP = 1
 	interfaceScreen.addBoolean('BootProto'+ interface,  tr('Automatic configuration via DHCP'), useDHCP, tr('Select this if your network server is configured to use the DHCP protocol.'), useDHCPChanged )
-	interfaceScreen.addLineEdit('IP'+ interface,        tr('IP:'),'192.168.1.2', tr('The IP address of this computer in your network.') )
-	interfaceScreen.addLineEdit('Netmask'+ interface,   tr('Netmask:'),'255.255.255.0',  tr("Your network's netmask.") )
+	interfaceScreen.addLineEdit('IP'+ interface,        tr('IP:'),'', tr('The IP address of this computer in your network.') )
+	interfaceScreen.addLineEdit('Netmask'+ interface,   tr('Netmask:'),'',  tr("Your network's netmask.") )
 	interfaceScreen.addLineEdit('Broadcast'+ interface, tr('Broadcast:'), '', tr("The broadcast address of this network (optional).") )
 	# if we're configuring the last interface we should call the function that adds general network options
 	if interface == interfaces[-1] :
