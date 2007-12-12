@@ -88,9 +88,18 @@ then
         apply_ed 'Driver      "kbd"' '        Option "XkbModel" "abnt"'
         apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "br"'
         ;;
+     "fr-latin9")
+        apply_ed 'Driver      "kbd"' '        Option "XkbModel" "pc105"'
+        apply_ed 'Driver      "kbd"' '        Option "XkbVariant" "latin9"'
+        apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "fr"'
+        ;;
      "us-acentos")
         apply_ed 'Driver      "kbd"' '        Option "XkbModel" "pc105"'
         apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "us_intl"'
+        ;;
+     "sv-latin1")
+        apply_ed 'Driver      "kbd"' '        Option "XkbModel" "pc105"'
+        apply_ed 'Driver      "kbd"' '        Option "XkbLayout" "se"'
         ;;
      "us")
         apply_ed 'Driver      "kbd"' '        Option "XkbModel" "pc104"'
