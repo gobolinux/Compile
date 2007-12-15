@@ -126,7 +126,7 @@ function publish_revision() {
    fi
    
    Log_Normal "Committing..."
-   svn commit $username --message "Committing revision $revision" $revdir
+   svn commit $username --message "Committing revision $revision of $program $version" $revdir
 }
 
 ### Operation #################################################################
