@@ -423,7 +423,7 @@ else
       FindPackage $noweb --type=recipe "$app" &> /dev/null && {
          Log_Terse "Could not find recipe for $app $versionandrevision."
          { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
-         } && NewVersion $app $version  && {
+         } && NewVersion $app $version "$(Arg 3)"  && {
             String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
          }
       }
