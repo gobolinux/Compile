@@ -263,6 +263,10 @@ function wrapup() {
       Log_Normal "Packing recipe directory..."
       PackRecipe $noweb "$app" "$versionandrevision"
    fi
+   if [ -n "$post_install_message" ]
+   then
+      Log_Normal "$app: $post_install_message"
+   fi
    cleanup
 }
 

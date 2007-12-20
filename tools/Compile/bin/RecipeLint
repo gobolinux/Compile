@@ -275,7 +275,8 @@ cat Recipe | perl -e '
       svn => "string",
       unmanaged_files => "array",
       perl_options => "array",
-      part_of => "string"
+      part_of => "string",
+      post_install_message => "string"
    );
    sub check_array_name {
       my ($name, $num) = @_;
