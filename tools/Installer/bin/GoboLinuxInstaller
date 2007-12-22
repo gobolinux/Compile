@@ -542,7 +542,7 @@ def setProfile() :
 
 packageSelection.addList('Profile', tr('Predefined sets of packages'), (['Base','Typical','Full'], 'Typical'), tr('Selecting one of these will reset the selections of the package list.'), setProfile)
 packageSelection.addCheckList('Packages', tr('Select packages'), (profiles['Full'],  profiles['Typical']), tr('Mark the packages that should be installed in the system.'), showSelectedSetSize)
-packageSelection.addLabel('SpaceRequired',tr('Space required: %s (available space: %s')%('1.5GB',installer.getValue('RootPartition')[1].split()[1]), '', tr('Space required to install the selected packages'))
+packageSelection.addLabel('SpaceRequired',tr('Space required: %s (available space: %s)')%('1.5GB',installer.getValue('RootPartition')[1].split()[1]), '', tr('Space required to install the selected packages'))
 packageSelection.addButton('',tr('Satisfy dependencies'), '', tr('Mark all packages in the list that are needed by the ones already marked.'), fillUpDependencies)
 packageSelection.addBoolean('BypassFillUpDependencies', tr('Bypass dependencies check'), 0, tr("Check if you want to install only the above selected packages."))
 packageSelection.onValidate(checkFitPackages)
