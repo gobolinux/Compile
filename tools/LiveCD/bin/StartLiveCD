@@ -89,7 +89,12 @@ StartTask HAL
 # Launch the configuration script
 ######################################
 ConfigureLiveCD
-LANG=`cat ${goboTemp}/setup/language`
+export LANG=`cat ${goboTemp}/setup/language`
+
+if [ "$LANG" = "hu_HU" ]
+then
+   setfont /System/Settings/kbd/consolefonts/lat2-16.psfu.gz
+fi
 
 ######################################
 # DHCP
