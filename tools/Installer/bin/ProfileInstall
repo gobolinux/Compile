@@ -31,6 +31,10 @@ dest_dir="$(Arg 2)"
 
 Is_Entry "super-user" && superuser="`Entry super-user`" || superuser='gobo'
 
+function lstrip() {
+   echo "$1" | sed 's,/,,1'
+}
+
 function install_base() {
    Log_Normal "Creating directory "${goboSystem}
    mkdir ${dest_dir}/${goboSystem}
@@ -75,6 +79,10 @@ function install_base() {
 
    Log_Normal "Installing legacy links on "${dest_dir}
    cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var /media ${dest_dir}
+   ln -s "`lstrip ${goboBoot}`" ${dest_dir}/boot
+   ln -s "`lstrip ${goboMount}`/Media" ${dest_dir}/media
+   ln -s "`lstrip ${goboMount}`" ${dest_dir}/mnt
+   ln -s "`lstrip ${goboFiles}`" ${dest_dir}/srv
 
    Log_Normal "Installing directory "${goboUsers}/${superuser}
    mkdir -p ${dest_dir}/${goboUsers}
