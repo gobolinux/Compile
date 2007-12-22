@@ -503,36 +503,37 @@
     </message>
     <message>
         <source>Create a swap file</source>
-        <translation type="unfinished"></translation>
+        <translation>Swap fájl létrehozása</translation>
     </message>
     <message>
         <source>Create a special file in the root partition to function as memory swap space</source>
-        <translation type="unfinished"></translation>
+        <translation>Speciális fájl létrehozása a root partíción, memória-swap terület számára</translation>
     </message>
     <message>
         <source>Swap file size (in MB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Swap fájl mérete (MB-ban)</translation>
     </message>
     <message>
         <source>Size of the swap file, in megabytes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Swap fájl mérete, megabájtban.</translation>
     </message>
     <message>
         <source>Bypass dependencies check</source>
-        <translation type="unfinished">Függőségvizsgálat átlépése</translation>
+        <translation>Függőségvizsgálat átlépése</translation>
     </message>
     <message>
         <source>Password is not allowed to be empty.</source>
-        <translation type="unfinished"></translation>
+        <translation>A jelszó nem lehet üres.</translation>
     </message>
     <message>
         <source>No normal users are added. Do you want to continue anyway?</source>
-        <translation type="unfinished"></translation>
+        <translation>Nincs létrehozva normál felhasználó. Mindenképp folytatod?</translation>
     </message>
     <message>
         <source>Your installation will only have a superuser defined.
  It is recommended that one adds at least one additional user for normal use.</source>
-        <translation type="unfinished"></translation>
+        <translation>A telepítés során csak a rendszergazda lett meghatározva.
+ Erősen javallott létrehozni legalább egy nem privilegizált felhasználót is a normál használatra.</translation>
     </message>
 </context>
 </TS>
