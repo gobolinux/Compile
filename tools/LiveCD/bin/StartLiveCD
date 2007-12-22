@@ -93,7 +93,7 @@ export LANG=`cat ${goboTemp}/setup/language`
 
 if [ "$LANG" = "hu_HU" ]
 then
-   setfont /System/Settings/kbd/consolefonts/lat2-16.psfu.gz
+   setfont "${goboSettings}/kbd/consolefonts/lat2-16.psfu.gz"
 fi
 
 ######################################
