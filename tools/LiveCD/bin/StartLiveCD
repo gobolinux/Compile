@@ -78,6 +78,13 @@ hostname LiveCD
 msg "Hiding legacy directories"
 StartTask GoboHide
 
+########################################
+# HAL and message bus
+########################################
+msg "Starting message bus and hardware abstraction layer"
+StartTask MessageBus
+StartTask HAL
+
 ######################################
 # Launch the configuration script
 ######################################
