@@ -22,6 +22,7 @@ Compile
 CoreUtils
 Cpio
 DB
+DBus
 DHCPCD
 DiffUtils
 E2FSProgs
@@ -51,6 +52,8 @@ Grep
 Groff
 Grub
 Gzip
+HAL
+HAL-Info
 Hdparm
 ID3Lib
 IMLib

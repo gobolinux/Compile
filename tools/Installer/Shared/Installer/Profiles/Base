@@ -10,6 +10,7 @@ BootScripts
 Bzip2
 CoreUtils
 Cpio
+DBus
 DiffUtils
 DHCPCD
 E2FSProgs
@@ -28,6 +29,8 @@ Grep
 Groff
 Grub
 Gzip
+HAL
+HAL-Info
 Hdparm
 InetUtils
 KBD
