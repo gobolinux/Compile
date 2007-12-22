@@ -94,10 +94,6 @@
         <translation>Minden olyan csomag megjelölése, melyek szükségesek egy már korábban bejelölt számára.</translation>
     </message>
     <message>
-        <source>Bypass dependencies checking</source>
-        <translation type="obsolete">Függőségek vizsgálatának átlépése</translation>
-    </message>
-    <message>
         <source>Check if you want to install only the above selected packages.</source>
         <translation>Csak a fent bejelölt csomagok installálása.</translation>
     </message>
@@ -523,7 +519,7 @@
     </message>
     <message>
         <source>Bypass dependencies check</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Függőségvizsgálat átlépése</translation>
     </message>
     <message>
         <source>Password is not allowed to be empty.</source>
