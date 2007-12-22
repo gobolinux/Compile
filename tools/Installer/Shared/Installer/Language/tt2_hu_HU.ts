@@ -14,10 +14,6 @@
         <translation>Üdvözöllek!</translation>
     </message>
     <message>
-        <source>Introduction</source>
-        <translation type="obsolete">Bevezetés</translation>
-    </message>
-    <message>
         <source>Installation process</source>
         <translation>A telepítési eljárás</translation>
     </message>
@@ -76,10 +72,6 @@
     <message>
         <source>Mark the packages that should be installed in the system.</source>
         <translation>Jelöld ki a rendszeredre telepíteni kívánt csomagokat!</translation>
-    </message>
-    <message>
-        <source>Space required: %s</source>
-        <translation>Szükséges helymennyiség: %s</translation>
     </message>
     <message>
         <source>Space required to install the selected packages</source>
@@ -534,6 +526,19 @@
  It is recommended that one adds at least one additional user for normal use.</source>
         <translation>A telepítés során csak a rendszergazda lett meghatározva.
  Erősen javallott létrehozni legalább egy nem privilegizált felhasználót is a normál használatra.</translation>
+    </message>
+    <message>
+        <source>Space required: %s (%s%% of %s)</source>
+        <translation>Szükséges helymennyiség: %s (%s%% / %s)</translation>
+    </message>
+    <message>
+        <source>Selected packages does not fit target partition.
+Either deselect packages or go back and choose another target partition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Space required: %s (available space: %s)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>
