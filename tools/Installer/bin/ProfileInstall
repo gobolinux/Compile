@@ -62,6 +62,7 @@ function install_base() {
    mkdir ${dest_dir}/${goboMount}
    mkdir ${dest_dir}/${goboMount}/CD-ROM
    mkdir ${dest_dir}/${goboMount}/Floppy
+   mkdir ${dest_dir}/${goboMount}/Media
 
    Log_Normal "Installing legacy directory "/usr
    cp -a /usr ${dest_dir}/usr
@@ -73,7 +74,7 @@ function install_base() {
    mkdir ${dest_dir}/Depot/
 
    Log_Normal "Installing legacy links on "${dest_dir}
-   cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var ${dest_dir}
+   cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var /media ${dest_dir}
 
    Log_Normal "Installing directory "${goboUsers}/${superuser}
    mkdir -p ${dest_dir}/${goboUsers}
