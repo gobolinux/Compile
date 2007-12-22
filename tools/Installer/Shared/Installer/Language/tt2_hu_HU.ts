@@ -135,7 +135,7 @@
     </message>
     <message>
         <source>Host name: </source>
-        <translation>Hostname:</translation>
+        <translation>Gépnév:</translation>
     </message>
     <message>
         <source>Write in a name to identify this computer in a network environment.</source>
