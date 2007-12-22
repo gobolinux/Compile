@@ -569,7 +569,7 @@ installer.addScreen(bootloader)
 generalOptions = Screen(tr('General settings'))
 generalOptions.addLineEdit('HostName', tr('Host name: '), 'NewMachine', tr('Write in a name to identify this computer in a network environment.') )
 generalOptions.addList('KeymapLayout', tr('Keyboard map'), (fullKeymapsList, defaultKeymap), tr('Select the layout type that matches your keyboard.'), None)
-generalOptions.addList('BootTheme',    tr('Boot theme'), (['Progress-II', 'AppleII', 'CheckList', 'Hat', 'Progress', 'Quotes', 'ScanDisk', 'Slack', 'SplitScreen'],'Progress-II'), tr('The appearance of the boot process can be selected here.') )
+generalOptions.addList('BootTheme',    tr('Boot theme'), (['Progress-II', 'AppleII', 'CheckList', 'Hat', 'Progress', 'Quotes', 'ScanDisk', 'Slack', 'SplitScreen'],'Progress'), tr('The appearance of the boot process can be selected here.') )
 generalOptions.addList('ClockMode',    tr('BIOS clock is set in'), (['GMT','Local'], 'Local'), tr('Use local time especially if your computer dual-boots with another OS.') )
 installer.addScreen(generalOptions)
 
