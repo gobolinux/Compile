@@ -51,7 +51,7 @@
     </message>
     <message>
         <source>Which kind of file system should be used to format the root partition.</source>
-        <translation>Válaszd ki, milyen fájlrendszert óhajtasz a Root-partíciód számára!</translation>
+        <translation>Válaszd ki, milyen fájlrendszert óhajtasz a Root-partíciód számára.</translation>
     </message>
     <message>
         <source>Package selection</source>
@@ -71,7 +71,7 @@
     </message>
     <message>
         <source>Mark the packages that should be installed in the system.</source>
-        <translation>Jelöld ki a rendszeredre telepíteni kívánt csomagokat!</translation>
+        <translation>Jelöld ki a rendszeredre telepíteni kívánt csomagokat.</translation>
     </message>
     <message>
         <source>Space required to install the selected packages</source>
@@ -107,7 +107,7 @@
     </message>
     <message>
         <source>On the MBR of which disk should the bootloader be installed.</source>
-        <translation>Válaszd ki, hogy hová települjön a betöltésvezérlő!</translation>
+        <translation>Válaszd ki, hogy hová települjön a betöltésvezérlő.</translation>
     </message>
     <message>
         <source>Boot GRUB in graphic mode</source>
@@ -135,7 +135,7 @@
     </message>
     <message>
         <source>Select the layout type that matches your keyboard.</source>
-        <translation>Határozd meg a billentyűzeted kiosztását!</translation>
+        <translation>Határozd meg a billentyűzeted kiosztását.</translation>
     </message>
     <message>
         <source>Boot theme</source>
@@ -255,7 +255,7 @@
     </message>
     <message>
         <source>Enter the password for the superuser.</source>
-        <translation>Add meg a rendszergazda jelszavát!</translation>
+        <translation>Add meg a rendszergazda jelszavát.</translation>
     </message>
     <message>
         <source>Retype password:</source>
@@ -327,11 +327,11 @@
     </message>
     <message>
         <source>Done</source>
-        <translation>Kész!</translation>
+        <translation>Kész</translation>
     </message>
     <message>
         <source>Continuing from here will perform all the indicated actions.</source>
-        <translation>Innen továbblépve az eddig kiválasztott tevékenységek végrehajtódnak!</translation>
+        <translation>Innen továbblépve az eddig kiválasztott tevékenységek végrehajtódnak.</translation>
     </message>
     <message>
         <source>GoboLinux installation aborted</source>
@@ -427,7 +427,7 @@
     </message>
     <message>
         <source>You should now be able to reboot and enjoy the GoboLinux experience. :)</source>
-        <translation>Most indítsd újra a számítógépedet, és örvendj a GoboLinuxodnak! :)</translation>
+        <translation>Most indítsd újra a számítógépedet, és örvendj a GoboLinuxodnak. :)</translation>
     </message>
     <message>
         <source>Warning: wizard was run in test mode.</source>
@@ -534,11 +534,12 @@
     <message>
         <source>Selected packages does not fit target partition.
 Either deselect packages or go back and choose another target partition.</source>
-        <translation type="unfinished"></translation>
+        <translation>A kiválasztott csomagok nem férnek rá a célként kijelölt partícióra.
+Töröld néhánynak a kiválasztását, vagy válassz egy másik partíciót.</translation>
     </message>
     <message>
         <source>Space required: %s (available space: %s)</source>
-        <translation type="unfinished"></translation>
+        <translation>A szükséges hely: %s (rendelkezésre áll: %s)</translation>
     </message>
 </context>
 </TS>
