@@ -261,10 +261,10 @@ create_link System/Links/Libraries   $root/lib
 create_link System/Settings          $root/etc
 create_link System/Links/Executables $root/bin
 create_link System/Links/Executables $root/sbin
-create_link System/Kernel/Boot $root/boot
-create_link /Mount $root/mnt
-create_link /Mount/Media $root/media
-create_link /Files $root/srv
+create_link System/Kernel/Boot       $root/boot
+create_link Mount                    $root/mnt
+create_link Mount/Media              $root/media
+create_link Files                    $root/srv
 
 create_link /System/Kernel/Modules $root/System/Links/Libraries/modules
 
