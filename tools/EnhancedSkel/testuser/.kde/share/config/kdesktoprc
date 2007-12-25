@@ -23,6 +23,7 @@ WallpaperMode=Scaled
 
 [FMSettings]
 NormalTextColor=255,255,255
+StandardFont=Sans Serif,14,-1,5,50,0,0,0,0,0
 UnderlineLinks=false
 
 [General]
@@ -35,10 +36,15 @@ Recent Files=/Files/Wallpapers/GoboWater.svg
 [Menubar]
 ShowMenubar=false
 
+[MiniCli]
+CompletionItems=xmag:1,gimp:1
+History=gimp,xmag
+TerminalApps=ls
+
 [Mouse Buttons]
 Middle=WindowListMenu
 
 [Version]
 KDEVersionMajor=3
 KDEVersionMinor=5
-KDEVersionRelease=3
+KDEVersionRelease=8

@@ -9,13 +9,21 @@ Size=32
 
 [General]
 XftAntialias=true
+XftHintStyle=hintmedium
+alternateBackground=238,246,255
 background=239,239,239
 buttonBackground=221,223,228
 buttonForeground=0,0,0
+fixed=Monospace,14,-1,5,50,0,0,0,0,0
+font=Sans Serif,14,-1,5,50,0,0,0,0,0
 foreground=0,0,0
 linkColor=0,0,238
+menuFont=Sans Serif,14,-1,5,50,0,0,0,0,0
 selectBackground=103,141,178
 selectForeground=255,255,255
+shadeSortColumn=true
+taskbarFont=Sans Serif,14,-1,5,50,0,0,0,0,0
+toolBarFont=Sans Serif,14,-1,5,50,0,0,0,0,0
 visitedLinkColor=82,24,139
 widgetStyle=Plastik
 windowBackground=255,255,255
@@ -24,7 +32,7 @@ windowForeground=0,0,0
 [Global Shortcuts]
 Activate Window Demanding Attention=default(Alt+Ctrl+A)
 Block Global Shortcuts=none
-Defaults timestamp=Jun 27 200621:25:07
+Defaults timestamp=Oct 21 200716:49:37
 Desktop Screenshot=Print
 Enable/Disable Clipboard Actions=none
 Halt without Confirmation=none
@@ -186,10 +194,15 @@ Quit=Alt+F4
 [WM]
 activeBackground=65,142,220
 activeBlend=107,145,184
+activeFont=Sans Serif,14,-1,5,75,0,0,0,0,0
 activeForeground=255,255,255
 activeTitleBtnBg=127,158,200
 alternateBackground=237,244,249
+frame=239,239,239
+handle=239,239,239
 inactiveBackground=157,170,186
 inactiveBlend=157,170,186
 inactiveForeground=221,221,221
+inactiveFrame=239,239,239
+inactiveHandle=239,239,239
 inactiveTitleBtnBg=167,181,199
