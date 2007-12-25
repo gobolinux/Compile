@@ -245,6 +245,7 @@ cat Recipe | perl -e '
       keep_existing_target => "bool",
       configure_options => "array",
       cmake_options => "array",
+      autogen => "string",
       autogen_before_configure => "bool",
       build_variables => "array",
       install_variables => "array",
@@ -596,15 +597,16 @@ test_recipe() {
    declarations=(
       configure_options=configure
       autogen_before_configure=configure
-      build_variables=configure,makefile
-      install_variables=configure,makefile,xmkmf
+      autogen=configure
+      build_variables=configure,makefile,scons
+      install_variables=configure,makefile,xmkmf,scons
       make_variables=configure,makefile
       configure=configure
       makefile=configure,makefile,xmkmf
-      build_target=configure,makefile,xmkmf,python
-      install_target=configure,makefile,xmkmf,python
+      build_target=configure,makefile,xmkmf,python,scons
+      install_target=configure,makefile,xmkmf,python,scons
       do_build=configure,makefile,python
-      do_install=configure,makefile,xmkmf,python
+      do_install=configure,makefile,xmkmf,python,scons
       needs_build_directory=configure
       manifest=manifest
       without=perl
@@ -612,6 +614,8 @@ test_recipe() {
       python_options=python
       override_default_options=python,scons,configure
       build_script=python
+      scons=scons
+      scons_variables=scons
    )
    for decl in "${declarations[@]}"
    do
