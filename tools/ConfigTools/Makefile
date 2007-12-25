@@ -36,7 +36,7 @@ cleanup:
 	cd $(PYTHON_SITE) && rm -f *.pyc *.pyo;
 
 verify:
-	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "? Resources/SettingsBackup\|? lib" ;}
+	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "? Resources/SettingsBackup\|? lib\|? bin/raw_mouseinfo" ;}
 
 dist: all version_check cleanup verify
 	rm -rf $(PACKAGE_ROOT)
