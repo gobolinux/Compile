@@ -33,13 +33,13 @@ cleanup:
 	find * -path "*~" -or -path "*/.\#*" -or -path "*.bak" | xargs rm -f
 	for f in $(PYTHON_LIBS); do libf=$(PYTHON_SITE)/$$f; rm -f $$libf.{pyo,pyc,py}; done
 	for d in $(PYTHON_SITE) lib/python$(PYTHON_VERSION) lib; \
-	do [ -d $$d ] && echo rmdir $$d || true; \
+	do [ -d $$d ] && rmdir $$d || true; \
 	done
 
 verify:
 	! { cvs up -dP 2>&1 | grep "^[\?]" | grep -v "Resources/SettingsBackup" ;}
 
-dist: version_check cleanup verify
+dist: version_check cleanup verify all
 	rm -rf $(PACKAGE_ROOT)
 	mkdir -p $(PACKAGE_BASE)
 	SignProgram $(PROGRAM)
