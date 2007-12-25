@@ -1,6 +1,0 @@
-[Name]  gcc-c++
-[Summary]  The GNU C++ Compiler
-[Description]  This package contains the GNU compiler for C++.
-[Suse Category]  Development/Languages/C
-[License]  GPL
-[Homepage]  http://gcc.gnu.org/

@@ -1,5 +1,0 @@
-[Name] MPICH
-[Summary] Implementation of the MPI parallel computing standard
-[License] OSI Approved
-[Description] MPICH is a robust and flexible implementation of the MPI (Message Passing Interface). MPI is often used with parallel or distributed computing projects. MPICH is a multi-platform, configurable system (development, execution, libraries, etc) for MPI. It can acheive parallelism using networked machines or using mulitasking on a single machine.
-[Homepage] http://www-unix.mcs.anl.gov/mpi/mpich/

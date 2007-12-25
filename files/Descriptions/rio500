@@ -1,5 +1,0 @@
-[Name] Rio 500
-[Summary] Linux support for Diamond's Rio 500 MP3 player.
-[License] GNU General Public License (GPL)
-[Description] The Rio 500 support package consists of a kernel module for driver support, a static library (librio500) containing low level Rio access routines, and a number of command line utilities. These utilities will allow you to format the memory in your Rio, add/delete folders, and add/delete songs. You can also use them to transfer files from your Rio 500 to the computer. Smartmedia support is also provided and has been tested with cards up to 64MB.
-[Homepage] http://rio500.sourceforge.net/

@@ -1,2 +1,0 @@
-[Description] bftpd is a very configurable Linux FTP server which can do chroot without special configuration or directory preparation. It works on all Unix variants tested. Most FTP commands are supported, and user authentication is done via passwd/shadow or PAM. tar/gzip on-the-fly is supported.
-[Homepage] http://www.bftpd.org/

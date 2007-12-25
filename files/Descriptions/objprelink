@@ -1,8 +1,0 @@
-[Description] Object Prelinking for C++ object files is used
-after the C++ compiler and before the C++ linker.
-It transforms .o files, trying to replace
-expensive relocations by cheaper ones. This leads
-to less work for the dynamical loader, providing
-faster startups in large C++ applications.  It is
-useful for speeding up KDE and QT.
-[Homepage] http://objprelink.sourceforge.net/

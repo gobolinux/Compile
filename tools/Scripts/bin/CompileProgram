@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source ScriptFunctions
-Import Log
-Die "CompileProgram is deprecated. Please use Compile (accompanied with MakeRecipe) instead."
