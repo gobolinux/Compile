@@ -48,7 +48,7 @@ mail:x:111:
 postgres:x:112:
 clamav:x:113:
 cyrus-imapd:x:114:
-plugdev:x:115:
+plugdev:x:115:gobo
 EOF
 
 write_file hosts <<EOF
