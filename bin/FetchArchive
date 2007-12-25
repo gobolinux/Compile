@@ -107,7 +107,6 @@ then files=(`Map basename "${urls[@]}"`)
 fi
 
 Quiet pushd "$savedir"
-echo $[${#urls[@]}-1]
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
