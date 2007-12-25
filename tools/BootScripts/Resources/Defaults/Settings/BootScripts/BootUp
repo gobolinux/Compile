@@ -13,7 +13,7 @@ Exec "Checking remaining file systems..."     fsck -p -C -T -A -R
 Exec "Hiding legacy tree..."                  GoboHide Start
 Exec "Setting clock..."                       SetClock Start
 Exec "Creating new mtab..."                   mount -o remount,rw /
-Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap,nodevpts
+Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap,nodevpts,nosysfs
 Exec "Activating all swap files/partitions..." swapon -a
 Exec "Linking kernel modules directory..."    ln -nfs "$goboModules"/`uname -r` "$goboLibraries"/modules/`uname -r`
 Exec "Setting hostname to $HostName..."       hostname "$HostName"
