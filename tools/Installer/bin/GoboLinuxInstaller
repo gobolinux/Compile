@@ -1165,7 +1165,7 @@ lo_Netmask=255.0.0.0
 	# Create regular users with AddUser
 	log(tr('Creating user accounts...'))
 	for login in addedUsers.keys() :
-		log(tr('Creating account for user %s...')%login)
+		log(tr('Creating account for user %s...')%str(login))
 		cmd = 'chroot %s AddUser'%destMountPoint
 		cmd = cmd + ' -f "'+addedUsers[login]['FullName'].strip()+'" '
 		cmd = cmd + ' -p '+ crypt.crypt(addedUsers[login]['Password'], salt)
