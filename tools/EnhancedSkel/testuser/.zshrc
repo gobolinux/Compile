@@ -6,7 +6,10 @@ alias d="ls --color"
 
 export PATH=$PATH:.
 
-prompt lode cyan
+if [ "$SSH_CONNECTION" ]
+then prompt lode yellow
+else prompt lode cyan
+fi
 
 # function to start one instance of gpg-agent for current user
 #if [ -z "$(echo $(ps -C gpg-agent -o user=) | grep $(whoami))" ]
