@@ -238,9 +238,11 @@ function link_directory() {
 
 if [ -e "${goboPrefix}/Programs/Scripts/Current" ]
 then
-   echo Pre-linking Scripts...
+   echo "Pre-linking Scripts..."
    link_directory ../../Programs/Scripts/Settings       ${goboPrefix}/System/Settings
    link_directory ../../../Programs/Scripts/Current/bin ${goboPrefix}/System/Links/Executables
+   echo "Populating Dependencies.blacklist..."
+   echo -e "Glibc\nXorg" >> ${goboPrefix}/Programs/Scripts/Settings/Scripts/Dependencies.blacklist
 fi
 
 
