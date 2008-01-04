@@ -13,10 +13,6 @@ echo "Mounting GoboLinux Install CD..."
 
 echo "Preparing TmpFS RW Layer..."
 mount -t tmpfs none /Mount/TmpFS
-mkdir -p /Mount/TmpFS/Programs
-mkdir -p /Mount/TmpFS/Depot 
-mkdir -p /Mount/TmpFS/Files
-mkdir -p /Mount/TmpFS/System
 
 echo "Initializing GoboLinux squashfs files..."
 
