@@ -11,9 +11,12 @@ do
       devname=`basename $d`
       device="/dev/$devname"
       mount -t iso9660 "$device" "$cdrom" 2> /dev/null
-      # Check for squashfs
-      ls $cdrom/*.squashfs > /dev/null 2> /dev/null && exit 0
-      umount "$cdrom"
+      if [ $? = 0 ]
+      then
+         # Check for squashfs
+         ls $cdrom/*.squashfs > /dev/null 2> /dev/null && exit 0
+         umount "$cdrom"
+      fi
    fi
 done
 
@@ -21,9 +24,12 @@ done
 for device in /dev/sr* /dev/scd*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
-   # Check for squashfs
-   ls $cdrom/*.squashfs > /dev/null  2> /dev/null && exit 0
-   umount "$cdrom"
+   if [ $? = 0 ]
+   then
+      # Check for squashfs
+      ls $cdrom/*.squashfs > /dev/null  2> /dev/null && exit 0
+      umount "$cdrom"
+   fi
 done
 
 echo "Loading usb-storage..."
@@ -39,8 +45,11 @@ echo "Regenerating /System/Kernel/Devices"
 for device in /dev/sr* /dev/scd*
 do
    mount -t iso9660 "$device" "$cdrom" 2> /dev/null
-   # Check for squashfs
-   ls $cdrom/*.squashfs > /dev/null  2> /dev/null && exit 0
-   umount "$cdrom"
+   if [ $? = 0 ]
+   then
+      # Check for squashfs
+      ls $cdrom/*.squashfs > /dev/null  2> /dev/null && exit 0
+      umount "$cdrom"
+   fi
 done
 
