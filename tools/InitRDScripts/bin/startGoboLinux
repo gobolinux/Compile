@@ -3,13 +3,21 @@
 /bin/mount -t proc  none /System/Kernel/Status
 /bin/mount -t sysfs none /System/Kernel/Objects
 /bin/mount -t tmpfs none /System/Kernel/Devices
-/bin/mount -t tmpfs none /Mount/UnionFS
 
 echo "Generating /System/Kernel/Devices"
 /bin/miniudev >/dev/null
 
 echo "Mounting GoboLinux Install CD..."
 /bin/mountGoboLinux 
+
+if [ -f /Mount/CD-ROM/Root-RW.ext2 ]
+then
+   echo "Using Root-RW.ext2 for RW Layer..."
+   mount -o loop,noatime,rw -t ext2 /Mount/CD-ROM/Root-RW.ext2 /Mount/UnionFS
+else
+   echo "Preparing TmpFS RW Layer..."
+   /bin/mount -t tmpfs none /Mount/UnionFS
+fi
 
 echo "Initializing GoboLinux squashfs files..."
 
