@@ -52,19 +52,19 @@ mount -a -t tmpfs,usbfs
 # Initialize Users directory
 ######################################
 msg "Initializing home directory"
-export HOME=${goboUsers}/gobo
-rm -rf ${goboUsers}
 mkdir -p ${goboUsers}
-cp -a ${goboPrograms}/EnhancedSkel/Current/testuser $HOME || mkdir -p $HOME
+export HOME=${goboUsers}/gobo
+if [ ! -f $HOME/.zshrc ]
+then
+    cp -a ${goboPrograms}/EnhancedSkel/Current/testuser $HOME || mkdir -p $HOME
+    cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* $HOME/Desktop
+    cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/.zshrc    $HOME
 
-cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/Desktop/* $HOME/Desktop
-cp -a ${goboPrograms}/LiveCD/Current/Data/Users_gobo/.zshrc    $HOME
-
-cd $HOME
-GrepReplace -R "/Users/testuser" $HOME
-cd - &> /dev/null
-
-rm -f $HOME/Desktop/Manager.desktop
+    cd $HOME
+    GrepReplace -R "/Users/testuser" $HOME
+    rm -f Desktop/Manager.desktop
+    cd - &> /dev/null
+fi
 
 ######################################
 # Hostname => "LiveCD"
