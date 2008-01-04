@@ -11,9 +11,6 @@ echo "Generating /System/Kernel/Devices"
 echo "Mounting GoboLinux Install CD..."
 /bin/mountGoboLinux 
 
-echo "Preparing TmpFS RW Layer..."
-mount -t tmpfs none /Mount/TmpFS
-
 echo "Initializing GoboLinux squashfs files..."
 
 # Mounting Packages*.squashfs files inside /Mount/SquashFS
