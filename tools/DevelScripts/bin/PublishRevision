@@ -21,6 +21,7 @@ Add_Option_Boolean "b" "batch" "Don't ask questions. Generate automatic commit l
 #Add_Option_Entry "r" "rename" "Rename program to <entry>."
 #Add_Option_List "l" "list" "Enter a colon-separated list of..." "foo:bar"
 Add_Option_Entry "u" "username"  "User name used for committing changes at svn server."
+Add_Option_Entry "m" "message" "Enter a commit message." ""
 Parse_Options "$@"
 
 # Use this to parse attributions from
@@ -76,7 +77,10 @@ function publish_revision() {
       if [ ! "$batch" ] && ! Ask "Commit the changes at $commitdir?"
       then return
       fi
-      if [ "$batch" ] || [ "$revision" = 1 ]
+      if Is_Entry "message"
+      then commitmsg="$(Entry "message")"
+      fi
+      if [ "$batch" ] || [ "$revision" = 1 ] || Is_Entry "message"
       then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error committing $commitdir"
       else svn commit $username "$commitdir" || Die "Error committing $commitdir"
       fi

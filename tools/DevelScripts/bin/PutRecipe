@@ -15,8 +15,9 @@ Parse_Conf CompileSubversion.conf
 scriptDescription="Put a recipe in the svn trunk/revision tree and upload it to the store."
 scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{ <recipe dir> | <tarball> | <recipe name> [<recipe version>] }"
+scriptUsage="[ -m 'message' ] { <recipe dir> | <tarball> | <recipe name> [<recipe version>] }"
 scriptExample="firefox"
+Add_Option_Entry "m" "message" "Enter a commit message." ""
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -103,7 +104,10 @@ programlist="$program $programlist"
 if [ $contextlines -ne 0 ]
 then
    # Commit the trunk and/or the revision tree.
-   PublishRevision --skip-lint $program $version || exit 1
+   if Is_Entry "message"
+   then PublishRevision --message "$(Entry "message")" --skip-lint $program $version || exit 1
+   else PublishRevision --skip-lint $program $version || exit 1
+   fi
 else
    Log_Normal "No differences. Will not publish a revision."
 fi
