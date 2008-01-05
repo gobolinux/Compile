@@ -76,7 +76,6 @@ function publish_revision() {
       if [ ! "$batch" ] && ! Ask "Commit the changes at $commitdir?"
       then return
       fi
-      else return
       if [ "$batch" ] || [ "$revision" = 1 ]
       then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error committing $commitdir"
       else svn commit $username "$commitdir" || Die "Error committing $commitdir"
