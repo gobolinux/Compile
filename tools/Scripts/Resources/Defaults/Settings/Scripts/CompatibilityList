@@ -10,3 +10,4 @@ Gnu-Ghostscript: Ghostscript
 ESP-Ghostscript: Ghostscript
 GHC: GHC-Bin
 GHC-Bin: GHC
+JRE: JDK
