@@ -724,7 +724,7 @@ test_resources() {
          ERROR "Dependencies file contains unmatched library dependencies."
       }
       missing_deps() {
-         CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist --no-compatlist $name $version recipe $PWD | while read d_program d_version d_type d_url;
+         CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist $name $version recipe $PWD | while read d_program d_version d_type d_url;
          do
             if [ "$d_type" = "None" ]
             then
