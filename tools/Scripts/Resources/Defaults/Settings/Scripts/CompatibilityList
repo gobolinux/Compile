@@ -10,4 +10,5 @@ Gnu-Ghostscript: Ghostscript
 ESP-Ghostscript: Ghostscript
 GHC: GHC-Bin
 GHC-Bin: GHC
-JRE: JDK
+JRE: JDK Sun-JDK IBM-JDK Sun-JRE IBM-JRE
+JDK: Sun-JDK IBM-JDK
