@@ -79,8 +79,11 @@ done
 # Removes revisions from submitted recipes
 if echo "$version" | grep -q "\-r"
 then
-   newversion=`echo $version | sed 's,/\(.*\)-r.*,/\1,g'`
-   mv "$version" "$newversion"
+   newversion=`echo $version | sed 's,-r[0-9]*$,,'`
+   if [ -d "$program/$newversion" ]
+   then Die "Attempted to remove revision from $version but $program/$newversion is in the way."
+   fi
+   mv "$program/$version" "$program/$newversion"
    version=$newversion
 fi
 
@@ -101,4 +104,6 @@ if [ $contextlines -ne 0 ]
 then
    # Commit the trunk and/or the revision tree.
    PublishRevision --skip-lint $program $version || exit 1
+else
+   Log_Normal "No differences. Will not publish a revision."
 fi

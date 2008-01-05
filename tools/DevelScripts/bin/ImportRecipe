@@ -196,3 +196,5 @@ else
    Log_Normal "Summary of addition:"
    Subversion_Status "$trunk/$program"
 fi
+
+exit 0

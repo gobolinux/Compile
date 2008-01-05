@@ -59,10 +59,10 @@ function publish_revision() {
          Log_Verbose "Will not publish a new revision for $program $version."
          return
       fi
-      commitmsg="NewVersion."
+      commitmsg="New revision of $program $version, r$revision."
    else
       revision=1
-      commitmsg="New recipe."
+      commitmsg="First revision of $program $version."
    fi
    
    appdir="$trunk/$program/$version"
@@ -73,11 +73,13 @@ function publish_revision() {
       then commitdir="$trunk/$program"
       else commitdir="$appdir"
       fi
-      if [ "$batch" ]
-      then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error committing $commitdir"
-      elif Ask "Commit the changes at $commitdir?"
-      then svn commit $username "$commitdir" || Die "Error committing $commitdir"
+      if [ ! "$batch" ] && ! Ask "Commit the changes at $commitdir?"
+      then return
+      fi
       else return
+      if [ "$batch" ] || [ "$revision" = 1 ]
+      then svn commit -m "$commitmsg" $username "$commitdir" || Die "Error committing $commitdir"
+      else svn commit $username "$commitdir" || Die "Error committing $commitdir"
       fi
    fi
    
