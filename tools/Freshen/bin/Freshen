@@ -1,100 +1,191 @@
-#!/usr/bin/ruby
-# Copyright (C) 2007 Michael Homer
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#!/usr/bin/python
+# Copyright (C) 2008 Michael Homer <=mwh>
+# Portions copyright (C) 2004-2007 Andre Detsch <detsch at gobolinux.org>
+# Released under the GNU GPL.
 
-# Include Freshen libraries as well
-dirname = File.dirname(`readlink -f #{$0}`)
-$: << File.expand_path("#{dirname}/../lib/")
+import string, os, os.path, sys, cPickle
 
-require 'version'
-require 'consoleapplication'
-require 'program'
-require 'repository'
-require 'reciperepository'
-require 'programrepository'
-require 'collectionrepository'
+from GetAvailable      import GetAvailable, getGoboVariable
+from GuessLatest       import GuessLatest
+from GuessProgramCase  import GuessProgramCase
+from GetInstalled      import KeyInsensitiveDict
+from GetInstalled      import GetInstalled
+from CheckDependencies import *
 
-class Freshen < ConsoleApplication
-	version "3.0.0alpha1"
-	description "Updates GoboLinux recipes and packages"
-	credits "Copyright (C) 2007 Michael Homer <michael@e.geek.nz>"
-	usage "[<opts>] [<mode>] [<list>]"
+# For debugging output
+def dbprint(s):
+	if False:
+		sys.stderr.write(s+"\n")
 
-	has_mode :upgrade, 'Upgrade the packages listed, or the whole system if none specified', :U
-	has_mode :info, 'Display detailed information about the listed program(s)', :i
-	has_opt :exclude, 'Exclude <list> from consideration', :x
-	has_flag :'ignore-revisions', 'Do not consider updating e.g. -r2 to -r3', :r, lambda {Version.useRevisions = false}
+# Borrowed from Manager and adapted a little. Could be more concise, since
+# I only want the installed < recipe,official_package case.
+def applyFilter(availables, filter_rule, report_missing = False) :
+	p1 = filter_rule[0][:]
+	op = filter_rule[1]
+	p2 = filter_rule[2][:]
 	
-	def run_upgrade(list)
-		out "Would upgrade #{list.join(', ')}"
-		out "Would exclude #{option(:exclude)[:list].join(', ')}"
-	end
+	toReturn = []
 	
-	def run_info(list) 
-		out "Would display info for #{list.join}"
-	end
+	leftPrograms = []
+	leftProgramsLower = []
 	
-	def run_default(list)
-		out "Would exclude the following: #{option(:exclude)[:list].join(', ')}" if option(:exclude)
-		out "Unordered list of updates, paying no attention to exclusions or upper limits:"
-		begin
-		p = ProgramRepository.new
-		rr = RecipeRepository.new('/Files/Compile/Recipes', nil)
-		r = CollectionRepository.new
-		r.add rr
-		p.all.each {|prog|
-			vs = r[prog.name]
-			if vs.length>0 and vs[-1] > prog.current
-				if prog.installed?(vs[-1])
-					#debug "#{prog} #{vs[-1]} is installed but not symlinked over older current of #{prog.current})"
-				else
-					#out "New version of #{prog}: #{vs[-1]} > #{prog.current}"
-					puts format_program(prog, vs[-1])
-				end
-			end
-		}
-		rescue Exception
-			error $!
-			backtrace
-		end
-	end
-	
-	private
-	def format_program(prog, newver)
-		@introducedBy = Hash.new
-		if !prog.installed?
-			upg = ' '
-		elsif prog.current>newver
-			upg = "#{Screen.colour['red']}D#{Screen.colour['normal']}"
-		elsif prog.current<newver
-			upg = "#{Screen.colour['cyan']}U#{Screen.colour['normal']}"
-		else
-			upg = ' '
-		end
-		progcol = Screen.colour['green']
-		prs = '-'
-		if newver<prog.current
-			progcol = Screen.colour['red']
-		end
-		if prog.installed?
-			ins = 'I'
-		else
-			ins = Screen.colour['green']+"N"+Screen.colour['normal']
-		end
-		@introducedBy[prog] = " ("+@introducedBy[prog]+")" if @introducedBy[prog]
-		"[#{ins}#{upg}#{prs}] #{progcol}#{prog.name} #{newver}#{Screen.colour['normal']}#{@introducedBy[prog]}#{' '*(Screen.width-7-prog.name.length-newver.to_s.length-prog.current.to_s.length-@introducedBy[prog].to_s.length)}#{prog.current}\n"
-	end
-end
+	latestType = None
+	latestURL = None
 
-ConsoleApplication.run Freshen
+	for t in p1 :
+		for p in availables[t]['programs'].keys() :
+			if p.lower() not in leftProgramsLower :
+				leftProgramsLower.append(p.lower())
+				leftPrograms.append(p)
+	 
+	rightPrograms = []
+	rightProgramsLower = []
+	for t in p2 :
+		for p in availables[t]['programs'].keys() :
+			if p.lower() not in rightProgramsLower :
+				rightProgramsLower.append(p.lower())
+				rightPrograms.append(p)
+	for p in leftPrograms :
+		if p.lower() in rightProgramsLower :
+			leftLatestVR = '0'
+			for t in p1 :
+				try :
+					leftLatestV = GuessLatest(availables[t]['programs'][p].keys())
+					leftLatestVR = Join_Version_Revision(leftLatestV, GuessLatest(availables[t]['programs'][p][leftLatestV].keys()))
+				except :
+					pass
+			
+			rightLatestVR = '0'
+			for t in p2 :
+				try :
+					rightLatestV = GuessLatest(availables[t]['programs'][p].keys() + ['0'])
+					prevRLVR = rightLatestVR
+					revision = GuessLatest(availables[t]['programs'][p][rightLatestV].keys())
+					rightLatestVR = Join_Version_Revision(rightLatestV, revision)
+					if rightLatestVR == rightLatestV and rightLatestVR != prevRLVR:
+						latestType = t
+						latestURL = availables[t]['programs'][p][rightLatestVR][revision][0]
+				except :
+					pass
+			
+			latestVR = GuessLatest([leftLatestVR,rightLatestVR])
+
+			if latestVR == rightLatestVR :
+				toReturn.append((p, rightLatestVR, latestType, latestURL, leftLatestVR))
+		else :
+			if report_missing :
+				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
+	return toReturn
+
+def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails):
+	if program in graph.keys():
+		return;
+	upgradeDetails[program] = {'version': vers, 'revision': revision, 'type': ptype, 'url': url}
+	graph[program] = {}
+	deps,sols = CheckDependencies(program, version, revision, ptype, url, ['official_package', 'recipe'], mode='all', recursive=False)
+	for y in sols:
+		graph[program][y[0]] = y[1] + '-' + y[2]
+		addProgramToGraph(graph, y[0], y[1], y[2], y[3], y[4], upgradeDetails)
+
+# tsort' for the actual sorting. Keeps track of detected cycles in the global
+# cycles.
+def tsort2(item, graph, keys, ls, depth, parents):
+	global cycles
+	ind = ' '*depth
+	if item is not None:
+		k = item
+		keys.remove(item)
+	else:
+		if len(keys) > 0:
+			k = keys.pop()
+		else:
+			return
+	
+	dbprint(ind+"picked " + k + ": " + ', '.join(graph[k].keys()))
+	for x in graph[k].keys():
+		if x in keys:
+			il = tsort2(x, graph, keys, [], depth+1, parents+[k])
+			ls = il + ls
+		else:
+			if x in parents:
+				dbprint(ind+"WARNING: cycle detected between "+x+" and "+k)
+				ecyc = None
+				for cyc in cycles:
+					if ecyc is not None:
+						if x in cyc or k in cyc:
+							cycles.discard(cyc)
+							cycles.discard(ecyc)
+							cycles.add(cyc | ecyc)
+							break
+					elif x in cyc:
+						cycles.discard(cyc)
+						cycles.add(cyc | set([k]))
+						ecyc = cyc
+					elif k in cyc:
+						cycles.discard(cyc)
+						cycles.add(cyc | set([k]))
+						ecyc = cyc
+				#cycles = newcycles
+				if ecyc is None:
+					cycles.add(frozenset([x,k]))
+			else:
+				dbprint(ind+" reached "+x+", already completed")
+	ls = [k] + ls
+	dbprint(ind+"final ls: " + ', '.join(ls))
+	return ls
+
+def tsort(graph):
+	keys = set(graph.keys())
+	ls = []
+	while len(keys)>0:
+		dbprint("============")
+		il = tsort2(None, graph, keys, [], 1,[])
+		ls = il + ls
+	ls.reverse()
+	return ls
+
+goboPrograms = getGoboVariable('goboPrograms')
+goboSettings = getGoboVariable('goboSettings')
+goboLinks    = getGoboVariable('goboLinks')
+
+localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
+
+cycles = set()
+
+graph = {}
+upgradeDetails = {}
+if os.path.exists('cache'):
+	f = open('cache', 'r')
+	graph = cPickle.load(f)
+	upgradeDetails = cPickle.load(f)
+	f.close()
+else:
+	availables = GetAvailable(['installed', 'recipe', 'official_package'], localdirs, False, hook=consoleProgressHook, accessWeb=True)
+	l = applyFilter(availables, [['installed'], '<', ['recipe', 'official_package']], False)
+	i=0
+	for x in l:
+		i+=1
+		p=x[0];
+		vers = Split_Version_Revision(x[1]) #x[1].split('-')
+		ptype = x[2]
+		url = x[3]
+		#upgradeDetails[p] = {'version': vers[0], 'revision': vers[1], 'type': ptype, 'url': url}
+		if len(vers) < 2:
+			vers = (vers[0], None)
+		dbprint("adding "+p+": "+str(i)+"/"+str(len(l)))
+		addProgramToGraph(graph, p, vers[0], vers[1], ptype, url, upgradeDetails)
+		dbprint("added "+p)
+	f = open('cache', 'w')
+	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	f.close()
+
+dbprint("starting sort...")
+ls = tsort(graph)
+for x in ls:
+	upg = upgradeDetails[x]
+	print "%s %s-%s (%s)"%(x, upg['version'][0], upg['revision'], upg['type'])
+if len(cycles)>0:
+	sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
+	for cyc in cycles:
+		sys.stderr.write(" { " + ', '.join(cyc)+" }\n")
