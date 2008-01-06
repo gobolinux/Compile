@@ -157,15 +157,15 @@ fi
 echo "compile_version=$scriptVersion" >> "$recipefile"
 if [ "$cvs" = "yes" ]
 then
-   echo "cvs=$cvs_server" >> "$recipefile"
+   echo "cvs=\"$cvs_server\"" >> "$recipefile"
    echo "cvs_module=$cvs_module" >> "$recipefile"
    checkoutdir="$compileSourcesDir/$packagename-cvs"
-   fetchparams="--save-to $compileSourcesDir"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
 elif [ "$svn" = "yes" ]
 then
    echo "svn=\"$svn_uri\"" >> "$recipefile"
    checkoutdir="$compileSourcesDir/$packagename-svn"
-   fetchparams="--save-to $compileSourcesDir"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
 else
    echo "url=\"$url\"" >> "$recipefile"
    file="$compileArchivesDir/$(basename "$source_url")"
