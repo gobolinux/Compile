@@ -585,6 +585,10 @@ if [ "$versionnumber" = "SVN" -o "$versionnumber" = "svn" ]
 then versionnumber=`date +%Y%m%d`"-SVN"
 fi
 
+if [ "$versionnumber" = "GIT" -o "$versionnumber" = "git" ]
+then versionnumber=`date +%Y%m%d`"-GIT"
+fi
+
 target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 variable_target="${goboVariable}"
@@ -707,8 +711,8 @@ fi
 # Construct some variable arrays
 ##################################################
 
-if ! [ -n "${cvs}${svn}${url}${urls[*]}" ]
-then Die "Missing URL, CVS or SVN in recipe '$recipe'."
+if ! [ -n "${cvs}${svn}${git}${url}${urls[*]}" ]
+then Die "Missing URL, CVS, SVN or GIT in recipe '$recipe'."
 fi
 
 for var in url file file_size file_md5
@@ -724,7 +728,7 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-if [ "${cvs}" -o "${svn}" ]
+if [ "${cvs}" -o "${svn}" -o "${git}" ]
 then
    if [ -z "${dir}" ]
    then
@@ -789,6 +793,11 @@ elif [ "$svn" ]
 then
    [ "${dir}" -a -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" $archrecipe || Die "Error fetching SVN snapshot."
+   Boolean "no-build" && exit 0
+elif [ "$git" ]
+then
+   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" $archrecipe || Die "Error fetching GIT snapshot."
    Boolean "no-build" && exit 0
 else
    if ! Boolean "no-web"
