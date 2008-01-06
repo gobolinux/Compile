@@ -93,7 +93,10 @@ elif [ "$git" ]
 then
    cd "$savedir"
    [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   git-clone $git "${sourcedir}"
+   if [ ! -d "${sourcedir}" ]
+   then git-clone $git "${sourcedir}"
+   else cd "${sourcedir}" && git-pull
+   fi
    exit $?
 elif ! [ -n "$url${urls[*]}" ]
 then
