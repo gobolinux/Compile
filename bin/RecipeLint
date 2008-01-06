@@ -128,7 +128,7 @@ revision=`echo $version | sed -n 's/^.*-\(r[0-9]*\)$/\1/p'`
 echo "$pureversion" | egrep -q "^[0-9a-z_.]+$" || {
    ERROR "Version $pureversion contains invalid characters (only [0-9a-z._] allowed)."
 }
-echo "$pureversion" | grep -q "[0-9]\|^cvs\|^svn$" || {
+echo "$pureversion" | grep -q "[0-9]\|^cvs$\|^svn$\|^git$" || {
    WARN "Version $pureversion does not contain digits, may be incorrect."
 }
 [ "$revision" ] && {
@@ -274,6 +274,7 @@ cat Recipe | perl -e '
       cvs_checkout_options => "string",
       cvs_rsh => "string",
       svn => "string",
+      git => "string",
       unmanaged_files => "array",
       perl_options => "array",
       part_of => "string",
@@ -560,7 +561,7 @@ test_recipe() {
       done
       return
    }
-   [ "$url" -o "${urls[0]}" -o "$cvs" -o "$svn" ] || {
+   [ "$url" -o "${urls[0]}" -o "$cvs" -o "$svn" -o "$git" ] || {
       ERROR "No download location specified in recipe."
    }
    if [ "$compile_version" ]
@@ -694,11 +695,11 @@ test_recipe() {
 
 if [ "$test_recipe" = "yes" ]
 then
-   grep -q "url=\|urls=\|cvs=\|svn=" Recipe && test_recipe
+   grep -q "url=\|urls=\|cvs=\|svn=\|git=" Recipe && test_recipe
    for arch in "${arches[@]}"
    do
       [ -e "$arch/Recipe" ] || continue
-      grep -q "url=\|urls=\|cvs=\|svn=" "$arch/Recipe" && test_recipe "$arch"
+      grep -q "url=\|urls=\|cvs=\|svn=\|git=" "$arch/Recipe" && test_recipe "$arch"
    done
 fi
 
