@@ -19,7 +19,8 @@ Normally you'll want to use Compile(1) instead.
 "
 Add_Option_Entry "t" "target" "Makefile target to be used." "install"
 Add_Option_Entry "f" "makefile" "Specify which makefile to use." "Makefile"
-Add_Option_Entry "c" "command" "Use the given command instead of make. Options --target and --makefile are then ignored."
+Add_Option_Entry "m" "make" "Use the given variant of make (ie: cmake). Use in recipe_type={makefile,configure}" "make"
+Add_Option_Entry "c" "command" "Use the given command instead of make (ie: python). Options --target and --makefile are then ignored."
 Add_Option_Entry "a" "add-allowed" "Specify additional allowed directories or files. Colon separated list."
 Add_Option_Entry "u" "unmanaged-files" "Specify allowed directories or files, which should be handled as unmanaged. Colon separated list."
 Add_Option_Boolean "F" "no-sandbox" "Do not protect the installation with a sandbox."
@@ -165,9 +166,14 @@ fi
 
 eval `Args_To_Array args 3`
 
+if Is_Entry_Set "make" 
+then makecmd=`Entry "make"`
+else makecmd="${compileMakeCommand:-ColorMake}"
+fi
+
 if Is_Entry "command"
 then $sandbox `Entry "command"` "${args[@]}" || installation_failed
-else $sandbox make -f "`Entry "makefile"`" "${args[@]}" `Entry "target"` || installation_failed
+else $sandbox $makecmd -f "`Entry "makefile"`" "${args[@]}" `Entry "target"` || installation_failed
 fi
 result="$?"
 
