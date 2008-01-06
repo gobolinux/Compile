@@ -11,10 +11,11 @@ Import GoboLinux
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>}"
-scriptNotes="A URL, a cvs or a svn command line should be passed as a parameter."
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>} | {<app_name> git <repository>}"
+scriptNotes="A URL, a cvs, svn or a git command line should be passed as a parameter."
 scriptExample=("Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz
-DirectFB cvs :pserver:anonymous:@cvs.directfb.org:/cvs/directfb DirectFB")
+DirectFB cvs :pserver:anonymous:@cvs.directfb.org:/cvs/directfb DirectFB
+SYSLINUX git http://www.kernel.org/pub/scm/boot/syslinux/syslinux.git")
 Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
 Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
 Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
@@ -62,6 +63,7 @@ fi
 
 svn=no
 cvs=no
+git=no
 if [ "$versionnumber" = "cvs" ]
 then
    cvs=yes
@@ -72,6 +74,10 @@ elif [ "$versionnumber" = "svn" -o "$versionnumber" = "SVN" ]
 then
    svn=yes
    svn_uri="$source_url"
+elif [ "$versionnumber" = "git" ]
+then
+   git=yes
+   git_repository="$source_url"
 else
    # TODO: generalize mirror system
    url=`echo "$source_url" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
@@ -111,7 +117,7 @@ then
       fi
             
    else
-      ignorelist="\--cvs\|--svn\|/cvs-r[0-9]*\|/svn-r[0-9]*"
+      ignorelist="\--cvs\|--svn\|--git\|/cvs-r[0-9]*\|/svn-r[0-9]*\|git-r[0-9]*"
       sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null | grep -vi "$ignorelist"`
       if [ "$sameprogramrecipe" ]
       then
@@ -132,6 +138,7 @@ then
    unset buildtype
    [ "$cvs" = yes ] && buildtype="CVS"
    [ "$svn" = yes ] && buildtype="SVN"
+   [ "$git" = yes ] && buildtype="GIT"
    
    if [ ! -z "$buildtype" ]
    then Ask_Continue "Creating recipe template for $buildtype build of $packagename."
@@ -165,6 +172,11 @@ elif [ "$svn" = "yes" ]
 then
    echo "svn=\"$svn_uri\"" >> "$recipefile"
    checkoutdir="$compileSourcesDir/$packagename-svn"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$git" = "yes" ]
+then
+   echo "git=\"$git_repository\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-git"
    fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
 else
    echo "url=\"$url\"" >> "$recipefile"
@@ -216,7 +228,7 @@ then
    then
       echo "dir='$bdir'" >> "$recipefile"
    fi
-elif [ "$cvs" = "yes" -o "$svn" = "yes" ]
+elif [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" ]
 then
    Quiet pushd "$compileSourcesDir"
    file_contents=`Temporary_File`

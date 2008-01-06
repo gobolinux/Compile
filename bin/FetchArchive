@@ -63,6 +63,7 @@ archrecipe="$(Arg 2)"
 [ -e "$archrecipe" ] && source "$archrecipe"
 
 [ -z "${sourcedir}" ] && sourcedir="${dir%%/*}"
+
 ##################################################
 # Get sources
 ##################################################
@@ -87,6 +88,12 @@ then
    then svn checkout $svn "${sourcedir}" --username "$svn_username" --password "$svn_password"
    else svn checkout $svn "${sourcedir}"
    fi
+   exit $?
+elif [ "$git" ]
+then
+   cd "$savedir"
+   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
+   git-clone $git "${sourcedir}"
    exit $?
 elif ! [ -n "$url${urls[*]}" ]
 then
