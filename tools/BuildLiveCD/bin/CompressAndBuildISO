@@ -320,6 +320,10 @@ then
    cd $root
 
    MakeInitRDTree || die "Failed creating initrd environment."
+   echo "Copying nls modules from Output/ROLayer/System/Kernel/Modules"
+   cp --remove-destination Output/ROLayer/Programs/Linux/Current/Resources/Unmanaged/System/Kernel/Modules/Current/kernel/fs/nls/nls_cp437.ko $initrd_dir/System/Kernel/Modules
+   cp --remove-destination Output/ROLayer/Programs/Linux/Current/Resources/Unmanaged/System/Kernel/Modules/Current/kernel/fs/nls/nls_iso8859-1.ko $initrd_dir/System/Kernel/Modules
+
    echo "Copying isolinux/kernel from Output/ROLayer/System/Kernel/Boot/kernel"
    \cp --remove-destination Output/ROLayer/Programs/Linux/Current/Resources/Unmanaged/System/Kernel/Boot/kernel Output/ISO/isolinux/kernel
    mkfs.cramfs $initrd_dir Output/ISO/isolinux/initrd
