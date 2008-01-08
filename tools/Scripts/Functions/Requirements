@@ -5,7 +5,7 @@
 function Process_Requirements_File() {
    local package="$1"
    local version="$2"
-   local reqfile="$3"
+   local reqfile="$goboPrograms/$package/$version/Resources/Requirements"
 
    # We only allow hardcoded uid/gid's in the range [1..99]. These are reserved for
    # GoboLinux usage, as in scripts or daemons. All other uid/gid's should be generated
