@@ -17,6 +17,14 @@ def dbprint(s):
 	if False:
 		sys.stderr.write(s+"\n")
 
+def getTypeAbbr(type):
+	return {
+		'recipe': 'R',
+		'official_package': 'P',
+		'installed': 'I',
+		None: '?'
+	}[type]
+
 # Borrowed from Manager and adapted a little. Could be more concise, since
 # I only want the installed < recipe,official_package case.
 def applyFilter(availables, filter_rule, report_missing = False) :
@@ -46,12 +54,19 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 				rightProgramsLower.append(p.lower())
 				rightPrograms.append(p)
 	for p in leftPrograms :
+		latestType = None
+		latestURL = None
 		if p.lower() in rightProgramsLower :
 			leftLatestVR = '0'
 			for t in p1 :
 				try :
 					leftLatestV = GuessLatest(availables[t]['programs'][p].keys())
-					leftLatestVR = Join_Version_Revision(leftLatestV, GuessLatest(availables[t]['programs'][p][leftLatestV].keys()))
+					prevLLVR = leftLatestVR
+					revision = GuessLatest(availables[t]['programs'][p][leftLatestV].keys())
+					leftLatestVR = Join_Version_Revision(leftLatestV, revision)
+					if leftLatestVR != prevLLVR:
+						latestType = t
+						latestURL = availables[t]['programs'][p][leftLatestV][revision][0]
 				except :
 					pass
 			
@@ -62,9 +77,9 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 					prevRLVR = rightLatestVR
 					revision = GuessLatest(availables[t]['programs'][p][rightLatestV].keys())
 					rightLatestVR = Join_Version_Revision(rightLatestV, revision)
-					if rightLatestVR == rightLatestV and rightLatestVR != prevRLVR:
+					if rightLatestVR != prevRLVR:
 						latestType = t
-						latestURL = availables[t]['programs'][p][rightLatestVR][revision][0]
+						latestURL = availables[t]['programs'][p][rightLatestV][revision][0]
 				except :
 					pass
 			
@@ -78,14 +93,18 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 	return toReturn
 
 def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails):
+	global installedPrograms
 	if program in graph.keys():
 		return;
-	upgradeDetails[program] = {'version': vers, 'revision': revision, 'type': ptype, 'url': url}
+	upgradeDetails[program] = {'version': version, 'revision': revision, 'type': ptype, 'url': url}
 	graph[program] = {}
 	deps,sols = CheckDependencies(program, version, revision, ptype, url, ['official_package', 'recipe'], mode='all', recursive=False)
-	for y in sols:
-		graph[program][y[0]] = y[1] + '-' + y[2]
-		addProgramToGraph(graph, y[0], y[1], y[2], y[3], y[4], upgradeDetails)
+	for s,d in zip(sols,deps):
+		ver = s[1] + '-' + s[2]
+
+		if s[0] not in installedPrograms or (d['lover'] != '' and d['lover'] is not None and GuessLatest([d['lover'], GuessLatest(installedPrograms[s[0]])]) == d['lover']):
+			graph[program][s[0]] = s[1] + '-' + s[2]
+			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails)
 
 # tsort' for the actual sorting. Keeps track of detected cycles in the global
 # cycles.
@@ -154,13 +173,28 @@ cycles = set()
 
 graph = {}
 upgradeDetails = {}
+installedPrograms = {}
 if os.path.exists('cache'):
 	f = open('cache', 'r')
 	graph = cPickle.load(f)
 	upgradeDetails = cPickle.load(f)
 	f.close()
+	installed = GetAvailable(['installed'])['installed']['programs']
+	for prog in installed.keys():
+		versions = installed[prog]
+		installedPrograms[prog] = []
+		for v,revisions in versions.iteritems():
+			for r in revisions.keys():
+				installedPrograms[prog].append(v+'-'+r)
 else:
 	availables = GetAvailable(['installed', 'recipe', 'official_package'], localdirs, False, hook=consoleProgressHook, accessWeb=True)
+	installed = availables['installed']['programs']
+	for prog in installed.keys():
+		versions = installed[prog]
+		installedPrograms[prog] = []
+		for v,revisions in versions.iteritems():
+			for r in revisions.keys():
+				installedPrograms[prog].append(v+'-'+r)
 	l = applyFilter(availables, [['installed'], '<', ['recipe', 'official_package']], False)
 	i=0
 	for x in l:
@@ -169,7 +203,6 @@ else:
 		vers = Split_Version_Revision(x[1]) #x[1].split('-')
 		ptype = x[2]
 		url = x[3]
-		#upgradeDetails[p] = {'version': vers[0], 'revision': vers[1], 'type': ptype, 'url': url}
 		if len(vers) < 2:
 			vers = (vers[0], None)
 		dbprint("adding "+p+": "+str(i)+"/"+str(len(l)))
@@ -182,9 +215,19 @@ else:
 
 dbprint("starting sort...")
 ls = tsort(graph)
+print "[ ] Program                                                            Installed"
 for x in ls:
 	upg = upgradeDetails[x]
-	print "%s %s-%s (%s)"%(x, upg['version'][0], upg['revision'], upg['type'])
+	ver = Join_Version_Revision(upg['version'],upg['revision'])
+	insVer = "None"
+	if installedPrograms.has_key(x):
+		insVer = GuessLatest(installedPrograms[x])
+	if not installedPrograms.has_key(x) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
+		tabbr = getTypeAbbr(upg['type'])
+		out = "[%s] %s %s"%(tabbr, x, ver)
+		out = out + (" " * (80-len(out)-len(insVer))) + insVer
+		print out
+
 if len(cycles)>0:
 	sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
 	for cyc in cycles:
