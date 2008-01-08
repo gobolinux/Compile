@@ -1,0 +1,102 @@
+#!/bin/sh (source)
+
+# Functions to handle Resources/Requirements
+
+function Process_Requirements_File() {
+   local package="$1"
+   local version="$2"
+   local reqfile="$3"
+
+   # We only allow hardcoded uid/gid's in the range [1..99]. These are reserved for
+   # GoboLinux usage, as in scripts or daemons. All other uid/gid's should be generated
+   # dynamically through get_next_system_id().
+   function check_id_range() {
+      id="$1"
+      idtype="$2"
+      name="$3"
+      [ "$idtype" = "uid" ] && idtarget="user account" || idtarget="group"
+      if [ $id -lt 1 -o $id -gt 99 ]
+      then
+         Log_Error "$idtype $id is out of range [1..99], will not create $idtarget '$name'"
+         return 1
+      fi
+      return 0
+   }
+   # Ensures that only uid/gid's in the range [100..999] are created. Numbers below
+   # that are reserved for GoboLinux usage, and the ones above are attributed to user
+   # accounts only (user accounts should not be created using Resources/Requirements).
+   function get_next_system_id() {
+      unset next
+      # search sequentially
+      for num in `cat "$1" | cut -d: -f3 | sort -n`
+      do
+         [ $num -ge 100 -a $num -lt 999 ] && let next=num+1
+      done
+      if [ "$next" ] && ! cat "$1" | cut -d: -f3 | grep "^$next$"
+      then
+         echo "$next"
+         return
+      fi
+      # get the first available slot
+      for num in `seq 100 999`
+      do
+         if ! cat "$1" | cut -d: -f3 | grep -q "^$num$"
+         then
+            echo "$num"
+            return
+         fi
+      done
+   }
+   if [ -f $reqfile ]
+   then
+      source $reqfile
+      for entry in "${required_groups[@]}"
+      do
+         group=`echo "$entry" | cut -d" " -f1`
+         grep -q "^$group:" $goboSettings/group && continue
+         
+         if echo "$entry" | grep -q "gid="
+         then 
+            gid="`echo $entry | sed 's,.*gid=\([^ ]*\).*,\1,g'`"
+            check_id_range $gid "gid" "$group" || { unset gid; continue; }
+         else
+            gid="`get_next_system_id $goboSettings/group`"
+            [ ! "$gid" ] && { Log_Error "Could not add group $group: no free slots"; continue; }
+         fi
+         if [ "$gid" ]
+         then
+            Log_Normal "Adding group $group..."
+            $sudo_exec groupadd --gid $gid $group
+            grep -q "^$group:" $goboSettings/group || Log_Error "Error adding group $group."
+         fi
+      done
+
+      for entry in "${required_users[@]}"
+      do
+         user=`echo "$entry" | cut -d" " -f1`
+         grep -q "^$user:" $goboSettings/passwd && continue
+         
+         if echo "$entry" | grep -q "home="
+         then homedir="`echo $entry | sed 's,.*home=\([^ ]*\).*,\1,g'`"
+         else homedir="$goboVariable/empty"
+         fi
+         if echo "$entry" | grep -q "groups="
+         then groups="`echo $entry | sed 's,.*groups=\([^ ]*\).*,\1,g'`"
+         else unset groups
+         fi
+         if echo "$entry" | grep -q "uid="
+         then 
+            uid="`echo $entry | sed 's,.*uid=\([^ ]*\).*,\1,g'`"
+            check_id_range $uid "uid" "$user" || continue
+         else
+            uid="`get_next_system_id $goboSettings/passwd`"
+            [ ! "$uid" ] && { Log_Error "Could not add user $user: no free slots"; continue; }
+         fi
+         Log_Normal "Adding user $user..."
+         [ -d "$homedir" ] && createhomedir= || createhomedir="-m"
+         $sudo_exec useradd --uid $uid -c "Added by $package $version" $createhomedir -d "$homedir" -s "$goboExecutables/nologin" $user
+         [ "$groups" ] && $sudo_exec usermod -a -G "$groups" "$user"
+         grep -q "^$user:" $goboSettings/passwd || Log_Error "Error adding user $group."
+      done
+   fi
+}

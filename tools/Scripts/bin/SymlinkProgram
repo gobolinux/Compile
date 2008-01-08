@@ -6,6 +6,7 @@ Import GoboLinux
 Import OptionParser
 Import Process
 Import String
+Import Requirements
 
 helpOnNoArguments=yes
 scriptDescription="Link a program from the ${goboPrograms} hierarchy in the ${goboSystem} tree."
@@ -22,6 +23,7 @@ Add_Option_Entry "w" "wrappers" "Link wrappers into ${goboExecutables}: 'yes', '
 Add_Option_Entry "t" "tasks" "Link tasks into ${goboExecutables}: 'yes', 'no' or 'safe'." "yes"
 Add_Option_Entry "u" "unmanaged" "Defines what to do with unmanaged files in package: 'ask', 'install' or 'skip'." "ask"
 Add_Option_Boolean "E" "no-environment" "Do not link entries from ${goboEnvironment}."
+Add_Option_Boolean "R" "no-requirements" "Do not process Resources/Requirements."
 Add_Option_Boolean "A" "no-variable" "Do not move variable files into ${goboVariable}."
 Add_Option_Boolean "M" "no-doc" "Do not link manuals and info files."
 Add_Option_Boolean "C" "cleanup" "Clean up after installation."
@@ -365,6 +367,14 @@ then
       Verbose ln -sfv "$envfile" "$goboEnvironment/$package--$version"
       Gen_Env_Cache
    fi
+fi
+
+################################################################################
+
+if ! Boolean "no-requirements" && [ -f $current/Resources/Requirements ]
+then
+   Log_Normal "Asserting that requirements are met..."
+   Process_Requirements_File $package $version $current/Resources/Requirements
 fi
 
 ################################################################################
