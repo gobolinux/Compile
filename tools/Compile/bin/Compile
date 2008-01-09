@@ -41,6 +41,7 @@ Add_Option_Boolean "M" "no-unmanaged" "Do not install unmanaged files."
 Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
 Add_Option_Entry   "A" "start-at" "Skip sub-recipes when building a meta-recipe: start include list at given recipe; effective only with --lazy; debugging aid: do NOT use it for building packages."
 Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
+Add_Option_Boolean "i" "install-separatly" "If the application is part of a meta recipe, do not install it into the containing application but install it into a separate directory."
 Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful build"
 Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
 
