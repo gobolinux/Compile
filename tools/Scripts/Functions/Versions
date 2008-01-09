@@ -75,3 +75,16 @@ function Previous_Version() {
    fi
 }
 
+# Gets all available versions of the given program by listing the
+# contents in the program directory.
+# Usage Example:
+#     All_Versions Scripts
+function All_Versions() {
+   Parameters "$@" programName
+   local basedir="$goboPrograms/$programName"
+   Is_Directory "$basedir" || return 1
+   versions=$(ls -I Settings -I Variable -I Current ${basedir})
+   [ -z "${versions}" ] && return 1
+   echo "${versions}"
+   return 0
+}
