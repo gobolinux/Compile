@@ -251,7 +251,7 @@ then
             
             else # program found, but version not installed
                yourversion= #`Get_Version "$iprogram" "Current"`
-               [ "$yourversion" ] || yourversion=`GuessLatest \`ls $goboPrograms/$iprogram |grep -v Settings |grep -v Variable |grep -v Current\``
+               [ "$yourversion" ] || yourversion=$(GuessLatest $(All_Versions $iprogram))
                
                if [ "`GuessLatest $version $yourversion`" == "$yourversion" ]
                then # a newer version is already installed
