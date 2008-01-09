@@ -5,6 +5,7 @@ Import File
 Import GoboLinux
 Import Log
 Import OptionParser
+Import Versions
 
 ### Options ###################################################################
 
@@ -51,7 +52,7 @@ then
       versionnumber="$(Arg 2)"
    fi
 else
-   versionnumber=`(cd ${goboInstall}/${programname}; GuessLatest \`find * -maxdepth 0 -type d\`)`
+   versionnumber=$(GuessLatest $(All_Versions ${goboInstall}/${programname}))
 fi
 
 prefix="${goboInstall}/$programname/$versionnumber"
