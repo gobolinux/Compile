@@ -80,8 +80,11 @@ function Previous_Version() {
 # Usage Example:
 #     All_Versions Scripts
 function All_Versions() {
-   Parameters "$@" programName
-   local basedir="$goboPrograms/$programName"
+   Parameters "$@" program
+   if Is_Directory $program
+   then local basedir="$program"
+   else local basedir="$goboPrograms/$program"
+   fi
    Is_Directory "$basedir" || return 1
    versions=$(ls -I Settings -I Variable -I Current ${basedir})
    [ -z "${versions}" ] && return 1
