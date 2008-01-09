@@ -5,6 +5,7 @@
 source ScriptFunctions
 Import GoboLinux
 Import OptionParser
+Import Versions
 
 ### Options ###################################################################
 
@@ -25,9 +26,9 @@ appname=$(GuessProgramCase "$(Arg 1)")
 appver=$(Arg 2)
 [ -z "${appver}" ] && {
    Set_Boolean "fast"
-   appver=$(basename $(readlink ${goboPrograms}/${appname}/Current))
+   appver=$(Get_Version ${appname} Current)
 }
-[ -z "${appver}" ] && appver=$(basename $(GuessLatest ${goboPrograms}/${appname}/*))
+[ -z "${appver}" ] && appver=$(basename $(GuessLatest $(All_Versions ${appname})))
 [ -z "${appver}" ] && Die "No version specified and no version could be guessed."
 ls ${goboPrograms}/${appname} | grep -q "^${appver}" || Die "No such version (${appver}) is installed"
 grepforversion=".*"
