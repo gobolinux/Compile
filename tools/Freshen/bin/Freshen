@@ -76,7 +76,7 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 					rightLatestV = GuessLatest(availables[t]['programs'][p].keys() + ['0'])
 					prevRLVR = rightLatestVR
 					revision = GuessLatest(availables[t]['programs'][p][rightLatestV].keys())
-					rightLatestVR = Join_Version_Revision(rightLatestV, revision)
+					rightLatestVR = GuessLatest([rightLatestVR, Join_Version_Revision(rightLatestV, revision)])
 					if rightLatestVR != prevRLVR:
 						latestType = t
 						latestURL = availables[t]['programs'][p][rightLatestV][revision][0]
@@ -92,19 +92,23 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
 	return toReturn
 
-def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails):
-	global installedPrograms
+def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails, neededBy=None):
+	global installedPrograms, introducedBy, types
 	if program in graph.keys():
 		return;
+	if neededBy is not None:
+		if program in introducedBy:
+			introducedBy[program]+=(neededBy,)
+		else:
+			introducedBy[program]=(neededBy,)
 	upgradeDetails[program] = {'version': version, 'revision': revision, 'type': ptype, 'url': url}
 	graph[program] = {}
-	deps,sols = CheckDependencies(program, version, revision, ptype, url, ['official_package', 'recipe'], mode='all', recursive=False)
+	deps,sols = CheckDependencies(program, version, revision, ptype, url, types, mode='all', recursive=False)
 	for s,d in zip(sols,deps):
 		ver = s[1] + '-' + s[2]
-
 		if s[0] not in installedPrograms or (d['lover'] != '' and d['lover'] is not None and GuessLatest([d['lover'], GuessLatest(installedPrograms[s[0]])]) == d['lover']):
 			graph[program][s[0]] = s[1] + '-' + s[2]
-			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails)
+			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails, program)
 
 # tsort' for the actual sorting. Keeps track of detected cycles in the global
 # cycles.
@@ -119,7 +123,6 @@ def tsort2(item, graph, keys, ls, depth, parents):
 			k = keys.pop()
 		else:
 			return
-	
 	dbprint(ind+"picked " + k + ": " + ', '.join(graph[k].keys()))
 	for x in graph[k].keys():
 		if x in keys:
@@ -158,7 +161,7 @@ def tsort(graph):
 	ls = []
 	while len(keys)>0:
 		dbprint("============")
-		il = tsort2(None, graph, keys, [], 1,[])
+		il = tsort2(None, graph, keys, [], 1, [])
 		ls = il + ls
 	ls.reverse()
 	return ls
@@ -168,16 +171,19 @@ goboSettings = getGoboVariable('goboSettings')
 goboLinks    = getGoboVariable('goboLinks')
 
 localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
+types = ['official_package', 'recipe']
 
 cycles = set()
 
 graph = {}
 upgradeDetails = {}
 installedPrograms = {}
+introducedBy = {}
 if os.path.exists('cache'):
 	f = open('cache', 'r')
 	graph = cPickle.load(f)
 	upgradeDetails = cPickle.load(f)
+	introducedBy = cPickle.load(f)
 	f.close()
 	installed = GetAvailable(['installed'])['installed']['programs']
 	for prog in installed.keys():
@@ -187,7 +193,7 @@ if os.path.exists('cache'):
 			for r in revisions.keys():
 				installedPrograms[prog].append(v+'-'+r)
 else:
-	availables = GetAvailable(['installed', 'recipe', 'official_package'], localdirs, False, hook=consoleProgressHook, accessWeb=True)
+	availables = GetAvailable(['installed'] + types, localdirs, False, hook=consoleProgressHook, accessWeb=True)
 	installed = availables['installed']['programs']
 	for prog in installed.keys():
 		versions = installed[prog]
@@ -195,7 +201,7 @@ else:
 		for v,revisions in versions.iteritems():
 			for r in revisions.keys():
 				installedPrograms[prog].append(v+'-'+r)
-	l = applyFilter(availables, [['installed'], '<', ['recipe', 'official_package']], False)
+	l = applyFilter(availables, [['installed'], '<', types], False)
 	i=0
 	for x in l:
 		i+=1
@@ -211,11 +217,13 @@ else:
 	f = open('cache', 'w')
 	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
 	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	cPickle.dump(introducedBy, f, protocol = cPickle.HIGHEST_PROTOCOL)
 	f.close()
 
 dbprint("starting sort...")
 ls = tsort(graph)
-print "[ ] Program                                                            Installed"
+count = {'official_package':0,'recipe':0}
+print "[  ] Program                                                           Installed"
 for x in ls:
 	upg = upgradeDetails[x]
 	ver = Join_Version_Revision(upg['version'],upg['revision'])
@@ -224,10 +232,18 @@ for x in ls:
 		insVer = GuessLatest(installedPrograms[x])
 	if not installedPrograms.has_key(x) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
 		tabbr = getTypeAbbr(upg['type'])
-		out = "[%s] %s %s"%(tabbr, x, ver)
+		if True in [x in cyc for cyc in cycles]:
+			tabbr+='C'
+		else:
+			tabbr+=' '
+		ibstring = ''
+		if x in introducedBy and len(introducedBy[x])>0:
+			ibstring = '(' + ', '.join(introducedBy[x]) + ')'
+		count[upg['type']]+=1
+		out = "[%s] %s %s %s"%(tabbr, x, ver, ibstring)
 		out = out + (" " * (80-len(out)-len(insVer))) + insVer
 		print out
-
+print count
 if len(cycles)>0:
 	sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
 	for cyc in cycles:
