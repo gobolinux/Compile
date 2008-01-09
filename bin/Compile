@@ -708,6 +708,32 @@ then
 fi
 
 ##################################################
+# Part of Meta but compiled by itself
+##################################################
+
+if [ "${compileMetaRecipe}" != "1" -a -n "$part_of" ]
+then
+   if ! Booean "install-separatly"
+   then
+      appname="$part_of"
+      versionnumber=$(Get_Version "$appname" "Current")
+      [ -z "$versionnumber" ] && versionnumber=$(GuessLatest "$(ls -I Settings -I Variable $goboPrograms/$appname 2>/dev/null)" 2>/dev/null)
+      if [ -z "$versionnumber" ] 
+      then
+         if Boolean "batch" || Ask "$app is part of the $appname meta recipe, but no version of $appname could be found. Do you want to install $app separatly?"
+         then
+            appname="$app"
+            versionnumber="$version"
+         else
+            exit 0
+         fi
+      else
+         Set_Boolean "keep"
+      fi
+   fi
+fi
+   
+##################################################
 # Construct some variable arrays
 ##################################################
 
@@ -1294,7 +1320,7 @@ then
       $sudo_exec mkdir -p $(dirname "$fulldst")
       if [ -d "$src" -a -d "$fulldst" ]
       then $sudo_exec cp -R "$src"/* "$fulldst"
-      else $sudo_exec cp -R "$src" "$fulldst"
+      else $sudo_exec cp -R $src "$fulldst"
       fi
    done
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
