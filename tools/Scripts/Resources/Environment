@@ -8,3 +8,5 @@ alias make='ColorMake'
 #export LANG=en_US
 #export LC_ALL=en_US
 #export LC_CTYPE=en_US
+
+export XDG_DATA_DIRS=${goboVariable}/xdg${XDG_DATA_DIRS:+:${XDG_DATA_DIRS}}

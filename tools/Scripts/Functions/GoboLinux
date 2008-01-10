@@ -63,9 +63,11 @@ function Gen_Env_Cache() {
 function Rebuild_MIME_Database() {
 if Executable_Exists_In_Path "update-mime-database"
 then
-   mimedirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/mime" || echo "${goboVariable}/mime")
+   mimedirectory="${goboVariable}/xdg/mime"
+   if ! $sudo_exec test -w ${mimedirectory}
+   then ${XDG_DATA_HOME} && mimedirectory="${XDG_DATA_HOME}/mime" || mimedirectory="$HOME/.local/share/mime"
+   fi
    Assert_Dir ${mimedirectory}
-   $sudo_exec test -w ${mimedirectory} || return 0
    Is_Directory ${mimedirectory}/packages || $sudo_exec ln -s ${goboShared}/mime/packages ${mimedirectory}
    Log_Normal "Rebuilding MIME database..."
    $sudo_exec update-mime-database ${mimedirectory} >/dev/null
@@ -75,11 +77,14 @@ fi
 function Rebuild_Desktop_Database() {
 if Executable_Exists_In_Path "update-desktop-database"
 then
-   desktopdirectory=$([ ${XDG_DATA_HOME} ] && echo "${XDG_DATA_HOME}/applications" || echo "${goboVariable}/applications")
+   desktopdirectory="${goboVariable}/xdg"
+   if ! $sudo_exec test -w ${desktopdirectory}
+   then ${XDG_DATA_HOME} && desktopdirectory="${XDG_DATA_HOME}" || desktopdirectory="$HOME/.local/share"
+   fi
    Assert_Dir ${desktopdirectory}
-   Is_Directory ${desktopdirectory}/desktop || ln -s ${goboShared}/applications ${desktopdirectory}/desktop
+   Is_Directory ${desktopdirectory}/applications || ln -s ${goboShared}/applications ${desktopdirectory}
    Log_Normal "Rebuilding desktop database..."
-   update-desktop-database ${desktopdirectory}/applications
+   update-desktop-database ${desktopdirectory}
 fi
 }
 
