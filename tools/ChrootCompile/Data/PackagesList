@@ -4,6 +4,7 @@
 
 BinUtils
 GCC
+Gettext
 Glibc
 
 E2FSProgs
@@ -42,7 +43,6 @@ Mtail
 # ################################################
 # Base packages
 # ################################################
-Gettext
 Pkgconfig
 BC
 Bin86
