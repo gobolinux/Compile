@@ -15,7 +15,7 @@ Parse_Conf CompileSubversion.conf
 scriptDescription="Put a recipe in the svn trunk/revision tree and upload it to the store."
 scriptCredits="Copyright (C) 2007 Lucas C. Villa Real. Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="[ -m 'message' ] { <recipe dir> | <tarball> | <recipe name> [<recipe version>] }"
+scriptUsage="[ -m 'message' ] { <recipe dir> | <recipe name> [<recipe version>] }"
 scriptExample="firefox"
 Add_Option_Entry "m" "message" "Enter a commit message." ""
 Parse_Options "$@"
