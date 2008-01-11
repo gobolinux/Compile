@@ -222,15 +222,19 @@ pack_recipe() {
       Log_Normal "Packed $tarball."
    else
       Log_Error "Failed packing $tarball."
+      return 1
    fi
+   return 0
 }
 
 pack_all_versions() {
+   err=0
    for version in "$compileLocalRecipesDir/$1/"*
    do
       [ -L "$version" ] && continue
-      pack_recipe "$1" `basename "$version"`
+      pack_recipe "$1" `basename "$version"` || err=1
    done
+   return $err
 }
 
 if [ "$(Arg 1)" ]
@@ -240,8 +244,12 @@ then
    then Die "Could not find recipe directory for $(Arg 1) in $compileLocalRecipesDir."
    fi
    if [ "$(Arg 2)" ]
-   then pack_recipe "$name" "$(Arg 2)"
-   else pack_all_versions "$name"
+   then
+      pack_recipe "$name" "$(Arg 2)"
+      exit $?
+   else
+      pack_all_versions "$name"
+      exit $?
    fi
 else
    export lsfile="$compilePackedRecipesDir/RecipeList"
