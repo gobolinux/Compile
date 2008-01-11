@@ -3,7 +3,8 @@
 # Portions copyright (C) 2004-2007 Andre Detsch <detsch at gobolinux.org>
 # Released under the GNU GPL.
 
-import string, os, os.path, sys, cPickle
+import string, os, os.path, sys, cPickle, getopt
+import time
 
 from GetAvailable      import GetAvailable, getGoboVariable
 from GuessLatest       import GuessLatest
@@ -11,6 +12,29 @@ from GuessProgramCase  import GuessProgramCase
 from GetInstalled      import KeyInsensitiveDict
 from GetInstalled      import GetInstalled
 from CheckDependencies import *
+
+class Screen:
+	height,width=map(int,os.popen('stty size').readline().strip().split(' '))
+
+class ProgressBar:
+	def __init__(self, size, value=0):
+		self.size = size
+		self.value = value
+		self.points = -1
+		self.barWidth = Screen.width - 29
+	def draw(self):
+		points = int(float(self.value)/self.size*self.barWidth)
+		if points != self.points:
+			pc = int(100*float(self.value)/self.size)
+			sys.stdout.write(" [%s%s] %4i%% %i/%i\015"%("#"*points, " "*(self.barWidth-points), pc, self.value, self.size))
+			sys.stdout.flush()
+			self.points = points
+	def inc(self,draw=True, n=1):
+		self.value+=n
+		if draw:
+			self.draw()
+	def clear(self):
+		sys.stdout.write(' '*Screen.width+"\015")
 
 # For debugging output
 def dbprint(s):
@@ -92,10 +116,12 @@ def applyFilter(availables, filter_rule, report_missing = False) :
 				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
 	return toReturn
 
-def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails, neededBy=None):
+def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails, neededBy=None, progressBar=None):
 	global installedPrograms, introducedBy, types
 	if program in graph.keys():
 		return;
+	if progressBar is not None:
+		pb.inc()
 	if neededBy is not None:
 		if program in introducedBy:
 			introducedBy[program]+=(neededBy,)
@@ -106,9 +132,11 @@ def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDeta
 	deps,sols = CheckDependencies(program, version, revision, ptype, url, types, mode='all', recursive=False)
 	for s,d in zip(sols,deps):
 		ver = s[1] + '-' + s[2]
-		if s[0] not in installedPrograms or (d['lover'] != '' and d['lover'] is not None and GuessLatest([d['lover'], GuessLatest(installedPrograms[s[0]])]) == d['lover']):
-			graph[program][s[0]] = s[1] + '-' + s[2]
-			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails, program)
+		if s[0] not in installedPrograms:
+			progressBar.size+=1
+		if True or s[0] not in installedPrograms or (d['lover'] != '' and d['lover'] is not None and GuessLatest([d['lover'], GuessLatest(installedPrograms[s[0]])]) == d['lover']):
+			graph[program][s[0]] = d
+			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails, program, progressBar)
 
 # tsort' for the actual sorting. Keeps track of detected cycles in the global
 # cycles.
@@ -191,7 +219,7 @@ if os.path.exists('cache'):
 		installedPrograms[prog] = []
 		for v,revisions in versions.iteritems():
 			for r in revisions.keys():
-				installedPrograms[prog].append(v+'-'+r)
+				installedPrograms[prog].append(Join_Version_Revision(v,r))
 else:
 	availables = GetAvailable(['installed'] + types, localdirs, False, hook=consoleProgressHook, accessWeb=True)
 	installed = availables['installed']['programs']
@@ -201,50 +229,122 @@ else:
 		for v,revisions in versions.iteritems():
 			for r in revisions.keys():
 				installedPrograms[prog].append(v+'-'+r)
+	print "Filtering..."
 	l = applyFilter(availables, [['installed'], '<', types], False)
 	i=0
-	for x in l:
+	print "Creating graph..."
+	pset = reduce(lambda s,a: s|set(availables[a]['programs'].keys()), availables, set())
+	#print pset
+	print len(pset)
+	pb = ProgressBar(len(pset))
+	pb.draw()
+	#print availables, l
+	for p in pset:
+		for t in types:
+			if p in availables[t]['programs'].keys():
+				vers = GuessLatest(availables[t]['programs'][p].keys())
+				revision = GuessLatest(availables[t]['programs'][p][vers].keys())
+				ptype = t
+				url = availables[t]['programs'][p][vers][revision][0]
+				break
 		i+=1
-		p=x[0];
-		vers = Split_Version_Revision(x[1]) #x[1].split('-')
-		ptype = x[2]
-		url = x[3]
-		if len(vers) < 2:
-			vers = (vers[0], None)
+		#p=x[0];
+		#vers = Split_Version_Revision(x[1]) #x[1].split('-')
+		#ptype = x[2]
+		#url = x[3]
+		#if len(vers) < 2:
+		#	vers = (vers[0], None)
 		dbprint("adding "+p+": "+str(i)+"/"+str(len(l)))
-		addProgramToGraph(graph, p, vers[0], vers[1], ptype, url, upgradeDetails)
+		#addProgramToGraph(graph, p, vers[0], vers[1], ptype, url, upgradeDetails, progressBar=pb)
+		addProgramToGraph(graph, p, vers, revision, ptype, url, upgradeDetails, progressBar=pb)
 		dbprint("added "+p)
 	f = open('cache', 'w')
 	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
 	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
 	cPickle.dump(introducedBy, f, protocol = cPickle.HIGHEST_PROTOCOL)
 	f.close()
+	pb.clear()
 
-dbprint("starting sort...")
-ls = tsort(graph)
-count = {'official_package':0,'recipe':0}
-print "[  ] Program                                                           Installed"
-for x in ls:
-	upg = upgradeDetails[x]
-	ver = Join_Version_Revision(upg['version'],upg['revision'])
-	insVer = "None"
-	if installedPrograms.has_key(x):
-		insVer = GuessLatest(installedPrograms[x])
-	if not installedPrograms.has_key(x) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
-		tabbr = getTypeAbbr(upg['type'])
-		if True in [x in cyc for cyc in cycles]:
-			tabbr+='C'
+
+def copyGraphFromNode(graph, newgraph, node, shallow=False, skipList=set()):
+	global installedPrograms
+	newgraph[node] = graph[node]
+	for e in newgraph[node].keys():
+		if e in skipList:
+			continue
+		if e not in newgraph and (not shallow or (e not in installedPrograms or graph[node][e]['lover'] is not None and GuessLatest([graph[node][e]['lover'], GuessLatest(installedPrograms[e])]) == graph[node][e])):
+			copyGraphFromNode(graph, newgraph, e, shallow=shallow, skipList=skipList)
+
+def showUpdates(elist, graph):
+	global upgradeDetails, include, cycles, installedPrograms, introducedBy
+	dbprint("starting sort...")
+	ls = tsort(graph)
+	count = {'official_package':0,'recipe':0}
+	include = {'official_package': True, 'recipe': True}
+	print "[  ] Program                                                           Installed"
+	for x in ls:
+		upg = upgradeDetails[x]
+		ver = Join_Version_Revision(upg['version'],upg['revision'])
+		insVer = "None"
+		if installedPrograms.has_key(x):
+			insVer = GuessLatest(installedPrograms[x])
+		if not installedPrograms.has_key(x) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
+			tabbr = getTypeAbbr(upg['type'])
+			if True in [x in cyc for cyc in cycles]:
+				tabbr+='C'
+			else:
+				tabbr+=' '
+			ibstring = ''
+			if x in introducedBy and len(introducedBy[x])>0:
+				ibstring = '(' + ', '.join(introducedBy[x]) + ')'
+			count[upg['type']]+=1
+			out = "[%s] %s %s %s"%(tabbr, x, ver, ibstring)
+			out = out + (" " * (Screen.width-len(out)-len(insVer))) + insVer
+			if include[upg['type']]: print out
+	print count
+	if len(cycles)>0:
+		sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
+		for cyc in cycles:
+			sys.stderr.write(" { " + ', '.join(cyc)+" }\n")
+
+def showDepTree(elist, graph, ind='', visited=set(), parents=set()):
+	global shallow
+	for e in elist:
+		if e not in visited:
+			if e not in parents:
+				print ind+e
+				visited.add(e)
+				if e in graph.keys():
+					showDepTree(graph[e].keys(), graph, ind=ind+'  ', visited=visited, parents=parents|set([e]))
+			else:
+				print ind+e+" (cycle)"
+
+shallow = False
+elist = []
+skipList = []
+action = showUpdates
+catching = elist
+for li in sys.argv[1:]:
+	if li=='-x' or li=='--exclude':
+		catching = skipList
+	else:
+		reset = True # Reset catching to elist if we hit a non-list option
+		if li=='-s' or li=='--shallow':
+			shallow = True
+		elif li=='--tree':
+			action = showDepTree
+		elif li=='--':
+			catching = elist
 		else:
-			tabbr+=' '
-		ibstring = ''
-		if x in introducedBy and len(introducedBy[x])>0:
-			ibstring = '(' + ', '.join(introducedBy[x]) + ')'
-		count[upg['type']]+=1
-		out = "[%s] %s %s %s"%(tabbr, x, ver, ibstring)
-		out = out + (" " * (80-len(out)-len(insVer))) + insVer
-		print out
-print count
-if len(cycles)>0:
-	sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
-	for cyc in cycles:
-		sys.stderr.write(" { " + ', '.join(cyc)+" }\n")
+			catching.append(li)
+			reset = False
+		if reset: catching = elist
+if len(elist)==0:
+	elist = installed.keys()
+print "Generating local graph..."
+ngraph = {}
+for e in elist:
+	copyGraphFromNode(graph, ngraph, e, skipList=set(skipList))
+graph = ngraph
+
+action(elist, graph)
