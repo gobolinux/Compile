@@ -137,12 +137,12 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 			ret = FindPackage(p, v, r, types=[t], availables=global_available_packages_cache, accessWeb = not noWeb)
 			if ret :
 				u = ret[0][4]
-		
+
 		if u and t in [ 'official_package', 'contrib_package' ] :
 			cachedep = global_dependencies_cache_dir+'/'+t+'/'+ u.split('/')[-1]
 			if os.access(cachedep, os.R_OK) :
 				return [ cachedep ]
-	
+
 			if not noWeb :
 				temp = u.split('/')
 				dependency_u = string.join(temp[:-1]+['dependencies']+[temp[-1][:-len('.tar.bz2')]],'/')
@@ -255,6 +255,7 @@ def does_version_match_rule(version, rule) :
 
 # This cache variable is reset at each CheckDependencies call
 global_available_packages_cache = {}
+global_matches_cache = {}
 
 def version_range_string(r) :
 	ss = ''
@@ -266,8 +267,25 @@ def version_range_string(r) :
 		ss += ' ' + (r['hiincluded'] and '<=' or '<') + ' ' + r['hiver']
 	return ss
 
+def rule_to_string(rule) :
+	ss = rule['program']
+	if rule['lover'] :
+		ss += ' ' + (rule['loincluded'] and '>=' or '>') + ' ' + rule['lover']
+	if rule['hiver'] :
+		if rule['lover'] :
+			ss += ','
+		ss += ' ' + (rule['hiincluded'] and '<=' or '<') + ' ' + rule['hiver']
+	return ss
+
 def find_matching_package(rule, acceptable_types, noWeb=False) :
 	global global_available_packages_cache
+	global global_matches_cache
+
+	string_rule = rule_to_string(rule)
+	if global_matches_cache.has_key(string_rule):
+		return global_matches_cache[string_rule]
+
+
 	if not global_available_packages_cache :
 		global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], accessWeb=not noWeb)
 
@@ -276,6 +294,7 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 	if available_options :
 		for p,v,r,t,u in available_options :
 			if does_version_match_rule(v, rule) :
+				global_matches_cache[string_rule] = (p, v, r, t, u)
 				return (p, v, r, t, u)
 		to_return = ((rule['program'], version_range_string(rule).replace(' ',''), '', None, "NO_VERSION"))
 	else :
@@ -285,8 +304,10 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 	if rule.has_key('option') :
 		ret = find_matching_package(rule['option'], acceptable_types, noWeb)
 		if ret and ret[3] : # ret[3] corresponds to 'type'
+			global_matches_cache[string_rule] = ret
 			return ret
 
+	global_matches_cache[string_rule] = to_return
 	return to_return
 
 #############################################################################
