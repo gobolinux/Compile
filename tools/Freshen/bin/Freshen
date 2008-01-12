@@ -3,8 +3,9 @@
 # Portions copyright (C) 2004-2007 Andre Detsch <detsch at gobolinux.org>
 # Released under the GNU GPL.
 
-import string, os, os.path, sys, cPickle, getopt
+import string, os, os.path, sys, cPickle
 import time
+sys.path.append('./lib/python2.3')
 
 from GetAvailable      import GetAvailable, getGoboVariable
 from GuessLatest       import GuessLatest
@@ -12,29 +13,9 @@ from GuessProgramCase  import GuessProgramCase
 from GetInstalled      import KeyInsensitiveDict
 from GetInstalled      import GetInstalled
 from CheckDependencies import *
+from TTYUtils import *
+from FreshenGraphUtils import *
 
-class Screen:
-	height,width=map(int,os.popen('stty size').readline().strip().split(' '))
-
-class ProgressBar:
-	def __init__(self, size, value=0):
-		self.size = size
-		self.value = value
-		self.points = -1
-		self.barWidth = Screen.width - 29
-	def draw(self):
-		points = int(float(self.value)/self.size*self.barWidth)
-		if points != self.points:
-			pc = int(100*float(self.value)/self.size)
-			sys.stdout.write(" [%s%s] %4i%% %i/%i\015"%("#"*points, " "*(self.barWidth-points), pc, self.value, self.size))
-			sys.stdout.flush()
-			self.points = points
-	def inc(self,draw=True, n=1):
-		self.value+=n
-		if draw:
-			self.draw()
-	def clear(self):
-		sys.stdout.write(' '*Screen.width+"\015")
 
 # For debugging output
 def dbprint(s):
@@ -49,236 +30,10 @@ def getTypeAbbr(type):
 		None: '?'
 	}[type]
 
-# Borrowed from Manager and adapted a little. Could be more concise, since
-# I only want the installed < recipe,official_package case.
-def applyFilter(availables, filter_rule, report_missing = False) :
-	p1 = filter_rule[0][:]
-	op = filter_rule[1]
-	p2 = filter_rule[2][:]
-	
-	toReturn = []
-	
-	leftPrograms = []
-	leftProgramsLower = []
-	
-	latestType = None
-	latestURL = None
-
-	for t in p1 :
-		for p in availables[t]['programs'].keys() :
-			if p.lower() not in leftProgramsLower :
-				leftProgramsLower.append(p.lower())
-				leftPrograms.append(p)
-	 
-	rightPrograms = []
-	rightProgramsLower = []
-	for t in p2 :
-		for p in availables[t]['programs'].keys() :
-			if p.lower() not in rightProgramsLower :
-				rightProgramsLower.append(p.lower())
-				rightPrograms.append(p)
-	for p in leftPrograms :
-		latestType = None
-		latestURL = None
-		if p.lower() in rightProgramsLower :
-			leftLatestVR = '0'
-			for t in p1 :
-				try :
-					leftLatestV = GuessLatest(availables[t]['programs'][p].keys())
-					prevLLVR = leftLatestVR
-					revision = GuessLatest(availables[t]['programs'][p][leftLatestV].keys())
-					leftLatestVR = Join_Version_Revision(leftLatestV, revision)
-					if leftLatestVR != prevLLVR:
-						latestType = t
-						latestURL = availables[t]['programs'][p][leftLatestV][revision][0]
-				except :
-					pass
-			
-			rightLatestVR = '0'
-			for t in p2 :
-				try :
-					rightLatestV = GuessLatest(availables[t]['programs'][p].keys() + ['0'])
-					prevRLVR = rightLatestVR
-					revision = GuessLatest(availables[t]['programs'][p][rightLatestV].keys())
-					rightLatestVR = GuessLatest([rightLatestVR, Join_Version_Revision(rightLatestV, revision)])
-					if rightLatestVR != prevRLVR:
-						latestType = t
-						latestURL = availables[t]['programs'][p][rightLatestV][revision][0]
-				except :
-					pass
-			
-			latestVR = GuessLatest([leftLatestVR,rightLatestVR])
-
-			if latestVR == rightLatestVR :
-				toReturn.append((p, rightLatestVR, latestType, latestURL, leftLatestVR))
-		else :
-			if report_missing :
-				toReturn.append(string.ljust(p,14)+'  has no '+str(p2))
-	return toReturn
-
-def addProgramToGraph(graph, program, version, revision, ptype, url, upgradeDetails, neededBy=None, progressBar=None):
-	global installedPrograms, introducedBy, types
-	if program in graph.keys():
-		return;
-	if progressBar is not None:
-		pb.inc()
-	if neededBy is not None:
-		if program in introducedBy:
-			introducedBy[program]+=(neededBy,)
-		else:
-			introducedBy[program]=(neededBy,)
-	upgradeDetails[program] = {'version': version, 'revision': revision, 'type': ptype, 'url': url}
-	graph[program] = {}
-	deps,sols = CheckDependencies(program, version, revision, ptype, url, types, mode='all', recursive=False)
-	for s,d in zip(sols,deps):
-		ver = s[1] + '-' + s[2]
-		if s[0] not in installedPrograms:
-			progressBar.size+=1
-		if True or s[0] not in installedPrograms or (d['lover'] != '' and d['lover'] is not None and GuessLatest([d['lover'], GuessLatest(installedPrograms[s[0]])]) == d['lover']):
-			graph[program][s[0]] = d
-			addProgramToGraph(graph, s[0], s[1], s[2], s[3], s[4], upgradeDetails, program, progressBar)
-
-# tsort' for the actual sorting. Keeps track of detected cycles in the global
-# cycles.
-def tsort2(item, graph, keys, ls, depth, parents):
-	global cycles
-	ind = ' '*depth
-	if item is not None:
-		k = item
-		keys.remove(item)
-	else:
-		if len(keys) > 0:
-			k = keys.pop()
-		else:
-			return
-	dbprint(ind+"picked " + k + ": " + ', '.join(graph[k].keys()))
-	for x in graph[k].keys():
-		if x in keys:
-			il = tsort2(x, graph, keys, [], depth+1, parents+[k])
-			ls = il + ls
-		else:
-			if x in parents:
-				dbprint(ind+"WARNING: cycle detected between "+x+" and "+k)
-				ecyc = None
-				for cyc in cycles:
-					if ecyc is not None:
-						if x in cyc or k in cyc:
-							cycles.discard(cyc)
-							cycles.discard(ecyc)
-							cycles.add(cyc | ecyc)
-							break
-					elif x in cyc:
-						cycles.discard(cyc)
-						cycles.add(cyc | set([k]))
-						ecyc = cyc
-					elif k in cyc:
-						cycles.discard(cyc)
-						cycles.add(cyc | set([k]))
-						ecyc = cyc
-				#cycles = newcycles
-				if ecyc is None:
-					cycles.add(frozenset([x,k]))
-			else:
-				dbprint(ind+" reached "+x+", already completed")
-	ls = [k] + ls
-	dbprint(ind+"final ls: " + ', '.join(ls))
-	return ls
-
-def tsort(graph):
-	keys = set(graph.keys())
-	ls = []
-	while len(keys)>0:
-		dbprint("============")
-		il = tsort2(None, graph, keys, [], 1, [])
-		ls = il + ls
-	ls.reverse()
-	return ls
-
-goboPrograms = getGoboVariable('goboPrograms')
-goboSettings = getGoboVariable('goboSettings')
-goboLinks    = getGoboVariable('goboLinks')
-
-localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
-types = ['official_package', 'recipe']
-
-cycles = set()
-
-graph = {}
-upgradeDetails = {}
-installedPrograms = {}
-introducedBy = {}
-if os.path.exists('cache'):
-	f = open('cache', 'r')
-	graph = cPickle.load(f)
-	upgradeDetails = cPickle.load(f)
-	introducedBy = cPickle.load(f)
-	f.close()
-	installed = GetAvailable(['installed'])['installed']['programs']
-	for prog in installed.keys():
-		versions = installed[prog]
-		installedPrograms[prog] = []
-		for v,revisions in versions.iteritems():
-			for r in revisions.keys():
-				installedPrograms[prog].append(Join_Version_Revision(v,r))
-else:
-	availables = GetAvailable(['installed'] + types, localdirs, False, hook=consoleProgressHook, accessWeb=True)
-	installed = availables['installed']['programs']
-	for prog in installed.keys():
-		versions = installed[prog]
-		installedPrograms[prog] = []
-		for v,revisions in versions.iteritems():
-			for r in revisions.keys():
-				installedPrograms[prog].append(v+'-'+r)
-	print "Filtering..."
-	l = applyFilter(availables, [['installed'], '<', types], False)
-	i=0
-	print "Creating graph..."
-	pset = reduce(lambda s,a: s|set(availables[a]['programs'].keys()), availables, set())
-	#print pset
-	print len(pset)
-	pb = ProgressBar(len(pset))
-	pb.draw()
-	#print availables, l
-	for p in pset:
-		for t in types:
-			if p in availables[t]['programs'].keys():
-				vers = GuessLatest(availables[t]['programs'][p].keys())
-				revision = GuessLatest(availables[t]['programs'][p][vers].keys())
-				ptype = t
-				url = availables[t]['programs'][p][vers][revision][0]
-				break
-		i+=1
-		#p=x[0];
-		#vers = Split_Version_Revision(x[1]) #x[1].split('-')
-		#ptype = x[2]
-		#url = x[3]
-		#if len(vers) < 2:
-		#	vers = (vers[0], None)
-		dbprint("adding "+p+": "+str(i)+"/"+str(len(l)))
-		#addProgramToGraph(graph, p, vers[0], vers[1], ptype, url, upgradeDetails, progressBar=pb)
-		addProgramToGraph(graph, p, vers, revision, ptype, url, upgradeDetails, progressBar=pb)
-		dbprint("added "+p)
-	f = open('cache', 'w')
-	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	cPickle.dump(introducedBy, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	f.close()
-	pb.clear()
-
-
-def copyGraphFromNode(graph, newgraph, node, shallow=False, skipList=set()):
-	global installedPrograms
-	newgraph[node] = graph[node]
-	for e in newgraph[node].keys():
-		if e in skipList:
-			continue
-		if e not in newgraph and (not shallow or (e not in installedPrograms or graph[node][e]['lover'] is not None and GuessLatest([graph[node][e]['lover'], GuessLatest(installedPrograms[e])]) == graph[node][e])):
-			copyGraphFromNode(graph, newgraph, e, shallow=shallow, skipList=skipList)
-
 def showUpdates(elist, graph):
 	global upgradeDetails, include, cycles, installedPrograms, introducedBy
 	dbprint("starting sort...")
-	ls = tsort(graph)
+	ls = tsort(graph, cycles=cycles)
 	count = {'official_package':0,'recipe':0}
 	include = {'official_package': True, 'recipe': True}
 	print "[  ] Program                                                           Installed"
@@ -319,6 +74,67 @@ def showDepTree(elist, graph, ind='', visited=set(), parents=set()):
 			else:
 				print ind+e+" (cycle)"
 
+goboPrograms = getGoboVariable('goboPrograms')
+goboSettings = getGoboVariable('goboSettings')
+goboLinks    = getGoboVariable('goboLinks')
+
+localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
+types = ['official_package', 'recipe']
+
+cycles = set()
+
+
+# Generate or load from cache the total graph
+# This could do with some refactoring too.
+graph = {}
+upgradeDetails = {}
+installedPrograms = {}
+introducedBy = {}
+if os.path.exists('cache'):
+	f = open('cache', 'r')
+	graph = cPickle.load(f)
+	upgradeDetails = cPickle.load(f)
+	introducedBy = cPickle.load(f)
+	f.close()
+	installed = GetAvailable(['installed'])['installed']['programs']
+	for prog in installed.keys():
+		versions = installed[prog]
+		installedPrograms[prog] = []
+		for v,revisions in versions.iteritems():
+			for r in revisions.keys():
+				installedPrograms[prog].append(Join_Version_Revision(v,r))
+else:
+	availables = GetAvailable(['installed'] + types, localdirs, False, hook=consoleProgressHook, accessWeb=True)
+	installed = availables['installed']['programs']
+	for prog in installed.keys():
+		versions = installed[prog]
+		installedPrograms[prog] = []
+		for v,revisions in versions.iteritems():
+			for r in revisions.keys():
+				installedPrograms[prog].append(v+'-'+r)
+	print "Creating graph..."
+	pset = reduce(lambda s,a: s|set(availables[a]['programs'].keys()), availables, set())
+	pb = ProgressBar(len(pset))
+	pb.draw()
+	for p in pset:
+		for t in types:
+			if p in availables[t]['programs'].keys():
+				vers = GuessLatest(availables[t]['programs'][p].keys())
+				revision = GuessLatest(availables[t]['programs'][p][vers].keys())
+				ptype = t
+				url = availables[t]['programs'][p][vers][revision][0]
+				break
+		addProgramToGraph(graph, p, vers, revision, ptype, url, upgradeDetails, progressBar=pb, installedPrograms=installedPrograms, introducedBy=introducedBy, types=types)
+		dbprint("added "+p)
+	f = open('cache', 'w')
+	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	cPickle.dump(introducedBy, f, protocol = cPickle.HIGHEST_PROTOCOL)
+	f.close()
+	pb.clear()
+
+
+# Argument parsing, for now. Allows use like `Freshen -x Qt GTK+ -s Firefox Koffice
 shallow = False
 elist = []
 skipList = []
@@ -339,12 +155,17 @@ for li in sys.argv[1:]:
 			catching.append(li)
 			reset = False
 		if reset: catching = elist
+		
+# When no list to examine is given on the command line, default to working with all installed programs
 if len(elist)==0:
 	elist = installed.keys()
+# The local graph deals only with the programs you can get to from programs in elist. It makes sorting
+# more efficient and accurate and deptree more usable.
 print "Generating local graph..."
 ngraph = {}
 for e in elist:
-	copyGraphFromNode(graph, ngraph, e, skipList=set(skipList))
+	copyGraphFromNode(graph, ngraph, e, skipList=set(skipList), installedPrograms=installedPrograms)
 graph = ngraph
 
+# Finally, perform the requested action on the list with the generated graph
 action(elist, graph)
