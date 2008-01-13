@@ -226,6 +226,7 @@ def interpret_dependency_line(line, t=None, cross_compile=False) :
 #  and compares it to a given version
 #############################################################################
 
+
 def does_version_match_rule(version, rule) :
 	loOk=True
 	hiOk=True
@@ -281,10 +282,9 @@ def find_matching_package(rule, acceptable_types, noWeb=False) :
 	global global_available_packages_cache
 	global global_matches_cache
 
-	string_rule = rule_to_string(rule)
+	string_rule = rule_to_string(rule) + str(acceptable_types)
 	if global_matches_cache.has_key(string_rule):
 		return global_matches_cache[string_rule]
-
 
 	if not global_available_packages_cache :
 		global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], accessWeb=not noWeb)
