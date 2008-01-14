@@ -5,167 +5,231 @@
 
 import string, os, os.path, sys, cPickle
 import time
-sys.path.append('./lib/python2.3')
+sys.path = [os.path.abspath('.')+'/lib/python2.3'] + sys.path
 
 from GetAvailable      import GetAvailable, getGoboVariable
 from GuessLatest       import GuessLatest
-from GuessProgramCase  import GuessProgramCase
 from GetInstalled      import KeyInsensitiveDict
-from GetInstalled      import GetInstalled
 from CheckDependencies import *
 from TTYUtils import *
-from FreshenGraphUtils import *
 
-
-# For debugging output
-def dbprint(s):
-	if False:
-		sys.stderr.write(s+"\n")
 
 def getTypeAbbr(type):
 	return {
-		'recipe': 'R',
-		'official_package': 'P',
+		'recipe': Screen.colours['green']+'R'+Screen.colours['normal'],
+		'official_package': Screen.colours['red']+'P'+Screen.colours['normal'],
 		'installed': 'I',
 		None: '?'
 	}[type]
 
-def showUpdates(elist, graph):
-	global upgradeDetails, include, cycles, installedPrograms, introducedBy
-	dbprint("starting sort...")
-	ls = tsort(graph, cycles=cycles)
+def showUpdates():
+	ulist = System.updatesList()
 	count = {'official_package':0,'recipe':0}
 	include = {'official_package': True, 'recipe': True}
-	print "[  ] Program                                                           Installed"
-	for x in ls:
-		upg = upgradeDetails[x]
-		ver = Join_Version_Revision(upg['version'],upg['revision'])
+	ext = []
+	installedPrograms = System.installedPrograms()
+	i=0
+	print "[ ] Program                                                            Installed"
+	for program,version,revision,ptype,url in ulist:
+		ver = Join_Version_Revision(version, revision)
 		insVer = "None"
-		if installedPrograms.has_key(x):
-			insVer = GuessLatest(installedPrograms[x])
-		if not installedPrograms.has_key(x) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
-			tabbr = getTypeAbbr(upg['type'])
-			if True in [x in cyc for cyc in cycles]:
-				tabbr+='C'
-			else:
-				tabbr+=' '
+		pcol = Screen.colours['brown']
+		if installedPrograms.has_key(program):
+			insVer = GuessLatest(installedPrograms[program])
+			pcol = ''
+		if not installedPrograms.has_key(program) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
+			i+=1
+			if pcol == '':
+				if i%2==0:
+					pcol=Screen.colours['blue']
+				else:
+					pcol=Screen.colours['cyan']
+			tabbr = getTypeAbbr(ptype)
 			ibstring = ''
-			if x in introducedBy and len(introducedBy[x])>0:
-				ibstring = '(' + ', '.join(introducedBy[x]) + ')'
-			count[upg['type']]+=1
-			out = "[%s] %s %s %s"%(tabbr, x, ver, ibstring)
-			out = out + (" " * (Screen.width-len(out)-len(insVer))) + insVer
-			if include[upg['type']]: print out
-	print count
-	if len(cycles)>0:
-		sys.stderr.write("\nNote: the dependency graph was not acyclic. An arbitrary ordering has been used for these cycles:\n")
-		for cyc in cycles:
-			sys.stderr.write(" { " + ', '.join(cyc)+" }\n")
-
-def showDepTree(elist, graph, ind='', visited=set(), parents=set()):
-	global shallow
-	for e in elist:
-		if e not in visited:
-			if e not in parents:
-				print ind+e
-				visited.add(e)
-				if e in graph.keys():
-					showDepTree(graph[e].keys(), graph, ind=ind+'  ', visited=visited, parents=parents|set([e]))
+			if ptype is not None:
+				count[ptype]+=1
 			else:
-				print ind+e+" (cycle)"
+				ext.append((program,version,revision,ptype,url))
+			ncol = Screen.colours['normal']
+			#if insVer != 'None': pcol = Screen.colours['green']
+			pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-6)
+			out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
+			print out
+	print count
+	if ext:
+		print ""
+		print "Extra oddities (likely from malformed dependency files; please report):"
+		for x in ext:
+			print x
 
-goboPrograms = getGoboVariable('goboPrograms')
-goboSettings = getGoboVariable('goboSettings')
-goboLinks    = getGoboVariable('goboLinks')
-
-localdirs = [ '/Mount/Cloop/Programs', '/Mount/CD-ROM/Depot/Packages/', '/Depot/Packages', os.path.abspath('.')]
-types = ['official_package', 'recipe']
-
-cycles = set()
-
-
-# Generate or load from cache the total graph
-# This could do with some refactoring too.
-graph = {}
-upgradeDetails = {}
-installedPrograms = {}
-introducedBy = {}
-if os.path.exists('cache'):
-	f = open('cache', 'r')
-	graph = cPickle.load(f)
-	upgradeDetails = cPickle.load(f)
-	introducedBy = cPickle.load(f)
-	f.close()
-	installed = GetAvailable(['installed'])['installed']['programs']
-	for prog in installed.keys():
-		versions = installed[prog]
-		installedPrograms[prog] = []
-		for v,revisions in versions.iteritems():
-			for r in revisions.keys():
-				installedPrograms[prog].append(Join_Version_Revision(v,r))
-else:
-	availables = GetAvailable(['installed'] + types, localdirs, False, hook=consoleProgressHook, accessWeb=True)
-	installed = availables['installed']['programs']
-	for prog in installed.keys():
-		versions = installed[prog]
-		installedPrograms[prog] = []
-		for v,revisions in versions.iteritems():
-			for r in revisions.keys():
-				installedPrograms[prog].append(v+'-'+r)
-	print "Creating graph..."
-	pset = reduce(lambda s,a: s|set(availables[a]['programs'].keys()), availables, set())
-	pb = ProgressBar(len(pset))
-	pb.draw()
-	for p in pset:
-		for t in types:
-			if p in availables[t]['programs'].keys():
-				vers = GuessLatest(availables[t]['programs'][p].keys())
-				revision = GuessLatest(availables[t]['programs'][p][vers].keys())
-				ptype = t
-				url = availables[t]['programs'][p][vers][revision][0]
-				break
-		addProgramToGraph(graph, p, vers, revision, ptype, url, upgradeDetails, progressBar=pb, installedPrograms=installedPrograms, introducedBy=introducedBy, types=types)
-		dbprint("added "+p)
-	f = open('cache', 'w')
-	cPickle.dump(graph, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	cPickle.dump(upgradeDetails, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	cPickle.dump(introducedBy, f, protocol = cPickle.HIGHEST_PROTOCOL)
-	f.close()
-	pb.clear()
-
-
-# Argument parsing, for now. Allows use like `Freshen -x Qt GTK+ -s Firefox Koffice
-shallow = False
-elist = []
-skipList = []
-action = showUpdates
-catching = elist
-for li in sys.argv[1:]:
-	if li=='-x' or li=='--exclude':
-		catching = skipList
-	else:
-		reset = True # Reset catching to elist if we hit a non-list option
-		if li=='-s' or li=='--shallow':
-			shallow = True
-		elif li=='--tree':
-			action = showDepTree
-		elif li=='--':
-			catching = elist
+def installUpdates():
+	ulist = System.updatesList()
+	i=0
+	for program,version,revision,ptype,url in ulist:
+		i+=1
+		ver = Join_Version_Revision(version, revision)
+		System.message("Freshen: Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver))
+		if ptype == 'recipe':
+			print "Compile -G -U -D -b %s"%(url)
+			time.sleep(1)
+		elif ptype == 'official_package':
+			print "InstallPackage -k -U -s keep -b -D -u keep %s"%(url)
 		else:
-			catching.append(li)
-			reset = False
-		if reset: catching = elist
-		
-# When no list to examine is given on the command line, default to working with all installed programs
-if len(elist)==0:
-	elist = installed.keys()
-# The local graph deals only with the programs you can get to from programs in elist. It makes sorting
-# more efficient and accurate and deptree more usable.
-print "Generating local graph..."
-ngraph = {}
-for e in elist:
-	copyGraphFromNode(graph, ngraph, e, skipList=set(skipList), installedPrograms=installedPrograms)
-graph = ngraph
+			print "Unknown action!"
 
-# Finally, perform the requested action on the list with the generated graph
-action(elist, graph)
+def showHelp():
+	print """
+Checks for updated GoboLinux recipes and packages.
+
+Usage: Freshen [<opts>] [<list>]
+
+Options:
+   --exclude, -x <xlist>
+      Exclude <xlist> from updating. Does not exclude other programs depending
+      on <xlist>.
+   --force-cache, -c
+      Force using cached updates data, rather than recalculating them.
+   --thorough
+      Include revision updates and upgrades to dependencies of current programs.
+   -U
+      Install updates.
+
+Notes:
+Run with no arguments, Freshen outputs a list of updates in the form:
+[%sR%s] Foo 2.0                                                                  1.0
+The mnemonics mean:
+ %sR%s Recipe will be used                    %sNew program%s
+ %sP%s Package will be used                   Other colours are for readability only
+
+If <list> is provided, Freshen examines only the programs in it and their dependencies. If <list> is not provided, Freshen will examine all installed programs.
+
+Examples:
+   Freshen -x LibFoo LibBar -U Baz Quux
+"""%(Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'])
+
+class FreshenArgParser:
+	def __init__(self):
+		self.fetched = False
+	def fetch(self):
+		if self.fetched:
+			return
+		self.fetched = True
+		self.skipList = []
+		self.elist = []
+		self.mode = 'updating'
+		self.noCache = False
+		self.forceCache = False
+		self.action = showUpdates
+		self.limit = None
+		catching = self.elist
+		singleCatch = ''
+		for li in sys.argv[1:]:
+			if li=='-x' or li=='--exclude':
+				catching = self.skipList
+			else:
+				reset = True # Reset catching to elist if we hit a non-list option
+				if li=='--thorough':
+					self.mode = 'all'
+				elif li=='--no-cache' or li=='-C':
+					self.noCache = True
+				elif li=='--force-cache' or li=='-c':
+					self.forceCache = True
+				elif li=='--limit' or li=='-l':
+					singleCatch = 'limit'
+				elif li=='-U':
+					self.action = installUpdates
+				elif li=='--help':
+					self.action=showHelp
+				elif li=='--no-colour':
+					for c in Screen.colours:
+						Screen.colours[c] = ''
+				elif li=='--':
+					catching = elist
+				elif singleCatch:
+					self.__dict__[singleCatch] = li
+					singleCatch = ''
+				elif li[0:2]=='--':
+					System.error("Invalid argument "+li)
+					exit()
+				else:
+					catching.append(li)
+					reset = False
+				if reset: catching = self.elist
+		self.progString = ', '.join(self.elist)
+		self.clProgs = '-'.join(self.elist)
+	def __getattr__(self, name):
+		self.fetch()
+		if 'examineList' == name:
+			if self.elist:
+				return self.elist
+			else:
+				self.elist = System.installedPrograms.keys()
+				self.progString = 'all'
+				return self.elist
+		return self.__dict__[name]
+
+class System:
+	args = FreshenArgParser()
+	ipcache = {}
+	
+	@classmethod
+	def installedPrograms(self):
+		if self.ipcache:
+			return self.ipcache
+		else:
+			installed = GetAvailable(['installed'], hook=consoleProgressHook, accessWeb=True)['installed']['programs']
+			for prog in installed.keys():
+				versions = installed[prog]
+				self.ipcache[prog] = []
+				for v,revisions in versions.iteritems():
+					for r in revisions.keys():
+						self.ipcache[prog].append(v+'-'+r)
+			return self.ipcache
+	
+	@classmethod
+	def updatesList(self):
+		types = ['official_package', 'recipe']
+		progList = None
+		cacheDir = os.environ.get('HOME') + '/.Settings/freshen_cache/'
+		if not os.path.exists(cacheDir):
+			os.makedirs(cacheDir)
+		cacheFile = cacheDir+System.args.mode+'-'+System.args.clProgs
+		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<600:
+			print "Loading program list from cache... (use -C to disable)"
+			f = open(cacheFile, 'r')
+			progList = cPickle.load(f)
+			f.close()
+		else:
+			System.message("Freshen: Generating updates list for %s..."%(System.args.progString))
+			pb = ProgressBar(len(System.args.examineList))
+			progList = []
+			considered = set()
+			l=len(System.args.examineList)
+			for p in System.args.examineList:
+				if p in considered:
+					pb.inc()
+					continue
+				deps,sols = CheckDependencies(p, acceptable_types=types, mode=System.args.mode, recursive=True)
+				for s in sols:
+					if s[0] not in considered:
+						if s[3] != 'installed' and s[3] is not None:
+							progList.append(s)
+						considered.add(s[0])
+				pb.inc()
+			f = open(cacheFile, 'w')
+			cPickle.dump(progList, f, protocol = cPickle.HIGHEST_PROTOCOL)
+			f.close()
+			pb.clear()
+		if System.args.limit:
+			progList = progList[0:int(System.args.limit)]
+		return progList
+		
+	@classmethod
+	def message(self, s):
+		sys.stderr.write("\033]2;"+s+"\007Freshen: "+s+"\n")
+	@classmethod
+	def error(self, s):
+		sys.stderr.write("\033]2;\007%sFreshen: %s%s\n"%(Screen.colours['red'], s, Screen.colours['normal']))
+
+# Execute the defined action
+System.args.action()
