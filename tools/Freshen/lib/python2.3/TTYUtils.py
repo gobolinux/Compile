@@ -17,7 +17,6 @@ class ProgressBar:
 		self.points = -1
 		self.barWidth = Screen.width - 8
 		self.percent = 0
-		self.draw()
 	def draw(self):
 		points = int(float(self.value)/self.size*self.barWidth)
 		pc = int(100*float(self.value)/self.size)

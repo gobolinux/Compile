@@ -62,20 +62,53 @@ def showUpdates():
 		for x in ext:
 			print x
 
+def parse_var(s, definitions=None):
+	from string import Template
+	if not hasattr(shellparse, 'definitions'):
+		shellparse.definitions = {
+			'goboPrograms': getGoboVariable('goboPrograms'),
+			'goboShared':   getGoboVariable('goboShared'),
+			'goboSettings': getGoboVariable('goboSettings'),
+			'goboLinks':    getGoboVariable('goboLinks'),
+		}
+	if not definitions:
+		definitions = {}
+	definitions.update(shellparse.definitions)
+	for k in definitions:
+		t = Template(definitions[k])
+		t.safe_substitute(definitions)
+	t = Template(s.split('=', 2)[1:-1])
+	return t.safe_substitute(definitions)
+	
 def installUpdates():
 	ulist = System.updatesList()
 	i=0
+	postMessages = {}
 	for program,version,revision,ptype,url in ulist:
 		i+=1
 		ver = Join_Version_Revision(version, revision)
 		System.message("Freshen: Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver))
 		if ptype == 'recipe':
-			print "Compile -G -U -D -b %s"%(url)
-			time.sleep(1)
+			os.system("Compile -G -U -D -b %s"%(url))
+			rec = os.popen('GetRecipe %s %s'%(program, ver)).readline().strip()+'/Recipe'
+			if os.path.exists(rec):
+				f = open(rec, 'r')
+				for x in f:
+					if x.startswith('post_install_message='):
+						postMessages[program] = parse_var(x, {'target': '$goboPrograms/%s/%s' % (program,version)})
+						break
+				f.close()
 		elif ptype == 'official_package':
-			print "InstallPackage -k -U -s keep -b -D -u keep %s"%(url)
+			os.system("InstallPackage -k -U -s keep -b -D -u keep %s"%(url))
 		else:
 			print "Unknown action!"
+	for program,version,revision,ptype,url in ulist:
+		if os.system("UpdateSettings -c" + program):
+			os.system("UpdateSettings -a "+program)
+	if postMessages:
+		print "Some of the installed programs requested post-install messages be displayed:"
+		for p,v in postMessages.iteritems():
+			print "%s: %s"%(p, v)
 
 def showHelp():
 	print """
@@ -163,7 +196,7 @@ class FreshenArgParser:
 			if self.elist:
 				return self.elist
 			else:
-				self.elist = System.installedPrograms.keys()
+				self.elist = System.installedPrograms().keys()
 				self.progString = 'all'
 				return self.elist
 		return self.__dict__[name]
@@ -200,8 +233,9 @@ class System:
 			progList = cPickle.load(f)
 			f.close()
 		else:
-			System.message("Freshen: Generating updates list for %s..."%(System.args.progString))
 			pb = ProgressBar(len(System.args.examineList))
+			System.message("Freshen: Generating updates list for %s..."%(System.args.progString))
+			pb.draw()
 			progList = []
 			considered = set()
 			l=len(System.args.examineList)
