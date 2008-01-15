@@ -226,7 +226,7 @@ class System:
 	@classmethod
 	def updates(self):
 		types = ['official_package', 'recipe']
-		elist,mode = System.args.examineList,System.args.mode
+		elist,mode,skipList = System.args.examineList,System.args.mode,set(System.args.skipList)
 		i = yc = 0
 		if System.args.limit: limit = int(System.args.limit)
 		else: limit = None
@@ -234,8 +234,9 @@ class System:
 		plist,considered = self.loadCache()
 		for s in plist:
 			if yc == limit: return # Satisfied request from cache, so terminate.
-			yc+=1
-			yield s
+			if s[0] not in skipList:
+				yc+=1
+				yield s
 		for p in elist:
 			i+=1
 			if p in considered: continue
@@ -252,10 +253,11 @@ class System:
 					ver = Join_Version_Revision(s[1], s[2])
 					insVer = self.latestInstalled(s[0])
 					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
-						yc+=1
 						plist.append(s)
 						# Only yield when under the limit, but continue the loop for caching's sake.
-						if not limit or yc <= limit: yield s
+						if s[0] not in skipList and (not limit or yc <= limit):
+							yc+=1
+							yield s
 		self.saveCache(plist, considered)
 	
 	@classmethod
