@@ -44,6 +44,7 @@ Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
 Add_Option_Boolean "i" "install-separatly" "If the application is part of a meta recipe, do not install it into the containing application but install it into a separate directory."
 Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful build"
 Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
+Add_Option_Boolean "P" "no-postinstall" "Do not run the PostInstall script after installation"
 
 Parse_Conf Compile.conf
 Parse_Options "$@"
@@ -181,7 +182,7 @@ function do_symlink() {
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
       symlinkopts=$(merge_array "symlink_options")
       SymlinkProgram $safeopts $unmanaged_opts $symlinkopts "$1" "$2" || Die "Linking step failed."
-      Run_PostInstall "$1" "$2" "" ""
+      ! Boolean "no-postinstall" && Run_PostInstall "$1" "$2" "" ""
    fi
 }
 
