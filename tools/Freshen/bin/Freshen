@@ -23,21 +23,16 @@ def getTypeAbbr(type):
 	}[type]
 
 def showUpdates():
-	ulist = System.updatesList()
-	count = {'official_package':0,'recipe':0}
-	include = {'official_package': True, 'recipe': True}
-	ext = []
-	installedPrograms = System.installedPrograms()
 	i=0
+	System.installedPrograms()
 	print "[ ] Program                                                            Installed"
-	for program,version,revision,ptype,url in ulist:
+	for program,version,revision,ptype,url in System.updates():
 		ver = Join_Version_Revision(version, revision)
 		insVer = "None"
 		pcol = Screen.colours['brown']
-		if installedPrograms.has_key(program):
-			insVer = GuessLatest(installedPrograms[program])
+		insVer = str(System.latestInstalled(program))
+		if insVer != 'None':
 			pcol = ''
-#		if not installedPrograms.has_key(program) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
 		i+=1
 		if pcol == '':
 			if i%2==0:
@@ -46,22 +41,12 @@ def showUpdates():
 				pcol=Screen.colours['cyan']
 		tabbr = getTypeAbbr(ptype)
 		ibstring = ''
-		if ptype is not None:
-			count[ptype]+=1
-		else:
-			ext.append((program,version,revision,ptype,url))
 		ncol = Screen.colours['normal']
-		#if insVer != 'None': pcol = Screen.colours['green']
 		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-6)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
 		print out
-	print count
-	if ext:
-		print ""
-		print "Extra oddities (likely from malformed dependency files; please report):"
-		for x in ext:
-			print x
 
+# Parse the value of a shell variable out of a file (recipe), performing variable substitutions.
 def parse_var(s, definitions=None):
 	from string import Template
 	if not hasattr(shellparse, 'definitions'):
@@ -80,12 +65,14 @@ def parse_var(s, definitions=None):
 	t = Template(s.split('=', 2)[1:-1])
 	return t.safe_substitute(definitions)
 	
+# TODO: Handle failed installations
 def installUpdates():
-	ulist = System.updatesList()
 	i=0
 	postMessages = {}
-	for program,version,revision,ptype,url in ulist:
+	programs = set()
+	for program,version,revision,ptype,url in System.updates():
 		i+=1
+		programs.add(program)
 		ver = Join_Version_Revision(version, revision)
 		System.message("Freshen: Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver))
 		if ptype == 'recipe':
@@ -102,6 +89,7 @@ def installUpdates():
 			os.system("InstallPackage -k -U -s keep -b -D -u keep %s"%(url))
 		else:
 			print "Unknown action!"
+			exit()
 	for program,version,revision,ptype,url in ulist:
 		if os.system("UpdateSettings -c" + program):
 			os.system("UpdateSettings -a "+program)
@@ -206,7 +194,7 @@ class FreshenArgParser:
 class System:
 	args = FreshenArgParser()
 	ipcache = {}
-	
+	vcache = {}
 	@classmethod
 	def installedPrograms(self):
 		if self.ipcache:
@@ -220,51 +208,81 @@ class System:
 					for r in revisions.keys():
 						self.ipcache[prog].append(v+'-'+r)
 			return self.ipcache
+			
+	@classmethod
+	def latestInstalled(self, p):
+		if not self.vcache:
+			self.vcache = {}
+		if p in self.vcache:
+			return self.vcache[p]
+		else:
+			if not self.ipcache: self.installedPrograms()
+			if p in self.ipcache:
+				self.vcache[p] = GuessLatest(self.ipcache[p])
+			else:
+				self.vcache[p] = None
+			return self.vcache[p]
 	
 	@classmethod
-	def updatesList(self):
+	def updates(self):
 		types = ['official_package', 'recipe']
-		installedPrograms = System.installedPrograms()
-		progList = None
+		elist,mode = System.args.examineList,System.args.mode
+		i = yc = 0
+		if System.args.limit: limit = int(System.args.limit)
+		else: limit = None
+		# Load from cache, and yield any programs in there up to the limit
+		plist,considered = self.loadCache()
+		for s in plist:
+			if yc == limit: return # Satisfied request from cache, so terminate.
+			yc+=1
+			yield s
+		for p in elist:
+			i+=1
+			if p in considered: continue
+			if limit and yc >= limit:
+				self.saveCache(plist, considered)
+				raise StopIteration
+			elif limit: sys.stderr.write("Examining %i/%i: %s... found %i/%i          \015"%(i, len(elist), p, yc, limit))
+			else: sys.stderr.write("Examining %i/%i: %s...          \015"%(i, len(elist), p))
+			# Process actual results from here
+			deps,sols = CheckDependencies(p, acceptable_types=types, mode=mode, recursive=True)
+			for s in filter(lambda s: s[0] not in considered, sols):
+				considered.add(s[0])
+				if s[3] != 'installed' and s[3] is not None:
+					ver = Join_Version_Revision(s[1], s[2])
+					insVer = self.latestInstalled(s[0])
+					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
+						yc+=1
+						plist.append(s)
+						# Only yield when under the limit, but continue the loop for caching's sake.
+						if not limit or yc <= limit: yield s
+		self.saveCache(plist, considered)
+	
+	@classmethod
+	def cacheFile(self):
 		cacheDir = os.environ.get('HOME') + '/.Settings/freshen_cache/'
 		if not os.path.exists(cacheDir):
 			os.makedirs(cacheDir)
-		cacheFile = cacheDir+System.args.mode+'-'+System.args.clProgs
+		return cacheDir+System.args.mode+'-'+System.args.clProgs
+		
+	@classmethod
+	def saveCache(self, plist, considered):
+		f = open(self.cacheFile(), 'w')
+		cPickle.dump(plist, f, protocol = cPickle.HIGHEST_PROTOCOL)
+		cPickle.dump(considered, f, protocol = cPickle.HIGHEST_PROTOCOL)
+		f.close()
+		
+	@classmethod
+	def loadCache(self):
+		cacheFile = self.cacheFile()
 		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<600:
 			System.message("Loading program list from cache... (use -C to disable)")
 			f = open(cacheFile, 'r')
 			progList = cPickle.load(f)
+			considered = cPickle.load(f)
 			f.close()
-		else:
-			pb = ProgressBar(len(System.args.examineList))
-			System.message("Freshen: Generating updates list for %s..."%(System.args.progString))
-			pb.draw()
-			progList = []
-			considered = set()
-			l=len(System.args.examineList)
-			for p in System.args.examineList:
-				if p in considered:
-					pb.inc()
-					continue
-				deps,sols = CheckDependencies(p, acceptable_types=types, mode=System.args.mode, recursive=True)
-				for s in sols:
-					if s[0] not in considered:
-						if s[3] != 'installed' and s[3] is not None:
-							ver = Join_Version_Revision(s[1], s[2])
-							insVer = None
-							if installedPrograms.has_key(s[0]):
-								insVer = GuessLatest(installedPrograms[s[0]])
-							if not installedPrograms.has_key(s[0]) or (GuessLatest([ver, insVer]) == ver and ver != insVer):
-								progList.append(s)
-						considered.add(s[0])
-				pb.inc()
-			f = open(cacheFile, 'w')
-			cPickle.dump(progList, f, protocol = cPickle.HIGHEST_PROTOCOL)
-			f.close()
-			pb.clear()
-		if System.args.limit:
-			progList = progList[0:int(System.args.limit)]
-		return progList
+			return (progList, considered)
+		return ([], set())
 		
 	@classmethod
 	def message(self, s):
