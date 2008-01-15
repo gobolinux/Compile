@@ -165,7 +165,7 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 		if s:
 			return [ s+'/Resources/Dependencies', s+'/Resources/BuildDependencies' ]
 
-	sys.stderr.write('Dependencies for %s %s %s %s %s not found\n'%(p,v,r,t,u))
+	#sys.stderr.write('Dependencies for %s %s %s %s %s not found\n'%(p,v,r,t,u))
 	return []
 
 def interpret_dependency_line(line, t=None, cross_compile=False) :
