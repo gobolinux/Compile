@@ -232,19 +232,20 @@ class System:
 		else: limit = None
 		# Load from cache, and yield any programs in there up to the limit
 		plist,considered = self.loadCache()
+		pb = ProgressBar(len(elist), limit)
 		for s in plist:
 			if yc == limit: return # Satisfied request from cache, so terminate.
 			if s[0] not in skipList:
 				yc+=1
+				pb.inc2()
 				yield s
 		for p in elist:
 			i+=1
+			pb.inc()
 			if p in considered: continue
-			if limit and yc >= limit:
+			if limit and pb.value2 >= limit:
 				self.saveCache(plist, considered)
 				raise StopIteration
-			elif limit: sys.stderr.write("Examining %i/%i: %s... found %i/%i          \015"%(i, len(elist), p, yc, limit))
-			else: sys.stderr.write("Examining %i/%i: %s...          \015"%(i, len(elist), p))
 			# Process actual results from here
 			deps,sols = CheckDependencies(p, acceptable_types=types, mode=mode, recursive=True)
 			for s in filter(lambda s: s[0] not in considered, sols):
@@ -258,7 +259,9 @@ class System:
 						if s[0] not in skipList and (not limit or yc <= limit):
 							yc+=1
 							yield s
+							pb.inc2()
 		self.saveCache(plist, considered)
+		pb.clear()
 	
 	@classmethod
 	def cacheFile(self):
