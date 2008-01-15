@@ -63,8 +63,8 @@ do
    # Getting program name and version
    if [ -d "$rawrecipe" ]
    then
-      app=`Get_Token "$rawrecipe" "/" "-2"`
-      version=`Get_Token "$rawrecipe" "/" "-1"`
+      app=`Get_Token "$rawrecipe%/" "/" "-2"`
+      version=`Get_Token "$rawrecipe%/" "/" "-1"`
    else
       x=`basename "$rawrecipe"`
       app=`Get_Token "$x" "--" "0"`
