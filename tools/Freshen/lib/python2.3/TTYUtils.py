@@ -7,6 +7,7 @@ class Screen:
 			'yellow': "\033[1;33m",
 			'brown': "\033[33m",
 			'cyan': "\033[0;36m",
+			'redbg': "\033[0;48m",
 			'normal': "\033[0m"
 		}
 

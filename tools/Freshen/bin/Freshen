@@ -25,9 +25,11 @@ def getTypeAbbr(type):
 def showUpdates():
 	i=0
 	System.installedPrograms()
+	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
 	print "[ ] Program                                                            Installed"
 	for program,version,revision,ptype,url in System.updates():
 		ver = Join_Version_Revision(version, revision)
+		if program in systemUpgrades: systemUpgrades[program] = ptype
 		insVer = "None"
 		pcol = Screen.colours['brown']
 		insVer = str(System.latestInstalled(program))
@@ -45,6 +47,10 @@ def showUpdates():
 		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-6)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
 		print out
+	for prog in ('Scripts', 'Compile', 'Freshen'):
+		if systemUpgrades[prog]:
+			cmd = systemUpgrades[prog] == 'recipe' and 'Compile' or 'InstallPackage'
+			System.notice("An upgrade to %s is available. It is %sstrongly%s%s recommended that you upgrade immediately with `%s %s`."%(prog, Screen.colours['redbg'], Screen.colours['normal'], Screen.colours['red'], cmd, prog))
 
 # Parse the value of a shell variable out of a file (recipe), performing variable substitutions.
 def parse_var(s, definitions=None):
@@ -113,7 +119,7 @@ Options:
    --no-cache, -C
       Force regenerating updates data, rather than reading from cache.
    --thorough
-      Include revision updates and upgrades to dependencies of current programs.
+      Include deep updates to revisions and up-to-date dependencies.
    -U
       Install updates.
 
@@ -256,7 +262,7 @@ class System:
 					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
 						plist.append(s)
 						# Only yield when under the limit, but continue the loop for caching's sake.
-						if s[0] not in skipList and (not limit or yc <= limit):
+						if s[0] not in skipList and (not limit or yc < limit):
 							yc+=1
 							yield s
 							pb.inc2()
@@ -292,6 +298,9 @@ class System:
 	@classmethod
 	def message(self, s):
 		sys.stderr.write("\033]2;"+s+"\007Freshen: "+s+"\n")
+	@classmethod
+	def notice(self, s):
+		sys.stderr.write("%s%s%s\n"%(Screen.colours['red'], s, Screen.colours['normal']))
 	@classmethod
 	def error(self, s):
 		sys.stderr.write("\033]2;\007%sFreshen: %s%s\n"%(Screen.colours['red'], s, Screen.colours['normal']))
