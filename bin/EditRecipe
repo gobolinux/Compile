@@ -55,6 +55,6 @@ if Boolean "no-edit"
 then 
    echo $localrecipe
 else
-   [ "$EDITOR" ] || Die 'Please set your \$EDITOR variable.'
+   [ "$EDITOR" ] || Die 'Please set your \$EDITOR variable using `export EDITOR='...'`.'
    $EDITOR "$localrecipe/Recipe"
 fi
