@@ -112,7 +112,7 @@ def getSwapPartition() :
 			return partitions[0]
 	fdisk_data.close()
 
-def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True) :
+def generateGrubMenuFile(bootloaderTarget, targetPartition, keymap = '', genGraphicDesktop = True) :
 	cmd = 'fdisk -l'
 	lines = os.popen(cmd).readlines()
 
@@ -124,7 +124,10 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 		if len(l) > 1 and l[1] == '*' :
 			bootableWindowsPartitions.append(devToGrub(l[0]))
 
-	grubFormatTarget = re.sub('[1-9],','0,',devToGrub('/dev/'+targetPartition))
+	grubFormatTarget = devToGrub('/dev/'+targetPartition)
+	if (bootloaderTarget == targetPartition) or (bootloaderTarget == targetPartition[0:3]) :
+		grubFormatTarget = re.sub('[1-9],','0,', grubFormatTarget)
+
 	swapPartition = getSwapPartition()
 
 	o = ''
@@ -164,8 +167,8 @@ def generateGrubMenuFile(targetPartition, keymap = '', genGraphicDesktop = True)
 	return o
 
 if __name__ == '__main__' :
-	if len(sys.argv) < 3 :
-	    print 'Usage: %s targetPartition keymap genGraphicDesktop'%sys.argv[0]
-	    print 'Example: %s hda1 us 1'%sys.argv[0]
-    	else :
-	    print generateGrubMenuFile(sys.argv[1], keymap=sys.argv[2], genGraphicDesktop=sys.argv[3])	
+	if len(sys.argv) < 5 :
+	    print 'Usage: %s <bootloaderTarget> <targetPartition> <keymap> <genGraphicDesktop>'%sys.argv[0]
+	    print 'Example: %s hda hda1 us 1'%sys.argv[0]
+	else :
+	    print generateGrubMenuFile(sys.argv[1], sys.argv[2], keymap=sys.argv[3], genGraphicDesktop=sys.argv[4])	
