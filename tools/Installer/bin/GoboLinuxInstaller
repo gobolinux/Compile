@@ -935,7 +935,10 @@ try :
 	selectedWithSize = installer.getValue('Packages')[1]
 	selected = map(lambda x: x.split()[0], selectedWithSize)
 
-	menu_lst = GenGrubMenu.generateGrubMenuFile(installer.getValue('RootPartition')[1].split()[0], installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
+	rootPartition = installer.getValue('RootPartition')[1].split()[0]
+	bootloaderTarget = installer.getValue('BootloaderTarget')[1].split()[0]
+
+	menu_lst = GenGrubMenu.generateGrubMenuFile(rootPartition, installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
 	safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', menu_lst, logger)
 
 
@@ -951,8 +954,8 @@ try :
 		safeRun(cmd, 'grub install', 0, logger)
 
 	if installer.getValue('InstallBootloader') :
-		log(tr('Installing GRUB in %s...')%installer.getValue('BootloaderTarget')[1].split()[0])
-		installGrub(installer.getValue('BootloaderTarget')[1].split()[0], installer.getValue('RootPartition')[1].split()[0])
+		log(tr('Installing GRUB in %s...')%bootloaderTarget)
+		installGrub(bootloaderTarget, rootPartition)
 
 
 	##############################################################################
