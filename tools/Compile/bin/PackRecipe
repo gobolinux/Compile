@@ -145,7 +145,7 @@ handle_description() {
          fi
          if ! [ "$EDITOR" ] 
          then
-            Log_Terse "EDITOR variable is not set. Can't edit description."
+            Log_Terse "EDITOR variable is not set. Can't edit description. Use `export EDITOR='...'` to set it."
             return 0
          fi
 cat <<EOF > $description
