@@ -938,7 +938,7 @@ try :
 	rootPartition = installer.getValue('RootPartition')[1].split()[0]
 	bootloaderTarget = installer.getValue('BootloaderTarget')[1].split()[0]
 
-	menu_lst = GenGrubMenu.generateGrubMenuFile(rootPartition, installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
+	menu_lst = GenGrubMenu.generateGrubMenuFile(bootloaderTarget, rootPartition, installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
 	safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', menu_lst, logger)
 
 
