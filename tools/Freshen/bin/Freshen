@@ -26,8 +26,10 @@ def showUpdates():
 	i=0
 	System.installedPrograms()
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
-	print "[ ] Program                                                            Installed"
 	for program,version,revision,ptype,url in System.updates():
+		if i == 0: # Only output heading the first time, if there are any.
+			print "[ ] Program%sInstalled"%(' '*(Screen.width-20))
+		i+=1
 		ver = Join_Version_Revision(version, revision)
 		if program in systemUpgrades: systemUpgrades[program] = ptype
 		insVer = "None"
@@ -35,7 +37,6 @@ def showUpdates():
 		insVer = str(System.latestInstalled(program))
 		if insVer != 'None':
 			pcol = ''
-		i+=1
 		if pcol == '':
 			if i%2==0:
 				pcol=Screen.colours['blue']
@@ -206,7 +207,11 @@ class System:
 		if self.ipcache:
 			return self.ipcache
 		else:
-			installed = GetAvailable(['installed'], hook=consoleProgressHook, accessWeb=True)['installed']['programs']
+			global global_available_packages_cache
+			if not global_available_packages_cache:
+				consoleProgressHook.endString = '\015'
+				global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], hook=consoleProgressHook)
+			installed = global_available_packages_cache['installed']['programs']
 			for prog in installed.keys():
 				versions = installed[prog]
 				self.ipcache[prog] = []
@@ -264,6 +269,7 @@ class System:
 						# Only yield when under the limit, but continue the loop for caching's sake.
 						if s[0] not in skipList and (not limit or yc < limit):
 							yc+=1
+							if yc>=limit: pb.clear()
 							yield s
 							pb.inc2()
 		self.saveCache(plist, considered)
@@ -287,7 +293,7 @@ class System:
 	def loadCache(self):
 		cacheFile = self.cacheFile()
 		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<600:
-			System.message("Loading program list from cache... (use -C to disable)")
+			System.message("Loading updates list from cache... (use -C to disable)")
 			f = open(cacheFile, 'r')
 			progList = cPickle.load(f)
 			considered = cPickle.load(f)

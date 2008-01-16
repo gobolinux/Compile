@@ -25,7 +25,10 @@ class ProgressBar:
 			self.barWidth = Screen.width - 8
 		self.percent = 0
 		self.percent2 = 0
+		self.enabled = True
 	def draw(self):
+		if not self.enabled:
+			return
 		if self.size2:
 			points = int(float(self.value)/self.size*self.barWidth)
 			points2 = int(float(self.value2)/self.size2*self.barWidth)
@@ -57,3 +60,4 @@ class ProgressBar:
 			self.draw()
 	def clear(self):
 		sys.stderr.write(' '*Screen.width+"\015")
+		self.enabled = False
