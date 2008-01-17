@@ -47,7 +47,7 @@ for i in ['recipe', 'official_package', 'contrib_package', 'local_package'] :
 
 #############################################################################
 # Functions used to identify which rules apply to a given program version
-#  type (a specific url can be passed, to avoid calling 'FindpPackage')
+#  type (a specific url can be passed, to avoid calling 'FindPackage')
 #############################################################################
 
 def add_compatible_dependencies(rule) :
@@ -117,7 +117,7 @@ def find_dependencies_files(p, v, r, t, u=None, noWeb=False, no_builddeps=False)
 					os.remove(cachedep)
 
 	elif t == 'recipe' :
-		if u :
+		if u and not u.startswith('http'):
 			if no_builddeps :
 				return [ u+'/Resources/Dependencies' ]
 			else :
@@ -391,14 +391,17 @@ def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 
 	if not acceptable_types :
 		acceptable_types = getGoboVariable('defaultRepositories', 'Scripts/FindPackage.conf', True)
-
+	
 	if (add_self == 'always') or (add_self != 'never' and (not v or not t))  :
 		if t :
 			ret = FindPackage(p, v, r, types=[t], accessWeb=not noWeb)
 		else :
-			ret = FindPackage(p, v, r, types=['installed'], accessWeb=not noWeb)
-			if not ret :
+			if not v or not r:
 				ret = FindPackage(p, v, r, accessWeb=not noWeb)
+			else:
+				ret = FindPackage(p, v, r, types=['installed'], accessWeb=not noWeb)
+				if ret:
+					ret = FindPackage(p, v, r, accessWeb=not noWeb)
 
 		if not ret :
 			return [], []
@@ -409,6 +412,7 @@ def get_all_dependencies_and_matches_for( p, v=None, r='', t=None, u=None,
 		p,v,r,t,u = self_match
 
 	all_rules = get_rules_for(p, v, r, t, u, noWeb=noWeb, no_compatlist=no_compatlist, cross_compile=cross_compile)
+
 	# optimization only:
 	#all_rules  = [ rule for rule in all_rules if not any(pp == rule['program'] for pp,vv,tt,uu in all_matches) ]
 	missing_dependencies = [ rule for rule in all_rules if not find_matching_package(rule, ['installed'], noWeb=noWeb) ]
