@@ -31,7 +31,7 @@ def showUpdates():
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
 	for program,version,revision,ptype,url,intBy in System.updates():
 		if i == 0: # Only output heading the first time, if there are any.
-			puts("[ ] Program%sInstalled"%(' '*(Screen.width-20)))
+			puts("[  ] Program%sInstalled"%(' '*(Screen.width-21)))
 		i+=1
 		ver = Join_Version_Revision(version, revision)
 		if program in systemUpgrades: systemUpgrades[program] = ptype
@@ -46,9 +46,12 @@ def showUpdates():
 			else:
 				pcol=Screen.colours['cyan']
 		tabbr = getTypeAbbr(ptype)
+		if version.endswith('_bin') or program.endswith('-Bin'):
+			tabbr = Screen.colours['red']+'B'+Screen.colours['normal']+tabbr
+		else: tabbr = ' ' + tabbr
 		ibstring = insVer == 'None' and '(' + intBy + ')' or ''
 		ncol = Screen.colours['normal']
-		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(ibstring)-6)
+		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(ibstring)-7)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
 		puts(out)
 	for prog in ('Scripts', 'Compile', 'Freshen'):
@@ -129,16 +132,17 @@ Options:
 
 Notes:
 Run with no arguments, Freshen outputs a list of updates in the form:
-[%sR%s] Foo 2.0                                                                  1.0
+[%sB%sR%s] Foo 2.0                                                                 1.0
 The mnemonics mean:
  %sR%s Recipe will be used                    %sNew program%s
  %sP%s Package will be used                   Other colours are for readability only
+ %sB%s Binary recipe
 
 If <list> is provided, Freshen examines only the programs in it and their dependencies. If <list> is not provided, Freshen will examine all installed programs.
 
 Examples:
    Freshen -x LibFoo LibBar -U Baz Quux
-"""%(Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal']))
+"""%(Screen.colours['red'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['red'], Screen.colours['normal']))
 
 class FreshenArgParser:
 	def __init__(self):
