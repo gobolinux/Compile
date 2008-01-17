@@ -255,7 +255,7 @@ class System:
 		pb = ProgressBar(len(eset), limit)
 		for s in plist:
 			if yc == limit: return # Satisfied request from cache, so terminate.
-			if s[0] not in skipSet:
+			if not self.skip(s[0], s[1], s[2]):
 				yc+=1
 				pb.inc2()
 				yield s
@@ -266,6 +266,7 @@ class System:
 			if limit and pb.value2 >= limit:
 				self.saveCache(plist, considered)
 				raise StopIteration
+			if self.skip(p, None, None): continue
 			# Process actual results from here
 			deps,sols = CheckDependencies(p, acceptable_types=types, mode=mode, recursive=True)
 			for s in [s for s in sols if s[0] not in considered]:
@@ -277,13 +278,20 @@ class System:
 						s+=(p,)
 						plist.append(s)
 						# Only yield when under the limit, but continue the loop for caching's sake.
-						if s[0] not in skipSet and (not limit or yc < limit):
+						if not self.skip(s[0],s[1],s[2]) and (not limit or yc < limit):
 							yc+=1
 							if limit and yc>=limit: pb.clear()
 							yield s
 							pb.inc2()
 		self.saveCache(plist, considered)
 		pb.clear()
+	
+	@classmethod
+	def skip(self, p,v,r):
+		if p in self.args.skipSet: return True
+		spl = p.split('-')
+		if len(spl)>1 and spl[0] in self.args.skipSet: return True
+		return False
 	
 	@classmethod
 	def cacheFile(self):
