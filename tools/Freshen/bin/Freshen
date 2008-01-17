@@ -29,7 +29,7 @@ def showUpdates():
 	i=0
 	System.installedPrograms()
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
-	for program,version,revision,ptype,url in System.updates():
+	for program,version,revision,ptype,url,intBy in System.updates():
 		if i == 0: # Only output heading the first time, if there are any.
 			puts("[ ] Program%sInstalled"%(' '*(Screen.width-20)))
 		i+=1
@@ -46,9 +46,9 @@ def showUpdates():
 			else:
 				pcol=Screen.colours['cyan']
 		tabbr = getTypeAbbr(ptype)
-		ibstring = ''
+		ibstring = insVer == 'None' and '(' + intBy + ')' or ''
 		ncol = Screen.colours['normal']
-		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-6)
+		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(ibstring)-6)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
 		puts(out)
 	for prog in ('Scripts', 'Compile', 'Freshen'):
@@ -80,7 +80,7 @@ def installUpdates():
 	i=0
 	postMessages = {}
 	programs = set()
-	for program,version,revision,ptype,url in System.updates():
+	for program,version,revision,ptype,url,intBy in System.updates():
 		i+=1
 		programs.add(program)
 		ver = Join_Version_Revision(version, revision)
@@ -263,6 +263,7 @@ class System:
 					ver = Join_Version_Revision(s[1], s[2])
 					insVer = self.latestInstalled(s[0])
 					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
+						s+=(p,)
 						plist.append(s)
 						# Only yield when under the limit, but continue the loop for caching's sake.
 						if s[0] not in skipList and (not limit or yc < limit):
