@@ -18,7 +18,7 @@ from TTYUtils          import *
 def getTypeAbbr(type):
 	return {
 		'recipe': Screen.colours['green']+'R'+Screen.colours['normal'],
-		'official_package': Screen.colours['red']+'P'+Screen.colours['normal'],
+		'official_package': Screen.colours['brown']+'P'+Screen.colours['normal'],
 		'installed': 'I',
 		None: '?'
 	}[type]
@@ -39,7 +39,7 @@ def showUpdates():
 		ver = Join_Version_Revision(version, revision)
 		if program in systemUpgrades: systemUpgrades[program] = ptype
 		insVer = "None"
-		pcol = Screen.colours['brown']
+		pcol = Screen.colours['darkgreybg']
 		insVer = str(System.latestInstalled(program))
 		if insVer != 'None':
 			pcol = ''
@@ -138,17 +138,17 @@ Options:
 
 Notes:
 Run with no arguments, Freshen outputs a list of updates in the form:
-[%sB%sR%s] Foo 2.0                                                                 1.0
+[%(red)sB%(green)sR%(normal)s] Foo 2.0                                                                 1.0
 The mnemonics mean:
- %sR%s Recipe will be used                    %sNew program%s
- %sP%s Package will be used                   Other colours are for readability only
- %sB%s Binary recipe
+ %(green)sR%(normal)s Recipe will be used                    %(brown)sNew program%(normal)s
+ %(brown)sP%(normal)s Package will be used                   Other colours are for readability only
+ %(red)sB%(normal)s Binary recipe
 
 If <list> is provided, Freshen examines only the programs in it and their dependencies. If <list> is not provided, Freshen will examine all installed programs.
 
 Examples:
    Freshen -x LibFoo LibBar -U Baz Quux
-"""%(Screen.colours['red'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['red'], Screen.colours['normal']))
+"""%Screen.colours)
 
 class FreshenArgParser:
 	def __init__(self):
@@ -200,7 +200,7 @@ class FreshenArgParser:
 				if reset: catching = self.eset
 		self.progString = ', '.join(self.eset)
 		self.eset = frozenset(self.eset)
-		self.skipSet = frozenset(self.eset)
+		self.skipSet = frozenset(self.skipSet)
 		self.cacheDataID = hash(self.eset)
 	def __getattr__(self, name):
 		self.fetch()
@@ -232,7 +232,7 @@ class System:
 	@classmethod
 	def latestInstalled(self, p):
 		if not self.vcache:
-			self.vcache = {}
+			self.vcache = KeyInsensitiveDict()
 		if p in self.vcache:
 			return self.vcache[p]
 		else:
@@ -246,7 +246,7 @@ class System:
 	@classmethod
 	def updates(self):
 		types = ['official_package', 'recipe']
-		eset,mode,skipSet = System.args.examineSet,System.args.mode,set(System.args.skipSet)
+		eset,mode,skipSet = System.args.examineSet,System.args.mode,System.args.skipSet
 		i = yc = 0
 		if System.args.limit: limit = int(System.args.limit)
 		else: limit = None

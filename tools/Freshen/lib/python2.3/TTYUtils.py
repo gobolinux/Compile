@@ -8,6 +8,8 @@ class Screen:
 		'brown': "\033[33m",
 		'cyan': "\033[0;36m",
 		'redbg': "\033[0;48m",
+		'brownbg': "\033[0;43m",
+		'darkgreybg': "\033[0;100m",
 		'normal': "\033[0m"
 	}
 
