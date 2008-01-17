@@ -11,7 +11,8 @@ from GetAvailable      import GetAvailable, getGoboVariable
 from GuessLatest       import GuessLatest
 from GetInstalled      import KeyInsensitiveDict
 from CheckDependencies import *
-from TTYUtils import *
+from PythonUtils       import *
+from TTYUtils          import *
 
 
 def getTypeAbbr(type):
@@ -21,6 +22,8 @@ def getTypeAbbr(type):
 		'installed': 'I',
 		None: '?'
 	}[type]
+def puts(s):
+	sys.stdout.write(s+'\n')
 
 def showUpdates():
 	i=0
@@ -28,7 +31,7 @@ def showUpdates():
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
 	for program,version,revision,ptype,url in System.updates():
 		if i == 0: # Only output heading the first time, if there are any.
-			print "[ ] Program%sInstalled"%(' '*(Screen.width-20))
+			puts("[ ] Program%sInstalled"%(' '*(Screen.width-20)))
 		i+=1
 		ver = Join_Version_Revision(version, revision)
 		if program in systemUpgrades: systemUpgrades[program] = ptype
@@ -47,11 +50,11 @@ def showUpdates():
 		ncol = Screen.colours['normal']
 		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-6)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
-		print out
+		puts(out)
 	for prog in ('Scripts', 'Compile', 'Freshen'):
 		if systemUpgrades[prog]:
 			cmd = systemUpgrades[prog] == 'recipe' and 'Compile' or 'InstallPackage'
-			System.notice("An upgrade to %s is available. It is %sstrongly%s%s recommended that you upgrade immediately with `%s %s`."%(prog, Screen.colours['redbg'], Screen.colours['normal'], Screen.colours['red'], cmd, prog))
+			Log_Error("An upgrade to %s is available. It is strongly recommended that you upgrade immediately with `%s %s`."%(prog, cmd, prog), 'Freshen')
 
 # Parse the value of a shell variable out of a file (recipe), performing variable substitutions.
 def parse_var(s, definitions=None):
@@ -81,7 +84,7 @@ def installUpdates():
 		i+=1
 		programs.add(program)
 		ver = Join_Version_Revision(version, revision)
-		System.message("Freshen: Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver))
+		Log_Normal("Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver), 'Freshen')
 		if ptype == 'recipe':
 			os.system("Compile -G -U -D -b %s"%(url))
 			rec = os.popen('GetRecipe %s %s'%(program, ver)).readline().strip()+'/Recipe'
@@ -95,18 +98,18 @@ def installUpdates():
 		elif ptype == 'official_package':
 			os.system("InstallPackage -k -U -s keep -b -D -u keep %s"%(url))
 		else:
-			print "Unknown action!"
+			Log_Error("Unknown action '%s'!"%(ptype))
 			exit()
 	for program,version,revision,ptype,url in ulist:
 		if os.system("UpdateSettings -c" + program):
 			os.system("UpdateSettings -a "+program)
 	if postMessages:
-		print "Some of the installed programs requested post-install messages be displayed:"
-		for p,v in postMessages.iteritems():
-			print "%s: %s"%(p, v)
+		Log_Normal("Some of the installed programs requested post-install messages be displayed:")
+		for p,v in postMessages.items():
+			puts("%s: %s"%(p, v))
 
 def showHelp():
-	print """
+	puts("""
 Checks for updated GoboLinux recipes and packages.
 
 Usage: Freshen [<opts>] [<list>]
@@ -135,7 +138,7 @@ If <list> is provided, Freshen examines only the programs in it and their depend
 
 Examples:
    Freshen -x LibFoo LibBar -U Baz Quux
-"""%(Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'])
+"""%(Screen.colours['green'], Screen.colours['normal'], Screen.colours['green'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal'], Screen.colours['brown'], Screen.colours['normal']))
 
 class FreshenArgParser:
 	def __init__(self):
@@ -179,7 +182,7 @@ class FreshenArgParser:
 					self.__dict__[singleCatch] = li
 					singleCatch = ''
 				elif li[0:2]=='--':
-					System.error("Invalid argument "+li)
+					Log_Error("Invalid argument "+li, 'Freshen')
 					exit()
 				else:
 					catching.append(li)
@@ -212,12 +215,7 @@ class System:
 				consoleProgressHook.endString = '\015'
 				global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], hook=consoleProgressHook)
 			installed = global_available_packages_cache['installed']['programs']
-			for prog in installed.keys():
-				versions = installed[prog]
-				self.ipcache[prog] = []
-				for v,revisions in versions.iteritems():
-					for r in revisions.keys():
-						self.ipcache[prog].append(v+'-'+r)
+			self.ipcache = KeyInsensitiveDict((prog, [v+'-'+r for v in installed[prog] for r in installed[prog][v]]) for prog in installed)
 			return self.ipcache
 			
 	@classmethod
@@ -259,7 +257,7 @@ class System:
 				raise StopIteration
 			# Process actual results from here
 			deps,sols = CheckDependencies(p, acceptable_types=types, mode=mode, recursive=True)
-			for s in filter(lambda s: s[0] not in considered, sols):
+			for s in [s for s in sols if s[0] not in considered]:
 				considered.add(s[0])
 				if s[3] != 'installed' and s[3] is not None:
 					ver = Join_Version_Revision(s[1], s[2])
@@ -269,7 +267,7 @@ class System:
 						# Only yield when under the limit, but continue the loop for caching's sake.
 						if s[0] not in skipList and (not limit or yc < limit):
 							yc+=1
-							if yc>=limit: pb.clear()
+							if limit and yc>=limit: pb.clear()
 							yield s
 							pb.inc2()
 		self.saveCache(plist, considered)
@@ -293,23 +291,13 @@ class System:
 	def loadCache(self):
 		cacheFile = self.cacheFile()
 		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<600:
-			System.message("Loading updates list from cache... (use -C to disable)")
+			Log_Normal("Loading updates list from cache... (use -C to disable)", 'Freshen')
 			f = open(cacheFile, 'r')
 			progList = cPickle.load(f)
 			considered = cPickle.load(f)
 			f.close()
 			return (progList, considered)
 		return ([], set())
-		
-	@classmethod
-	def message(self, s):
-		sys.stderr.write("\033]2;"+s+"\007Freshen: "+s+"\n")
-	@classmethod
-	def notice(self, s):
-		sys.stderr.write("%s%s%s\n"%(Screen.colours['red'], s, Screen.colours['normal']))
-	@classmethod
-	def error(self, s):
-		sys.stderr.write("\033]2;\007%sFreshen: %s%s\n"%(Screen.colours['red'], s, Screen.colours['normal']))
 
 try:
 	# Execute the defined action

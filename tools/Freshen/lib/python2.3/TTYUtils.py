@@ -2,14 +2,14 @@ import os, sys
 class Screen:
 	height,width=map(int,os.popen('stty size').readline().strip().split(' '))
 	colours = {'red': "\033[1;31m",
-			'blue': "\033[1;34m",
-			'green': "\033[0;32m",
-			'yellow': "\033[1;33m",
-			'brown': "\033[33m",
-			'cyan': "\033[0;36m",
-			'redbg': "\033[0;48m",
-			'normal': "\033[0m"
-		}
+		'blue': "\033[1;34m",
+		'green': "\033[0;32m",
+		'yellow': "\033[1;33m",
+		'brown': "\033[33m",
+		'cyan': "\033[0;36m",
+		'redbg': "\033[0;48m",
+		'normal': "\033[0m"
+	}
 
 class ProgressBar:
 	def __init__(self, size, size2=0):
