@@ -81,7 +81,7 @@ def parse_var(s, definitions=None):
 # TODO: Handle failed installations
 def installUpdates():
 	i=0
-	postMessages = {}
+	postMessages = []
 	programs = set()
 	for program,version,revision,ptype,url,intBy in System.updates():
 		i+=1
@@ -95,7 +95,7 @@ def installUpdates():
 				f = open(rec, 'r')
 				for x in f:
 					if x.startswith('post_install_message='):
-						postMessages[program] = parse_var(x, {'target': '$goboPrograms/%s/%s' % (program,version)})
+						postMessages.append((program, parse_var(x, {'target': '$goboPrograms/%s/%s' % (program,version)})))
 						break
 				f.close()
 		elif ptype == 'official_package':
@@ -108,8 +108,9 @@ def installUpdates():
 			os.system("UpdateSettings -a "+program)
 	if postMessages:
 		Log_Normal("Some of the installed programs requested post-install messages be displayed:")
-		for p,v in postMessages.items():
+		for p,v in postMessages:
 			puts("%s: %s"%(p, v))
+	System.clearCache()
 
 def showHelp():
 	puts("""
@@ -151,20 +152,20 @@ class FreshenArgParser:
 		if self.fetched:
 			return
 		self.fetched = True
-		self.skipList = []
-		self.elist = []
+		self.skipSet = set()
+		self.eset = set()
 		self.mode = 'updating'
 		self.noCache = False
 		self.forceCache = False
 		self.action = showUpdates
 		self.limit = None
-		catching = self.elist
+		catching = self.eset
 		singleCatch = ''
 		for li in sys.argv[1:]:
 			if li=='-x' or li=='--exclude':
-				catching = self.skipList
+				catching = self.skipSet
 			else:
-				reset = True # Reset catching to elist if we hit a non-list option
+				reset = True # Reset catching to eset if we hit a non-list option
 				if li=='--thorough':
 					self.mode = 'all'
 				elif li=='--no-cache' or li=='-C':
@@ -181,7 +182,7 @@ class FreshenArgParser:
 					for c in Screen.colours:
 						Screen.colours[c] = ''
 				elif li=='--':
-					catching = elist
+					catching = eset
 				elif singleCatch:
 					self.__dict__[singleCatch] = li
 					singleCatch = ''
@@ -189,20 +190,23 @@ class FreshenArgParser:
 					Log_Error("Invalid argument "+li, 'Freshen')
 					exit()
 				else:
-					catching.append(li)
+					catching.add(li)
 					reset = False
-				if reset: catching = self.elist
-		self.progString = ', '.join(self.elist)
-		self.clProgs = '-'.join(self.elist)
+				if reset: catching = self.eset
+		self.progString = ', '.join(self.eset)
+		self.eset = frozenset(self.eset)
+		self.skipSet = frozenset(self.eset)
+		self.cacheDataID = str(hash(self.eset))
 	def __getattr__(self, name):
 		self.fetch()
-		if 'examineList' == name:
-			if self.elist:
-				return self.elist
+		if 'examineSet' == name:
+			if self.eset:
+				return self.eset
 			else:
-				self.elist = System.installedPrograms().keys()
+				self.eset = frozenset(set(System.installedPrograms().keys()))
+				self.cacheDataID = str(hash(self.eset))
 				self.progString = 'all'
-				return self.elist
+				return self.eset
 		return self.__dict__[name]
 
 class System:
@@ -215,9 +219,7 @@ class System:
 			return self.ipcache
 		else:
 			global global_available_packages_cache
-			if not global_available_packages_cache:
-				consoleProgressHook.endString = '\015'
-				global_available_packages_cache = GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], hook=consoleProgressHook)
+			if not global_available_packages_cache: self.fetchAvailables()
 			installed = global_available_packages_cache['installed']['programs']
 			self.ipcache = KeyInsensitiveDict((prog, [v+'-'+r for v in installed[prog] for r in installed[prog][v]]) for prog in installed)
 			return self.ipcache
@@ -239,20 +241,20 @@ class System:
 	@classmethod
 	def updates(self):
 		types = ['official_package', 'recipe']
-		elist,mode,skipList = System.args.examineList,System.args.mode,set(System.args.skipList)
+		eset,mode,skipSet = System.args.examineSet,System.args.mode,set(System.args.skipSet)
 		i = yc = 0
 		if System.args.limit: limit = int(System.args.limit)
 		else: limit = None
 		# Load from cache, and yield any programs in there up to the limit
 		plist,considered = self.loadCache()
-		pb = ProgressBar(len(elist), limit)
+		pb = ProgressBar(len(eset), limit)
 		for s in plist:
 			if yc == limit: return # Satisfied request from cache, so terminate.
-			if s[0] not in skipList:
+			if s[0] not in skipSet:
 				yc+=1
 				pb.inc2()
 				yield s
-		for p in elist:
+		for p in eset:
 			i+=1
 			pb.inc()
 			if p in considered: continue
@@ -270,7 +272,7 @@ class System:
 						s+=(p,)
 						plist.append(s)
 						# Only yield when under the limit, but continue the loop for caching's sake.
-						if s[0] not in skipList and (not limit or yc < limit):
+						if s[0] not in skipSet and (not limit or yc < limit):
 							yc+=1
 							if limit and yc>=limit: pb.clear()
 							yield s
@@ -280,10 +282,10 @@ class System:
 	
 	@classmethod
 	def cacheFile(self):
-		cacheDir = os.environ.get('HOME') + '/.Settings/freshen_cache/'
+		cacheDir = os.environ.get('HOME') + '/.Settings/freshen_cache'
 		if not os.path.exists(cacheDir):
 			os.makedirs(cacheDir)
-		return cacheDir+System.args.mode+'-'+System.args.clProgs
+		return "%s/%s-%u"%(cacheDir, System.args.mode, System.args.cacheDataID)
 		
 	@classmethod
 	def saveCache(self, plist, considered):
@@ -291,11 +293,15 @@ class System:
 		cPickle.dump(plist, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		cPickle.dump(considered, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		f.close()
+		directory = os.environ.get('HOME') + '/.Settings/freshen_cache/'
+		for f in os.listdir(directory):
+			if time.time()-os.path.getmtime(directory+'/'+f)>1800:
+				os.unlink(directory+'/'+f)
 		
 	@classmethod
 	def loadCache(self):
 		cacheFile = self.cacheFile()
-		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<600:
+		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<1800:
 			Log_Normal("Loading updates list from cache... (use -C to disable)", 'Freshen')
 			f = open(cacheFile, 'r')
 			progList = cPickle.load(f)
@@ -303,6 +309,29 @@ class System:
 			f.close()
 			return (progList, considered)
 		return ([], set())
+	
+	@classmethod
+	def fetchAvailables(self):
+		global global_available_packages_cache
+		cacheFile = os.environ.get('HOME') + '/.Settings/freshen_cache/availables.cache'
+		if global_available_packages_cache: return
+		elif not System.args.noCache and os.path.exists(cacheFile) and (System.args.forceCache or time.time()-os.path.getmtime(cacheFile)<1800):
+			f = open(cacheFile, 'r')
+			global_available_packages_cache = cPickle.load(f)
+			f.close()
+		else:
+			consoleProgressHook.endString = '\015'
+			global_available_packages_cache = 	GetAvailable(types=['installed','local_package','official_package', 'recipe', 'contrib_package', 'tracked'], hook=consoleProgressHook)
+			f = open(cacheFile, 'w')
+			cPickle.dump(global_available_packages_cache, f, protocol = cPickle.HIGHEST_PROTOCOL)
+			f.close()
+	
+	@classmethod
+	def clearCache(self):
+		cacheFile = System.cacheFile()
+		for cacheFile in (System.cacheFile(), os.environ.get('HOME')+'/.Settings/freshen_cache/availables.cache'):
+			if os.path.exists(cacheFile):
+				os.unlink(cacheFile)
 
 try:
 	# Execute the defined action
