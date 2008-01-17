@@ -1,6 +1,6 @@
 import os, sys
 class Screen:
-	height,width=map(int,os.popen('stty size').readline().strip().split(' '))
+	height,width=[int(x) for x in os.popen('stty size').readline().strip().split(' ')]
 	colours = {'red': "\033[1;31m",
 		'blue': "\033[1;34m",
 		'green': "\033[0;32m",

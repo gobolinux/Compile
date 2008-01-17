@@ -29,10 +29,13 @@ def showUpdates():
 	i=0
 	System.installedPrograms()
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
+	typeCount = {'recipe': 0, 'official_package': 0, '_binary_recipe': 0 ,'total': 0}
 	for program,version,revision,ptype,url,intBy in System.updates():
 		if i == 0: # Only output heading the first time, if there are any.
 			puts("[  ] Program%sInstalled"%(' '*(Screen.width-21)))
 		i+=1
+		typeCount[ptype] += 1
+		typeCount['total'] += 1
 		ver = Join_Version_Revision(version, revision)
 		if program in systemUpgrades: systemUpgrades[program] = ptype
 		insVer = "None"
@@ -48,12 +51,14 @@ def showUpdates():
 		tabbr = getTypeAbbr(ptype)
 		if version.endswith('_bin') or program.endswith('-Bin'):
 			tabbr = Screen.colours['red']+'B'+Screen.colours['normal']+tabbr
+			typeCount['_binary_recipe'] += 1
 		else: tabbr = ' ' + tabbr
 		ibstring = insVer == 'None' and '(' + intBy + ')' or ''
 		ncol = Screen.colours['normal']
 		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(ibstring)-7)
 		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
 		puts(out)
+	puts("%(recipe)i recipes, %(_binary_recipe)i binary recipes, %(official_package)i packages, %(total)i total"%typeCount)
 	for prog in ('Scripts', 'Compile', 'Freshen'):
 		if systemUpgrades[prog]:
 			cmd = systemUpgrades[prog] == 'recipe' and 'Compile' or 'InstallPackage'
@@ -196,7 +201,7 @@ class FreshenArgParser:
 		self.progString = ', '.join(self.eset)
 		self.eset = frozenset(self.eset)
 		self.skipSet = frozenset(self.eset)
-		self.cacheDataID = str(hash(self.eset))
+		self.cacheDataID = hash(self.eset)
 	def __getattr__(self, name):
 		self.fetch()
 		if 'examineSet' == name:
@@ -204,7 +209,7 @@ class FreshenArgParser:
 				return self.eset
 			else:
 				self.eset = frozenset(set(System.installedPrograms().keys()))
-				self.cacheDataID = str(hash(self.eset))
+				self.cacheDataID = hash(self.eset)
 				self.progString = 'all'
 				return self.eset
 		return self.__dict__[name]
