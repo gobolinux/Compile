@@ -1,6 +1,7 @@
-#!/usr/bin/python
-# Copyright (C) 2008 Michael Homer <=mwh>
-# Released under the GNU GPL.
+#!/usr/bin/env python
+# Freshen - finds and installs updates for GoboLinux systems.
+# Copyright (C) 2007-2008 Michael Homer <=mwh>
+# Distribution terms shown by Freshen --version.
 
 import string, os, os.path, sys, cPickle
 import time
@@ -114,6 +115,25 @@ def installUpdates():
 			puts("%s: %s"%(program, message))
 	System.clearCache()
 
+def showVersion():
+	puts("""
+Freshen %(major)i.%(minor)i.%(revision)i%(prerelease)s
+(C) 2007-2008 Michael Homer <=mwh>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""%(System.version))
+
 def showHelp():
 	puts("""
 Checks for updated GoboLinux recipes and packages.
@@ -132,7 +152,8 @@ Options:
       Include deep updates to revisions and up-to-date dependencies.
    -U
       Install updates.
-
+   --version
+      Display version and copyright information.
 Notes:
 Run with no arguments, Freshen outputs a list of updates in the form:
 [%(red)sB%(green)sR%(normal)s] Foo 2.0                                                                 1.0
@@ -180,6 +201,8 @@ class FreshenArgParser:
 					self.action = installUpdates
 				elif arg=='--help':
 					self.action=showHelp
+				elif arg=='--version':
+					self.action=showVersion
 				elif arg=='--no-colour':
 					for c in Screen.colours:
 						Screen.colours[c] = ''
@@ -221,6 +244,7 @@ class System:
 	currentVersionCache = {}
 	latestCache = None
 	cacheDataFormatVersion = 1
+	version = {'major': 3, 'minor': 0, 'revision': 0, 'prerelease': 'alpha'}
 	@classmethod
 	def installedPrograms(self):
 		if self.installedProgramsCache:
