@@ -300,9 +300,9 @@ function Parse_Options() {
             if echo "$option" | grep -q = -
             then
                # argument assignment with =
-               opt=`echo $option | cut -d= -f1`
+               opt=${option%%\=*}
             else
-               opt=`echo $option | cut -d' ' -f1`
+               opt=${option}
             fi
             export parsedArguments=$[parsedArguments+1]
 
@@ -321,7 +321,7 @@ function Parse_Options() {
                      if echo "$option" | grep -q = -
                      then
                         # long option value assignment with =
-                        val=`echo $option | cut -d= -f2`
+                        val=${option#*=}
                      else
                         # else use next argument as value for the option
                         i=$[i+1]
