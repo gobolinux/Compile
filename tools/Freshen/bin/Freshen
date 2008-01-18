@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # Copyright (C) 2008 Michael Homer <=mwh>
-# Portions copyright (C) 2004-2007 Andre Detsch <detsch at gobolinux.org>
 # Released under the GNU GPL.
 
 import string, os, os.path, sys, cPickle
@@ -206,7 +205,11 @@ class FreshenArgParser:
 			if self.toExamine:
 				return self.toExamine
 			else:
-				self.toExamine = frozenset(set(System.installedPrograms().keys()))
+				if self.mode == 'all':
+					self.toExamine = frozenset(set(System.installedPrograms().keys()))
+				else:
+					self.toExamine = frozenset(prog for prog in System.installedPrograms().keys() if System.updateAvailable(prog))
+				#
 				self.cacheDataID = hash(self.toExamine)
 				self.progString = 'all'
 				return self.toExamine
@@ -216,6 +219,7 @@ class System:
 	args = FreshenArgParser()
 	installedProgramsCache = {}
 	currentVersionCache = {}
+	latestCache = None
 	@classmethod
 	def installedPrograms(self):
 		if self.installedProgramsCache:
@@ -242,7 +246,37 @@ class System:
 			else:
 				self.currentVersionCache[program] = None
 			return self.currentVersionCache[program]
+
+	@classmethod
+	def latestAvailable(self, program):
+		global global_available_packages_cache
+		if not global_available_packages_cache: self.fetchAvailables()
+		if not self.latestCache:
+			self.latestCache = KeyInsensitiveDict()
+		if program in self.latestCache:
+			return self.latestCache[program]
+		latest = None
+		recipes = global_available_packages_cache['recipe']['programs']
+		if program in recipes:
+			lver = GuessLatest(recipes[program].keys())
+			lrev = GuessLatest(recipes[program][lver].keys())
+			latest = Join_Version_Revision(lver, lrev)
+		packages = global_available_packages_cache['official_package']['programs']
+		if program in packages:
+			lver = GuessLatest(packages[program].keys())
+			lrev = GuessLatest(packages[program][lver].keys())
+			if not latest: latest = Join_Version_Revision(lver, lrev)
+			else: latest = GuessLatest([latest, Join_Version_Revision(lver, lrev)])
+		return latest
 	
+	@classmethod
+	def updateAvailable(self, program):
+		latestInstalled = System.latestInstalled(program)
+		latestAvailable = System.latestAvailable(program)
+		if not latestInstalled: return True
+		if not latestAvailable: return False
+		return (GuessLatest([latestInstalled, latestAvailable]) != latestInstalled)
+		
 	@classmethod
 	def updates(self):
 		types = ['official_package', 'recipe']
