@@ -220,6 +220,7 @@ class System:
 	installedProgramsCache = {}
 	currentVersionCache = {}
 	latestCache = None
+	cacheDataFormatVersion = 1
 	@classmethod
 	def installedPrograms(self):
 		if self.installedProgramsCache:
@@ -285,19 +286,22 @@ class System:
 		if System.args.limit: limit = int(System.args.limit)
 		else: limit = None
 		# Load from cache, and yield any programs in there up to the limit
-		programList,considered = self.loadCache()
+		programList,considered,listComplete = self.loadCache()
 		pb = ProgressBar(len(toExamine), limit)
 		for program,version,revision,type,url,intBy in programList:
 			if yieldCount == limit: return # Satisfied request from cache, so terminate.
 			if not self.skip(program, version, revision):
 				yieldCount+=1
 				pb.inc2()
-				yield s
+				yield (program,version,revision,type,url,intBy)
+		if listComplete:
+			pb.clear()
+			return
 		for examinedProgram in toExamine:
 			pb.inc() # Increment examined program bar
 			if examinedProgram in considered: continue
 			if limit and pb.value2 >= limit:
-				self.saveCache(programList, considered)
+				self.saveCache(programList, considered, False)
 				raise StopIteration
 			if self.skip(examinedProgram, None, None): continue
 			# Process actual results from here
@@ -316,7 +320,7 @@ class System:
 							if limit and yieldCount>=limit: pb.clear()
 							yield update
 							pb.inc2() # Increment yielded update bar
-		self.saveCache(programList, considered)
+		self.saveCache(programList, considered, True)
 		pb.clear()
 	
 	@classmethod
@@ -335,10 +339,12 @@ class System:
 		return "%s/%s-%u"%(cacheDir, System.args.mode, System.args.cacheDataID)
 		
 	@classmethod
-	def saveCache(self, programList, considered):
+	def saveCache(self, programList, considered, listComplete):
 		f = open(self.cacheFile(), 'w')
+		cPickle.dump(System.cacheDataFormatVersion, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		cPickle.dump(programList, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		cPickle.dump(considered, f, protocol = cPickle.HIGHEST_PROTOCOL)
+		cPickle.dump(listComplete, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		f.close()
 		directory = os.environ.get('HOME') + '/.Settings/freshen_cache/'
 		# Delete expired cache files
@@ -352,11 +358,15 @@ class System:
 		if System.args.forceCache or not System.args.noCache and os.path.exists(cacheFile) and os.path.exists(cacheFile) and time.time()-os.path.getmtime(cacheFile)<1800:
 			Log_Normal("Loading updates list from cache... (use -C to disable)", 'Freshen')
 			f = open(cacheFile, 'r')
+			format = cPickle.load(f)
+			if format != System.cacheDataFormatVersion:
+				return ([], set(), False)
 			progList = cPickle.load(f)
 			considered = cPickle.load(f)
+			listComplete = cPickle.load(f)
 			f.close()
-			return (progList, considered)
-		return ([], set())
+			return (progList, considered, listComplete)
+		return ([], set(), False)
 	
 	@classmethod
 	def fetchAvailables(self):
