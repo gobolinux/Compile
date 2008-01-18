@@ -180,7 +180,7 @@ def addToDict(d, p, v, r, u) :
 def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, default_revision='', current_only=False) :
 	import os, os.path
 
-	if not d :
+	if d is None :
 		d = KeyInsensitiveDict();
 
 	if not os.path.isdir(directory) :
@@ -223,7 +223,7 @@ def getUnpackedLocalPackages(directory, requireCurrent = False, d = None, defaul
 		versions = [ v for v in ds if v not in ['Current', 'Settings', 'Variable', 'Headers'] ]
 		versions = [ v for v in versions if os.path.isdir(directory+'/'+p+'/'+v) ]
 
-		# Verify: what to do with an empty program entrie?
+		# Verify: what to do with an empty program entry?
 		if not versions :
 			continue
 
