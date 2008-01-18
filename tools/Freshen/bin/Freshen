@@ -9,11 +9,9 @@ sys.path = [os.path.abspath('.')+'/lib/python2.3'] + sys.path
 
 from GetAvailable      import GetAvailable, getGoboVariable
 from GuessLatest       import GuessLatest
-from GetInstalled      import KeyInsensitiveDict
 from CheckDependencies import *
 from PythonUtils       import *
 from TTYUtils          import *
-
 
 def getTypeAbbr(type):
 	return {
@@ -229,9 +227,9 @@ class FreshenArgParser:
 				return self.toExamine
 			else:
 				if self.mode == 'all':
-					self.toExamine = frozenset(set(System.installedPrograms().keys()))
+					self.toExamine = frozenset(System.installedPrograms())
 				else:
-					self.toExamine = frozenset(prog for prog in System.installedPrograms().keys() if System.updateAvailable(prog))
+					self.toExamine = frozenset(prog for prog in System.installedPrograms() if System.updateAvailable(prog))
 				#
 				self.cacheDataID = hash(self.toExamine)
 				self.progString = 'all'
@@ -283,15 +281,15 @@ class System:
 		latest = None
 		recipes = global_available_packages_cache['recipe']['programs']
 		if program in recipes:
-			lver = GuessLatest(recipes[program].keys())
-			lrev = GuessLatest(recipes[program][lver].keys())
+			lver = GuessLatest(recipes[program])
+			lrev = GuessLatest(recipes[program][lver])
 			latest = Join_Version_Revision(lver, lrev)
 		packages = global_available_packages_cache['official_package']['programs']
 		if program in packages:
-			lver = GuessLatest(packages[program].keys())
-			lrev = GuessLatest(packages[program][lver].keys())
+			lver = GuessLatest(packages[program])
+			lrev = GuessLatest(packages[program][lver])
 			if not latest: latest = Join_Version_Revision(lver, lrev)
-			else: latest = GuessLatest([latest, Join_Version_Revision(lver, lrev)])
+			else: latest = GuessLatest((latest, Join_Version_Revision(lver, lrev)))
 		return latest
 	
 	@classmethod
@@ -300,7 +298,7 @@ class System:
 		latestAvailable = System.latestAvailable(program)
 		if not latestInstalled: return True
 		if not latestAvailable: return False
-		return (GuessLatest([latestInstalled, latestAvailable]) != latestInstalled)
+		return (GuessLatest((latestInstalled, latestAvailable)) != latestInstalled)
 		
 	@classmethod
 	def updates(self):
@@ -330,15 +328,15 @@ class System:
 			if self.skip(examinedProgram, None, None): continue
 			# Process actual results from here
 			orderedRules,orderedMatches = CheckDependencies(examinedProgram, acceptable_types=types, mode=mode, recursive=True)
-			for program,version,revision,type,url in [upd for upd in orderedMatches if upd[0] not in considered]:
+			for program,version,revision,type,url in (upd for upd in orderedMatches if upd[0] not in considered):
 				considered.add(program)
 				if type != 'installed' and type is not None:
 					ver = Join_Version_Revision(version, revision)
 					insVer = self.latestInstalled(program)
-					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
-						update = (program,version,revision,type,url,examinedProgram) # Add "introduced by" examinedProgram to tuple.
+					if not insVer or (insVer != ver and GuessLatest((ver, insVer)) == ver):
+						update = (program,version,revision,type,url,examinedProgram)
 						programList.append(update) # Keep a list for caching's sake
-						# Only yield when under the limit, but continue the loop for caching'update sake.
+						# Only yield when under the limit, but continue the loop for caching
 						if not self.skip(program,version,revision) and (not limit or yieldCount < limit):
 							yieldCount+=1
 							if limit and yieldCount>=limit: pb.clear()
