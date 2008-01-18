@@ -22,41 +22,39 @@ def getTypeAbbr(type):
 		'installed': 'I',
 		None: '?'
 	}[type]
-def puts(s):
-	sys.stdout.write(s+'\n')
+def puts(string):
+	sys.stdout.write(string+'\n')
 
 def showUpdates():
-	i=0
 	System.installedPrograms()
 	systemUpgrades = {'Scripts': None, 'Compile': None, 'Freshen': None}
 	typeCount = {'recipe': 0, 'official_package': 0, '_binary_recipe': 0 ,'total': 0}
-	for program,version,revision,ptype,url,intBy in System.updates():
-		if i == 0: # Only output heading the first time, if there are any.
+	for program,version,revision,type,url,intBy in System.updates():
+		if typeCount['total']==0: # Only output heading the first time, if there are any.
 			puts("[  ] Program%sInstalled"%(' '*(Screen.width-21)))
-		i+=1
-		typeCount[ptype] += 1
+		typeCount[type] += 1
 		typeCount['total'] += 1
 		ver = Join_Version_Revision(version, revision)
-		if program in systemUpgrades: systemUpgrades[program] = ptype
+		if program in systemUpgrades: systemUpgrades[program] = type
 		insVer = "None"
 		pcol = Screen.colours['darkgreybg']
 		insVer = str(System.latestInstalled(program))
 		if insVer != 'None':
 			pcol = ''
 		if pcol == '':
-			if i%2==0:
+			if typeCount['total']%2==0:
 				pcol=Screen.colours['blue']
 			else:
 				pcol=Screen.colours['cyan']
-		tabbr = getTypeAbbr(ptype)
+		typeAbbr = getTypeAbbr(type)
 		if version.endswith('_bin') or program.endswith('-Bin'):
-			tabbr = Screen.colours['red']+'B'+Screen.colours['normal']+tabbr
+			typeAbbr = Screen.colours['red']+'B'+Screen.colours['normal']+typeAbbr
 			typeCount['_binary_recipe'] += 1
-		else: tabbr = ' ' + tabbr
-		ibstring = insVer == 'None' and '(' + intBy + ')' or ''
-		ncol = Screen.colours['normal']
-		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(ibstring)-7)
-		out = "[%s] %s%s %s %s%s%s%s"%(tabbr, pcol, program, ver, ibstring, pad, insVer, ncol)
+		else: typeAbbr = ' ' + typeAbbr
+		introducedByString = insVer == 'None' and '(' + intBy + ')' or ''
+		normalColour = Screen.colours['normal']
+		pad = " " * (Screen.width-len(program)-len(ver)-len(insVer)-len(introducedByString)-7)
+		out = "[%s] %s%s %s %s%s%s%s"%(typeAbbr, pcol, program, ver, introducedByString, pad, insVer, normalColour)
 		puts(out)
 	puts("%(recipe)i recipes, %(_binary_recipe)i binary recipes, %(official_package)i packages, %(total)i total"%typeCount)
 	for prog in ('Scripts', 'Compile', 'Freshen'):
@@ -65,56 +63,56 @@ def showUpdates():
 			Log_Error("An upgrade to %s is available. It is strongly recommended that you upgrade immediately with `%s %s`."%(prog, cmd, prog), 'Freshen')
 
 # Parse the value of a shell variable out of a file (recipe), performing variable substitutions.
-def parse_var(s, definitions=None):
+def parse_var(string, variableDefinitions=None):
 	from string import Template
-	if not hasattr(shellparse, 'definitions'):
-		shellparse.definitions = {
+	if not hasattr(parse_var, 'definitions'):
+		parse_var.definitions = {
 			'goboPrograms': getGoboVariable('goboPrograms'),
 			'goboShared':   getGoboVariable('goboShared'),
 			'goboSettings': getGoboVariable('goboSettings'),
 			'goboLinks':    getGoboVariable('goboLinks'),
 		}
-	if not definitions:
-		definitions = {}
-	definitions.update(shellparse.definitions)
-	for k in definitions:
-		t = Template(definitions[k])
-		t.safe_substitute(definitions)
-	t = Template(s.split('=', 2)[1:-1])
-	return t.safe_substitute(definitions)
-	
+	if not variableDefinitions:
+		variableDefinitions = {}
+	variableDefinitions.update(parse_var.variableDefinitions)
+	for variable in variableDefinitions:
+		t = Template(variableDefinitions[variable])
+		variableDefinitions[variable] = t.safe_substitute(variableDefinitions)
+	t = Template(string.split('=', 2)[1])
+	return t.safe_substitute(variableDefinitions)
+
 # TODO: Handle failed installations
 def installUpdates():
 	i=0
 	postMessages = []
 	programs = set()
-	for program,version,revision,ptype,url,intBy in System.updates():
+	for program,version,revision,type,url,intBy in System.updates():
 		i+=1
 		programs.add(program)
 		ver = Join_Version_Revision(version, revision)
-		Log_Normal("Installing update %i/%i: %s %s..."%(i, len(ulist), program, ver), 'Freshen')
-		if ptype == 'recipe':
+		Log_Normal("Installing update %i: %s %s..."%(i, program, ver), 'Freshen')
+		if type == 'recipe':
 			os.system("Compile -G -U -D -b %s"%(url))
 			rec = os.popen('GetRecipe %s %s'%(program, ver)).readline().strip()+'/Recipe'
 			if os.path.exists(rec):
-				f = open(rec, 'r')
-				for x in f:
-					if x.startswith('post_install_message='):
-						postMessages.append((program, parse_var(x, {'target': '$goboPrograms/%s/%s' % (program,version)})))
+				file = open(rec, 'r')
+				for line in file:
+					if line.startswith('post_install_message='):
+						postMessages.append((program, parse_var(line, {'target': '$goboPrograms/%s/%s' % (program,version)})))
 						break
-				f.close()
-		elif ptype == 'official_package':
+				file.close()
+		elif type == 'official_package':
 			os.system("InstallPackage -k -U -s keep -b -D -u keep %s"%(url))
 		else:
-			Log_Error("Unknown action '%s'!"%(ptype))
+			Log_Error("Unknown action '%s'!"%(type))
 			exit()
-	for program,version,revision,ptype,url in ulist:
+	for program,version,revision,type,url,intBy in ulist:
 		if os.system("UpdateSettings -c" + program):
 			os.system("UpdateSettings -a "+program)
 	if postMessages:
 		Log_Normal("Some of the installed programs requested post-install messages be displayed:")
-		for p,v in postMessages:
-			puts("%s: %s"%(p, v))
+		for program,message in postMessages:
+			puts("%s: %s"%(program, message))
 	System.clearCache()
 
 def showHelp():
@@ -158,138 +156,140 @@ class FreshenArgParser:
 			return
 		self.fetched = True
 		self.skipSet = set()
-		self.eset = set()
+		self.toExamine = set()
 		self.mode = 'updating'
 		self.noCache = False
 		self.forceCache = False
 		self.action = showUpdates
 		self.limit = None
-		catching = self.eset
+		catching = self.toExamine
 		singleCatch = ''
-		for li in sys.argv[1:]:
-			if li=='-x' or li=='--exclude':
+		for arg in sys.argv[1:]:
+			if arg=='-x' or arg=='--exclude':
 				catching = self.skipSet
 			else:
-				reset = True # Reset catching to eset if we hit a non-list option
-				if li=='--thorough':
+				reset = True # Reset catching to toExamine if we hit a non-list option
+				if arg=='--thorough':
 					self.mode = 'all'
-				elif li=='--no-cache' or li=='-C':
+				elif arg=='--no-cache' or arg=='-C':
 					self.noCache = True
-				elif li=='--force-cache' or li=='-c':
+				elif arg=='--force-cache' or arg=='-c':
 					self.forceCache = True
-				elif li=='--limit' or li=='-l':
+				elif arg=='--limit' or arg=='-l':
 					singleCatch = 'limit'
-				elif li=='-U':
+				elif arg=='-U':
 					self.action = installUpdates
-				elif li=='--help':
+				elif arg=='--help':
 					self.action=showHelp
-				elif li=='--no-colour':
+				elif arg=='--no-colour':
 					for c in Screen.colours:
 						Screen.colours[c] = ''
-				elif li=='--':
-					catching = eset
+				elif arg=='--':
+					catching = toExamine
 				elif singleCatch:
-					self.__dict__[singleCatch] = li
+					self.__dict__[singleCatch] = arg
 					singleCatch = ''
-				elif li[0:2]=='--':
-					Log_Error("Invalid argument "+li, 'Freshen')
+				elif arg[0:2]=='--':
+					Log_Error("Invalid argument "+arg, 'Freshen')
 					exit()
 				else:
-					catching.add(li)
+					catching.add(arg)
 					reset = False
-				if reset: catching = self.eset
-		self.progString = ', '.join(self.eset)
-		self.eset = frozenset(self.eset)
+				if reset: catching = self.toExamine
+		self.progString = ', '.join(self.toExamine)
+		self.toExamine = frozenset(self.toExamine)
 		self.skipSet = frozenset(self.skipSet)
-		self.cacheDataID = hash(self.eset)
+		self.cacheDataID = hash(self.toExamine)
 	def __getattr__(self, name):
 		self.fetch()
 		if 'examineSet' == name:
-			if self.eset:
-				return self.eset
+			if self.toExamine:
+				return self.toExamine
 			else:
-				self.eset = frozenset(set(System.installedPrograms().keys()))
-				self.cacheDataID = hash(self.eset)
+				self.toExamine = frozenset(set(System.installedPrograms().keys()))
+				self.cacheDataID = hash(self.toExamine)
 				self.progString = 'all'
-				return self.eset
+				return self.toExamine
 		return self.__dict__[name]
 
 class System:
 	args = FreshenArgParser()
-	ipcache = {}
-	vcache = {}
+	installedProgramsCache = {}
+	currentVersionCache = {}
 	@classmethod
 	def installedPrograms(self):
-		if self.ipcache:
-			return self.ipcache
+		if self.installedProgramsCache:
+			return self.installedProgramsCache
 		else:
 			global global_available_packages_cache
 			if not global_available_packages_cache: self.fetchAvailables()
 			installed = global_available_packages_cache['installed']['programs']
-			self.ipcache = KeyInsensitiveDict((prog, [v+'-'+r for v in installed[prog] for r in installed[prog][v]]) for prog in installed)
-			return self.ipcache
+			# Generator: tuple (program, versionlist)
+			# List comprehension: string "version-revision" installed versions of program
+			self.installedProgramsCache = KeyInsensitiveDict((prog, [v+'-'+r for v in installed[prog] for r in installed[prog][v]]) for prog in installed)
+			return self.installedProgramsCache
 			
 	@classmethod
-	def latestInstalled(self, p):
-		if not self.vcache:
-			self.vcache = KeyInsensitiveDict()
-		if p in self.vcache:
-			return self.vcache[p]
+	def latestInstalled(self, program):
+		if not self.currentVersionCache:
+			self.currentVersionCache = KeyInsensitiveDict()
+		if program in self.currentVersionCache:
+			return self.currentVersionCache[program]
 		else:
-			if not self.ipcache: self.installedPrograms()
-			if p in self.ipcache:
-				self.vcache[p] = GuessLatest(self.ipcache[p])
+			if not self.installedProgramsCache: self.installedPrograms()
+			if program in self.installedProgramsCache:
+				self.currentVersionCache[program] = GuessLatest(self.installedProgramsCache[program])
 			else:
-				self.vcache[p] = None
-			return self.vcache[p]
+				self.currentVersionCache[program] = None
+			return self.currentVersionCache[program]
 	
 	@classmethod
 	def updates(self):
 		types = ['official_package', 'recipe']
-		eset,mode,skipSet = System.args.examineSet,System.args.mode,System.args.skipSet
-		i = yc = 0
+		toExamine,mode,skipSet = System.args.examineSet,System.args.mode,System.args.skipSet
+		yieldCount = 0
 		if System.args.limit: limit = int(System.args.limit)
 		else: limit = None
 		# Load from cache, and yield any programs in there up to the limit
-		plist,considered = self.loadCache()
-		pb = ProgressBar(len(eset), limit)
-		for s in plist:
-			if yc == limit: return # Satisfied request from cache, so terminate.
-			if not self.skip(s[0], s[1], s[2]):
-				yc+=1
+		programList,considered = self.loadCache()
+		pb = ProgressBar(len(toExamine), limit)
+		for program,version,revision,type,url,intBy in programList:
+			if yieldCount == limit: return # Satisfied request from cache, so terminate.
+			if not self.skip(program, version, revision):
+				yieldCount+=1
 				pb.inc2()
 				yield s
-		for p in eset:
-			i+=1
-			pb.inc()
-			if p in considered: continue
+		for examinedProgram in toExamine:
+			pb.inc() # Increment examined program bar
+			if examinedProgram in considered: continue
 			if limit and pb.value2 >= limit:
-				self.saveCache(plist, considered)
+				self.saveCache(programList, considered)
 				raise StopIteration
-			if self.skip(p, None, None): continue
+			if self.skip(examinedProgram, None, None): continue
 			# Process actual results from here
-			deps,sols = CheckDependencies(p, acceptable_types=types, mode=mode, recursive=True)
-			for s in [s for s in sols if s[0] not in considered]:
-				considered.add(s[0])
-				if s[3] != 'installed' and s[3] is not None:
-					ver = Join_Version_Revision(s[1], s[2])
-					insVer = self.latestInstalled(s[0])
+			orderedRules,orderedMatches = CheckDependencies(examinedProgram, acceptable_types=types, mode=mode, recursive=True)
+			for program,version,revision,type,url in [upd for upd in orderedMatches if upd[0] not in considered]:
+				considered.add(program)
+				if type != 'installed' and type is not None:
+					ver = Join_Version_Revision(version, revision)
+					insVer = self.latestInstalled(program)
 					if not insVer or (insVer != ver and GuessLatest([ver, insVer]) == ver):
-						s+=(p,)
-						plist.append(s)
-						# Only yield when under the limit, but continue the loop for caching's sake.
-						if not self.skip(s[0],s[1],s[2]) and (not limit or yc < limit):
-							yc+=1
-							if limit and yc>=limit: pb.clear()
-							yield s
-							pb.inc2()
-		self.saveCache(plist, considered)
+						update = (program,version,revision,type,url,examinedProgram) # Add "introduced by" examinedProgram to tuple.
+						programList.append(update) # Keep a list for caching's sake
+						# Only yield when under the limit, but continue the loop for caching'update sake.
+						if not self.skip(program,version,revision) and (not limit or yieldCount < limit):
+							yieldCount+=1
+							if limit and yieldCount>=limit: pb.clear()
+							yield update
+							pb.inc2() # Increment yielded update bar
+		self.saveCache(programList, considered)
 		pb.clear()
 	
 	@classmethod
-	def skip(self, p,v,r):
-		if p in self.args.skipSet: return True
-		spl = p.split('-')
+	def skip(self, program,version,revision):
+		if program in self.args.skipSet: return True
+		# Skip e.g. KDE-* with -x KDE
+		spl = program.split('-')
 		if len(spl)>1 and spl[0] in self.args.skipSet: return True
 		return False
 	
@@ -301,15 +301,16 @@ class System:
 		return "%s/%s-%u"%(cacheDir, System.args.mode, System.args.cacheDataID)
 		
 	@classmethod
-	def saveCache(self, plist, considered):
+	def saveCache(self, programList, considered):
 		f = open(self.cacheFile(), 'w')
-		cPickle.dump(plist, f, protocol = cPickle.HIGHEST_PROTOCOL)
+		cPickle.dump(programList, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		cPickle.dump(considered, f, protocol = cPickle.HIGHEST_PROTOCOL)
 		f.close()
 		directory = os.environ.get('HOME') + '/.Settings/freshen_cache/'
-		for f in os.listdir(directory):
-			if time.time()-os.path.getmtime(directory+'/'+f)>1800:
-				os.unlink(directory+'/'+f)
+		# Delete expired cache files
+		for fn in os.listdir(directory):
+			if time.time()-os.path.getmtime(directory+'/'+fn)>1800:
+				os.unlink(directory+'/'+fn)
 		
 	@classmethod
 	def loadCache(self):
@@ -351,5 +352,5 @@ try:
 	System.args.action()
 except KeyboardInterrupt:
 	pass
-finally:
+finally: # Clear title on exit
 	sys.stderr.write("\033]2;\007");
