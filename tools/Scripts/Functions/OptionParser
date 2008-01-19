@@ -325,7 +325,7 @@ function Parse_Options() {
                      else
                         # else use next argument as value for the option
                         i=$[i+1]
-                        eval val=\$$i
+                        eval val=\${$i}
                         export parsedArguments=$[parsedArguments+1]
                      fi
                      optionsStateList[j]="$val"
