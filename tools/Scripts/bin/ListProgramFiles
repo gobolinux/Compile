@@ -29,7 +29,7 @@ else
    program=`GuessProgramCase "${program}"`
    if [ -z "${version}" ]
    then
-      version=$(readlink -f "$goboPrograms/$program/Current")
+      version=$(readlink -e "$goboPrograms/$program/Current")
       [ ! "$version" ] && Die "Current not found and no version specified."
       version=$(basename $version)
    fi
