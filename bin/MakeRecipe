@@ -148,7 +148,7 @@ fi
 
 recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
 
-$sudo mkdir -p $recipedir
+$sudo mkdir -p $recipedir/Resources
 [ "$sudo" ] && $sudo chown $USER $recipedir
 
 recipefile="$recipedir/Recipe"
