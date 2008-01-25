@@ -183,7 +183,7 @@ function do_symlink() {
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
       symlinkopts=$(merge_array "symlink_options")
       SymlinkProgram $safeopts $unmanaged_opts $symlinkopts "$1" "$2" || Die "Linking step failed."
-      ! Boolean "no-postinstall" && Run_PostInstall "$1" "$2" "" ""
+      Boolean "no-postinstall" || Run_PostInstall "$1" "$2" "" ""
    fi
 }
 
