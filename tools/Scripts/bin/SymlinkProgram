@@ -374,7 +374,7 @@ fi
 if ! Boolean "no-requirements" && [ -f $current/Resources/Requirements ]
 then
    Log_Normal "Asserting that requirements are met..."
-   Process_Requirements_File "$package" "$version" "$current/Resources/Requirements"
+   Process_Requirements_File "$goboPrograms/$package/$version"
 fi
 
 ################################################################################

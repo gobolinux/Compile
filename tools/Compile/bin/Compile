@@ -223,7 +223,7 @@ function install_extras() {
 
 function assert_requirements() {
    Log_Normal "Asserting that requirements are met..."
-   Process_Requirements_File "$appname" "$versionnumber" "$recipedir/Resources/Requirements"
+   Process_Requirements_File "$recipedir"
 }
 
 function wrapup() {

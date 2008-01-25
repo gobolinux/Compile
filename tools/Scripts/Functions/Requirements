@@ -3,9 +3,11 @@
 # Functions to handle Resources/Requirements
 
 function Process_Requirements_File() {
-   local package="$1"
-   local version="$2"
-   local reqfile="$3"
+   local reqfile="$1/Resources/Requirements"
+   local nover="${1%/*}"
+   local nopkg="${1%/*/*}"
+   local package=`echo "$1" | sed "s,$nopkg/\(.*\)/.*,\1,g"`
+   local version=`echo "$1" | sed "s,$nover/\(.*\),\1,g"`
 
    # We only allow hardcoded uid/gid's in the range [1..99]. These are reserved for
    # GoboLinux usage, as in scripts or daemons. All other uid/gid's should be generated
