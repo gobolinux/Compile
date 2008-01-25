@@ -15,6 +15,7 @@ Import Array
 Import Directories
 Import PostInstall
 Import Versions
+Import Requirements
 
 ##################################################
 # Options and configuration
@@ -124,7 +125,6 @@ function do_symlink() {
       do
          unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
       done
-
       if [ "$goboIndex" ]
       then sandboxopts=()
       else sandboxopts=$(merge_array "sandbox_options")
@@ -132,13 +132,14 @@ function do_symlink() {
       subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
       [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+
+      assert_requirements
       SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
    fi
 
    if ! [ "$noextras" = "yes" ]
    then
       install_extras
-
       if [ "${unmanaged_files[*]}" ] 
       then
          $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
@@ -218,6 +219,11 @@ function install_extras() {
          Quiet popd
       }
    done
+}
+
+function assert_requirements() {
+   Log_Normal "Asserting that requirements are met..."
+   Process_Requirements_File "$appname" "$versionnumber" "$recipedir/Resources/Requirements"
 }
 
 function wrapup() {
@@ -1111,6 +1117,7 @@ then
       else sandboxopts=$(merge_array "sandbox_options")
       fi
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+      assert_requirements
       SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
@@ -1155,6 +1162,7 @@ then
       is_function_set pre_install && pre_install
       if ! [ "$do_install" = "no" ]
       then
+         assert_requirements
          ./Build --install_base $target $install_target || wrap_fail "Installation failed."
       fi
       if [ -d $target/script ]
@@ -1255,6 +1263,7 @@ then
    is_function_set pre_install && pre_install
    if [ ! "$do_install" = "no" ]
    then
+      assert_requirements
       $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber"
