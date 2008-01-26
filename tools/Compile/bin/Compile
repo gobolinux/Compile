@@ -1251,6 +1251,7 @@ then
       scons_variables=(
          "${scons_variables[@]}"
          "PREFIX=$target"
+         "prefix=$target"
       )
    fi
    if [ ! -z "$goboIndex" ]
@@ -1264,7 +1265,7 @@ then
    if [ ! "$do_install" = "no" ]
    then
       assert_requirements
-      $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
+      $sudo_exec $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber"
    check_direct_dependencies
