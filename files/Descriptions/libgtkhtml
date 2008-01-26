@@ -1,5 +1,0 @@
-[Name] GtkHTML Library
-[Summary] An HTML rendering/editing library.
-[License] GNU General Public License (GPL)
-[Description] GtkHTML is a HTML rendering/editing library. It is not designed to be the ultimate HTML browser/editor; instead, it is designed to be easily embedded into applications that require lightweight HTML functionality.
-[Homepage] 

@@ -1,8 +1,0 @@
-[Name] Berkeley Yacc
-[Summary] A high-quality yacc variant.
-[License] Public Domain
-[Description] Berkeley Yacc (byacc) is a high-quality yacc variant. In contrast to
-Bison, it is written to avoid dependencies upon a particular
-compiler. It was written around 1990 by Robert Corbett, the original
-author of Bison. This version has been modified to conform to ANSI C.
-[Homepage] http://invisible-island.net/byacc/

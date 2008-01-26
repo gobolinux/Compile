@@ -1,5 +1,0 @@
-[Name] Spread
-[Summary] Group Communications Toolkit for Reliable Multicast
-[License] BSD License (original)
-[Description] The Spread Toolkit provides tools for developing reliable and robust distributed applications ranging from collaboration tools to fault-tolerant database servers to replicated Web servers. It consists of a daemon which provides multicast messaging, reliability, ordering, and membership services, and a library which applications link with. Spread provides a simple API for writing group applications and is designed to provide high performance for local and wide area networking applications.
-[Homepage] http://www.spread.org/

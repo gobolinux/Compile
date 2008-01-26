@@ -1,5 +1,0 @@
-#!/bin/sh
-
-/System/Settings/BootScripts/Shutdown
-
-echo "Rebooting system";                      reboot 

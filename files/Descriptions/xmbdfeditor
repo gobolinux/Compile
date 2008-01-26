@@ -1,2 +1,0 @@
-[Description] XmBDFEditor is a Motif-based BDF font editor. It features the ability to load multiple fonts and glyphs, cutting and pasting of glyphs between fonts, export of XBM files from glyph bitmap editors, automatic correction of certain metrics when a font is loaded, generation of XLFD font names for fonts without XLFD names, and much more.
-[Homepage] http://crl.nmsu.edu/~mleisher/xmbdfed.html

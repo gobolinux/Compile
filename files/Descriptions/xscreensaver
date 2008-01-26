@@ -1,5 +1,0 @@
-[Name] XScreenSaver
-[Summary] Modular screen saver and locker for the X Window System
-[License] BSD License (original)
-[Description] XScreenSaver is a modular screen saver and locker for the X Window System. It is highly customizable and allows the use of any program that can draw on the root window as a display mode. More than 180 display modes are included in this package.
-[Homepage] http://www.jwz.org/xscreensaver/
