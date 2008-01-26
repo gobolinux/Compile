@@ -180,7 +180,8 @@ then
    fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
 else
    echo "url=\"$url\"" >> "$recipefile"
-   file="$compileArchivesDir/$(basename "$source_url")"
+   basefile=$(basename "$source_url")
+   file="$compileArchivesDir/$basefile"
    fetchparams="--save-to $compileArchivesDir"
    if { ! Boolean "no-fetch" ;} && Starts_With "http" "$source_url"
    then
