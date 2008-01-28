@@ -67,7 +67,7 @@ static char* os_listdir(os_dir* dir) {
       dir->dir = opendir(dir->name);
       if (!dir->dir) return NULL;
    }
-   struct dirent* dp;
+  struct dirent* dp;
    while ((dp = readdir(dir->dir))) {
       char* entry = dp->d_name;
       if (entry[0] == '.' && (entry[1] == '\0' || entry[1] == '.'))
@@ -119,6 +119,15 @@ inline static void string_set(char* buffer, int len, ...) {
    }
    *at = '\0';
    strncpy(buffer, tmpbuffer, len);
+}
+
+inline static bool report_conflict(char *name) {
+   if (strstr(name, "/CVS/Root") || 
+       strstr(name, "/CVS/Repository") || 
+       strstr(name, "/CVS/Entries")) {
+       return false;
+   }
+   return true;
 }
 
 typedef enum {
@@ -370,13 +379,15 @@ static void Link_Or_Expand(char* new) {
    
    // 6: conflict for a same name
    if (!(realoldIsDir || realnewIsDir)) {
-      Log_Error("Conflict: %s", realold);
+	  if (report_conflict(realold))
+         Log_Error("Conflict: %s", realold);
       if (overwrite) {
          char dotbn[PATH_MAX+1];
          snprintf(dotbn, PATH_MAX, "./%s", bn);
          unlink(dotbn);
          create_single_link(realnew, bn);
-         Log_Normal("Replaced with: %s", realnew);
+         if (report_conflict(realold))
+            Log_Normal("Replaced with: %s", realnew);
       }
       goto leave;
    }
