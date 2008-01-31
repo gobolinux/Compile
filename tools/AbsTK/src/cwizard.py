@@ -805,7 +805,7 @@ class AbsCursesScreen(AbsScreen) :
       if self.focus > -1 :
          focused = self.focusWidgets[self.focus]
       else :
-         focused = 0
+         focused = None
       vscroll = self.vscroll
       for widget in self.widgets :
          if widget == focused :
@@ -842,7 +842,8 @@ class AbsCursesScreen(AbsScreen) :
          self.pad.addstr(vscroll + padheight - 1 , x, "v", drawBarDown)
 
       self.pad.refresh(vscroll, 0, 1, 1, padheight, maxX-2)
-      stdscr.addstr(maxY - 1, 0, focused.getTooltip().ljust(maxX)[:maxX-1], widgetColor)
+      if focused :
+         stdscr.addstr(maxY - 1, 0, focused.getTooltip().ljust(maxX)[:maxX-1], widgetColor)
 
    def processKey(self, key) :
       if self.focus == -1 :
