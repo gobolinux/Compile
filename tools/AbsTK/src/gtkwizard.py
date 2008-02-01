@@ -34,12 +34,11 @@ class AbsGtkWizard(AbsWizard) :
       next = gtk.Button("Next")
       next.connect("clicked", self.do_next)
       
-      #TODO: align buttons to the right
-      bottom_buttons.pack_end(cancel)
-      bottom_buttons.pack_end(next)
-      bottom_buttons.pack_end(prev)
+      bottom_buttons.pack_end(cancel, False, False)
+      bottom_buttons.pack_end(next, False, False)
+      bottom_buttons.pack_end(prev, False, False)
       bottom_buttons.show_all()
-      self.vbox.add(bottom_buttons)
+      self.vbox.pack_end(bottom_buttons, False, False)
       return gtk.main()
 
    def addScreen(self, screen, pos = 0) :
