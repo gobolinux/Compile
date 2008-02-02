@@ -914,12 +914,15 @@ try :
 	##############################################################################
 	##############################################################################
  	# Create lilo.conf...
+	rootPartition = installer.getValue('RootPartition')[1].split()[0]
+	bootloaderTarget = installer.getValue('BootloaderTarget')[1].split()[0]
+
 	installLilo = 'LILO' in map(lambda x: x.split()[0], installer.getValue('Packages')[1])
 	try :
 		if installLilo :
 			log(tr('Generating LILO "lilo.conf" file...'))
 			import GenLiloConf
-			lilo_conf = GenLiloConf.generateLiloConfFile(installer.getValue('RootPartition')[1].split()[0])
+			lilo_conf = GenLiloConf.generateLiloConfFile(bootloaderTarget, rootPartition)
 			os.mkdir(destMountPoint+'/Programs/LILO/Settings')
 			safeWriteToFile(destMountPoint+'/Programs/LILO/Settings/lilo.conf', lilo_conf, logger)
 	except :
@@ -934,9 +937,6 @@ try :
 	import GenGrubMenu
 	selectedWithSize = installer.getValue('Packages')[1]
 	selected = map(lambda x: x.split()[0], selectedWithSize)
-
-	rootPartition = installer.getValue('RootPartition')[1].split()[0]
-	bootloaderTarget = installer.getValue('BootloaderTarget')[1].split()[0]
 
 	menu_lst = GenGrubMenu.generateGrubMenuFile(bootloaderTarget, rootPartition, installer.getValue('KeymapLayout')[1], 'KDE-Base' in selected)
 	safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', menu_lst, logger)
