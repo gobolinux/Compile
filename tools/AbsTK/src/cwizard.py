@@ -45,7 +45,6 @@ class AbsCursesWizard(AbsWizard) :
       stdscr.clear()
       stdscr.subwin(maxY-1,maxX,0,0).box()
       stdscr.addstr(maxY-3, 1, " Up/Dn: Move  Enter: Focus ", defaultColor)
-      stdscr.addstr(maxY-3, maxX-35, " <- Back ", buttonColor)
       stdscr.addstr(maxY-3, maxX-25, " -> Next ", buttonColor)
       stdscr.addstr(maxY-3, maxX-15, " Esc: Cancel ", buttonColor)
       self.screens[self.currentScreen].draw()
