@@ -4,7 +4,7 @@ def tr(s) :
 	return s
 
 
-def generateLiloConfFile(targetPartition) :
+def generateLiloConfFile(bootloaderTarget, targetPartition) :
 	import os
 	cmd = 'fdisk -l'
 	lines = os.popen(cmd).readlines()
@@ -18,28 +18,30 @@ def generateLiloConfFile(targetPartition) :
 			bootableWindowsPartitions.append(devToGrub(l[0]))
 
 
-	o = """
-boot=/dev/hda
-lba32
-prompt
-timeout=50
-menu-title=" GoboLinux 013
-		"""
+	o  = 'boot=/dev/'+bootloaderTarget+'\n'
+	o += 'lba32\n'
+	o += 'prompt\n'
+	o += 'timeout=50\n'
+	o += 'menu-title="GoboLinux 014"\n'
 	o += '\n'
-	o += 'image=/System/Kernel/Boot/kernel'+'\n'
-	o += '  label=GoboLinux' + '\n'
+	o += 'image=/System/Kernel/Boot/kernel\n'
+	o += '  label=GoboLinux-Gfx\n'
 	o += '  root=/dev/'+targetPartition+'\n'
-	o += '  video=vesafb:off\n'
-	
+	o += '  append="Boot=Graphic"\n'
 	o += '\n'
-	o += '  image=/System/Kernel/Boot/kernel'+'\n'
-	o += '  label=GoboLinux - Framebuffer' + '\n'
+	o += 'image=/System/Kernel/Boot/kernel\n'
+	o += '  label=GoboLinux-Fb\n'
 	o += '  root=/dev/'+targetPartition+'\n'
+	o += '\n'
+	o += 'image=/System/Kernel/Boot/kernel\n'
+	o += '  label=GoboLinux\n'
+	o += '  root=/dev/'+targetPartition+'\n'
+	o += '  vga=0\n'
 	
 	for partition in bootableWindowsPartitions:
 		o += '\n'
 		o += 'other=/dev/' + partition + '\n'
-		o += '  label= Other OS at %s'%partition + '\n'
+		o += '  label= Other OS at %s' %partition + '\n'
 
 	return o
 	#safeWriteToFile(destMountPoint+'/System/Kernel/Boot/grub/menu.lst', o, logger)
@@ -47,5 +49,9 @@ menu-title=" GoboLinux 013
 
 if __name__ == '__main__' :
 	import sys
-	
-	print generateLiloConfFile(sys.argv[1])
+
+	if len(sys.argv) != 3 :
+		print 'Syntax: %s <bootloaderTarget> <targetPartition>' %sys.argv[0]
+		sys.exit(1)
+
+	print generateLiloConfFile(sys.argv[1], sys.argv[2])
