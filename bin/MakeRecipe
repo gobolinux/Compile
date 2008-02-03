@@ -231,10 +231,8 @@ then
    fi
 elif [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" ]
 then
-   Quiet pushd "$compileSourcesDir"
    file_contents=`Temporary_File`
-   find "$checkoutdir" >> "$file_contents"
-   Quiet popd
+   find "$checkoutdir" | sed "s,^$compileSourcesDir/,,g" >> "$file_contents"
 fi
 
 if grep -q "CMakeLists.txt" "$file_contents"
@@ -288,7 +286,10 @@ else
    then
       Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
       echo "recipe_type=makefile" >> "$recipefile"
-      aunpack "$file" "$basemakefile"
+      if [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" ]
+      then basemakefile="$compileSourcesDir/$basemakefile"
+      else aunpack "$file" "$basemakefile"
+      fi
       if [ "$basemakefile" != "Makefile" ]
       then echo "makefile='$(basename $basemakefile)'" >> "$recipefile"
       fi
@@ -327,8 +328,11 @@ else
             $PAGER "$basemakefile"
          fi
       fi
-      rm "$basemakefile"
-      rmdir -p $(dirname "$basemakefile")
+      if [ "$cvs" = "no" -a "$svn" = "no" -a "$git" = "no" ]
+      then
+         rm "$basemakefile"
+         rmdir -p $(dirname "$basemakefile")
+      fi
    else
       Log_Terse "Could not detect recipe type. Recipe needs to be completed manually."
    fi
