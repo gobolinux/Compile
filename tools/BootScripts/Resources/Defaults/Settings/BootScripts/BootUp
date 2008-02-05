@@ -13,7 +13,7 @@ Exec "Checking remaining file systems..."     fsck -p -C -T -A -R
 Exec "Hiding legacy tree..."                  GoboHide Start
 Exec "Setting clock..."                       SetClock Start
 Exec "Creating new mtab..."                   mount -o remount,rw /
-Exec "Mounting remaining file systems..."     mount -a -t nonfs,nosmbfs,noproc,noswap,nodevpts,nosysfs
+Exec "Mounting local file systems..."         mount -a -t nonfs,nosmbfs,nocifs,noproc,noswap,nodevpts,nosysfs
 Exec "Activating all swap files/partitions..." swapon -a
 Exec "Linking kernel modules directory..."    ln -nfs "$goboModules"/`uname -r` "$goboLibraries"/modules/`uname -r`
 Exec "Setting hostname to $HostName..."       hostname "$HostName"
@@ -26,6 +26,7 @@ Exec "Removing one-time boot settings..."     rm -f $goboSettings/nologin /fastb
 
 #Exec "Starting PCMCIA daemon..."             PCMCIA Start
 Exec "Initializing network..."                Network Start
+Exec "Mounting network file systems..."       mount -a -t nfs,smbfs,cifs
 #Exec "Loading sound settings..."              Alsactl Start
 Exec "Starting message bus..."                MessageBus Start
 Exec "Starting hardware abstraction layer..." HAL Start
