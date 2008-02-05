@@ -404,7 +404,7 @@ scriptsversion=`Get_Version Scripts Current`
 
 if echo "$scriptsversion" | grep -q CVS || \
    echo "$scriptsversion" | grep -q GIT || \
-   [ "`GuessLatest $scriptsversion 2.7.0`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.8.3`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
