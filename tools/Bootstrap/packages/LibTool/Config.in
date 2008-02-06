@@ -1,3 +1,0 @@
-config PKG_LIBTOOL
-    bool "LibTool"
-    default y

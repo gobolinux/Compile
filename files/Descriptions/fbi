@@ -1,5 +1,0 @@
-[Name] fbi
-[Summary] Image viewer for fbdev
-[License] GNU General Public License (GPL)
-[Description] fbi is an image viewer which displays images on Linux framebuffer devices. It can read PhotoCDs, jpeg, and ppm directly. For other formats it tries to use some external converter like convert from the ImageMagick package.
-[Homepage] http://bytesex.org/fbi.html

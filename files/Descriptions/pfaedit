@@ -1,6 +1,0 @@
-[Name]  PfaEdit
-[Summary]  A PostScript Font Editor
-[Description]  PfaEdit allows editing of outline and bitmap fonts. With it you can create new fonts or modify old ones. It also converts font formats and can convert among PostScript (ASCII & binary Type 1, some Type 3s, and some Type 0s), TrueType, OpenType (Type2) and, CID-keyed fonts.
-[Suse Category]  Productivity/Graphics/Vector
-[License]  BSD
-[Homepage]  http://pfaedit.sourceforge.net/

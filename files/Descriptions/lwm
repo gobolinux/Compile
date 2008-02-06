@@ -1,9 +1,0 @@
-[Name] lwm
-[Summary] A window manager for X.
-[License] GNU General Public License (GPL)
-[Description] lwm (Lightweight Window Manager) is a window 
-manager for X that tries to keep out of your face.
-There are no icons, no button bars, no icon docks,
- no root menus, no nothing. If you want all that,
-other programs can provide it.
-[Homepage] http://www.jfc.org.uk/software/lwm.html

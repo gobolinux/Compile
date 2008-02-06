@@ -1,6 +1,0 @@
-[Name]  setserial
-[Summary]  A utility for configuring serial ports
-[Description]  Setserial is a basic system utility for displaying or setting serial port information. Setserial can reveal and allow you to alter the I/O port and IRQ that a particular serial device is using.
-[Suse Category]  Hardware/Other
-[License]  GPL
-[Homepage]  http://setserial.sourceforge.net

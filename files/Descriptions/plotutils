@@ -1,6 +1,0 @@
-[Name]  plotutils
-[Summary]  The GNU Plotting Utilities
-[Description]  The GNU plotting utilities consist of seven command-line programs: the graphics programs `graph', `plot', `tek2plot', and `plotfont', and the mathematical programs `spline', `ode', and `double'. Distributed with these programs is GNU `libplot', the library on which the graphics programs are based. `libplot' is a function library for device-independent two-dimensional vector graphics, including vector graphics animations under the X Window System.
-[Suse Category]  Productivity/Graphics/Visualization/Graph
-[License]  GPL
-[Homepage]  

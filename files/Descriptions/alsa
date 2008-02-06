@@ -1,6 +1,0 @@
-[Name]  alsa
-[Summary]  Advanced Linux Sound Architecture
-[Description]  ALSA stands for "Advanced Linux Sound Architecture". It supports many PCI and ISA PnP sound cards. This package contains the standard ALSA library, utilities and init scripts to start up the sound system on your Linux box. For set up, run yast2 or alsaconf. They will detect ALSA-supported PCI and ISA PnP cards.
-[Suse Category]  System/Libraries
-[License]  GPL
-[Homepage]  http://www.alsa-project.org/

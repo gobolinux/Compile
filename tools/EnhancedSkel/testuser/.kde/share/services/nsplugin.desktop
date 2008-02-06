@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Netscape plugin viewer
-Type=Service
-Icon=netscape
-Comment=Netscape plugin viewer
-X-KDE-Library=libnsplugin
-InitialPreference=0
-ServiceTypes=KParts/ReadOnlyPart,Browser/View
-X-KDE-BrowserView-PluginsInfo=nsplugins/pluginsinfo

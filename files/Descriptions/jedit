@@ -1,5 +1,0 @@
-[Name] jEdit
-[Summary] A powerful text editor.
-[License] GNU General Public License (GPL)
-[Description] jEdit is an Open Source text editor written in Java. It has many useful features, such as syntax highlighting, bracket matching, regular expression searching, multiple file search and replace, folding, and keyboard macros. jEdit also includes a powerful plugin architecture that allows more than 80 plugins to be downloaded and installed from within the editor.
-[Homepage] http://www.jedit.org/
