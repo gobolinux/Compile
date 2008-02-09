@@ -1007,10 +1007,14 @@ fi
 ##################################################
 # Compile!
 ##################################################
-
+useflags=(`UseFlags $appname`)
 if [ "$recipe_type" = "configure" ]
 then
    eval `combine_arrays config configure_options userconfigureoptions`
+   for flag in "${useflags[@]}"
+   do
+      config=("${config[@]}" "`eval echo '$'with_$flag`")
+   done
    [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
@@ -1081,6 +1085,11 @@ build_python_options() {
       esac
    fi
    eval `combine_arrays opts python_options default_python_options`
+   for flag in "${useflags[@]}"
+   do
+      opts=("${opts[@]}" "`eval echo '$'with_$flag`")
+   done
+
    if [ ! -z "$goboIndex" ]
    then opts=(`echo ${opts[@]} | sed "s,$target,$goboIndex,g"`)
    fi
@@ -1208,6 +1217,7 @@ then
       "IRULESRC=$goboLibraries/X11/config"
       "${installmerged[@]}"
    )
+
    if [ ! -z "$goboIndex" ]
    then
       buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
@@ -1223,6 +1233,10 @@ fi
 if [ "$recipe_type" = "makefile" ]
 then
    build_tree_if "$create_dirs_first" = "yes"
+   for flag in "${useflags[@]}"
+   do
+      buildmerged=("${buildmerged[@]}" "`eval echo '$'with_$flag`")
+   done
    if ! [ "$do_build" = "no" ]
    then
       is_function_set pre_build && pre_build
@@ -1254,6 +1268,11 @@ then
          "prefix=$target"
       )
    fi
+   for flag in "${useflags[@]}"
+   do
+      scons_variables=("${scons_variables[@]}" "`eval echo '$'with_$flag`")
+   done
+
    if [ ! -z "$goboIndex" ]
    then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
    fi
@@ -1279,6 +1298,10 @@ if [ "$recipe_type" = "cmake" ]
 then
    Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
    eval `combine_arrays config cmake_options usercmakeoptions`
+   for flag in "${useflags[@]}"
+   do
+      config=("${config[@]}" "`eval echo '$'with_$flag`")
+   done
    # cmake always use its own build directory
    needs_build_directory="yes"
    builddir="${dir}/_build"
