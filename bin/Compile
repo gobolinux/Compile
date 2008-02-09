@@ -1008,6 +1008,10 @@ fi
 # Compile!
 ##################################################
 useflags=(`UseFlags $appname`)
+for flag in "${useflags[@]}"
+do
+	is_function_set "using_$flag" && eval using_$flag
+done
 if [ "$recipe_type" = "configure" ]
 then
    eval `combine_arrays config configure_options userconfigureoptions`
