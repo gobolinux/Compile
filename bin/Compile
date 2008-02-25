@@ -465,8 +465,8 @@ then
    crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross/Cross-$arch_conf.conf
    [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
 
-   source ${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf
-   source ${crossConfFile}
+   source "${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf"
+   source "${crossConfFile}"
    source GoboPath
    Parse_Conf Directories.conf
 
@@ -561,9 +561,9 @@ then
       fi
       dep_settings_path=`Get_Dir runtimeSettings $dep_name $dep_vers`
       dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
-      eval $lowercase_name'_path='$dep_path
-      eval $lowercase_name'_settings_path='$dep_settings_path
-      eval $lowercase_name'_variable_path='$dep_settings_path
+      eval $lowercase_name'_path="'"$dep_path"'"'
+      eval $lowercase_name'_settings_path="'"$dep_settings_path"'"'
+      eval $lowercase_name'_variable_path="'"$dep_settings_path"'"'
       mark_export ${lowercase_name}_path ${lowercase_name}_settings_path ${lowercase_name}_variable_path
    done
 fi
@@ -821,22 +821,22 @@ if [ "$cvs" ]
 then
    # If sources were already fetched, do not patch again
    [ -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" $archrecipe || Die "Error fetching CVS snapshot."
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching CVS snapshot."
    Boolean "no-build" && exit 0
 elif [ "$svn" ]
 then
    [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" $archrecipe || Die "Error fetching SVN snapshot."
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching SVN snapshot."
    Boolean "no-build" && exit 0
 elif [ "$git" ]
 then
    [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" $archrecipe || Die "Error fetching GIT snapshot."
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching GIT snapshot."
    Boolean "no-build" && exit 0
 else
    if ! Boolean "no-web"
    then
-      in_host FetchArchive $verbose $batch "$recipe" $archrecipe || Die "Error fetching archive(s)."
+      in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || Die "Error fetching archive(s)."
    else
       Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
       result=$?
@@ -953,7 +953,7 @@ then
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do
       Log_Normal "Applying patch $i..."
-      patch -Np1 -i $i || Die "Failed on patch $i"
+      patch -Np1 -i "$i" || Die "Failed on patch $i"
    done
 
    while read patch

@@ -23,8 +23,8 @@ compileSupportedArchitectures=("i686" "ppc" "arm")
 
 function Check_Dir_Variable() {
    var="$1"
-   eval [ "\$$var" ] || Die "Variable \\\$$var is not set. Please update your Compile.conf."
-   eval Assert_Dir "\$$var"
+   eval [ "\"\${${var}}\"" ] || Die "Variable \\\$$var is not set. Please update your Compile.conf."
+   eval Assert_Dir "\"\${${var}}\""
 }
 
 function Assert_Dir() {
