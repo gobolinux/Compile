@@ -738,6 +738,16 @@ then
       else
          Set_Boolean "keep"
       fi
+      # We have to update the target name and version to reflect
+      # that we install into the containing application
+      target=`Get_Dir runtime $appname $versionnumber`
+      settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+      variable_target="${goboVariable}"
+      installprefix="$target"
+      # Then re-source the recipe, to update variables set in
+      # the recipe
+      source "$recipe"
+      [ -e "$archrecipe" ] && source "$archrecipe"
    fi
 fi
    
