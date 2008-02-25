@@ -115,6 +115,7 @@ handle_description() {
                   # LGPL2 Mass Ave
                   55ca817ccb7d5b5b66355690e9abc605) newlicense="GNU Library General Public License version 2" ;;
                   ac4e4df3bbeacd481df543d2b12860b3) newlicense="GNU Library General Public License version 2" ;;
+                  252890d9eee26aab7b432e8b8a616475) newlicense="GNU Library General Public License version 2" ;;
                   # LGPL2 Temple Place
                   3bf50002aefd002f49e7bb854063f7e7) newlicense="GNU Library General Public License version 2" ;;
                   7be2873b6270e45abacc503abbe2aa3d) newlicense="GNU Library General Public License version 2" ;;
