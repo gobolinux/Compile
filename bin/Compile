@@ -1017,7 +1017,7 @@ fi
 ##################################################
 # Compile!
 ##################################################
-useflags=(`UseFlags $appname`)
+useflags=(`UseFlags $bakedrecipedir`)
 for flag in "${useflags[@]}"
 do
 	is_function_set "using_$flag" && eval using_$flag
