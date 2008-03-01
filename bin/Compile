@@ -541,7 +541,7 @@ fi
 dependencies_file=$bakedrecipedir/Resources/Dependencies
 if [ -f "$dependencies_file" ]
 then
-   for dep_name in `cat "$dependencies_file" | sed 's/^\ *//' | grep -v "^#" | awk '{ split($0,dep,/[\ <>=]*/); print dep[1] }'`
+   for dep_name in `cat "$dependencies_file" | sed 's/^\ *//' | grep -v "^[[#]" | awk '{ split($0,dep,/[\ <>=]*/); print dep[1] }'`
    do
       # GuessProgramCase prefers the name used by the given version,
       # but will give us any available if the version is not found.
