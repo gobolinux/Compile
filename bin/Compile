@@ -232,6 +232,9 @@ function wrapup() {
       # Add information inside binary package Resources directory
       Quiet mkdir -p $target/Resources
 
+      # Save use flags information
+      echo ${useflags[*]} | $sudo_exec tee "$target/Resources/UseFlags"
+
       if [ ! -z "$cross_uname_m" ]
       then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
       else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
