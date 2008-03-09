@@ -75,6 +75,8 @@ handle_description() {
                then
                   md5license=`md5sum $licensefile | cut -d" " -f1`
                   case "$md5license" in
+                  # GPL3
+                  f27defe1e96c2e1ecd4e0c9be8967949) newlicense="GNU General Public License version 3" ;;
                   # GPL2 Mass Ave
                   8ca43cbc842c2336e835926c2166c28b) newlicense="GNU General Public License version 2" ;;
                   18810669f13b87348459e611d31ab760) newlicense="GNU General Public License version 2" ;;
