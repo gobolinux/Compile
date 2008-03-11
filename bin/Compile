@@ -600,6 +600,10 @@ if [ "$versionnumber" = "GIT" -o "$versionnumber" = "git" ]
 then versionnumber=`date +%Y%m%d`"-GIT"
 fi
 
+if [ "$versionnumber" = "BZR" -o "$versionnumber" = "bzr" ]
+then versionnumber=`date +%Y%m%d`"-BZR"
+fi
+
 target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 variable_target="${goboVariable}"
@@ -758,8 +762,8 @@ fi
 # Construct some variable arrays
 ##################################################
 
-if ! [ -n "${cvs}${svn}${git}${url}${urls[*]}" ]
-then Die "Missing URL, CVS, SVN or GIT in recipe '$recipe'."
+if ! [ -n "${cvs}${svn}${git}${bzr}${url}${urls[*]}" ]
+then Die "Missing URL, CVS, SVN, GIT, or BZR in recipe '$recipe'."
 fi
 
 for var in url file file_size file_md5
@@ -775,7 +779,7 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-if [ "${cvs}" -o "${svn}" -o "${git}" ]
+if [ "${cvs}" -o "${svn}" -o "${git}" -o "${bzr}" ]
 then
    if [ -z "${dir}" ]
    then
@@ -845,6 +849,11 @@ elif [ "$git" ]
 then
    [ "${dir}" -a -d "${dir}" ] && skippatching=yes
    Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching GIT snapshot."
+   Boolean "no-build" && exit 0
+elif [ "$bzr" ]
+then
+   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching BZR snapshot."
    Boolean "no-build" && exit 0
 else
    if ! Boolean "no-web"

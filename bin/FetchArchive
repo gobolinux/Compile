@@ -98,6 +98,15 @@ then
    else cd "${sourcedir}" && git-pull
    fi
    exit $?
+elif [ "$bzr" ]
+then
+   cd "$savedir"
+   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
+   if [ ! -d "${sourcedir}" ]
+   then bzr branch $bzr "${sourcedir}"
+   else cd "${sourcedir}" && bzr pull
+   fi
+   exit $?
 elif ! [ -n "$url${urls[*]}" ]
 then
    Die "Missing URL in recipe '$recipe'."
