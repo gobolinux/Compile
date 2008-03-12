@@ -571,6 +571,9 @@ test_recipe() {
       echo "$compile_version" | grep -qi "CVS" && {
          ERROR "Recipe references CVS version of Compile."
       }
+      echo "$compile_version" | grep -qi "SVN" && {
+         ERROR "Recipe references SVN version of Compile."
+      }
    else
       WARN "Recipe has no compile_version declaration."
    fi
