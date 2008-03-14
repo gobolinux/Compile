@@ -73,9 +73,9 @@ oldrecipedir="$bakedrecipedir"
 if [ "$oldversion" = "$newversion" -a ! "$newurl" ] || [ "$newversion" = "$oldversionandrevision" -a ! "$newurl" ]
 then
    Die "Current version is already $newversion."
-elif [ "$cvs" -o "$svn" -o "$git" ]
+elif [ "$cvs" -o "$svn" -o "$git" -o "$bzr" ]
 then
-   Die "NewVersion does not support upgrading cvs/svn/git recipes."
+   Die "NewVersion does not support upgrading cvs/svn/git/bzr recipes."
 fi
 
 Log_Normal "Creating recipe for $packagename $newversion based on $oldversionandrevision."
