@@ -297,7 +297,7 @@ function wrap_fail() {
       Quiet rmdir -p "$settings_target"
    fi
    undo_mounts "--dont-exit"
-   Die "$1"
+   Die "$appname $versionnumber - $1"
 }
 
 function cleanup() {
