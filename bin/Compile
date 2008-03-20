@@ -46,6 +46,7 @@ Add_Option_Boolean "i" "install-separately" "If the application is part of a met
 Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful build"
 Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
 Add_Option_Boolean "P" "no-postinstall" "Do not run the PostInstall script after installation"
+Add_Option_Boolean "R" "no-requirements" "Do not process the Requirements script after installation"
 
 Parse_Conf Compile.conf
 Parse_Options "$@"
@@ -133,7 +134,7 @@ function do_symlink() {
       [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
 
-      assert_requirements
+      Boolean "no-requirements" || assert_requirements
       SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
    fi
 
@@ -1153,7 +1154,7 @@ then
       else sandboxopts=$(merge_array "sandbox_options")
       fi
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-      assert_requirements
+      Boolean "no-requirements" || assert_requirements
       SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
@@ -1198,7 +1199,7 @@ then
       is_function_set pre_install && pre_install
       if ! [ "$do_install" = "no" ]
       then
-         assert_requirements
+         Boolean "no-requirements" || assert_requirements
          ./Build --install_base $target $install_target || wrap_fail "Installation failed."
       fi
       if [ -d $target/script ]
@@ -1310,7 +1311,7 @@ then
    is_function_set pre_install && pre_install
    if [ ! "$do_install" = "no" ]
    then
-      assert_requirements
+      Boolean "no-requirements" || assert_requirements
       $sudo_exec $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
    do_symlink --no-make "$appname" "$versionnumber"
