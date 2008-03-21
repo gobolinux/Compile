@@ -722,6 +722,9 @@ test_resources() {
    [ -d Resources ] || {
       ERROR "No Resources directory."
    }
+   [ -e Resources/PostInstall -a ! -x Resources/PostInstall ] && {
+      ERROR "Resources/PostInstall must have its executable bit set."
+   }
    msg "Checking Dependencies..."
    depfile=Resources/Dependencies
    if [ -f $depfile ]
