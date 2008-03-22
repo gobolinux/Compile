@@ -133,3 +133,21 @@ function Get_MD5() {
    Parameters "$@" file
    md5sum "$file" | awk '{print $1}'
 }
+
+function Run_Hook() {
+   Parameters "$@" hookname
+   hookscript=${hookname}.sh
+   echo "#!/bin/bash" > ${hookscript}
+   echo "source GoboPath" >> ${hookscript}
+   for v in ${variablestoexport[@]}
+   do
+      echo "export ${v}=$(eval echo \$${v})" >> ${hookscript}
+   done
+   echo "source ${recipe}" >> ${hookscript}
+   echo "$hookname" >> ${hookscript}
+   $sudo_exec chmod a+x "${hookscript}"
+   $sudo_exec /bin/bash -c "${hookscript}"
+   rtn=$?
+   rm -f ${hookscript}
+   return ${rtn}
+}
