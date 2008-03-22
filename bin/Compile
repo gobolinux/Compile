@@ -568,7 +568,7 @@ then
       dep_variable_path=`Get_Dir runtimeVariable $dep_name $dep_vers`
       eval $lowercase_name'_path="'"$dep_path"'"'
       eval $lowercase_name'_settings_path="'"$dep_settings_path"'"'
-      eval $lowercase_name'_variable_path="'"$dep_settings_path"'"'
+      eval $lowercase_name'_variable_path="'"$dep_variable_path"'"'
       mark_export ${lowercase_name}_path ${lowercase_name}_settings_path ${lowercase_name}_variable_path
    done
 fi
