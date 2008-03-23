@@ -126,7 +126,7 @@ BEGIN { skip=0; }
 rm Recipe.old
 
 # Support for arch-specific Recipe
-for arch in $compileSupportedArchitectures
+for arch in ${compileSupportedArchitectures[@]}
 do
    if [ -f $newrecipedir/$arch/Recipe ]
    then
