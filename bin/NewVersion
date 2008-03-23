@@ -48,7 +48,8 @@ else sourceVersion=''
 fi
 
 Log_Normal "Locating a recipe for $srcApp..."
-rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
+#rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
+rawrecipe=/Files/Compile/Recipes/GHC-Bin/6.8.2-r1
 [ "$rawrecipe" ] || Die "Could not find a recipe for $srcApp"
 Log_Normal "Found recipe for $srcApp at $rawrecipe"
 
@@ -108,23 +109,6 @@ then
    switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
 fi
 
-# do not copy version-specific values
-sed "s:$oldversion:$newversion:g;${switchurls}" Recipe.old |\
-awk '
-BEGIN { skip=0; }
-/^file_md5s=\([^)]*$/ { skip=2; }
-/^file_sizes=\([^)]*$/ { skip=2; }
-/^file_md5s=\(.*\)$/ { skip=1; }
-/^file_sizes=\(.*\)$/ { skip=1; }
-/^file_md5=.*$/ { skip=1; }
-/^file_size=.*$/ { skip=1; }
-/^# Recipe for version/ { skip=1; }
-/^\)$/ { skip--; }
-{ if (skip<1) print; else if (skip==1) skip=0; }
-' >> Recipe
-
-rm Recipe.old
-
 # convert old recipe type to new recipe type
 # recipe type compileprogram is renamed to configure
 sed -i 's/is_\(.*\)=yes/recipe_type=\1/
@@ -134,8 +118,23 @@ Update_Recipe() {
    recipedir=$1
    arch=$2
    pushd $recipedir
-   # Update version strings
-   sed -i "s:$oldversion:$newversion:g;$leave_rows" Recipe
+   # Version-specific data should be stripped out
+   mv Recipe Recipe.old
+   sed "s:$oldversion:$newversion:g;${switchurls}" Recipe.old |\
+   awk '
+   BEGIN { skip=0; }
+   /^file_md5s=\([^)]*$/ { skip=2; }
+   /^file_sizes=\([^)]*$/ { skip=2; }
+   /^file_md5s=\(.*\)$/ { skip=1; }
+   /^file_sizes=\(.*\)$/ { skip=1; }
+   /^file_md5=.*$/ { skip=1; }
+   /^file_size=.*$/ { skip=1; }
+   /^# Recipe for version/ { skip=1; }
+   /^\)$/ { skip--; }
+   { if (skip<1) print; else if (skip==1) skip=0; }
+   ' >> Recipe
+
+   rm Recipe.old
 
    source Recipe
 
@@ -162,7 +161,7 @@ Update_Recipe() {
       Log_Terse "This recipe contains $arch patches. Please check if they still apply."
    fi
 
-   if [ "$url" ]
+   if [ "$url" -o "$urls" ]
    then
       Log_Normal "Downloading source code..."
       if ! FetchArchive "$recipedir/Recipe"
@@ -170,11 +169,28 @@ Update_Recipe() {
          rm -rf "$recipedir"
          Die "Could not download $arch source code, aborting."
       fi
-      [ -z "${file}" ] && file="`basename $url`"
-      filesize="`Get_Size $compileArchivesDir/$file`"
-      filemd5="`Get_MD5 $compileArchivesDir/$file`"
-      sed -i '/file_\(size\|md5\)/ d' "$recipedir/Recipe"
-      sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$recipedir/Recipe"
+      if [ "$url" ]
+      then
+         [ -z "${file}" ] && file="`basename $url`"
+         filesize="`Get_Size $compileArchivesDir/$file`"
+         filemd5="`Get_MD5 $compileArchivesDir/$file`"
+         sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$recipedir/Recipe"
+      elif ! [ "$files" ] # Leave parallel looping out of it for now
+      then
+         echo "file_sizes=(" > file_sizes.tmp
+         echo "file_md5s=" > file_md5s.tmp
+         for url in "${urls[@]}"
+         do
+            file="`basename $url`"
+            echo "`Get_Size $compileArchivesDir/$file`" >> file_sizes.tmp
+            echo "`Get_MD5 $compileArchivesDir/$file`" >> file_md5s.tmp
+         done
+         echo ")" >> file_sizes.tmp
+         echo ")" >> file_md5s.tmp
+         cat Recipe file_sizes.tmp file_md5s.tmp > Recipe.new
+         mv -f Recipe.new Recipe
+         rm -f file_sizes.tmp file_md5s.tmp
+      fi
    fi
    Quiet popd
 }
