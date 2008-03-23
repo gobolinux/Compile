@@ -140,14 +140,9 @@ sed -i 's/is_\(.*\)=yes/recipe_type=\1/
 s/compileprogram/configure/' Recipe
 
 Update_Recipe() {
+   recipedir=$1
+   pushd $recipedir
    source Recipe
-   unset newarchrecipedir
-   arch=`Get_Architecture`
-   if [ -e "$newrecipedir/$arch/Recipe" ] 
-   then
-      newarchrecipedir="$newrecipedir/$arch/Recipe"
-      source "$newarchrecipedir"
-   fi
 
    if [ "$newurl" ]
    then
@@ -175,19 +170,21 @@ Update_Recipe() {
    if [ "$url" ]
    then
       Log_Normal "Downloading source code..."
-      if ! FetchArchive "$newrecipedir/Recipe" $newarchrecipedir
+      if ! FetchArchive "$recipedir/Recipe"
       then
-         rm -rf "$newrecipedir"
+         rm -rf "$recipedir"
          Die "Could not download source code, aborting."
       fi
       [ -z "${file}" ] && file="`basename $url`"
       filesize="`Get_Size $compileArchivesDir/$file`"
       filemd5="`Get_MD5 $compileArchivesDir/$file`"
-   sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$newrecipedir/Recipe"
+      sed -i '/file_\(size\|md5\)/ d' "$newrecipedir/$arch/Recipe"
+      sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$newrecipedir/Recipe"
    fi
+   Quiet popd
 }
 
-Update_Recipe
+Update_Recipe $newrecipedir
 
 Log_Normal "Recipe template for $packagename $newversion created"
 Log_Normal "Printing result ($newrecipedir/Recipe):"
