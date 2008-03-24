@@ -91,13 +91,15 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 
 [ -e "Recipe" ] || Die "Recipe file not found."
 
-mv Recipe Recipe.old
+grep -v '# Recipe for version' Recipe > Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
 then
-   echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` >> Recipe.new
-   cat Recipe.new Recipe.old > Recipe
-else Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
+   echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` > Recipe
+   cat Recipe.old > Recipe
+else
+   Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
+   mv Recipe.old Recipe
 fi
 
 if [ "$newurl" ]
@@ -106,12 +108,10 @@ then
    newurl=`echo "$newurl" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
    newurl=`echo "$newurl" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
 
-   . Recipe.old
+   . Recipe
    switchurls="s,$url,$newurl,g;"
    switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
 fi
-
-rm Recipe.old
 
 # convert old recipe type to new recipe type
 # recipe type compileprogram is renamed to configure
@@ -133,7 +133,6 @@ Update_Recipe() {
    /^file_sizes=\(.*\)$/ { skip=1; }
    /^file_md5=.*$/ { skip=1; }
    /^file_size=.*$/ { skip=1; }
-   /^# Recipe for version/ { skip=1; }
    /^\)$/ { skip--; }
    { if (skip<1) print; else if (skip==1) skip=0; }
    ' >> Recipe
