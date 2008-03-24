@@ -49,8 +49,7 @@ else sourceVersion=''
 fi
 
 Log_Normal "Locating a recipe for $srcApp..."
-#rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
-rawrecipe=/Files/Compile/Recipes/GHC-Bin/6.8.2-r1
+rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
 [ "$rawrecipe" ] || Die "Could not find a recipe for $srcApp"
 Log_Normal "Found recipe for $srcApp at $rawrecipe"
 
@@ -95,7 +94,9 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 mv Recipe Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
-then echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` >> Recipe
+then
+   echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` >> Recipe.new
+   cat Recipe.new Recipe.old > Recipe
 else Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
 fi
 
@@ -109,6 +110,8 @@ then
    switchurls="s,$url,$newurl,g;"
    switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
 fi
+
+rm Recipe.old
 
 # convert old recipe type to new recipe type
 # recipe type compileprogram is renamed to configure
@@ -177,7 +180,6 @@ Update_Recipe() {
          filemd5="`Get_MD5 $compileArchivesDir/$file`"
          sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$recipedir/Recipe"
       else # There are multiple URLs
-      then
          echo "file_sizes=(" > file_sizes.tmp
          echo "file_md5s=(" > file_md5s.tmp
          Zip '
