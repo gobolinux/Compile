@@ -96,7 +96,7 @@ mv Recipe Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
 then echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` >> Recipe
-else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/Compile/Compile.conf"
+else Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
 fi
 
 if [ "$newurl" ]
