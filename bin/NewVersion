@@ -5,6 +5,7 @@ Import File
 Import Log
 Import OptionParser
 Import GoboLinux
+Import Array
 
 ### Options ###################################################################
 
@@ -175,16 +176,15 @@ Update_Recipe() {
          filesize="`Get_Size $compileArchivesDir/$file`"
          filemd5="`Get_MD5 $compileArchivesDir/$file`"
          sed -i "s,\(^url=.*\),\1\nfile_size=$filesize\nfile_md5=$filemd5,g" "$recipedir/Recipe"
-      elif ! [ "$files" ] # Leave parallel looping out of it for now
+      else # There are multiple URLs
       then
          echo "file_sizes=(" > file_sizes.tmp
-         echo "file_md5s=" > file_md5s.tmp
-         for url in "${urls[@]}"
-         do
-            file="`basename $url`"
+         echo "file_md5s=(" > file_md5s.tmp
+         Zip '
+            [ -z "$file" ] && file="`basename $url`"
             echo "`Get_Size $compileArchivesDir/$file`" >> file_sizes.tmp
             echo "`Get_MD5 $compileArchivesDir/$file`" >> file_md5s.tmp
-         done
+         ' urls url files file
          echo ")" >> file_sizes.tmp
          echo ")" >> file_md5s.tmp
          cat Recipe file_sizes.tmp file_md5s.tmp > Recipe.new
