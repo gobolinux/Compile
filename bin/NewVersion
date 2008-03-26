@@ -59,7 +59,7 @@ Log_Normal "Recipe placed in $bakedrecipedir"
 
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 oldrecipe=$bakedrecipedir/Recipe
-. $oldrecipe
+source $oldrecipe
 
 if Is_Entry "former-name"
 then packagename="$app"
@@ -108,7 +108,7 @@ then
    newurl=`echo "$newurl" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
    newurl=`echo "$newurl" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
 
-   . Recipe
+   source Recipe
    switchurls="s,$url,$newurl,g;"
    switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
 fi
@@ -121,7 +121,7 @@ s/compileprogram/configure/' Recipe
 Update_Recipe() {
    recipedir=$1
    arch=$2
-   pushd $recipedir
+   Quiet pushd $recipedir
    # Version-specific data should be stripped out
    mv Recipe Recipe.old
    sed "s:$oldversion:$newversion:g;${switchurls}" Recipe.old |\
@@ -139,6 +139,7 @@ Update_Recipe() {
 
    rm Recipe.old
 
+   unset url urls file files
    source Recipe
 
    if [ "$newurl" ]
@@ -208,7 +209,7 @@ done
 Log_Normal "Recipe template for $packagename $newversion created"
 Log_Normal "Printing result ($newrecipedir/Recipe):"
 cat "$newrecipedir/Recipe"
-for arch in $compileSupportedArchitectures
+for arch in ${compileSupportedArchitectures[@]}
 do
    if [ -f $newrecipedir/$arch/Recipe ]
    then
