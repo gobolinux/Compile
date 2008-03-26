@@ -610,7 +610,7 @@ target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
 variable_target="${goboVariable}"
 installprefix="$target"
-mark_export target settings_target variable_target
+mark_export target settings_target variable_target version
 
 if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "keep" && ! Boolean "no-build"
 then
