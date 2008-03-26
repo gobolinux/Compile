@@ -147,7 +147,7 @@ function Run_Hook() {
       echo "export ${v}=$(eval echo \$${v})" >> ${hookscript}
    done
    echo "source ${recipe}" >> ${hookscript}
-   [ "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
+   [ -e "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
    echo "$hookname" >> ${hookscript}
    $sudo_exec chmod a+x "${hookscript}"
    $sudo_exec /bin/bash -c "${hookscript}"
