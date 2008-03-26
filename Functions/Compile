@@ -138,7 +138,9 @@ function Run_Hook() {
    Parameters "$@" hookname
    hookscript=${hookname}.sh
    echo "#!/bin/bash" > ${hookscript}
-   echo "source GoboPath" >> ${hookscript}
+   echo "source ScriptFunctions" >> ${hookscript}
+   echo "Import GoboLinux" >> ${hookscript}
+   echo "Import Log" >> ${hookscript}
    for v in ${variablestoexport[@]}
    do
       echo "export ${v}=$(eval echo \$${v})" >> ${hookscript}
