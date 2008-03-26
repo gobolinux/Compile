@@ -141,6 +141,7 @@ function Run_Hook() {
    echo "#!/bin/bash" > ${hookscript}
    echo "source ScriptFunctions" >> ${hookscript}
    echo "Import GoboLinux" >> ${hookscript}
+   echo "Import OptionParser" >> ${hookscript}
    echo "Import Log" >> ${hookscript}
    for v in ${variablestoexport[@]}
    do
