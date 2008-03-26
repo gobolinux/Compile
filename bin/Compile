@@ -820,6 +820,8 @@ make_absolute() {
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 dir="${dirs[0]}"
 
+mark_export dir
+
 ##################################################
 # Create the cross_make_variables array
 ##################################################
