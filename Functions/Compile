@@ -137,7 +137,7 @@ function Get_MD5() {
 
 function Run_Hook() {
    Parameters "$@" hookname
-   hookscript=${hookname}.sh
+   hookscript=./${hookname}.sh
    echo "#!/bin/bash" > ${hookscript}
    echo "source ScriptFunctions" >> ${hookscript}
    echo "Import GoboLinux" >> ${hookscript}
@@ -151,7 +151,7 @@ function Run_Hook() {
    [ -e "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
    echo "$hookname" >> ${hookscript}
    $sudo_exec chmod a+x "${hookscript}"
-   $sudo_exec /bin/bash -c "${hookscript}"
+   $sudo_exec env SUDO_OK=1 "${hookscript}"
    rtn=$?
    rm -f ${hookscript}
    return ${rtn}
