@@ -148,6 +148,11 @@ function do_symlink() {
          for file in "${unmanaged_files[@]}"
          do echo $file | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
          done
+         if echo "${unmanaged_files[@]}" | grep -q "$goboModules"
+         then
+            mkdir -p "$target/Shared/Compile/Recompile/Linux"
+            touch "$target/Shared/Compile/Recompile/Linux/$app"
+         fi
       fi
    fi
 
