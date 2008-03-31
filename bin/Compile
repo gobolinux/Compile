@@ -874,7 +874,7 @@ else
       result=$?
       case $result in
       1) Die "Files are corrupted. Exiting.";;
-      2) Ask_Continue "Continue anyway?";;
+      2) Boolean "batch" || Ask_Continue "Continue anyway?";;
       3) Die "Files are not available. Exiting.";;
       esac
    fi
