@@ -1031,7 +1031,7 @@ then
    if [ -d "$installprefix-Compile-old" ]
    then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
-      cp -R "$installprefix" "$installprefix-Compile-old"
+      $sudo_exec cp -R "$installprefix" "$installprefix-Compile-old"
       do_symlink --force-link --no-make --no-extras "$appname" "$version-Compile-old"
    fi
 fi
