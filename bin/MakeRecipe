@@ -5,6 +5,7 @@ Import File
 Import Log
 Import OptionParser
 Import GoboLinux
+Import Archive
 
 ### Options ###################################################################
 
@@ -25,6 +26,23 @@ unset packagename versionnumber
 
 Import Compile
 Parse_Conf Compile.conf
+
+##################################################
+# Checking Scripts package version
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+
+if echo "$scriptsversion" | grep -q CVS || \
+   echo "$scriptsversion" | grep -q GIT || \
+   echo "$scriptsversion" | grep -q SVN || \
+   [ "`GuessLatest $scriptsversion 2.8.5`" = "$scriptsversion" ]
+then
+   # Version is valid, proceed.
+   :
+else
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
 
 if Is_Writable "$compileLocalRecipesDir/$packagename" 
 then sudo=
@@ -93,6 +111,7 @@ else
    bname=`basename "$bname" .tgz`
    bname=`basename "$bname" .tbz2`
    bname=`basename "$bname" .zip`
+   bname=`basename "$bname" .tar.lzma`
 
    if [ ! "$packagename" ]
    then
@@ -229,11 +248,7 @@ then
    
    # TODO: report if multiple directories, tell the user to verify it
    file_contents=`Temporary_File`
-   if Ends_With ".zip" "$file"
-   then unzip -lqq "$file" | cut -b 29- >> "$file_contents"
-   else als -q "$file" >> "$file_contents"
-   fi
-
+   List_Archive_Files "$file" >> "$file_contents"
    # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
    bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/[^/]*$,,'`
    if [ -n "$bdir" -a "$bdir" != "$bname" ]
@@ -299,7 +314,7 @@ else
       echo "recipe_type=makefile" >> "$recipefile"
       if [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" ]
       then basemakefile="$compileSourcesDir/$basemakefile"
-      else aunpack "$file" "$basemakefile"
+      else Unpack_Archive "$file" . force "$basemakefile"
       fi
       if [ "$basemakefile" != "Makefile" ]
       then echo "makefile='$(basename $basemakefile)'" >> "$recipefile"
