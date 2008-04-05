@@ -241,7 +241,7 @@ function wrapup() {
       Quiet mkdir -p $target/Resources
 
       # Save use flags information
-      echo ${useflags[*]} | $sudo_exec tee "$target/Resources/UseFlags"
+      echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null
 
       if [ ! -z "$cross_uname_m" ]
       then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
