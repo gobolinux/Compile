@@ -168,8 +168,8 @@ function do_symlink() {
          done
          if echo "${unmanaged_files[@]}" | grep -q "$goboModules"
          then
-            mkdir -p "$target/Shared/Compile/Recompile/Linux"
-            touch "$target/Shared/Compile/Recompile/Linux/$app"
+            $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
+            $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
          fi
       fi
    fi
