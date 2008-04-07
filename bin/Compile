@@ -295,8 +295,11 @@ function wrapup() {
             Log_Verbose $(cat "$recipedeps")
          fi
       fi
-      Log_Normal "Packing recipe directory..."
-      PackRecipe $noweb "$app" "$versionandrevision"
+      if ! Boolean "batch"
+      then
+         Log_Normal "Packing recipe directory..."
+         PackRecipe $noweb "$app" "$versionandrevision"
+      fi
    fi
    if [ -n "$post_install_message" ]
    then
