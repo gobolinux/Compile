@@ -138,6 +138,10 @@ function do_symlink() {
       esac # it still is.
    done
 
+   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix"
+   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix"
+   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null
+
    if ! [ "$nomake" = "yes" ]
    then
       [ "${unmanaged_files[*]}" ] &&
@@ -212,10 +216,6 @@ function do_symlink() {
 }
 
 function install_extras() {
-
-   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix"
-   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix"
-   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null
 
    if [ "$app" = "$appname" ]
    then
