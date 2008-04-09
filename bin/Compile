@@ -334,7 +334,7 @@ function cleanup() {
       then REPLY=y
       else Ask_Option "Remove $installprefix-Compile-old (backup from safe linking)? [y/N]"
       fi
-      [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && rm -rf "$installprefix-Compile-old"
+      [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && $sudo_exec rm -rf "$installprefix-Compile-old"
    fi
    Boolean "remove-archive" && Map remove_archives "${files[@]}"
    Boolean "remove-sources" && Map remove_source_dir "${dirs[@]}"
