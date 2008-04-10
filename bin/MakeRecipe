@@ -12,8 +12,8 @@ Import Archive
 scriptDescription="Create a recipe template."
 scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
 helpOnNoArguments=yes
-scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>} | {<app_name> git <repository>} | {<app_name> bzr <branch>}"
-scriptNotes="A URL, a cvs, svn, git, or bzr command line should be passed as a parameter."
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>} | {<app_name> git <repository>} | {<app_name> bzr <branch>} | {<app_name> hg <repository> }"
+scriptNotes="A URL, a cvs, svn, git, bzr or hg command line should be passed as a parameter."
 scriptExample=("Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz
 DirectFB cvs :pserver:anonymous:@cvs.directfb.org:/cvs/directfb DirectFB
 SYSLINUX git http://www.kernel.org/pub/scm/boot/syslinux/syslinux.git")
@@ -83,6 +83,7 @@ svn=no
 cvs=no
 git=no
 bzr=no
+hg=no
 if [ "$versionnumber" = "cvs" ]
 then
    cvs=yes
@@ -101,6 +102,10 @@ elif [ "$versionnumber" = "bzr" ]
 then
    bzr=yes
    bzr_repository="$source_url"
+elif [ "$versionnumber" = "hg" ]
+then
+   hg=yes
+   hg_repository="$source_url"
 else
    # TODO: generalize mirror system
    url=`echo "$source_url" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
@@ -141,7 +146,7 @@ then
       fi
             
    else
-      ignorelist="\--cvs\|--svn\|--git\|--bzr\|/cvs-r[0-9]*\|/svn-r[0-9]*\|git-r[0-9]*\|bzr-r[0-9]*"
+      ignorelist="\--\(cvs\|svn\|git\|bzr\|hg\)\|/\(cvs\|svn\|git\|bzr\|hg\)-r[0-9]*"
       sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null | grep -vi "$ignorelist"`
       if [ "$sameprogramrecipe" ]
       then
@@ -164,6 +169,7 @@ then
    [ "$svn" = yes ] && buildtype="SVN"
    [ "$git" = yes ] && buildtype="GIT"
    [ "$bzr" = yes ] && buildtype="BZR"
+   [ "$hg"  = yes ] && buildtype="HG"
    
    if [ ! -z "$buildtype" ]
    then Ask_Continue "Creating recipe template for $buildtype build of $packagename."
@@ -207,6 +213,11 @@ elif [ "$bzr" = "yes" ]
 then
    echo "bzr=\"$bzr_repository\"" >> "$recipefile"
    checkoutdir="$compileSourcesDir/$packagename-bzr"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$hg" = "yes" ]
+then
+   echo "hg=\"$hg_repository\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-hg"
    fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
 else
    echo "url=\"$url\"" >> "$recipefile"
@@ -255,7 +266,7 @@ then
    then
       echo "dir='$bdir'" >> "$recipefile"
    fi
-elif [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" ]
+elif [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" -o "$hg" = "yes" ]
 then
    file_contents=`Temporary_File`
    find "$checkoutdir" | sed "s,^$compileSourcesDir/,,g" >> "$file_contents"
@@ -312,7 +323,7 @@ else
    then
       Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
       echo "recipe_type=makefile" >> "$recipefile"
-      if [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" ]
+      if [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" -o "$hg" = "yes" ]
       then basemakefile="$compileSourcesDir/$basemakefile"
       else Unpack_Archive "$file" . force "$basemakefile"
       fi
@@ -354,7 +365,7 @@ else
             $PAGER "$basemakefile"
          fi
       fi
-      if [ "$cvs" = "no" -a "$svn" = "no" -a "$git" = "no" -a "$bzr" = "no" ]
+      if [ "$cvs" = "no" -a "$svn" = "no" -a "$git" = "no" -a "$bzr" = "no" -a "$hg" = "no" ]
       then
          rm "$basemakefile"
          rmdir -p $(dirname "$basemakefile")

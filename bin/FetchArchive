@@ -107,6 +107,15 @@ then
    else cd "${sourcedir}" && bzr pull
    fi
    exit $?
+elif [ "$hg" ]
+then
+   cd "$savedir"
+   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
+   if [ ! -d "${sourcedir}" ]
+   then hg clone $hg "${sourcedir}"
+   else cd "${sourcedir}" && hg update
+   fi
+   exit $?
 elif ! [ -n "$url${urls[*]}" ]
 then
    Die "Missing URL in recipe '$recipe'."
