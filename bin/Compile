@@ -1107,7 +1107,7 @@ then
             --configure $configure
             `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
          )
-         PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" "--" "${config[@]}" || wrap_fail "Preparation step failed."
+         PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || wrap_fail "Preparation step failed."
       ) || exit 1
    fi
    if ! [ "$do_build" = "no" ]
