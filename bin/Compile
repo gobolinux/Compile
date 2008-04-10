@@ -1299,7 +1299,7 @@ then
    build_tree_if "$create_dirs_first" = "yes"
    for flag in "${useflags[@]}"
    do
-      buildmerged=("${buildmerged[@]}" "`eval echo '$'with_$flag`")
+      [ -n "`eval echo '$'with_$flag`" ] && buildmerged=(${buildmerged:+"${buildmerged[@]}"} "`eval echo '$'with_$flag`")
    done
    if ! [ "$do_build" = "no" ]
    then
