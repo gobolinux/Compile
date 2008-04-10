@@ -1077,7 +1077,7 @@ then
    eval `combine_arrays config configure_options userconfigureoptions`
    for flag in "${useflags[@]}"
    do
-      config=("${config[@]}" "`eval echo '$'with_$flag`")
+      [ -n "`eval echo '$'with_$flag`" ] && config=(${config:+"${config[@]}"} "`eval echo '$'with_$flag`")
    done
    [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
@@ -1364,7 +1364,7 @@ then
    eval `combine_arrays config cmake_options usercmakeoptions`
    for flag in "${useflags[@]}"
    do
-      config=("${config[@]}" "`eval echo '$'with_$flag`")
+      [ -n "`eval echo '$'with_$flag`" ] && config=(${config:+"${config[@]}"} "`eval echo '$'with_$flag`")
    done
    # cmake always use its own build directory
    needs_build_directory="yes"
