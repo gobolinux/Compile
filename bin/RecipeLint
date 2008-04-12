@@ -261,6 +261,8 @@ cat Recipe | perl -e '
       needs_safe_linking => "bool",
       sandbox_options => "array",
       symlink_options => "array",
+      cabal_options => "array",
+      runhaskell => "string"
       manifest => "array",
       without => "array",
       create_dirs_first => "bool",
@@ -540,6 +542,10 @@ test_recipe() {
        fi
    }
    fi
+   case "$recipe_type" in
+     (configure | makefile | python | perl | xmkmf | meta | scons | manifest | cabal)
+       false;;
+   esac && ERROR "Unknown Recipe type $recipe_type specified"
    [ "$recipe_type" = "meta" ] && {
       for inc in "${include[@]}"
       do
@@ -605,24 +611,26 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       autogen=configure
-      build_variables=configure,makefile,scons
-      install_variables=configure,makefile,xmkmf,scons
+      build_variables=configure,makefile,scons,cabal
+      install_variables=configure,makefile,xmkmf,scons,cabal
       make_variables=configure,makefile
       configure=configure
       makefile=configure,makefile,xmkmf
       build_target=configure,makefile,xmkmf,python,scons
       install_target=configure,makefile,xmkmf,python,scons
-      do_build=configure,makefile,python
-      do_install=configure,makefile,xmkmf,python,scons
+      do_build=configure,makefile,python,cabal
+      do_install=configure,makefile,xmkmf,python,scons,cabal
       needs_build_directory=configure
       manifest=manifest
       without=perl
       create_dirs_first=configure,makefile,perl
       python_options=python
-      override_default_options=python,scons,configure
+      override_default_options=python,scons,configure,cabal
       build_script=python
       scons=scons
       scons_variables=scons
+      cabal_options=cabal
+      runhaskell=cabal
    )
    for decl in "${declarations[@]}"
    do
