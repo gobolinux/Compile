@@ -276,6 +276,12 @@ if grep -q "CMakeLists.txt" "$file_contents"
 then
    Log_Normal "$packagename $versionnumber build system seems to be based on CMake."
    echo "recipe_type=cmake" >> "$recipefile"
+elif egrep -q "Setup.l?hs" "$file_contents"
+then
+   # Note: check Haskell Cabal before regular configure because cabal
+   # will often invoke autoconf operations
+   Log_Normal "$packagename $versionnumber build system seems to be based on Haskell Cabal."
+   echo "recipe_type=cabal" >> "$recipefile"
 elif grep -q "configure.in$" "$file_contents" \
 || grep -q "configure.ac$" "$file_contents"
 then

@@ -1429,5 +1429,52 @@ fi
 
 ##################################################
 
+
+if [ "$recipe_type" = "cabal" ]
+then
+   Quiet ghc -V || Die "This is a cabal recipe and you don't seem to have GHC installed."
+   [ "$runhaskell" ] || runhaskell="runhaskell"
+   if [ ! "$override_default_options" = "yes" ]
+   then
+      cabal_options=(
+         "${cabal_options[@]}"
+         "--prefix=$target"
+      )
+   fi
+   for flag in "${useflags[@]}"
+   do
+      cabal_options=("${cabal_options[@]}" "`eval echo '$'with_$flag`")
+   done
+   if [ ! -z "$goboIndex" ]
+   then
+      cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
+   fi
+   build_tree_if "true"
+   for f in Setup.lhs Setup.hs ; do
+      [ -e $f ] && cabal_setup="$f";
+   done
+   [ ! -z "$cabal_setup" ] || Die "Cabal Setup.hs or Setup.lhs not found"
+   if ! [ "$do_build" = "no" ]
+   then
+      $runhaskell "$cabal_setup" configure "${cabal_options[@]}" || wrap_fail "Configure failed"
+      run_hooks pre_build
+      $runhaskell "$cabal_setup" build "${build_variables[@]}" || wrap_fail "Build failed."
+   fi
+   Boolean "no-install" && exit
+   run_hooks pre_install
+   if [ ! "$do_install" = "no" ]
+   then
+      pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
+      SandboxInstall $verbose ${sandboxopts[@]} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
+   fi
+   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   check_direct_dependencies
+   run_hooks post_install
+   Log_Normal "Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
+   wrapup
+fi
+
+##################################################
+
 Die "Unsupported configuration in recipe '$recipe'."
 
