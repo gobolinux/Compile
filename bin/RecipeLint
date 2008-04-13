@@ -262,7 +262,7 @@ cat Recipe | perl -e '
       sandbox_options => "array",
       symlink_options => "array",
       cabal_options => "array",
-      runhaskell => "string"
+      runhaskell => "string",
       manifest => "array",
       without => "array",
       create_dirs_first => "bool",
