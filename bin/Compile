@@ -300,6 +300,8 @@ function wrapup() {
          Log_Normal "Packing recipe directory..."
          PackRecipe $noweb "$app" "$versionandrevision"
       fi
+      Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+      Log_Normal "Please run \`ContributeRecipe $app $versionandrevision\` to do this."
    fi
    if [ -n "$post_install_message" ]
    then
