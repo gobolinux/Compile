@@ -20,6 +20,23 @@ Import Archive
 Import UnionFS
 
 ##################################################
+# Checking Scripts package version
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+
+if echo "$scriptsversion" | grep -q CVS || \
+   echo "$scriptsversion" | grep -q GIT || \
+   echo "$scriptsversion" | grep -q SVN || \
+   [ "`GuessLatest $scriptsversion 2.9.0`" = "$scriptsversion" ]
+then
+   # Version is valid, proceed.
+   :
+else
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+##################################################
 # Options and configuration
 ##################################################
 
@@ -427,23 +444,6 @@ Check_Dir_Variable compileDependenciesDir
 Check_Dir_Variable compileArchivesDir
 Check_Dir_Variable compileSourcesDir
 Check_Dir_Variable compilePackedRecipesDir
-
-##################################################
-# Checking Scripts package version
-##################################################
-
-scriptsversion=`Get_Version Scripts Current`
-
-if echo "$scriptsversion" | grep -q CVS || \
-   echo "$scriptsversion" | grep -q GIT || \
-   echo "$scriptsversion" | grep -q SVN || \
-   [ "`GuessLatest $scriptsversion 2.8.5`" = "$scriptsversion" ]
-then
-   # Version is valid, proceed.
-   :
-else
-   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
-fi
 
 ##################################################
 # Find and Get Recipe
