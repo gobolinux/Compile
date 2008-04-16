@@ -24,7 +24,7 @@ Import Versions
 
 Parse_Conf Compile/Compile.conf
 
-submissionTarget='http://mwh.geek.nz/cr/submit?ver=1'
+submissionTarget='http://recipes.gobolinux.org/review/submit?ver=1'
 ### Options ###################################################################
 
 scriptDescription="Contribute a recipe to the global store"
