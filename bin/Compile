@@ -376,6 +376,8 @@ function check_direct_dependencies() {
       for i in ${goboShared}/Compile/Recompile/${appname}/*
       do
          depapp=`basename $i`
+	 # An application cannot depend on itself
+	 [ "$(Downcase ${depapp})" == "$(Downcase ${appname})" ] && continue
          Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
          Compile $batch $lazy $noweb $depapp
       done
