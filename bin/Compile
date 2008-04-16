@@ -939,7 +939,7 @@ else
          Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
       fi
       case $REPLY in
-      [Rr]) rm -rf "${basedirs[0]}" || $sudo_exec rm -rf "${basedirs[0]}" ;;
+      [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
       [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" ;;
       [Uu]) unpack=no ;;
       [Cc]) exit 0 ;;
