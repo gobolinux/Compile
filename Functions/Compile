@@ -147,6 +147,7 @@ function Run_Hook() {
    do
       echo "export ${v}=$(eval echo \$${v})" >> ${hookscript}
    done
+   echo "source $goboSettings/Compile/Compile.conf" >> ${hookscript}
    echo "source ${recipe}" >> ${hookscript}
    [ -e "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
    echo "$hookname" >> ${hookscript}
