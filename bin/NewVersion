@@ -96,7 +96,7 @@ grep -v '# Recipe for version' Recipe > Recipe.old
 if [ "$compileRecipeAuthor" != "" ]
 then
    echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` > Recipe
-   cat Recipe.old > Recipe
+   cat Recipe.old >> Recipe
 else
    Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
    mv Recipe.old Recipe
