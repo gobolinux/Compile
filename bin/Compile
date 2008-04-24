@@ -329,7 +329,11 @@ function wrapup() {
 
 function undo_mounts() {
    if Is_Entry "cross-compile" && Union_Is_Supported
-   then Quiet Union_Umount $(Union_Backend) $cross_libc_libdir $goboDevices $goboStatus
+   then 
+       Quiet Union_Umount $(Union_Backend) $cross_libc_libdir
+       for i in $goboPrograms/*/Current
+       do [ -d "$i/lib" ] && Quiet Union_Umount $(Union_Backend) $i
+       done
    fi
    [ "$1" = "--dont-exit" ] && return || exit 1
 }
