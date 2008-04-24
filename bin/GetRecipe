@@ -29,9 +29,12 @@ scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #scriptNotes="A full path to a recipe [that can be an url, a compressed local" \
 #"recipe or an uncompressed one] is received, and the recipe is placed in" \
 #"$compileGetRecipeDir"
-#Add_Option_Boolean "C" "nocvs" "Do not find CVS based recipes (TODO)"
+Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes."
 
 Parse_Options "$@"
+
+unset noweb
+Boolean "no-web" && noweb="--no-web"
 
 ##################################################
 # Prepare Environment
@@ -46,10 +49,10 @@ fi
 
 if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
 then
-   url=`FindPackage --type=recipe $(Arg 1) $(Arg 2)`
+   url=`FindPackage --type=recipe $noweb $(Arg 1) $(Arg 2)`
    if [ "${url}" ]
    then
-      GetRecipe "${url}"   
+      GetRecipe $noweb "${url}"   
       exit $?
    else
       Log_Terse "Recipe for" $(Arg 1) $(Arg 2) "not found" 
@@ -119,7 +122,7 @@ do
    # Case #4: recipe is a remote compressed file (url)
    #####################################################
    
-   if Is_URL "$rawrecipe"
+   if ! Boolean "no-web" && Is_URL "$rawrecipe"
    then
       Log_Normal "Downloading recipe from $rawrecipe"
       if wget --help | grep -q no-check-certificate
