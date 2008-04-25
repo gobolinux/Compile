@@ -543,7 +543,7 @@ test_recipe() {
    }
    fi
    case "$recipe_type" in
-     (configure | makefile | python | perl | xmkmf | meta | scons | manifest | cabal)
+     (configure | makefile | cmake | python | perl | xmkmf | meta | scons | manifest | cabal)
        false;;
    esac && ERROR "Unknown Recipe type $recipe_type specified"
    [ "$recipe_type" = "meta" ] && {
@@ -611,19 +611,20 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       autogen=configure
-      build_variables=configure,makefile,scons,cabal
-      install_variables=configure,makefile,xmkmf,scons,cabal
+      build_variables=configure,makefile,cmake,scons,cabal
+      install_variables=configure,makefile,cmake,xmkmf,scons,cabal
       make_variables=configure,makefile
+      cmake_variables=cmake
       configure=configure
-      makefile=configure,makefile,xmkmf
-      build_target=configure,makefile,xmkmf,python,scons
-      install_target=configure,makefile,xmkmf,python,scons
-      do_build=configure,makefile,python,cabal
-      do_install=configure,makefile,xmkmf,python,scons,cabal
+      makefile=configure,makefile,cmake,xmkmf
+      build_target=configure,makefile,cmake,xmkmf,python,scons
+      install_target=configure,makefile,cmake,xmkmf,python,scons
+      do_build=configure,makefile,cmake,python,cabal
+      do_install=configure,makefile,cmake,xmkmf,python,scons,cabal
       needs_build_directory=configure
       manifest=manifest
       without=perl
-      create_dirs_first=configure,makefile,perl
+      create_dirs_first=configure,makefile,cmake,perl
       python_options=python
       override_default_options=python,scons,configure,cabal
       build_script=python
