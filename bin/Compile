@@ -155,9 +155,9 @@ function do_symlink() {
       esac # it still is.
    done
 
-   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix"
-   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix"
-   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null
+   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
 
    if ! [ "$nomake" = "yes" ]
    then
@@ -180,7 +180,7 @@ function do_symlink() {
 
    if ! [ "$noextras" = "yes" ]
    then
-      install_extras
+      install_extras || wrap_fail "Failed installing files."
       if [ "${unmanaged_files[*]}" ] 
       then
          $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
@@ -216,12 +216,15 @@ function do_symlink() {
    run_hooks pre_link || wrap_fail "Failure in pre-link operation."
    if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
    then
-      PrepareProgram --tree-cleanup $batch "$1" "$2"
+      PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
    else
       unset updateoptions
       Boolean "batch" && updateoptions="--auto"
       if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
-      then Boolean "no-updatesettings" || UpdateSettings $updateoptions "$1" "$2"
+      then
+         if ! Boolean "no-updatesettings"
+         then UpdateSettings $updateoptions "$1" "$2" || wrap_fail "Failed updating settings."
+         fi
       fi
       [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
@@ -253,13 +256,14 @@ function install_extras() {
          do
             if [ -e "$d/$i" ]
             then
-               $sudo_exec mkdir -p "$docdir"
-               $sudo_exec cp -a "$d/$i" "$docdir"
+               $sudo_exec mkdir -p "$docdir" || return 1
+               $sudo_exec cp -a "$d/$i" "$docdir" || return 1
             fi
          done
          Quiet popd
       }
    done
+   return 0
 }
 
 function assert_requirements() {
@@ -274,15 +278,15 @@ function wrapup() {
       Quiet mkdir -p $target/Resources
 
       # Save use flags information
-      echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null
+      echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
 
       if [ ! -z "$cross_uname_m" ]
-      then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
-      else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null
+      then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
+      else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
       fi
 
       Log_Normal "Generating package's build information..."
-      GenBuildInformation --store "$appname" "$versionnumber"
+      GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
 
       if ! Boolean "no-sign"
       then
@@ -304,11 +308,11 @@ function wrapup() {
          recipedeps="$reciperesources/Dependencies"
          Quiet mkdir -p "$reciperesources"
 
-         cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation"
+         cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation" || wrap_fail "Failed installing file."
 
          if [ ! -f "$recipedeps" ]
          then
-            cp "$target/Resources/BuildInformation" "$recipedeps"
+            cp "$target/Resources/BuildInformation" "$recipedeps" || wrap_fail "Failed installing file."
             Log_Verbose $(cat "$recipedeps")
          fi
       fi
@@ -1393,7 +1397,7 @@ then
             val=`echo $i | cut -d= -f 2-`
             eval export $var=\'$val\'
          done
-	 cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${dir}"
+         cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${dir}"
       ) || exit 1
    fi
    if ! [ "$do_build" = "no" ]
