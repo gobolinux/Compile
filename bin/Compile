@@ -213,7 +213,7 @@ function do_symlink() {
       done
    fi
 
-   run_hooks pre_link
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
    if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2"
@@ -315,7 +315,9 @@ function wrapup() {
       if ! Boolean "batch"
       then
          Log_Normal "Packing recipe directory..."
-         PackRecipe $noweb "$app" "$versionandrevision"
+         PackRecipe $noweb "$app" "$versionandrevision" || {
+            Log_Error "Failed packing recipe."
+         }
       fi
       Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
       Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
@@ -1016,7 +1018,7 @@ cd "$dir" || Die "Directory $dir not found."
 if ! [ "$skippatching" = "yes" ]
 then
 
-   run_hooks pre_patch
+   run_hooks pre_patch || wrap_fail "Failure in pre-patch operation."
    pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do
@@ -1096,7 +1098,7 @@ then
       configure="${dir}/$configure"
    fi
    build_tree_if "$create_dirs_first" = "yes"
-   run_hooks pre_build
+   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
    if ! Boolean "lazy"
    then
       [ -f "$configure" ] && chmod +x "$configure"
@@ -1123,13 +1125,13 @@ then
    fi
    Boolean "no-install" && exit
    build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1184,11 +1186,11 @@ then
    then
       [ "$build_target" ] || build_target="build"
       build_python_options $build_target
-      run_hooks pre_build
+      run_hooks pre_build || wrap_fail "Failure in pre-build operation."
       python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
    fi
    Boolean "no-install" && exit
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
    then
       build_python_options $install_target
@@ -1203,7 +1205,7 @@ then
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1234,13 +1236,13 @@ then
       # New Build.PL system
       if ! [ "$do_build" = "no" ]
       then
-         run_hooks pre_build
+         run_hooks pre_build || wrap_fail "Failure in pre-build operation."
          perl ./Build.PL
          ./Build --install_base $target $build_target || wrap_fail "Build failed."
       fi
       Boolean "no-install" && exit
       build_tree_if "$create_dirs_first" != "yes"
-      run_hooks pre_install
+      run_hooks pre_install || wrap_fail "Failure in pre-install operation."
       if ! [ "$do_install" = "no" ]
       then
          Boolean "no-requirements" || assert_requirements
@@ -1258,7 +1260,7 @@ then
       Quiet popd
       do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Linking failed."
       check_direct_dependencies
-      run_hooks post_install
+      run_hooks post_install || wrap_fail "Failure in post-install operation."
       wrapup
    else
       # Old Makefile.PL system
@@ -1271,7 +1273,7 @@ fi
 
 if [ "$recipe_type" = "xmkmf" ]
 then
-   run_hooks pre_build
+   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
    xmkmf
    buildmerged=(
       "BINDIR=$target/bin"
@@ -1311,18 +1313,18 @@ then
    done
    if ! [ "$do_build" = "no" ]
    then
-      run_hooks pre_build
+      run_hooks pre_build || wrap_fail "Failure in pre-build operation."
       $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build failed."
    fi
    Boolean "no-install" && exit
    build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1349,10 +1351,10 @@ then
    then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
    fi
    build_tree_if "true"
-   run_hooks pre_build
+   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
    $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
    Boolean "no-install" && exit
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if [ ! "$do_install" = "no" ]
    then
       Boolean "no-requirements" || assert_requirements
@@ -1360,7 +1362,7 @@ then
    fi
    do_symlink --no-make "$appname" "$versionnumber"
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1381,7 +1383,7 @@ then
    cd "$builddir"
 
    build_tree_if "$create_dirs_first" = "yes"
-   run_hooks pre_build
+   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
    if ! Boolean "lazy"
    then
       (
@@ -1399,13 +1401,13 @@ then
    fi
    Boolean "no-install" && exit
    build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
    then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
    else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1417,7 +1419,7 @@ if [ "$recipe_type" = "manifest" ]
 then
    Boolean "no-install" && exit
    build_tree_if "true"
-   run_hooks pre_install || wrap_fail "pre_install failed"
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    for i in "${manifest[@]}"
    do
       src=`echo $i | cut -d: -f1`
@@ -1431,7 +1433,7 @@ then
    done
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
 fi
 
@@ -1465,11 +1467,11 @@ then
    if ! [ "$do_build" = "no" ]
    then
       $runhaskell "$cabal_setup" configure "${cabal_options[@]}" || wrap_fail "Configure failed"
-      run_hooks pre_build
+      run_hooks pre_build || wrap_fail "Failure in post-install operation."
       $runhaskell "$cabal_setup" build "${build_variables[@]}" || wrap_fail "Build failed."
    fi
    Boolean "no-install" && exit
-   run_hooks pre_install
+   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if [ ! "$do_install" = "no" ]
    then
       pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
@@ -1477,7 +1479,7 @@ then
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    check_direct_dependencies
-   run_hooks post_install
+   run_hooks post_install || wrap_fail "Failure in post-install operation."
    Log_Normal "Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
    wrapup
 fi
