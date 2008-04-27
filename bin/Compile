@@ -155,10 +155,18 @@ function do_symlink() {
       esac # it still is.
    done
 
-   [ -d "$reciperesources" ] && $sudo_exec cp -R "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   [ -d "$archreciperesources" ] && $sudo_exec cp -R "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   [ "$revision" ] && echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
-
+   if [ -d "$reciperesources" ]
+   then
+      $sudo_exec cp -R "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ -d "$archreciperesources" ]
+   then
+      $sudo_exec cp -R "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ "$revision" ]
+   then
+      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
+   fi
    if ! [ "$nomake" = "yes" ]
    then
       [ "${unmanaged_files[*]}" ] &&
