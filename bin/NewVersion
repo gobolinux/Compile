@@ -27,7 +27,8 @@ Import Compile
 
 unset packagename versionnumber
 
-[ -w "$compileLocalRecipesDir" ] || Verify_Superuser
+Check_Dir_Variable compileLocalRecipesDir
+$sudo_exec chown `whoami` "${compileLocalRecipesDir}"
 
 if [ -z "$(Arg 2)" ]
 then
@@ -37,6 +38,9 @@ fi
 app="$(Arg 1)"
 newversion="$(Arg 2)"
 newurl="$(Arg 3)"
+
+[ -d "$compileLocalRecipesDir/$app" ] && $sudo_exec chown `whoami` "$compileLocalRecipesDir/$app"
+[ -d "$compileLocalRecipesDir/$app/$newversion" ] && $sudo_exec chown -R `whoami` "$compileLocalRecipesDir/$app/$newversion"
 
 if Is_Entry "former-name"
 then srcApp="`Entry "former-name"`"

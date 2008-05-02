@@ -44,11 +44,6 @@ Parse_Conf Compile.conf
 # Checking Scripts package version
 ##################################################
 
-if Is_Writable "$compileLocalRecipesDir/$packagename" 
-then sudo=
-else sudo="sudo -u #0"
-fi
-
 if wget --help | grep -q no-check-certificate
 then wget="wget --no-check-certificate"
 else wget="wget"
@@ -57,6 +52,7 @@ fi
 [ "$PAGER" ] || PAGER=less
 
 Check_Dir_Variable compileLocalRecipesDir
+$sudo_exec chown `whoami` "${compileLocalRecipesDir}"
 
 if [ "$(Arg 3)" ]
 then
@@ -179,12 +175,12 @@ fi
 
 recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
 
-$sudo mkdir -p $recipedir/Resources
-[ "$sudo" ] && $sudo chown $USER $recipedir
+[ -d "$compileLocalRecipesDir/$packagename" ] && $sudo_exec chown `whoami` "$compileLocalRecipesDir/$packagename"
+[ -d "$compileLocalRecipesDir/$packagename/$versionnumber" ] && $sudo_exec chown -R `whoami` "$compileLocalRecipesDir/$packagename/$versionnumber"
+mkdir -p $recipedir/Resources
 
 recipefile="$recipedir/Recipe"
-
-${sudo} rm -f "$recipefile"
+rm -f "$recipefile"
 
 if [ "$compileRecipeAuthor" != "" ]
 then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipefile"
