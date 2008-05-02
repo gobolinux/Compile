@@ -29,8 +29,6 @@ then noweb=--no-web
 else noweb=
 fi
 
-Verify_Superuser "$compilePackedRecipesDir"
-
 ##################################################
 # Helper functions
 ##################################################
@@ -43,6 +41,7 @@ Import Compile
 
 Check_Dir_Variable compilePackedRecipesDir
 Check_Dir_Variable compileLocalRecipesDir
+$sudo_exec chown `whoami` "${compilePackedRecipesDir}"
 
 ##################################################
 # Operation
@@ -199,6 +198,7 @@ pack_recipe() {
       fi
       #remove backups
       find "$name/$version" | grep -E '~$' | xargs rm -f
+      [ -f "$tarball" ] && $sudo_exec rm -rf "$tarball"
       Verbose tar cjvf "$tarball" --exclude=.svn "$name/$version" || return 1
       touch "$tarball" --reference="$name/$version/Recipe"
       return 0
