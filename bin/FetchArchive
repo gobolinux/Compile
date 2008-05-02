@@ -30,11 +30,6 @@ Parse_Options "$@"
 savedir=$(Entry "save-to")
 sourcedir=$(Entry "save-directory")
 
-if Is_Writable "$savedir" || [ "$compileDisableSudo" = "yes" ]
-then sudo=
-else sudo="sudo -u #0"
-fi
-
 if wget --help | grep -q no-check-certificate
 then wget="wget --no-check-certificate"
 else wget="wget"
@@ -80,7 +75,10 @@ done
 savesourcedir="${sourcedir}"
 [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
 
+$sudo_exec chown `whoami` "${savedir}"
 cd "$savedir"
+
+[ -d "${sourcedir}" ] && $sudo_exec chown -R `whoami` "${sourcedir}"
 
 if [ "${cvss[*]}" ]
 then
@@ -160,6 +158,7 @@ fi
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
+   $sudo_exec chown `whoami` "$file"
    Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}"
    result=$?
    if [ "$result" = "0" ]
@@ -195,7 +194,7 @@ do
       then
          if Starts_With "http:" "$fetch"
          then
-            expectedlength=`$sudo $wget --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
+            expectedlength=`$wget --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
             locallength=`wc -c "$file" | cut -d" " -f1`
             if [ "$expectedlength" = "$locallength" ]
             then
@@ -204,7 +203,7 @@ do
             fi
          fi
       fi
-      $sudo $wget -O "$file" -c --passive-ftp "$fetch" || {
+      $wget -O "$file" -c --passive-ftp "$fetch" || {
          wget_url "$fileindex" "$[mirrorlevel+1]"
       }
    }
