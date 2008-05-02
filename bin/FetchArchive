@@ -68,60 +68,7 @@ archrecipe="$(Arg 2)"
 # Get sources
 ##################################################
 
-if [ "$cvs" ]
-then
-   cd "$savedir"
-   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   [ "$cvs_password" = "" ] && extra_info="( Just press enter )"
-   echo "CVS PASSWORD is \"$cvs_password\"${extra_info}"
-
-   login_method=`echo ${cvs} | cut -b-5`
-   [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
-   [ "$login_method" != ":ext:" ] && cvs -d${cvs} ${cvs_opts} ${cvs_options} login
-   cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$sourcedir" ${cvs_checkout_options} ${cvs_tag:+-r ${cvs_tag}} ${cvs_module}
-   exit $?
-elif [ "$svn" ]
-then
-   cd "$savedir"
-   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   if [ "$svn_username" ] 
-   then svn checkout $svn "${sourcedir}" --username "$svn_username" --password "$svn_password"
-   else svn checkout $svn "${sourcedir}"
-   fi
-   exit $?
-elif [ "$git" ]
-then
-   cd "$savedir"
-   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   if [ ! -d "${sourcedir}" ]
-   then git-clone $git "${sourcedir}"
-   else cd "${sourcedir}" && git-pull
-   fi
-   exit $?
-elif [ "$bzr" ]
-then
-   cd "$savedir"
-   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   if [ ! -d "${sourcedir}" ]
-   then bzr branch $bzr "${sourcedir}"
-   else cd "${sourcedir}" && bzr pull
-   fi
-   exit $?
-elif [ "$hg" ]
-then
-   cd "$savedir"
-   [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
-   if [ ! -d "${sourcedir}" ]
-   then hg clone $hg "${sourcedir}"
-   else cd "${sourcedir}" && hg update
-   fi
-   exit $?
-elif ! [ -n "$url${urls[*]}" ]
-then
-   Die "Missing URL in recipe '$recipe'."
-fi
-
-for var in url mirror_url file file_size file_md5
+for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
 do
    eval '
       if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
@@ -130,11 +77,86 @@ do
    '
 done
 
+savesourcedir="${sourcedir}"
+[ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
+
+cd "$savedir"
+
+if [ "${cvss[*]}" ]
+then
+   for cvs in "${cvss[@]}"
+   do
+      if echo "$cvs" | grep -q " "
+      then
+         origcvs="$cvs"
+         cvs="${origcvs% *}"
+         cvs_modules=("${origcvs#* }")
+      fi
+      if [ "$cvs_password" ]
+      then Log_Normal "When asked for a password, enter \"$cvs_password\"."
+      else Log_Normal "If asked for a password, just press Enter."
+      fi
+   
+      login_method=`echo ${cvs} | cut -b-5`
+      [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
+      [ "$login_method" != ":ext:" ] && cvs -d${cvs} login || exit $?
+      for cvs_module in "${cvs_modules[@]}"
+      do
+         cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$sourcedir" ${cvs_checkout_options} ${cvs_module} || exit $?
+      done
+   done
+   exit 0
+elif [ "${svns[*]}" ]
+then
+   for svn in "${svns[@]}"
+   do
+      if [ "$svn_username" ] 
+      then svn checkout "${svn}" "${sourcedir}" --username "${svn_username}" --password "${svn_password}" || exit $?
+      else svn checkout "${svn}" "${sourcedir}" || exit $?
+      fi
+   done
+   exit 0
+elif [ "${gits[*]}" ]
+then
+   for git in "${gits[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then git-clone "${git}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && git-pull || exit $?
+      fi
+   done
+   exit 0
+elif [ "${bzrs[*]}" ]
+then
+   for bzr in "${bzrs[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then bzr branch "${bzr}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && bzr pull || exit $?
+      fi
+   done
+   exit 0
+elif [ "${hgs[*]}" ]
+then
+   for hg in "${hgs[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then hg clone "${hg}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && hg update || exit $?
+      fi
+   done
+   exit 0
+elif ! [ -n "${urls[*]}" ]
+then
+   Die "Missing URL in recipe '$recipe'."
+else
+   sourcedir="${savesourcedir}"
+fi
+
 if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-Quiet pushd "$savedir"
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
@@ -191,4 +213,3 @@ do
       Die "Could not fetch '$url'."
    }
 done
-Quiet popd
