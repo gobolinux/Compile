@@ -456,6 +456,7 @@ function export_marked() {
 ##################################################
 
 Check_Dir_Variable compileDir
+$sudo_exec chown `whoami` "${compileDir}"
 [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
 for compileRecipeDir in "${compileRecipeDirs[@]}"
 do
@@ -465,6 +466,7 @@ Check_Dir_Variable compileDependenciesDir
 Check_Dir_Variable compileArchivesDir
 Check_Dir_Variable compileSourcesDir
 Check_Dir_Variable compilePackedRecipesDir
+$sudo_exec chown `whoami` "${compileSourcesDir}"
 
 ##################################################
 # Find and Get Recipe
@@ -933,7 +935,7 @@ else
       fi
       case $REPLY in
       [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" ;;
+      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
       [Uu]) unpack=no ;;
       [Cc]) exit 0 ;;
       esac # esac is ridiculous.
@@ -973,6 +975,7 @@ else
 
       if [ "$unpack_files" -o $i -eq 0 ]; then
          Quiet pushd "$compileSourcesDir"
+         [ -d "${tempdir}" ] && $sudo_exec rm -rf "${tempdir}"
          mkdir "${tempdir}"
       fi
 
@@ -984,7 +987,7 @@ else
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
          mkdir -p "$drop"
-         $chown -R --reference="${tempdir}" "${tempdir}"
+         $sudo_exec $chown -R --reference="${tempdir}" "${tempdir}"
          Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
          rm -rf "${tempdir}"
          Quiet popd
