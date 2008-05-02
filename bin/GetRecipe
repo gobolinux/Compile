@@ -41,11 +41,8 @@ Boolean "no-web" && noweb="--no-web"
 ##################################################
 
 Check_Dir_Variable compileGetRecipeDir
-
-if Is_Writable "$compileGetRecipeDir" || [ "$compileDisableSudo" = "yes" ]
-then sudo=
-else sudo="sudo -u #0"
-fi
+# Ensure that current user can read and write recipes
+$sudo_exec chown `whoami` "$compileGetRecipeDir"
 
 if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
 then
@@ -77,6 +74,8 @@ do
    Log_Verbose "Trying to get $app $version from $rawrecipe"
    Log_Normal "Trying to get $rawrecipe"
    
+   $sudo_exec mkdir -p "$compileGetRecipeDir/$app/$version"
+   $sudo_exec chown `whoami` "$compileGetRecipeDir/$app"
    
    #####################################################
    # Case #1 and #2: recipe is a local directory
@@ -91,6 +90,7 @@ do
       do
          if Starts_With $compileRecipeDir "$rawrecipe"
          then
+            $sudo_exec chown -R `whoami` "$compileRecipeDir/$app/$version"
             echo "$compileRecipeDir/$app/$version"
             exit 0
          fi
@@ -99,9 +99,8 @@ do
       #####################################################
       # Case #2: recipe is a local directory, but not at $compileRecipeDirs[@]
       #####################################################
-   
-      $sudo mkdir -p "$compileGetRecipeDir/$app/"
-      $sudo cp -R "$rawrecipe" "$compileGetRecipeDir/$app/"
+      $sudo_exec cp -R "${rawrecipe%%/}"/* "$compileGetRecipeDir/$app/$version"
+      $sudo_exec chown -R `whoami` "$compileRecipeDir/$app/$version"
       echo "$compileGetRecipeDir/$app/$version"
       exit 0
    fi
@@ -112,7 +111,8 @@ do
    #####################################################
    if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
    then
-      Verbose $sudo tar xjvf "$rawrecipe" -C "$compileGetRecipeDir"
+      Verbose $sudo_exec tar xjvf "$rawrecipe" -C "$compileGetRecipeDir"
+      $sudo_exec chown -R `whoami` "$compileGetRecipeDir/$app/$version"
       echo "$compileGetRecipeDir/$app/$version"
       exit 0
    fi
@@ -129,7 +129,8 @@ do
       then wget="wget --no-check-certificate"
       else wget="wget"
       fi
-      $wget -t 5 "$rawrecipe" -O - -q | Verbose $sudo tar xjvf - -C "$compileGetRecipeDir"
+      $wget -t 5 "$rawrecipe" -O - -q | Verbose $sudo_exec tar xjvf - -C "$compileGetRecipeDir"
+      $sudo_exec chown -R `whoami` "$compileGetRecipeDir/$app/$version" 2>/dev/null
       if [ -d "$compileGetRecipeDir/$app/$version" ]
       then
          echo "$compileGetRecipeDir/$app/$version"
