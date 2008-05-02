@@ -479,6 +479,12 @@ test_urls() {
                   unzip -t $file || {
                      ERROR "Downloaded file $file is corrupted."
                   }
+               elif [ ${file%.lzma} != $file ]
+               then
+                  msg "Testing integrity of archive $file..."
+                  lzma -t $file || {
+                     ERROR "Downloaded file $file is corrupted."
+                  }
                else
                   WARN "Type of archive $file not detected. No integrity check performed."
                fi
@@ -754,7 +760,7 @@ test_resources() {
             fi
          done
       }
-      
+
       eval "no_nothing=(`missing_deps recipe,official_package`)"
       eval "no_recipe=(`missing_deps recipe`)"
       j=0
