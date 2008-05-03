@@ -41,7 +41,7 @@ Import Compile
 
 Check_Dir_Variable compilePackedRecipesDir
 Check_Dir_Variable compileLocalRecipesDir
-$sudo_exec chown `whoami` "${compilePackedRecipesDir}"
+[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compilePackedRecipesDir}"
 
 ##################################################
 # Operation
