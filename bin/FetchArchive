@@ -139,7 +139,7 @@ Quiet pushd "$savedir"
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
-   [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "$file"
+   [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" ] && $sudo_exec chown `whoami` "$file"
    Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}"
    result=$?
    if [ "$result" = "0" ]
