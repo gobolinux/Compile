@@ -1189,8 +1189,8 @@ then
    Quiet python -V || Die "This is a python type recipe and you don't seem to have python installed."
    build_tree_if "true"
    pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
-   sitepackages="${target}/lib/python${pythonversion}"
-   mkdir -p "$sitepackages"
+   sitepackages="${target}/lib/python${pythonversion}/site-packages"
+   $sudo_exec mkdir -p "$sitepackages"
    if [ ! "$build_script" ]
    then
       for i in setup.py configure.py build.py
