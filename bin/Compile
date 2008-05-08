@@ -247,7 +247,7 @@ function install_extras() {
 
    if [ "$app" = "$appname" ]
    then
-      CheckDependencies --mode=convert $app $version recipe $recipedir | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
+      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
    fi
 
    if [ "$app" ]
