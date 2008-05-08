@@ -128,7 +128,7 @@ Update_Recipe() {
    Quiet pushd $recipedir
    # Version-specific data should be stripped out
    mv Recipe Recipe.old
-   sed "s:$oldversion:$newversion:g;${switchurls}" Recipe.old |\
+   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${switchurls}" Recipe.old |\
    awk '
    BEGIN { skip=0; }
    /^file_md5s=\([^)]*$/ { skip=2; }
