@@ -9,6 +9,7 @@
 . ScriptFunctions
 Import OptionParser
 Import File
+Import String
 Import Terminal
 Import GoboLinux
 Import Array
@@ -640,25 +641,15 @@ then versionnumber=`Entry "version-number"`
 else versionnumber="$version"
 fi
 
-if [ "$versionnumber" = "CVS" -o "$versionnumber" = "cvs" ]
-then versionnumber=`date +%Y%m%d`"-CVS"
-fi
-
-if [ "$versionnumber" = "SVN" -o "$versionnumber" = "svn" ]
-then versionnumber=`date +%Y%m%d`"-SVN"
-fi
-
-if [ "$versionnumber" = "GIT" -o "$versionnumber" = "git" ]
-then versionnumber=`date +%Y%m%d`"-GIT"
-fi
-
-if [ "$versionnumber" = "BZR" -o "$versionnumber" = "bzr" ]
-then versionnumber=`date +%Y%m%d`"-BZR"
-fi
-
-if [ "$versionnumber" = "HG" -o "$versionnumber" = "hg" ]
-then versionnumber=`date +%Y%m%d`"-HG"
-fi
+upperversion=`Uppercase "$versionnumber"`
+for upperscm in CVS SVN GIT BZR HG
+do
+   if [ "$upperversion" = "$upperscm" ]
+   then
+      versionnumber=`date +%Y%m%d`"-$upperversion"
+      break
+   fi
+done
 
 target=`Get_Dir runtime $appname $versionnumber`
 settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
@@ -818,11 +809,7 @@ fi
 # Construct some variable arrays
 ##################################################
 
-if ! [ -n "${cvs}${svn}${git}${bzr}${hg}${url}${urls[*]}" ]
-then Die "Missing URL, CVS, SVN, GIT, BZR or HG in recipe '$recipe'."
-fi
-
-for var in url file file_size file_md5
+for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
 do
    eval '
       if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
@@ -831,11 +818,19 @@ do
    '
 done
 
+function is_scm_recipe() {
+   [ "${cvss[*]}${svns[*]}${gits[*]}${bzrs[*]}${hgs[*]}" ]
+}
+
+if [ ! "${urls[*]}" ] && ! is_scm_recipe
+then Die "Missing URL or repository information in recipe '$recipe'."
+fi
+
 if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
-if [ "${cvs}" -o "${svn}" -o "${git}" -o "${bzr}" -o "${hg}" ]
+if is_scm_recipe
 then
    if [ -z "${dir}" ]
    then
@@ -892,31 +887,11 @@ fi
 # Get & Unpack sources
 ##################################################
 savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
-if [ "$cvs" ]
+if is_scm_recipe
 then
    # If sources were already fetched, do not patch again
    [ -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching CVS snapshot."
-   Boolean "no-build" && exit 0
-elif [ "$svn" ]
-then
-   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching SVN snapshot."
-   Boolean "no-build" && exit 0
-elif [ "$git" ]
-then
-   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching GIT snapshot."
-   Boolean "no-build" && exit 0
-elif [ "$bzr" ]
-then
-   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching BZR snapshot."
-   Boolean "no-build" && exit 0
-elif [ "$hg" ]
-then
-   [ "${dir}" -a -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching HG snapshot."
+   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
    Boolean "no-build" && exit 0
 else
    if ! Boolean "no-web"
