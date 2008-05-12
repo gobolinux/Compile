@@ -909,7 +909,7 @@ else
 
    pfiles=`
       for i in "${files[@]}"
-      do find "$compileArchivesDir" -name "$i"
+      do ls "$compileArchivesDir"/"$i"
       done
    `
    String_To_Array files "$pfiles"
