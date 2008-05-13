@@ -1111,9 +1111,7 @@ then
       ) || exit 1
    fi
    if ! [ "$do_build" = "no" ]
-   then 
-      run_hooks post_configure || wrap_fail "Failure in post-configure operation."
-      $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
+   then $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
    fi
    Boolean "no-install" && exit
    build_tree_if "$create_dirs_first" != "yes"
