@@ -104,7 +104,7 @@ then
    hg_repository="$source_url"
 else
    # TODO: generalize mirror system
-   url=`echo "$source_url" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
+   url=`echo "$source_url" | sed -r 's,http://.*.sourceforge.net(/sourceforge)?/,$httpSourceforge/,'`
    url=`echo "$url" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
 
    bname=`basename "$source_url" .tar.gz`
