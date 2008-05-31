@@ -775,7 +775,7 @@ fi
 
 if [ "${compileMetaRecipe}" != "1" -a -n "$part_of" ]
 then
-   if ! Boolean "install-separately"
+   if ! ( Boolean "install-separately" || Boolean "no-build" )
    then
       appname="$part_of"
       versionnumber=$(Get_Version "$appname" "Current")
