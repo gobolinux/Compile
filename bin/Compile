@@ -876,9 +876,9 @@ mark_export dir archsubdir recipedir
 ##################################################
 if [ "$goboCrossCompiling" = "yes" ]
 then
-   if [ "$recipe_type" = "configure" ] && config_is_autoconf
-   then cross_array=configure_options
-   else cross_array=compileMakeOptions
+   if [ "$recipe_type" != "configure" ]
+   then cross_array=compileMakeOptions
+   else cross_array=""
    fi
    eval `combine_arrays $cross_array $cross_array cross_make_variables`
 fi
