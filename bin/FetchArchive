@@ -101,7 +101,8 @@ then
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login || exit $?
       for cvs_module in "${cvs_modules[@]}"
       do
-         cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$sourcedir" ${cvs_checkout_options} ${cvs_module} || exit $?
+         checkout_dir=`basename "$sourcedir"`
+         cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$checkout_dir" ${cvs_checkout_options} ${cvs_module} || exit $?
       done
    done
    exit 0
