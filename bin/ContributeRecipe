@@ -41,8 +41,8 @@ version="$(Arg 2)"
 
 # Uncompress the file if it's a tarball
 if file $entry | grep -q bzip2
-then 
-   entry=`aunpack $entry --extract-to=$compileLocalRecipesDir | cut -d/ -f1 | head -n 1`
+then
+   entry=`Unpack_Archive $entry $compileLocalRecipesDir | cut -d/ -f1 | head -n 1`
 # Get path from LocalRecipes if only a name is given
 elif ! echo $entry | grep -q /
 then
