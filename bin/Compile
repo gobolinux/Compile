@@ -849,8 +849,8 @@ then
 else
    if [ ! -n "${dirs[*]}" ]
    then
-      remove_tar_extension() { echo "$1" | sed "s/\.t.*//" ;}
-      String_To_Array dirs "`Map remove_tar_extension "${files[@]}"`"
+      remove_archive_extension() { echo "$1" | sed -r "s/\.(tar|tbz|tgz|zip).*//" ;}
+      String_To_Array dirs "`Map remove_archive_extension "${files[@]}"`"
    fi
 fi
 
