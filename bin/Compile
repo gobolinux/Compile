@@ -1100,7 +1100,7 @@ then
             eval export $var=\'$val\'
          done
          [ "$autogen" ] || autogen="autogen.sh"
-         [ -e "./$autogen" ] && autogen="./$autogen"
+         [ -e "./$autogen" ] && autogen="./$autogen" && chmod +x $autogen
          [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
          prepareoptions=(
             --verbose
