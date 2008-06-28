@@ -42,7 +42,7 @@ Boolean "no-web" && noweb="--no-web"
 
 Check_Dir_Variable compileGetRecipeDir
 # Ensure that current user can read and write recipes
-[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir"
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileGetRecipeDir" -o ! -x "$compileGetRecipeDir" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir"
 
 if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
 then
@@ -73,10 +73,10 @@ do
    
    Log_Verbose "Trying to get $app $version from $rawrecipe"
    Log_Normal "Trying to get $rawrecipe"
-   
-   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app"
-   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app/$version" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app/$version"
-   
+
+   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app" ] && [ ! -w "$compileGetRecipeDir/$app" -o ! -x "$compileGetRecipeDir/$app" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app"
+   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app/$version" ] && [ ! -w "$compileGetRecipeDir/$app/$version" -o ! -x "$compileGetRecipeDir/$app/$version" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app/$version"
+
    #####################################################
    # Case #1 and #2: recipe is a local directory
    #####################################################

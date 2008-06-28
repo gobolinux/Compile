@@ -28,7 +28,7 @@ Import Compile
 unset packagename versionnumber
 
 Check_Dir_Variable compileLocalRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileLocalRecipesDir}"
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileLocalRecipesDir" -o ! -x "$compileLocalRecipesDir" ] && $sudo_exec chown `whoami` "${compileLocalRecipesDir}"
 
 if [ -z "$(Arg 2)" ]
 then
@@ -39,8 +39,8 @@ app="$(Arg 1)"
 newversion="$(Arg 2)"
 newurl="$(Arg 3)"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app" ] && $sudo_exec chown `whoami` "$compileLocalRecipesDir/$app"
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app/$newversion" ] && $sudo_exec chown -R `whoami` "$compileLocalRecipesDir/$app/$newversion"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app" ] && [ ! -w "$compileLocalRecipesDir/$app" -o ! -x "$compileLocalRecipesDir/$app" ] && $sudo_exec chown `whoami` "$compileLocalRecipesDir/$app"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app/$newversion" ] && [ ! -w "$compileLocalRecipesDir/$app/$newversion" -o ! -x "$compileLocalRecipesDir/$app/$newversion" ] && $sudo_exec chown -R `whoami` "$compileLocalRecipesDir/$app/$newversion"
 
 if Is_Entry "former-name"
 then srcApp="`Entry "former-name"`"

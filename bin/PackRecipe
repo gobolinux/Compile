@@ -41,7 +41,7 @@ Import Compile
 
 Check_Dir_Variable compilePackedRecipesDir
 Check_Dir_Variable compileLocalRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compilePackedRecipesDir}"
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compilePackedRecipesDir}" -o ! -x "${compilePackedRecipesDir}" ] && $sudo_exec chown $(whoami) "${compilePackedRecipesDir}"
 
 ##################################################
 # Operation
@@ -198,7 +198,7 @@ pack_recipe() {
       fi
       #remove backups
       find "$name/$version" | grep -E '~$' | xargs rm -f
-      [ -f "$tarball" ] && $sudo_exec rm -rf "$tarball"
+      [ -f "$tarball" ] && rm -f "$tarball" 2>/dev/null || $sudo_exec rm -f "$tarball"
       Verbose tar cjvf "$tarball" --exclude=.svn "$name/$version" || return 1
       touch "$tarball" --reference="$name/$version/Recipe"
       return 0
