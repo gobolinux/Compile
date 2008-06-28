@@ -804,6 +804,35 @@ test_resources() {
 
 cat Recipe | grep -q "recipe_type=meta" || test_resources
 
+valid_vars="
+Compile_goboDevices
+Compile_goboModules
+Compile_goboExecutables
+Compile_goboHeaders
+Compile_goboModules
+Compile_goboLibraries
+Compile_goboPrograms
+Compile_goboSettings
+Compile_goboTemp
+Compile_goboVariable
+Compile_target
+Compile_settings_target
+Compile_variable_target
+"
+
+read_valid_dep_vars()
+{
+    for i in `cat Resources/Dependencies | cut -d' ' -f1`
+    do
+        var=`echo $i | tr A-Z a-z | tr - _`
+        valid_vars="$valid_vars
+        Compile_$var""_path
+        Compile_$var""_settings_path
+        Compile_$var""_variable_path
+        "
+    done
+}
+
 test_patch() {
    patchfile=$1
    msg "Checking patch ${patchfile}..."
@@ -824,7 +853,20 @@ test_patch() {
    firstrow=$(head -n1 "${patchfile}")
    echo ${firstrow} | grep -q '^--- ' || echo ${firstrow} | grep -q '^diff ' && 
       WARN "Patch file ${patchfile} lacks rationale. Please consider adding reason for patch to the top of the file."
+
+   for i in `sed -r '/@%[^ %]+%@/!d' $1`
+   do
+      var=`echo $i | sed -r '/@%[^ %]+%@/!d' | sed -r 's/^.*@%([^ %]+)%@.*$/\1/g'`
+      if [ -n "$var" ]
+      then
+         if [ -z "`echo $valid_vars | grep $var`" ]
+         then ERROR "Patch uses invalid environment variable (@%$var%@)."
+         fi
+      fi
+   done
 }
+
+read_valid_dep_vars
 
 ls *.patch *.patch.in 2> /dev/null | while read patch
 do
