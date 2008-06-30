@@ -225,7 +225,7 @@ else
       # Detect URLs that feature redirects, like funky "...download.php?pkg=1234" URLs.
       file_headers=`Temporary_File`
       $wget --spider --server-response "$source_url" 2> $file_headers
-      filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//'`
+      filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//' | uniq`
       if [ -z "$filename" ]
       then
          filename=`grep -i '=> .*' "$file_headers" | sed 's,.*=> .\(.*\).$,\1,' | tail -n 1`
