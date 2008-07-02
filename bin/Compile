@@ -754,7 +754,7 @@ then
          then continue
          fi
       fi
-      in_host $0 $compileoptions --keep --app-name "$appname" --version-number "$versionnumber" "$iname" "$iversion"
+      in_host $0 $compileoptions --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
       if [ "$?" -gt 0 ]
       then
          Die "Compilation of $iname $iversion failed."
