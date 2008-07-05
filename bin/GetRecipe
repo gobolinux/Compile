@@ -127,6 +127,8 @@ do
       else wget="wget"
       fi
       $wget -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
+      [ ${PIPESTATUS[0]} != 0 ] && Die "Could not fetch recipe. Check URL (${rawrecipe})"
+      
       if [ -d "$compileGetRecipeDir/$app/$version" ]
       then
          echo "$compileGetRecipeDir/$app/$version"
