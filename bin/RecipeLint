@@ -176,7 +176,7 @@ function check_dir() {
             }
          }
          ;;
-      i686|ppc|arm|sh4|x86_64)
+      i686|ppc|arm|sh4|x86_64|cell)
          [ "$1" = "root" ] && {
             arches=("${arches[@]}" $file)
          } || {
