@@ -133,9 +133,9 @@ function run_hooks() {
    fi
    for flag in "${useflags[@]}"
    do
-      if is_function_set "using_{$flag}_{$hook}"
+      if is_function_set "using_${flag}_${hook}"
       then
-         Run_Hook "using_{$flag}_{$hook}" || ret=$?
+         Run_Hook "using_${flag}_${hook}" || ret=$?
       fi
    done
    return $ret
