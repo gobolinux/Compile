@@ -890,8 +890,28 @@ savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --sa
 if is_scm_recipe
 then
    # If sources were already fetched, do not patch again
-   [ -d "${dir}" ] && skippatching=yes
-   Boolean "no-web" || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
+   if [ -d "${dir}" ]
+   then
+      if [ -z "$(echo "${version}" | grep -qiE "svn|cvs|git|bzr|hg")" ]
+      then
+         if Boolean "lazy"
+         then REPLY=u
+         elif Boolean "batch"
+         then REPLY=r
+         else
+            Log_Question "Directory '${basedirs[0]}' already exists."
+            Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
+         fi
+         case $REPLY in
+         [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
+         [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
+         [Uu]) nofetch=yes; skippatching=yes ;;
+         [Cc]) exit 0 ;;
+         esac # esac is ridiculous.
+      else skippatching=yes
+      fi
+   fi
+   Boolean "no-web" || [ "$nofetch" == "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
    Boolean "no-build" && exit 0
 else
    if ! Boolean "no-web"
