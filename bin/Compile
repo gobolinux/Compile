@@ -1091,7 +1091,7 @@ then
    run_hooks pre_build || wrap_fail "Failure in pre-build operation."
    if ! Boolean "lazy"
    then
-      [ -f "$configure" ] && chmod +x "$configure"
+      [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || $sudo_exec chmod +x "$configure" 2>/dev/null )
       (
          for i in "${configure_variables[@]}"
          do
