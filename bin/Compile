@@ -146,11 +146,13 @@ function do_symlink() {
    local nomake=no
    local forcelink=no
    local noextras=no
+   local nohooks=no
    while true
    do
       case "$1" in
       --no-make) nomake=yes ; shift ;;
       --no-extras) noextras=yes ; shift ;;
+      --no-hooks) nohooks=yes ; shift ;;
       --force-link) forcelink=yes ; shift ;;
       *) break ;;
       esac # it still is.
@@ -222,7 +224,10 @@ function do_symlink() {
       done
    fi
 
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   if ! [ "$nohooks" = "yes" ]
+   then
+      run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   fi
    if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
@@ -1080,7 +1085,7 @@ then
    then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
       $sudo_exec cp -R "$installprefix" "$installprefix-Compile-old"
-      do_symlink --force-link --no-make --no-extras "$appname" "$version-Compile-old"
+      do_symlink --force-link --no-make --no-extras --no-hooks "$appname" "$version-Compile-old"
    fi
 fi
 
