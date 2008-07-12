@@ -901,6 +901,8 @@ then
       then
          if Boolean "lazy"
          then REPLY=u
+         elif Boolean "no-web"
+         then REPLY=u
          elif Boolean "batch"
          then REPLY=r
          else
