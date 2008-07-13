@@ -1053,9 +1053,19 @@ then
 fi
 
 ##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+useflags=(`UseFlags $bakedrecipedir`)
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
+
+##################################################
 # Gather common options from the recipe
 ##################################################
-
 unset buildmerged
 eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables`
 ! [ "$install_target" ] && install_target="install"
@@ -1094,11 +1104,6 @@ fi
 ##################################################
 # Compile!
 ##################################################
-useflags=(`UseFlags $bakedrecipedir`)
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
 if [ "$recipe_type" = "configure" ]
 then
    eval `combine_arrays config configure_options userconfigureoptions`
