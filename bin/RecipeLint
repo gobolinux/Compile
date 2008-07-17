@@ -431,7 +431,7 @@ test_urls() {
             wget --quiet $spider --timeout=20 --tries=3 "$mirror_url"
          fi
       fi
-   }      
+   }
 
    for i in `seq 0 $[${#urls[@]}-1]`
    do
@@ -443,6 +443,10 @@ test_urls() {
       then
          full_check=yes
          spider=
+         if [ "$file_size" = "0" ]
+         then
+            ERROR "Zero file size specified for $url."
+         fi
       else
          full_check=no
          spider=--spider
