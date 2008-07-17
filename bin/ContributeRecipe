@@ -68,6 +68,8 @@ then
    version=`ls "$entry"`
 fi
 
+PackRecipe $program $version || Die "Recipe failed validation. Not submitting."
+
 [ -r "$entry/$version/Recipe" ] || Die "Could not read Recipe file in $entry/$version."
 
 # Perform some simple cleanups
