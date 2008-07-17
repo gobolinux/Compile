@@ -801,9 +801,15 @@ test_resources() {
       [ ! "$part_of" ] && ERROR "No $depfile file."
    fi
    [ "$part_of" ] && Quiet popd
-   [ -f Resources/Description ] || {
+   if [ -f Resources/Description ]
+   then
+      if grep -e '^\[License\] \(GNU \)\?\(GPL\|General Public Licen[cs]e\)$' Resources/Description
+      then
+         ERROR "No version of GPL specified in Resources/Description."
+      fi
+   else
       WARN "No Resources/Description file."
-   }
+   fi
 }
 
 cat Recipe | grep -q "recipe_type=meta" || test_resources
