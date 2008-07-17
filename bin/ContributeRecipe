@@ -69,6 +69,7 @@ then
 fi
 
 PackRecipe $program $version || Die "Recipe failed validation. Not submitting."
+[ -r "$entry/$version/Resources/Description" ] || Die "No description file found. Not submitting."
 
 [ -r "$entry/$version/Recipe" ] || Die "Could not read Recipe file in $entry/$version."
 
