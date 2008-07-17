@@ -64,7 +64,7 @@ program=`basename $entry`
 
 if ! [ "$version" ]
 then
-   [ `ls "$entry" | wc -l` -eq 1 ] || Die "Please specify a version for $program."
+   [ `ls "$entry" | wc -l` -eq 1 ] || Die "Please specify a version for $program. Available versions are:\n$(ls $entry)"
    version=`ls "$entry"`
 fi
 
