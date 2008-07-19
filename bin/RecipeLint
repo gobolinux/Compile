@@ -803,7 +803,7 @@ test_resources() {
    [ "$part_of" ] && Quiet popd
    if [ -f Resources/Description ]
    then
-      if grep -e '^\[License\] \(GNU \)\?\(GPL\|General Public Licen[cs]e\)$' Resources/Description
+      if grep -ie '^\[License\] \(GNU \)\?\(GPL\|General Public Licen[cs]e\)$' Resources/Description
       then
          ERROR "No version of GPL specified in Resources/Description."
       fi
