@@ -111,6 +111,7 @@ handle_description() {
                   361b6b837cad26c6900a926b62aada5f) newlicense="GNU General Public License version 2" ;;
                   878e3965c7b52d85827c75f5a2f3b314) newlicense="GNU General Public License version 2" ;;
                   526c29250ae72f6933cdc01414b9943b) newlicense="GNU General Public License version 2" ;;
+                  9ac2e7cff1ddaf48b6eab6028f23ef88) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Linux kernel
                   d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
                   # LGPL2 Mass Ave
