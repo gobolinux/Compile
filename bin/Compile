@@ -705,6 +705,7 @@ then
       var=`echo $i | cut -d= -f 1`
       val=`echo $i | cut -d= -f 2-`
       eval export $var=\'$val\'
+      mark_export $var
    done
 fi
 
