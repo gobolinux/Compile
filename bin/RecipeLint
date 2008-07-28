@@ -724,6 +724,14 @@ test_recipe() {
    sed 's,#.*,,g' Recipe | grep "wget" | grep -q -v "url=\|urls=" && {
       ERROR "Recipe performs wget explicitly. Use the urls= array instead."
    }
+   unset url
+   unset file
+   unset file_size
+   unset file_md5
+   unset urls
+   unset files
+   unset file_sizes
+   unset file_md5s
 }
 
 if [ "$test_recipe" = "yes" ]
