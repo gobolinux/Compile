@@ -196,7 +196,7 @@ function do_symlink() {
       then
          $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
          for file in "${unmanaged_files[@]}"
-         do echo $file | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
+         do echo $file | sed 's,'"$goboPrefix"',,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
          done
          if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
          then
