@@ -158,7 +158,7 @@ function Run_Hook() {
    return ${rtn}
 }
 
-function Add_Flags_To_Array() {
+function Add_Use_Flags_Options_To_Array() {
    array=$1
    for flag in "${useflags[@]}"
    do

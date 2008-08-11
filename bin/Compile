@@ -1109,7 +1109,7 @@ fi
 if [ "$recipe_type" = "configure" ]
 then
    eval `combine_arrays config configure_options userconfigureoptions`
-   Add_Flags_To_Array config
+   Add_Use_Flags_Options_To_Array config
    [ "$configure" ] || configure="./configure"
    if [ "$needs_build_directory" = "yes" ]
    then
@@ -1180,7 +1180,7 @@ build_python_options() {
       esac
    fi
    eval `combine_arrays opts python_options default_python_options`
-   Add_Flags_To_Array opts
+   Add_Use_Flags_Options_To_Array opts
 
    if [ ! -z "$goboIndex" ]
    then opts=(`echo ${opts[@]} | sed "s,$target,$goboIndex,g"`)
@@ -1325,7 +1325,7 @@ fi
 if [ "$recipe_type" = "makefile" ]
 then
    build_tree_if "$create_dirs_first" = "yes"
-   Add_Flags_To_Array buildmerged
+   Add_Use_Flags_Options_To_Array buildmerged
    if ! [ "$do_build" = "no" ]
    then
       run_hooks pre_build || wrap_fail "Failure in pre-build operation."
@@ -1357,7 +1357,7 @@ then
          "prefix=$target"
       )
    fi
-   Add_Flags_To_Array scons_variables
+   Add_Use_Flags_Options_To_Array scons_variables
 
    if [ ! -z "$goboIndex" ]
    then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
@@ -1384,7 +1384,7 @@ if [ "$recipe_type" = "cmake" ]
 then
    Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
    eval `combine_arrays config cmake_options usercmakeoptions`
-   Add_Flags_To_Array config
+   Add_Use_Flags_Options_To_Array config
    # cmake always use its own build directory
    needs_build_directory="yes"
    builddir="${dir}/_build"
@@ -1460,7 +1460,7 @@ then
          "--prefix=$target"
       )
    fi
-   Add_Flags_To_Array cabal_options
+   Add_Use_Flags_Options_To_Array cabal_options
    if [ ! -z "$goboIndex" ]
    then
       cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
