@@ -164,13 +164,7 @@ function Add_Use_Flags_Options_To_Array() {
    do
       if [ -n "`eval echo '$'with_$flag`" ]
       then
-         if declare -p with_$flag | grep -q 'declare -a'
-         then
-            # It's an array
-            eval `combine_arrays $array $array with_$flag`
-         else
-            config=(${config:+"${config[@]}"} "`eval echo '$'with_$flag`")
-         fi
+         eval `combine_arrays $array $array with_$flag`
       fi
    done
 }
