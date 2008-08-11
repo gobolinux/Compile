@@ -294,7 +294,7 @@ cat Recipe | perl -e '
    );
    sub check_array_name {
       my ($name, $num) = @_;
-      if ($decls{$name} ne "array") {
+      if (($decls{$name} ne "array") && !($name =~ /^with_[a-z0-9_]+$/)) {
          print "Error at line ".$num.": ".$name." is not a valid array.\n";
          exit 1;
       }
