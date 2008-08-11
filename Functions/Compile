@@ -157,3 +157,20 @@ function Run_Hook() {
    rm -f ${hookscript}
    return ${rtn}
 }
+
+function Add_Flags_To_Array() {
+   array=$1
+   for flag in "${useflags[@]}"
+   do
+      if [ -n "`eval echo '$'with_$flag`" ]
+      then
+         if declare -p with_$flag | grep -q 'declare -a'
+         then
+            # It's an array
+            eval `combine_arrays $array $array with_$flag`
+         else
+            config=(${config:+"${config[@]}"} "`eval echo '$'with_$flag`")
+         fi
+      fi
+   done
+}
