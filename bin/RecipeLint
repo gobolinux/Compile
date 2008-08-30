@@ -629,9 +629,9 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       autogen=configure
-      build_variables=configure,makefile,cmake,scons,cabal
+      build_variables=configure,makefile,cmake,xmkmf,scons,cabal
       install_variables=configure,makefile,cmake,xmkmf,scons,cabal
-      make_variables=configure,makefile
+      make_variables=configure,makefile,xmkmf
       cmake_variables=cmake
       configure=configure
       makefile=configure,makefile,cmake,xmkmf
