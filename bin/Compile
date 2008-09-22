@@ -330,15 +330,20 @@ function wrapup() {
             Log_Verbose $(cat "$recipedeps")
          fi
       fi
+      packerror=
       if ! Boolean "batch"
       then
          Log_Normal "Packing recipe directory..."
          PackRecipe $noweb "$app" "$versionandrevision" || {
             Log_Error "Failed packing recipe."
+            packerror=yes
          }
       fi
-      Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-      Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      if ! [ "$packerror" ]
+      then
+         Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      fi
    fi
    if [ -n "$post_install_message" ]
    then
