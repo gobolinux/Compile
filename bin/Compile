@@ -607,7 +607,7 @@ fi
 dependencies_file=$bakedrecipedir/Resources/Dependencies
 if [ -f "$dependencies_file" ]
 then
-   for dep in "$(CheckDependencies --no-recursive --types=installed --quiet-progress --mode=all --file "$dependencies_file")"
+   while read dep
    do
       depname="$(echo $dep | cut -d ' ' -f1)"
       depverrev="$(echo $dep | cut -d ' ' -f2)"
@@ -620,7 +620,7 @@ then
       eval $lowercasename'_settings_path="'"$dep_settings_path"'"'
       eval $lowercasename'_variable_path="'"$dep_variable_path"'"'
       mark_export ${lowercasename}_path ${lowercasename}_settings_path ${lowercasename}_variable_path
-   done
+   done < <(CheckDependencies --no-recursive --types=installed --quiet-progress --mode=all --file "$dependencies_file")
 fi
 
 ##################################################
