@@ -753,6 +753,7 @@ done
 if [ "$recipe_type" = "meta" ]
 then
    Add_Use_Flags_Options_To_Array include
+   [ -z "${include}" ] && Die "Recipe type is \"meta\", but no sub-recipes are included."
    started=no
    export compileMetaRecipe=1
    for item in "${include[@]}"
