@@ -750,8 +750,9 @@ done
 # Meta-recipe
 ##################################################
 
-if [ "${include[*]}" ]
+if [ "$recipe_type" = "meta" ]
 then
+   Add_Use_Flags_Options_To_Array include
    started=no
    export compileMetaRecipe=1
    for item in "${include[@]}"
