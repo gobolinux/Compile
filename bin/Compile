@@ -736,6 +736,17 @@ then
 fi
 
 ##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+useflags=(`UseFlags $bakedrecipedir`)
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
+
+##################################################
 # Meta-recipe
 ##################################################
 
@@ -1048,17 +1059,6 @@ then
 
    popd &> /dev/null
 fi
-
-##################################################
-# Get the active useflags for this recipe, and
-# execute the hooks here so any variable updates
-# occur in time.
-##################################################
-useflags=(`UseFlags $bakedrecipedir`)
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
 
 ##################################################
 # Gather common options from the recipe
