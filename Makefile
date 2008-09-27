@@ -42,7 +42,7 @@ dist: version_check verify manuals tarball
 	@read
 	@make tag
 
-tag: verify
+tag: version_check verify
 	svn cp http://svn.gobolinux.org/tools/trunk/$(PROGRAM) http://svn.gobolinux.org/tools/tags/$(SVNTAG) -m\"Tagging $(PROGRAM) $(VERSION)\"
 	@echo "Switching to tag (http://svn.gobolinux.org/tools/tags/$(SVNTAG))"
 	@svn switch http://svn.gobolinux.org/tools/tags/$(SVNTAG)
