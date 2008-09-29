@@ -121,8 +121,8 @@ then
    for git in "${gits[@]}"
    do
       if [ ! -d "${sourcedir}" ]
-      then git-clone "${git}" "${sourcedir}" || exit $?
-      else cd "${sourcedir}" && git-pull || exit $?
+      then git clone "${git}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && git pull || exit $?
       fi
    done
    exit 0
