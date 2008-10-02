@@ -126,7 +126,7 @@ do
       then wget="wget --no-check-certificate"
       else wget="wget"
       fi
-      $wget --header='Accept: application/x-gobolinux-recipe, application/x-bzip2;q=0.9, */*;q=0.1' -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
+      $wget --header='Accept: application/x-gobo-recipe, application/x-bzip2;q=0.9, */*;q=0.1' -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
       [ ${PIPESTATUS[0]} != 0 ] && Die "Could not fetch recipe. Check URL (${rawrecipe})"
       
       if [ -d "$compileGetRecipeDir/$app/$version" ]
