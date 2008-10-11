@@ -709,7 +709,8 @@ test_recipe() {
    grep -q '$goboPrograms' Recipe && {
       ERROR "Recipe references \$goboPrograms explicitly. Use \$target and \$<dep>_path."
    }
-   sed 's,#.*,,g' Recipe | grep -q "/Programs" && {
+   # The obscure sed expression excludes url(s) variable from the check
+   sed -e 's,#.*,,g' -e "/url/ {;/.*(/{;:loop;/.*)/b end;N; b loop;};:end;d}" Recipe | grep -q "/Programs" && {
       ERROR "Recipe references /Programs tree explicitly. Use \$target and \$<dep>_path."
    }
    grep -q "\$target/../Settings" Recipe && {
