@@ -588,6 +588,7 @@ fi
 recipedir="$bakedrecipedir"
 reciperesources="$recipedir/Resources"
 archreciperesources="$archsubdir/Resources"
+useflags=(`UseFlags $bakedrecipedir`)
 
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
@@ -740,7 +741,6 @@ fi
 # execute the hooks here so any variable updates
 # occur in time.
 ##################################################
-useflags=(`UseFlags $bakedrecipedir`)
 for flag in "${useflags[@]}"
 do
    is_function_set "using_$flag" && eval using_$flag
