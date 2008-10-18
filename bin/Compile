@@ -54,7 +54,8 @@ Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
 Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
 Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
-Add_Option_Boolean "S" "no-symlink" "Do not symlink."
+Add_Option_Boolean "S" "no-symlink" "Do not symlink. Deprecated - use --symlink=no instead."
+Add_Option_Entry   "l" "symlink" "If symlinks should be created and wether they should be forced on conflicts."  "yes" "yes no force"
 Add_Option_Boolean "T" "no-strip" "Do not strip executables."
 Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the program"
@@ -106,6 +107,7 @@ Boolean no-build && compileoptions="$compileoptions --no-build"
 Boolean no-web && compileoptions="$compileoptions --no-web"
 Boolean batch && compileoptions="$compileoptions --batch"
 Boolean lazy && compileoptions="$compileoptions --lazy"
+Is_Entry symlink && compileoptions="$compileoptions --symlink=$(Entry symlink)"
 
 compileInstallOptions=(
    "GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1"
@@ -147,6 +149,7 @@ function do_symlink() {
    local forcelink=no
    local noextras=no
    local nohooks=no
+   [ "force" == "$(Entry symlink)" ] && forcelink=yes
    while true
    do
       case "$1" in
@@ -228,7 +231,7 @@ function do_symlink() {
    then
       run_hooks pre_link || wrap_fail "Failure in pre-link operation."
    fi
-   if Boolean "no-symlink" && [ "$forcelink" != "yes" ]
+   if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
    else
