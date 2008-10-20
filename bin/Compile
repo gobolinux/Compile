@@ -600,9 +600,12 @@ then
      $noweb --quiet-progress  "$app" "$versionandrevision" \
      "recipe" "$recipedir") || Die "Aborted."
    selecteddeps=$(echo "$selecteddeps" | awk '{ print $4 }' )
+   unset askeddeps
    for d_url in ${selecteddeps}
    do
+      Array_Contains askeddeps "$d_url" && continue
       Compile $compileoptions --no-dependencies $d_url || exit $?
+      askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
    done
 fi
 
@@ -770,9 +773,12 @@ then
             "recipe" "$recipedir") || Die "Aborted."
          selectedincludedeps="$(echo "$includedeps" | awk '{ print $4 }' ) ${selectedincludedeps:+${selectedincludedeps}}"
       done
+      unset askedincludedeps
       for d_url in ${selectedincludedeps}
       do
+         Array_Contains askedincludedeps "$d_url" && continue
          Compile $compileoptions --no-dependencies $d_url || exit $?
+         askedincludedeps=("$d_url" ${askedincludedeps:+"${askedincludedeps[@]}"})
       done
    fi
 
