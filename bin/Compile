@@ -802,10 +802,6 @@ then
          Die "Compilation of $iname $iversion failed."
       fi
    done
-fi
-
-if [ "$recipe_type" = "meta" ]
-then
    Boolean "no-build" && exit 0
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    wrapup
