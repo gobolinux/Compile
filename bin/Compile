@@ -782,6 +782,13 @@ then
       done
    fi
 
+   Array_Contains symlink_options "--conflict=overwrite" || Array_Contains symlink_options "--force" && symlink=force
+   case $(Entry symlink) in
+   "no" ) symlink=no ;;
+   "force" ) symlink=force ;;
+   esac
+   [ -n "$symlink" ] && compileoptions="$compileoptions --symlink=${symlink}"
+
    export compileMetaRecipe=1
    for item in "${include[@]}"
    do
