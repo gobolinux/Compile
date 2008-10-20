@@ -758,6 +758,24 @@ then
    Add_Use_Flags_Options_To_Array include
    [ -z "${include}" ] && Die "Recipe type is \"meta\", but no sub-recipes are included."
    started=no
+   if ! Boolean "no-dependencies" && ! Boolean "no-build"
+   then
+      Log_Normal "Checking dependencies for included recipes..."
+      for item in "${include[@]}"
+      do
+         iname=`echo "$item" | sed 's/--.*//'`
+         iversion=`echo "$item" | sed 's/.*--//'`
+         includedeps=$(CheckDependencies --types=recipe --mode=missing \
+            $noweb --quiet-progress  "$iname" "$iversion" \
+            "recipe" "$recipedir") || Die "Aborted."
+         selectedincludedeps="$(echo "$includedeps" | awk '{ print $4 }' ) ${selectedincludedeps:+${selectedincludedeps}}"
+      done
+      for d_url in ${selectedincludedeps}
+      do
+         Compile $compileoptions --no-dependencies $d_url || exit $?
+      done
+   fi
+
    export compileMetaRecipe=1
    for item in "${include[@]}"
    do
@@ -772,7 +790,7 @@ then
          then continue
          fi
       fi
-      in_host $0 $compileoptions --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
+      in_host $0 $compileoptions --no-dependencies --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
       if [ "$?" -gt 0 ]
       then
          Die "Compilation of $iname $iversion failed."
