@@ -244,10 +244,11 @@ function do_symlink() {
          fi
       fi
       [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
+      [ "$forcelink" = "yes" ] && forcesymlinking="--force"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
       symlinkopts=$(merge_array "symlink_options")
-      SymlinkProgram $safeopts $unmanaged_opts $symlinkopts "$1" "$2" || Die "Linking step failed."
+      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || Die "Linking step failed."
       Boolean "no-postinstall" || Run_PostInstall "$1" "$2" "" ""
    fi
 }
