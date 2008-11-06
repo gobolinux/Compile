@@ -375,6 +375,12 @@ function wrap_fail() {
       PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
+      if [ -d "${target}" ]
+      then
+         [ -d "${target}-failed" ] && $sudo_exec rm -rf "${target}-failed"
+         $sudo_exec mv "${target}" "${target}-failed"
+         Log_Terse "Installation was moved to ${target}-failed"
+      fi
    fi
    undo_mounts "--dont-exit"
    Die "$appname $versionnumber - $1"
