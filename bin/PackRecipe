@@ -76,6 +76,7 @@ handle_description() {
                   case "$md5license" in
                   # GPL3
                   f27defe1e96c2e1ecd4e0c9be8967949) newlicense="GNU General Public License version 3" ;;
+		  d32239bcb673463ab874e80d47fae504) newlicense="GNU General Public License version 3" ;;
                   # GPL2 Mass Ave
                   8ca43cbc842c2336e835926c2166c28b) newlicense="GNU General Public License version 2" ;;
                   18810669f13b87348459e611d31ab760) newlicense="GNU General Public License version 2" ;;
@@ -112,6 +113,7 @@ handle_description() {
                   878e3965c7b52d85827c75f5a2f3b314) newlicense="GNU General Public License version 2" ;;
                   526c29250ae72f6933cdc01414b9943b) newlicense="GNU General Public License version 2" ;;
                   9ac2e7cff1ddaf48b6eab6028f23ef88) newlicense="GNU General Public License version 2" ;;
+		  c46082167a314d785d012a244748d803) newlicense="GNU General Public License version 2" ;;
                   # GPL2 Linux kernel
                   d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
                   # LGPL2 Mass Ave
@@ -123,10 +125,12 @@ handle_description() {
                   7be2873b6270e45abacc503abbe2aa3d) newlicense="GNU Library General Public License version 2" ;;
                   f30a9716ef3762e3467a2f62bf790f0a) newlicense="GNU Library General Public License version 2" ;;
                   c46bda00ffbb0ba1dac22f8d087f54d9) newlicense="GNU Library General Public License version 2" ;;
+		  1e992216ed56a0fc1b6ea4a2de2962c7) newlicense="GNU Library General Public License version 2" ;;
                   # LGPL2.1
                   fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
                   d7b37bf80a3df5a65b355433ae36d206) newlicense="GNU Lesser General Public License version 2.1" ;;
                   fbc093901857fcd118f065f900982c24) newlicense="GNU Lesser General Public License version 2.1" ;;
+		  13b7ddb75583d236cf6855762f047e34) newlicense="GNU Lesser General Public License version 2.1" ;;
                   # MPL1.1
                   bfe1f75d606912a4111c90743d6c7325) newlicense="Mozilla Public License 1.1" ;;
                   # Apache License 2.0
