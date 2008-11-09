@@ -1253,7 +1253,7 @@ then
       fi
       [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
       Boolean "no-requirements" || assert_requirements
-      SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target ${opts[*]} || wrap_fail
+      SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
    fi
    do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
    check_direct_dependencies
