@@ -143,70 +143,23 @@ function run_hooks() {
 }
 
 # Doing more than symlinks here. Maybe 'do_install_and_symlink' would be a better name. --detsch
-function do_symlink() {
-   local nomake=no
-   local forcelink=no
-   local noextras=no
-   local nohooks=no
-   [ "force" == "$(Entry symlink)" ] && forcelink=yes
-   while true
+function do_install() {
+   [ "${unmanaged_files[*]}" ] &&
+   for unmanaged in "${unmanaged_files[@]}"
    do
-      case "$1" in
-      --no-make) nomake=yes ; shift ;;
-      --no-extras) noextras=yes ; shift ;;
-      --no-hooks) nohooks=yes ; shift ;;
-      --force-link) forcelink=yes ; shift ;;
-      *) break ;;
-      esac # it still is.
+      unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
    done
-
-   if [ -d "$reciperesources" ]
-   then
-      $sudo_exec cp -R "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   fi
-   if [ -d "$archreciperesources" ]
-   then
-      $sudo_exec cp -R "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   fi
-   if [ "$revision" ]
-   then
-      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
-   fi
-   if ! [ "$nomake" = "yes" ]
-   then
-      [ "${unmanaged_files[*]}" ] &&
-      for unmanaged in "${unmanaged_files[@]}"
-      do
-         unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
-      done
-      if [ "$goboIndex" ]
-      then sandboxopts=()
-      else sandboxopts=$(merge_array "sandbox_options")
-      fi
-      subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
-      [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
-      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-
-      Boolean "no-requirements" || assert_requirements
-      SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+   if [ "$goboIndex" ]
+   then sandboxopts=()
+   else sandboxopts=$(merge_array "sandbox_options")
    fi
 
-   if ! [ "$noextras" = "yes" ]
-   then
-      install_extras || wrap_fail "Failed installing files."
-      if [ "${unmanaged_files[*]}" ] 
-      then
-         $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
-         for file in "${unmanaged_files[@]}"
-         do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
-         done
-         if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
-         then
-            $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
-            $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
-         fi
-      fi
-   fi
+   subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
+   [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
+   [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+
+   Boolean "no-requirements" || assert_requirements
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
 
    if ! Boolean "no-strip"
    then
@@ -225,11 +178,19 @@ function do_symlink() {
          Quiet popd
       done
    fi
+}
 
-   if ! [ "$nohooks" = "yes" ]
-   then
-      run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   fi
+function do_symlink() {
+   local forcelink=no
+   [ "force" == "$(Entry symlink)" ] && forcelink=yes
+   while true
+   do
+      case "$1" in
+      --force-link) forcelink=yes ; shift ;;
+      *) break ;;
+      esac # it still is.
+   done
+
    if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
@@ -253,6 +214,18 @@ function do_symlink() {
 }
 
 function install_extras() {
+   if [ -d "$reciperesources" ]
+   then
+      $sudo_exec cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ -d "$archreciperesources" ]
+   then
+      $sudo_exec cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ "$revision" ]
+   then
+      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
+   fi
 
    if [ "$app" = "$appname" ]
    then
@@ -280,6 +253,19 @@ function install_extras() {
          Quiet popd
       }
    done
+
+   if [ "${unmanaged_files[*]}" ] 
+   then
+      $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
+      for file in "${unmanaged_files[@]}"
+      do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
+      done
+      if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
+      then
+         $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
+         $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
+      fi
+   fi
    return 0
 }
 
@@ -816,7 +802,9 @@ then
       fi
    done
    Boolean "no-build" && exit 0
-   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   install_extras
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    wrapup
 fi
 
@@ -1132,7 +1120,7 @@ then
    then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
    else
       $sudo_exec cp -R "$installprefix" "$installprefix-Compile-old"
-      do_symlink --force-link --no-make --no-extras --no-hooks "$appname" "$version-Compile-old"
+      do_symlink --force-link "$appname" "$version-Compile-old"
    fi
 fi
 
@@ -1182,9 +1170,12 @@ then
    build_tree_if "$create_dirs_first" != "yes"
    run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
-   then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   then
+      do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
    fi
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1255,7 +1246,9 @@ then
       Boolean "no-requirements" || assert_requirements
       SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
    fi
-   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   install_recipe_files
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1310,7 +1303,9 @@ then
       Quiet mkdir -p perl5
       Quiet mv * perl5
       Quiet popd
-      do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Linking failed."
+      install_recipe_files
+      run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+      do_symlink "$appname" "$versionnumber" || wrap_fail "Linking failed."
       check_direct_dependencies
       run_hooks post_install || wrap_fail "Failure in post-install operation."
       wrapup
@@ -1369,9 +1364,12 @@ then
    build_tree_if "$create_dirs_first" != "yes"
    run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
-   then do_symlink "$appname" "$versionnumber" || Die "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   then
+      do_install "$appname" "$versionnumber" || Die "Installation failed."
    fi
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || Die "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1406,7 +1404,9 @@ then
       Boolean "no-requirements" || assert_requirements
       $sudo_exec $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
    fi
-   do_symlink --no-make "$appname" "$versionnumber"
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber"
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1446,9 +1446,12 @@ then
    build_tree_if "$create_dirs_first" != "yes"
    run_hooks pre_install || wrap_fail "Failure in pre-install operation."
    if ! [ "$do_install" = "no" ]
-   then do_symlink "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   else do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   then
+      do_install "$appname" "$versionnumber" || Die "Installation failed."
    fi
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || Die "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1474,7 +1477,9 @@ then
       else $sudo_exec cp -R $src "$fulldst"
       fi
    done
-   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    wrapup
@@ -1517,7 +1522,9 @@ then
       pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
       SandboxInstall $verbose ${sandboxopts[@]} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
    fi
-   do_symlink --no-make "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   install_extras || wrap_fail "Failed installing files."
+   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    check_direct_dependencies
    run_hooks post_install || wrap_fail "Failure in post-install operation."
    Log_Normal "Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
