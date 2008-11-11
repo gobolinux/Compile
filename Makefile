@@ -37,8 +37,8 @@ verify:
 	@{ svn status 2>&1 | grep -v "Resources/SettingsBackup" | grep "^\?" ;} && { echo -e "Error: unknown files exist. Please take care of them first.\n"; exit 1 ;} || exit 0
 	@{ svn status 2>&1 | grep "^M" ;} && { echo -e "Error: modified files exist. Please checkin/revert them first.\n"; exit 1 ;} || exit 0
 
-dist: version_check verify manuals tarball
-	@echo; echo "Press enter to create a subversion tag for version $(VERSION) or ctrl-c to abort."
+dist: version_check verify manuals
+	@echo; echo "Press enter to create a subversion tag and tarball for version $(VERSION) or ctrl-c to abort."
 	@read
 	@make tag
 
@@ -48,6 +48,7 @@ tag: version_check verify
 	@svn switch http://svn.gobolinux.org/tools/tags/$(SVNTAG)
 	sed -i 's/^VERSION=.*/VERSION='"$(VERSION)"'/' Makefile
 	svn commit -m"Updating version in Makefile." Makefile
+	$(MAKE) tarball
 	@echo "Switching back to trunk"
 	@svn switch http://svn.gobolinux.org/tools/trunk/$(PROGRAM)
 
