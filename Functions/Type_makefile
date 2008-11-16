@@ -1,0 +1,10 @@
+#!/bin/bash
+
+function do_build() {
+   Add_Use_Flags_Options_To_Array buildmerged
+   $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
+}
+
+function do_install() {
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
+}

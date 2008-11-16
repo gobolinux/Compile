@@ -1,0 +1,28 @@
+#!/bin/bash
+Quiet scons --version || Die "This is a scons type recipe and you don't seem to have scons installed."
+
+create_dirs_first="yes"
+
+scons="scons"
+
+function do_build() {
+   if [ ! "$override_default_options" = "yes" ]
+   then
+      scons_variables=(
+         "${scons_variables[@]}"
+         "PREFIX=$target"
+         "prefix=$target"
+      )
+   fi
+   Add_Use_Flags_Options_To_Array scons_variables
+
+   if [ ! -z "$goboIndex" ]
+   then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
+   fi
+
+   $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
+}
+
+function do_install() {
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c $scons "$appname" "$versionnumber" -- "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed"
+}

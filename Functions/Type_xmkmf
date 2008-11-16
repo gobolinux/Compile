@@ -1,0 +1,30 @@
+#!/bin/bash
+
+Source Type_makefile
+
+function do_configuration() {
+   xmkmf
+   buildmerged=(
+      "BINDIR=$target/bin"
+      "LIBDIR=$target/lib"
+      "LIBEXECDIR=$target/libexec"
+      "INCDIR=$target/include"
+      "IRULESRC=$goboLibraries/X11/config"
+      "${buildmerged[@]}"
+   )
+   installmerged=(
+      "BINDIR=$installprefix/bin"
+      "LIBDIR=$installprefix/lib"
+      "LIBEXECDIR=$installprefix/libexec"
+      "INCDIR=$installprefix/include"
+      "IRULESRC=$goboLibraries/X11/config"
+      "${installmerged[@]}"
+   )
+
+   if [ ! -z "$goboIndex" ]
+   then
+      buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
+      installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
+   fi
+   $make Makefiles "${buildmerged[@]}"
+}

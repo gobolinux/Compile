@@ -142,42 +142,21 @@ function run_hooks() {
    return $ret
 }
 
-# Doing more than symlinks here. Maybe 'do_install_and_symlink' would be a better name. --detsch
-function do_install() {
-   [ "${unmanaged_files[*]}" ] &&
-   for unmanaged in "${unmanaged_files[@]}"
+function do_strip() {
+   Log_Normal "Stripping executables..."
+   [ "$STRIP" ] || STRIP=strip
+   local d
+   for d in bin sbin
    do
-      unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
-   done
-   if [ "$goboIndex" ]
-   then sandboxopts=()
-   else sandboxopts=$(merge_array "sandbox_options")
-   fi
-
-   subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
-   [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
-   [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-
-   Boolean "no-requirements" || assert_requirements
-   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} --make "$make" --makefile $makefile --target "$install_target" "$1" "$2" -- "${installmerged[@]}" || wrap_fail "Installation step failed."
-
-   if ! Boolean "no-strip"
-   then
-      Log_Normal "Stripping executables..."
-      [ "$STRIP" ] || STRIP=strip
-      local d
-      for d in bin sbin
+      Quiet pushd "$target/$d"
+      for i in *
       do
-         Quiet pushd "$target/$d"
-         for i in *
-         do
-            if file "$i" | grep -q -i "ELF .* executable"
-            then Verbose $STRIP "$i"
-            fi
-         done
-         Quiet popd
+         if file "$i" | grep -q -i "ELF .* executable"
+         then Verbose $STRIP "$i"
+         fi
       done
-   fi
+      Quiet popd
+   done
 }
 
 function do_symlink() {
@@ -208,7 +187,7 @@ function do_symlink() {
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
       symlinkopts=$(merge_array "symlink_options")
-      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || Die "Linking step failed."
+      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || wrap_fail "Linking step failed."
       Boolean "no-postinstall" || Run_PostInstall "$1" "$2" "" ""
    fi
 }
@@ -456,6 +435,31 @@ function export_marked() {
    do
       export $var
    done
+}
+
+function setup_sandbox_options() {
+   [ "${unmanaged_files[*]}" ] &&
+   for unmanaged in "${unmanaged_files[@]}"
+   do
+      unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
+   done
+   if [ "$goboIndex" ]
+   then sandboxopts=()
+   else sandboxopts=$(merge_array "sandbox_options")
+   fi
+
+   subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
+   [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
+   [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
+}
+
+function make_and_cd_to_build_dir() {
+   if [ "$needs_build_directory" = "yes" ]
+   then
+      builddir="${dir}/_build"
+      mkdir -p "$builddir"
+      cd "$builddir"
+   fi
 }
 
 ##################################################
@@ -1128,410 +1132,45 @@ fi
 ##################################################
 # Compile!
 ##################################################
-if [ "$recipe_type" = "configure" ]
-then
-   eval `combine_arrays config configure_options userconfigureoptions`
-   Add_Use_Flags_Options_To_Array config
-   [ "$configure" ] || configure="./configure"
-   if [ "$needs_build_directory" = "yes" ]
-   then
-      builddir="${dir}/_build"
-      mkdir -p "$builddir"
-      cd "$builddir"
-      configure="${dir}/$configure"
-   fi
-   build_tree_if "$create_dirs_first" = "yes"
-   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-   if ! Boolean "lazy"
-   then
-      [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || $sudo_exec chmod +x "$configure" 2>/dev/null )
-      (
-         for i in "${configure_variables[@]}"
-         do
-            var=`echo $i | cut -d= -f 1`
-            val=`echo $i | cut -d= -f 2-`
-            eval export $var=\'$val\'
-         done
-         [ "$autogen" ] || autogen="autogen.sh"
-         [ -e "./$autogen" ] && autogen="./$autogen" && chmod +x $autogen
-         [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
-         prepareoptions=(
-            --verbose
-            --configure $configure
-            `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
-         )
-         PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || wrap_fail "Preparation step failed."
-      ) || exit 1
-   fi
-   if ! [ "$do_build" = "no" ]
-   then $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
-   fi
-   Boolean "no-install" && exit
-   build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if ! [ "$do_install" = "no" ]
-   then
-      do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   fi
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
+
+Import Type_${recipe_type} || wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+
+# Re-source recipe for two purposes. First let the recipe use all variables we have defined.
+# Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
+# functionality than setting do_build=no and define the building procedure in the pre_build hook
+source "$recipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
+
+build_tree_if "$create_dirs_first" = "yes"
+   
+# This hook should really be moved one step later, but is kept here for compability
+run_hooks pre_build || wrap_fail "Failure in pre-build operation."
+make_and_cd_to_build_dir
+{ ! Boolean "lazy" && is_function_set do_configuration; } && { do_configuration || wrap_fail "Configuration failed."; }
+
+if ! [ "$do_build" = "no" ]
+then is_function_set do_build && { do_build || wrap_fail "Build step failed."; }
 fi
 
-##################################################
+Boolean "no-install" && exit
+build_tree_if "$create_dirs_first" != "yes"
 
-build_python_options() {
-   # should exist in other modes too (eg, configure)
-   if [ "$override_default_options" = "yes" ]
-   then default_python_options=()
-   else
-      case "$1" in
-      build)
-         default_python_options=()
-         ;;
-      build_ext)
-         default_python_options=(
-            "--build-lib $sitepackages"
-         )
-         ;;
-      install)
-         default_python_options=(
-            "--prefix $target"
-         )
-         ;;
-      esac
-   fi
-   eval `combine_arrays opts python_options default_python_options`
-   Add_Use_Flags_Options_To_Array opts
-
-   if [ ! -z "$goboIndex" ]
-   then opts=(`echo ${opts[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
+Boolean "no-requirements" || assert_requirements
+run_hooks pre_install || wrap_fail "Failure in pre-install operation."
+is_function_set do_install && { 
+   setup_sandbox_options
+   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   Boolean "no-strip" || do_strip
 }
+install_extras || wrap_fail "Failed installing files."
 
-if [ "$recipe_type" = "python" ]
+if Boolean "no-symlink"
 then
-   Quiet python -V || Die "This is a python type recipe and you don't seem to have python installed."
-   build_tree_if "true"
-   pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
-   sitepackages="${target}/lib/python${pythonversion}/site-packages"
-   $sudo_exec mkdir -p "$sitepackages"
-   if [ ! "$build_script" ]
-   then
-      for i in setup.py configure.py build.py
-      do [ -e "$i" ] && build_script="$i"
-      done
-   fi
-   if ! [ "$do_build" = "no" ]
-   then
-      [ "$build_target" ] || build_target="build"
-      build_python_options $build_target
-      run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-      python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
-   fi
-   Boolean "no-install" && exit
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if ! [ "$do_install" = "no" ]
-   then
-      build_python_options $install_target
-      subdirs=$(echo "$odir" | tr '/' '\n' | wc -l)
-      if [ "$goboIndex" ]
-      then sandboxopts=()
-      else sandboxopts=$(merge_array "sandbox_options")
-      fi
-      [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
-      Boolean "no-requirements" || assert_requirements
-      SandboxInstall $verbose ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
-   fi
-   install_recipe_files
    run_hooks pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
 fi
 
-##################################################
+check_direct_dependencies
+run_hooks post_install || wrap_fail "Failure in post-install operation."
 
-if [ "$recipe_type" = "perl" ]
-then
-   Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
-   [ "$PERL5LIB" ] || {
-      export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
-   }
-
-   # Quick hack: won't add these to the dependencies list because
-   # that would be like adding GCC to all C-based packages.
-   if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
-   then
-      [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-      [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-   fi
-
-   if [ "${without[*]}" ]
-   then
-      withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
-   fi
-   if [ -e ./Build.PL ]
-   then
-      build_tree_if "$create_dirs_first" = "yes"
-      # New Build.PL system
-      if ! [ "$do_build" = "no" ]
-      then
-         run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-         perl ./Build.PL
-         ./Build --install_base $target $build_target || wrap_fail "Build failed."
-      fi
-      Boolean "no-install" && exit
-      build_tree_if "$create_dirs_first" != "yes"
-      run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-      if ! [ "$do_install" = "no" ]
-      then
-         Boolean "no-requirements" || assert_requirements
-         ./Build --install_base $target $install_target || wrap_fail "Installation failed."
-      fi
-      if [ -d $target/script ]
-      then
-         Quiet pushd $target/bin
-         Quiet ln -nfs ../script/* .
-         Quiet popd
-      fi
-      Quiet pushd $target/lib
-      Quiet mkdir -p perl5
-      Quiet mv * perl5
-      Quiet popd
-      install_recipe_files
-      run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-      do_symlink "$appname" "$versionnumber" || wrap_fail "Linking failed."
-      check_direct_dependencies
-      run_hooks post_install || wrap_fail "Failure in post-install operation."
-      wrapup
-   else
-      # Old Makefile.PL system
-      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
-      recipe_type="makefile"
-   fi
-fi
-
-##################################################
-
-if [ "$recipe_type" = "xmkmf" ]
-then
-   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-   xmkmf
-   buildmerged=(
-      "BINDIR=$target/bin"
-      "LIBDIR=$target/lib"
-      "LIBEXECDIR=$target/libexec"
-      "INCDIR=$target/include"
-      "IRULESRC=$goboLibraries/X11/config"
-      "${buildmerged[@]}"
-   )
-   installmerged=(
-      "BINDIR=$installprefix/bin"
-      "LIBDIR=$installprefix/lib"
-      "LIBEXECDIR=$installprefix/libexec"
-      "INCDIR=$installprefix/include"
-      "IRULESRC=$goboLibraries/X11/config"
-      "${installmerged[@]}"
-   )
-
-   if [ ! -z "$goboIndex" ]
-   then
-      buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
-      installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
-   $make Makefiles "${buildmerged[@]}"
-   recipe_type="makefile"
-   unset pre_build # Little hack: we already ran it, so don't run it in is_makefile.
-fi
-
-##################################################
-
-if [ "$recipe_type" = "makefile" ]
-then
-   build_tree_if "$create_dirs_first" = "yes"
-   Add_Use_Flags_Options_To_Array buildmerged
-   if ! [ "$do_build" = "no" ]
-   then
-      run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-      $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build failed."
-   fi
-   Boolean "no-install" && exit
-   build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if ! [ "$do_install" = "no" ]
-   then
-      do_install "$appname" "$versionnumber" || Die "Installation failed."
-   fi
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || Die "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
-fi
-
-##################################################
-
-if [ "$recipe_type" = "scons" ]
-then
-   Quiet scons --version || Die "This is a scons type recipe and you don't seem to have scons installed."
-   [ "$scons" ] || scons="scons"
-   if [ ! "$override_default_options" = "yes" ]
-   then
-      scons_variables=(
-         "${scons_variables[@]}"
-         "PREFIX=$target"
-         "prefix=$target"
-      )
-   fi
-   Add_Use_Flags_Options_To_Array scons_variables
-
-   if [ ! -z "$goboIndex" ]
-   then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
-   build_tree_if "true"
-   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-   $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
-   Boolean "no-install" && exit
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if [ ! "$do_install" = "no" ]
-   then
-      Boolean "no-requirements" || assert_requirements
-      $sudo_exec $scons "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed."
-   fi
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber"
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
-fi
-
-##################################################
-
-if [ "$recipe_type" = "cmake" ]
-then
-   Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
-   eval `combine_arrays config cmake_options usercmakeoptions`
-   Add_Use_Flags_Options_To_Array config
-   # cmake always use its own build directory
-   needs_build_directory="yes"
-   builddir="${dir}/_build"
-   mkdir -p "$builddir"
-   cd "$builddir"
-
-   build_tree_if "$create_dirs_first" = "yes"
-   run_hooks pre_build || wrap_fail "Failure in pre-build operation."
-   if ! Boolean "lazy"
-   then
-      (
-         for i in "${cmake_variables[@]}"
-         do
-            var=`echo $i | cut -d= -f 1`
-            val=`echo $i | cut -d= -f 2-`
-            eval export $var=\'$val\'
-         done
-         cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${dir}"
-      ) || exit 1
-   fi
-   if ! [ "$do_build" = "no" ]
-   then $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
-   fi
-   Boolean "no-install" && exit
-   build_tree_if "$create_dirs_first" != "yes"
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if ! [ "$do_install" = "no" ]
-   then
-      do_install "$appname" "$versionnumber" || Die "Installation failed."
-   fi
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || Die "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
-fi
-
-##################################################
-
-# Manifest mode is experimental.
-
-if [ "$recipe_type" = "manifest" ]
-then
-   Boolean "no-install" && exit
-   build_tree_if "true"
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   for i in "${manifest[@]}"
-   do
-      src=`echo $i | cut -d: -f1`
-      dst=`echo $i | cut -d: -f2-`
-      fulldst="$installprefix/$dst"
-      $sudo_exec mkdir -p $(dirname "$fulldst")
-      if [ -d "$src" -a -d "$fulldst" ]
-      then $sudo_exec cp -R "$src"/* "$fulldst"
-      else $sudo_exec cp -R $src "$fulldst"
-      fi
-   done
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   wrapup
-fi
-
-##################################################
-
-
-if [ "$recipe_type" = "cabal" ]
-then
-   Quiet ghc -V || Die "This is a cabal recipe and you don't seem to have GHC installed."
-   [ "$runhaskell" ] || runhaskell="runhaskell"
-   if [ ! "$override_default_options" = "yes" ]
-   then
-      cabal_options=(
-         "${cabal_options[@]}"
-         "--prefix=$target"
-      )
-   fi
-   Add_Use_Flags_Options_To_Array cabal_options
-   if [ ! -z "$goboIndex" ]
-   then
-      cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
-   build_tree_if "true"
-   for f in Setup.lhs Setup.hs ; do
-      [ -e $f ] && cabal_setup="$f";
-   done
-   [ ! -z "$cabal_setup" ] || Die "Cabal Setup.hs or Setup.lhs not found"
-   if ! [ "$do_build" = "no" ]
-   then
-      $runhaskell "$cabal_setup" configure "${cabal_options[@]}" || wrap_fail "Configure failed"
-      run_hooks pre_build || wrap_fail "Failure in post-install operation."
-      $runhaskell "$cabal_setup" build "${build_variables[@]}" || wrap_fail "Build failed."
-   fi
-   Boolean "no-install" && exit
-   run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-   if [ ! "$do_install" = "no" ]
-   then
-      pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
-      SandboxInstall $verbose ${sandboxopts[@]} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
-   fi
-   install_extras || wrap_fail "Failed installing files."
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-   check_direct_dependencies
-   run_hooks post_install || wrap_fail "Failure in post-install operation."
-   Log_Normal "Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
-   wrapup
-fi
-
-##################################################
-
-Die "Unsupported configuration in recipe '$recipe'."
-
+wrapup

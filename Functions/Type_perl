@@ -1,0 +1,48 @@
+#!/bin/bash
+Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
+
+# Quick hack: won't add these to the dependencies list because
+# that would be like adding GCC to all C-based packages.
+if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
+then
+   [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+   [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+fi
+
+[ "$PERL5LIB" ] || {
+   export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
+}
+
+function do_build() {
+   perl ./Build.PL
+   ./Build --install_base $target $build_target || wrap_fail "Build failed."
+}
+
+function do_install() {
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c ./Build "$appname" "$versionnumber" -- --install_base $target $install_target || wrap_fail "Installation failed"
+   if [ -d $target/script ]
+   then
+      Quiet pushd $target/bin
+      Quiet ln -nfs ../script/* .
+      Quiet popd
+   fi
+   Quiet pushd $target/lib
+   Quiet mkdir -p perl5
+   Quiet mv * perl5
+   Quiet popd
+}
+
+if [ -e ./Build.PL ]
+then
+   # Old build system. Source makefile to inherit do_build and do_install from there
+   Source Type_makefile
+
+   function do_configuration() {
+      if [ "${without[*]}" ]
+      then
+         withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
+      fi
+      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
+   }
+
+fi
