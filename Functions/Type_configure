@@ -29,5 +29,4 @@ function do_configuration() {
       )
       PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || return 1
    ) || return 1
-   fi
 }
