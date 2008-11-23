@@ -1164,7 +1164,7 @@ is_function_set do_install && {
 }
 install_extras || wrap_fail "Failed installing files."
 
-if Boolean "no-symlink"
+if ! Boolean "no-symlink"
 then
    run_hooks pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
