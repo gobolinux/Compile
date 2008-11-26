@@ -86,6 +86,7 @@ Boolean "no-web" && noweb="--no-web"
 Boolean "batch" && batch="--batch"
 Boolean "verbose" && verbose="--verbose"
 Boolean "no-build" && Set_Boolean "keep"
+Boolean "no-install" && no_install=yes
 
 if Is_Entry "configure-options"
 then userconfigureoptions=(`Entry "configure-options"`)
@@ -102,6 +103,7 @@ chown="${compileChownCommand:-chown}"
 # Options to be propagated in sub-calls to Compile
 unset compileoptions
 Is_Entry cross-compile && compileoptions="$compileoptions --cross-compile `Entry cross-compile`"
+Boolean no-install && compileoptions="$compileoptions --no-install"
 Boolean no-build && compileoptions="$compileoptions --no-build"
 Boolean no-web && compileoptions="$compileoptions --no-web"
 Boolean batch && compileoptions="$compileoptions --batch"
@@ -1152,7 +1154,7 @@ if ! [ "$do_build" = "no" ]
 then is_function_set do_build && { do_build || wrap_fail "Build step failed."; }
 fi
 
-Boolean "no-install" && exit
+[ "$no_install" == "yes" ] && exit
 build_tree_if "$create_dirs_first" != "yes"
 
 Boolean "no-requirements" || assert_requirements
