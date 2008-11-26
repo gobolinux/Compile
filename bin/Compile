@@ -1159,7 +1159,7 @@ build_tree_if "$create_dirs_first" != "yes"
 
 Boolean "no-requirements" || assert_requirements
 run_hooks pre_install || wrap_fail "Failure in pre-install operation."
-is_function_set do_install && { 
+! [ "$do_install" = "no" ] && is_function_set do_install && {
    setup_sandbox_options
    do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
    Boolean "no-strip" || do_strip
