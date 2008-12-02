@@ -1,7 +1,10 @@
 #!/bin/bash
 
-function do_build() {
+function do_configuration() {
    Add_Use_Flags_Options_To_Array buildmerged
+}
+
+function do_build() {
    $make $build_target ${buildmerged:+"${buildmerged[@]}"} -f $makefile || wrap_fail "Build process failed."
 }
 
