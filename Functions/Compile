@@ -28,19 +28,6 @@ function Check_Dir_Variable() {
    eval Assert_Dir "\"\${${var}}\""
 }
 
-function Assert_Dir() {
-   local dir=$1
-   if ! Is_Directory "$dir"
-   then
-      mkdir -p "$dir" || \
-      $sudo mkdir -p "$dir"
-      if [ "$?" != "0" ]
-      then
-         Die "Unable to create $dir"
-      fi
-   fi
-}
-
 # Return status:
 # 0 - Files were verified and are okay.
 # 1 - Files are corrupted: must delete.
@@ -125,17 +112,24 @@ function is_function_set() {
 
 ### Future Scripts functions... ###
 
-function Get_Size() {
-   Parameters "$@" file
-   ls -l "$file" | awk '{print $5}'
-}
-
-function Get_MD5() {
-   Parameters "$@" file
-   md5sum "$file" | awk '{print $1}'
-}
-
 function Run_Hook() {
+   hook="$1"
+   ret=0
+   if is_function_set "$hook"
+   then
+      real_run_hook "$hook" || ret=$?
+   fi
+   for flag in "${useflags[@]}"
+   do
+      if is_function_set "using_${flag}_${hook}"
+      then
+         real_run_hook "using_${flag}_${hook}" || ret=$?
+      fi
+   done
+   return $ret
+}
+
+function real_run_hook() {
    Parameters "$@" hookname
    hookscript=./${hookname}.sh
    echo "#!/bin/bash" > ${hookscript}
@@ -167,4 +161,115 @@ function Add_Use_Flags_Options_To_Array() {
          eval `combine_arrays $array $array with_$flag`
       fi
    done
+}
+
+function do_strip() {
+   Log_Normal "Stripping executables..."
+   [ "$STRIP" ] || STRIP=strip
+   local d
+   for d in bin sbin
+   do
+      Quiet pushd "$target/$d"
+      for i in *
+      do
+         if file "$i" | grep -q -i "ELF .* executable"
+         then Verbose $STRIP "$i"
+         fi
+      done
+      Quiet popd
+   done
+}
+
+function do_symlink() {
+   local forcelink=no
+   [ "force" == "$(Entry symlink)" ] && forcelink=yes
+   while true
+   do
+      case "$1" in
+      --force-link) forcelink=yes ; shift ;;
+      *) break ;;
+      esac # it still is.
+   done
+
+   if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
+   then
+      PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
+   else
+      unset updateoptions
+      Boolean "batch" && updateoptions="--auto"
+      if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
+      then
+         if ! Boolean "no-updatesettings"
+         then UpdateSettings $updateoptions "$1" "$2" || wrap_fail "Failed updating settings."
+         fi
+      fi
+      [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
+      [ "$forcelink" = "yes" ] && forcesymlinking="--force"
+      [ "$batch" ] && unmanaged_opts="--unmanaged install"
+      Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
+      symlinkopts=$(merge_array "symlink_options")
+      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || wrap_fail "Linking step failed."
+      Boolean "no-postinstall" || Run_PostInstall "$1" "$2" "" ""
+   fi
+}
+
+function install_extras() {
+   if [ -d "$reciperesources" ]
+   then
+      $sudo_exec cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ -d "$archreciperesources" ]
+   then
+      $sudo_exec cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ "$revision" ]
+   then
+      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
+   fi
+
+   if [ "$app" = "$appname" ]
+   then
+      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
+   fi
+
+   if [ "$app" ]
+   then name=$app
+   else name=$appname
+   fi
+   unixname=`echo $name | tr "[:upper:]" "[:lower:]"`-$version
+   docdir="$installprefix/doc/$unixname"
+
+   for d in "${dirs[@]}"
+   do
+      Quiet pushd "$d" && {
+         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval echo "${docs[@]}"`
+         do
+            if [ -e "$d/$i" ]
+            then
+               $sudo_exec mkdir -p "$docdir" || return 1
+               $sudo_exec cp -a "$d/$i" "$docdir" || return 1
+            fi
+         done
+         Quiet popd
+      }
+   done
+
+   if [ "${unmanaged_files[*]}" ] 
+   then
+      $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
+      for file in "${unmanaged_files[@]}"
+      do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
+      done
+      if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
+      then
+         $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
+         $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
+      fi
+   fi
+   return 0
+}
+
+function assert_requirements() {
+   Log_Normal "Asserting that requirements are met..."
+   Process_Requirements_File "$recipedir"
 }

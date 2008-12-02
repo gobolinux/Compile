@@ -127,134 +127,6 @@ trap undo_mounts TERM INT STOP HUP
 
 Import Compile
 
-function run_hooks() {
-   hook="$1"
-   ret=0
-   if is_function_set "$hook"
-   then
-      Run_Hook "$hook" || ret=$?
-   fi
-   for flag in "${useflags[@]}"
-   do
-      if is_function_set "using_${flag}_${hook}"
-      then
-         Run_Hook "using_${flag}_${hook}" || ret=$?
-      fi
-   done
-   return $ret
-}
-
-function do_strip() {
-   Log_Normal "Stripping executables..."
-   [ "$STRIP" ] || STRIP=strip
-   local d
-   for d in bin sbin
-   do
-      Quiet pushd "$target/$d"
-      for i in *
-      do
-         if file "$i" | grep -q -i "ELF .* executable"
-         then Verbose $STRIP "$i"
-         fi
-      done
-      Quiet popd
-   done
-}
-
-function do_symlink() {
-   local forcelink=no
-   [ "force" == "$(Entry symlink)" ] && forcelink=yes
-   while true
-   do
-      case "$1" in
-      --force-link) forcelink=yes ; shift ;;
-      *) break ;;
-      esac # it still is.
-   done
-
-   if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
-   then
-      PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
-   else
-      unset updateoptions
-      Boolean "batch" && updateoptions="--auto"
-      if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
-      then
-         if ! Boolean "no-updatesettings"
-         then UpdateSettings $updateoptions "$1" "$2" || wrap_fail "Failed updating settings."
-         fi
-      fi
-      [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
-      [ "$forcelink" = "yes" ] && forcesymlinking="--force"
-      [ "$batch" ] && unmanaged_opts="--unmanaged install"
-      Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
-      symlinkopts=$(merge_array "symlink_options")
-      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || wrap_fail "Linking step failed."
-      Boolean "no-postinstall" || Run_PostInstall "$1" "$2" "" ""
-   fi
-}
-
-function install_extras() {
-   if [ -d "$reciperesources" ]
-   then
-      $sudo_exec cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   fi
-   if [ -d "$archreciperesources" ]
-   then
-      $sudo_exec cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
-   fi
-   if [ "$revision" ]
-   then
-      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
-   fi
-
-   if [ "$app" = "$appname" ]
-   then
-      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
-   fi
-
-   if [ "$app" ]
-   then name=$app
-   else name=$appname
-   fi
-   unixname=`echo $name | tr "[:upper:]" "[:lower:]"`-$version
-   docdir="$installprefix/doc/$unixname"
-
-   for d in "${dirs[@]}"
-   do
-      Quiet pushd "$d" && {
-         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval echo "${docs[@]}"`
-         do
-            if [ -e "$d/$i" ]
-            then
-               $sudo_exec mkdir -p "$docdir" || return 1
-               $sudo_exec cp -a "$d/$i" "$docdir" || return 1
-            fi
-         done
-         Quiet popd
-      }
-   done
-
-   if [ "${unmanaged_files[*]}" ] 
-   then
-      $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
-      for file in "${unmanaged_files[@]}"
-      do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
-      done
-      if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
-      then
-         $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
-         $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
-      fi
-   fi
-   return 0
-}
-
-function assert_requirements() {
-   Log_Normal "Asserting that requirements are met..."
-   Process_Requirements_File "$recipedir"
-}
-
 function wrapup() {
    if [ "$app" = "$appname" ]
    then
@@ -809,7 +681,7 @@ then
    done
    Boolean "no-build" && exit 0
    install_extras
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    wrapup
 fi
@@ -1075,7 +947,7 @@ cd "$dir" || Die "Directory $dir not found."
 if ! [ "$skippatching" = "yes" ]
 then
 
-   run_hooks pre_patch || wrap_fail "Failure in pre-patch operation."
+   Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
    pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do
@@ -1146,10 +1018,9 @@ source "$recipe"
 build_tree_if "$create_dirs_first" = "yes"
    
 # This hook should really be moved one step later, but is kept here for compability
-run_hooks pre_build || wrap_fail "Failure in pre-build operation."
+Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
 make_and_cd_to_build_dir
 { ! Boolean "lazy" && is_function_set do_configuration; } && { do_configuration || wrap_fail "Configuration failed."; }
-
 if ! [ "$do_build" = "no" ]
 then is_function_set do_build && { do_build || wrap_fail "Build step failed."; }
 fi
@@ -1158,7 +1029,7 @@ fi
 build_tree_if "$create_dirs_first" != "yes"
 
 Boolean "no-requirements" || assert_requirements
-run_hooks pre_install || wrap_fail "Failure in pre-install operation."
+Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
 ! [ "$do_install" = "no" ] && is_function_set do_install && {
    setup_sandbox_options
    do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
@@ -1168,11 +1039,11 @@ install_extras || wrap_fail "Failed installing files."
 
 if ! Boolean "no-symlink"
 then
-   run_hooks pre_link || wrap_fail "Failure in pre-link operation."
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
 fi
 
 check_direct_dependencies
-run_hooks post_install || wrap_fail "Failure in post-install operation."
+Run_Hook post_install || wrap_fail "Failure in post-install operation."
 
 wrapup
