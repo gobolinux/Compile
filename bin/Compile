@@ -1045,5 +1045,6 @@ fi
 
 check_direct_dependencies
 Run_Hook post_install || wrap_fail "Failure in post-install operation."
+Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" wrap_fail "Failure in post-install operation."
 
 wrapup
