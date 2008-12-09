@@ -109,6 +109,8 @@ Boolean no-web && compileoptions="$compileoptions --no-web"
 Boolean batch && compileoptions="$compileoptions --batch"
 Boolean lazy && compileoptions="$compileoptions --lazy"
 Is_Entry symlink && compileoptions="$compileoptions --symlink=$(Entry symlink)"
+Boolean "remove-archive" && compileoptions="$compileoptions --remove-archive"
+Boolean "remove-sources" && compileoptions="$compileoptions --remove-sources"
 
 compileInstallOptions=(
    "GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1"
