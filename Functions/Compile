@@ -241,7 +241,7 @@ function install_extras() {
    for d in "${dirs[@]}"
    do
       Quiet pushd "$d" && {
-         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT `[ "${docs[*]}" ] && eval echo "${docs[@]}"`
+         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT ${docs:-"${docs[@]}"}
          do
             if [ -e "$d/$i" ]
             then
