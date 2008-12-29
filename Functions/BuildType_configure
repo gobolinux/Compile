@@ -1,15 +1,14 @@
 #!/bin/bash
 
-Import Type_makefile
+Import BuildType_makefile
 
 configure="./configure"
 autogen="autogen.sh"
 
-function do_configuration() {
+function configure_do_configuration() {
    eval `combine_arrays config configure_options userconfigureoptions`
    Add_Use_Flags_Options_To_Array config
-   
-   [ "$needs_build_directory" = "yes" ] && configure="${dir}/$configure"
+   [ "$needs_build_directory" = "yes" ] && configure="${sourcedir}/$configure"
 
    [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || $sudo_exec chmod +x "$configure" 2>/dev/null )
    (
@@ -29,4 +28,12 @@ function do_configuration() {
       )
       PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || return 1
    ) || return 1
+}
+
+function configure_do_build() {
+   makefile_do_build
+}
+
+function configure_do_install() {
+   makefile_do_install
 }

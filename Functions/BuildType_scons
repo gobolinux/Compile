@@ -5,7 +5,7 @@ create_dirs_first="yes"
 
 scons="scons"
 
-function do_build() {
+function scons_do_build() {
    if [ ! "$override_default_options" = "yes" ]
    then
       scons_variables=(
@@ -23,6 +23,6 @@ function do_build() {
    $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
 }
 
-function do_install() {
+function scons_do_install() {
    SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c $scons "$appname" "$versionnumber" -- "${scons_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed"
 }

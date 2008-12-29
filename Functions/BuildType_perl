@@ -13,12 +13,12 @@ fi
    export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
 }
 
-function do_build() {
+function perl_do_build() {
    perl ./Build.PL
    ./Build --install_base $target $build_target || wrap_fail "Build failed."
 }
 
-function do_install() {
+function perl_do_install() {
    SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c ./Build "$appname" "$versionnumber" -- --install_base $target $install_target || wrap_fail "Installation failed"
    if [ -d $target/script ]
    then
@@ -35,14 +35,21 @@ function do_install() {
 if [ -e ./Build.PL ]
 then
    # Old build system. Source makefile to inherit do_build and do_install from there
-   Source Type_makefile
+   Import BuildType_makefile
 
-   function do_configuration() {
+   function perl_do_configuration() {
       if [ "${without[*]}" ]
       then
          withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
       fi
       perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
    }
+   
+   function perl_do_build() {
+      makefile_do_build
+   }
 
+   function perl_do_install() {
+      makefile_do_install
+   }
 fi

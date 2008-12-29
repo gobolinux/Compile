@@ -1,8 +1,8 @@
 #!/bin/bash
 
-Source Type_makefile
+Import BuildType_makefile
 
-function do_configuration() {
+function xmkmf_do_configuration() {
    xmkmf
    buildmerged=(
       "BINDIR=$target/bin"
@@ -27,4 +27,12 @@ function do_configuration() {
       installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
    fi
    $make Makefiles "${buildmerged[@]}"
+}
+
+function xmkmf_do_build() {
+   makefile_do_build
+}
+
+function xmkmf_do_install() {
+   makefile_do_install
 }

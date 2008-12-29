@@ -163,6 +163,171 @@ function Add_Use_Flags_Options_To_Array() {
    done
 }
 
+function do_fetch() {
+   savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
+   if is_scm_recipe
+   then
+      # If sources were already fetched, do not patch again
+      if [ -d "${dir}" ]
+      then
+         if [ -z "$(echo "${version}" | grep -qiE "svn|cvs|git|bzr|hg")" ]
+         then
+            if Boolean "lazy"
+            then REPLY=u
+            elif Boolean "no-web"
+            then REPLY=u
+            elif Boolean "batch"
+            then REPLY=r
+            else
+               Log_Question "Directory '${basedirs[0]}' already exists."
+               Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
+            fi
+            case $REPLY in
+            [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
+            [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
+            [Uu]) nofetch=yes; skippatching=yes ;;
+            [Cc]) exit 0 ;;
+            esac # esac is ridiculous.
+         else skippatching=yes
+         fi
+      fi
+      in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
+   else
+      if ! Boolean "no-web"
+      then
+         in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || Die "Error fetching archive(s)."
+      else
+         Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
+         result=$?
+         case $result in
+         1) Die "Files are corrupted. Exiting.";;
+         2) Boolean "batch" || Ask_Continue "Continue anyway?";;
+         3) Die "Files are not available. Exiting.";;
+         esac
+      fi
+   fi
+}
+
+function do_unpack() {
+   pfiles=`
+      for i in "${files[@]}"
+      do ls "$compileArchivesDir"/"$i"
+      done
+   `
+   String_To_Array files "$pfiles"
+
+   Boolean "no-build" && exit 0
+
+   if [ "$uncompress" = "no" ]
+   then
+      [ "$dir" ] || dir=$appname
+      [ "$unpack_files" ] || unpack_files=files_in_root
+   fi
+
+   unpack=yes
+   if [ -d "${dirs[0]}" ]
+   then
+      if Boolean "lazy"
+      then REPLY=u
+      elif Boolean "batch"
+      then REPLY=r
+      else
+         Log_Question "Directory '${basedirs[0]}' already exists."
+         Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
+      fi
+      case $REPLY in
+      [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
+      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
+      [Uu]) unpack=no ;;
+      [Cc]) exit 0 ;;
+      esac # esac is ridiculous.
+   fi
+
+   tempdir="$appname.$versionnumber.Compile.temp"
+   [ "$unpack" = "yes" ] && \
+   for ((i=0; i < ${#files[@]}; i++))
+   do
+      drop=.
+      skipdir=
+      if [ "$unpack_files" = "files_in_root" ]
+      then
+         drop="${dirs[0]}"
+      elif [ "$unpack_files" = "inside_first" ]
+      then
+         if [ $i -gt 0 ]
+         then
+            drop="${dirs[0]}"
+         fi
+      elif [ "$unpack_files" = "contents_inside_first" ]
+      then
+         drop="${dirs[0]}"
+         skipdir="${odirs[i]}"
+      elif [ "$unpack_files" = "dirs" ]
+      then
+         if [ "$i" -eq 0 ]
+         then
+            drop=.
+         else
+            drop="${dirs[i]}"
+            if [ ! "$keep_existing_target" ] && echo "$drop" | Quiet grep "$target"
+            then keep_existing_target=yes
+            fi
+         fi
+      fi
+
+      if [ "$unpack_files" -o $i -eq 0 ]; then
+         Quiet pushd "$compileSourcesDir"
+         [ -d "${tempdir}" ] && $sudo_exec rm -rf "${tempdir}"
+         mkdir "${tempdir}"
+      fi
+
+      Log_Normal "Unpacking file ${files[i]}..."
+      if [ "$uncompress" = "no" ]
+      then Verbose cp -v "${files[i]}" "${tempdir}" || Die "Could not copy '${files[i]}'."
+      else Verbose Unpack_Archive "${files[i]}" "${tempdir}" || Die "Could not unpack '${files[i]}'."
+      fi
+
+      if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
+         mkdir -p "$drop"
+         [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec $chown -R --reference="${tempdir}" "${tempdir}"
+         Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
+         rm -rf "${tempdir}"
+         Quiet popd
+      fi
+   done
+   if [ "$unpack" = "no" ]
+   then skippatching=yes
+   fi
+}
+
+function do_patch() {
+   for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
+   do
+      Log_Normal "Applying patch $i..."
+      patch -Np1 -i "$i" || Die "Failed on patch $i"
+   done
+
+   while read patch
+   do
+      Log_Verbose "Applying patch generated from ${patch}..."
+      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}") || Die "Failed on patch generated from $patch"
+   done < <(find "$recipedir" -name "*.patch.in" | sort)
+}
+
+function do_configuration() {
+   echo here >&2
+   is_function_set ${recipe_type}_do_configuration && echo mymy >&2
+   is_function_set ${recipe_type}_do_configuration && ${recipe_type}_do_configuration
+}
+
+function do_build() {
+   is_function_set ${recipe_type}_do_build && ${recipe_type}_do_build
+}
+
+function do_install() {
+   is_function_set ${recipe_type}_do_install && ${recipe_type}_do_install
+}
+
 function do_strip() {
    Log_Normal "Stripping executables..."
    [ "$STRIP" ] || STRIP=strip

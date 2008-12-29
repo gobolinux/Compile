@@ -332,7 +332,7 @@ function setup_sandbox_options() {
 function make_and_cd_to_build_dir() {
    if [ "$needs_build_directory" = "yes" ]
    then
-      builddir="${dir}/_build"
+      builddir="${sourcedir}/_build"
       mkdir -p "$builddir"
       cd "$builddir"
    fi
@@ -753,11 +753,11 @@ if is_scm_recipe
 then
    if [ -z "${dir}" ]
    then
-      dir="${appname}-${version}"
-      save_directory="${dir}"
+      sourcedir="${appname}-${version}"
    else
-      save_directory="${dir%%/*}"
+      sourcedir="${dir}"
    fi
+   save_directory="${sourcedir%%/*}"
 fi
 
 if [ "$dir" ]
@@ -786,9 +786,9 @@ make_absolute() {
    fi
 }
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
-dir="${dirs[0]}"
+sourcedir="${dirs[0]}"
 
-mark_export dir archsubdir recipedir
+mark_export dir sourcedir archsubdir recipedir
 
 ##################################################
 # Create the cross_make_variables array
@@ -800,170 +800,6 @@ then
    else cross_array=""
    fi
    eval `combine_arrays $cross_array $cross_array cross_make_variables`
-fi
-
-##################################################
-# Get & Unpack sources
-##################################################
-savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
-if is_scm_recipe
-then
-   # If sources were already fetched, do not patch again
-   if [ -d "${dir}" ]
-   then
-      if [ -z "$(echo "${version}" | grep -qiE "svn|cvs|git|bzr|hg")" ]
-      then
-         if Boolean "lazy"
-         then REPLY=u
-         elif Boolean "no-web"
-         then REPLY=u
-         elif Boolean "batch"
-         then REPLY=r
-         else
-            Log_Question "Directory '${basedirs[0]}' already exists."
-            Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
-         fi
-         case $REPLY in
-         [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-         [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
-         [Uu]) nofetch=yes; skippatching=yes ;;
-         [Cc]) exit 0 ;;
-         esac # esac is ridiculous.
-      else skippatching=yes
-      fi
-   fi
-   Boolean "no-web" || [ "$nofetch" == "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
-   Boolean "no-build" && exit 0
-else
-   if ! Boolean "no-web"
-   then
-      in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || Die "Error fetching archive(s)."
-   else
-      Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
-      result=$?
-      case $result in
-      1) Die "Files are corrupted. Exiting.";;
-      2) Boolean "batch" || Ask_Continue "Continue anyway?";;
-      3) Die "Files are not available. Exiting.";;
-      esac
-   fi
-
-   pfiles=`
-      for i in "${files[@]}"
-      do ls "$compileArchivesDir"/"$i"
-      done
-   `
-   String_To_Array files "$pfiles"
-
-   Boolean "no-build" && exit 0
-
-   if [ "$uncompress" = "no" ]
-   then
-      [ "$dir" ] || dir=$appname
-      [ "$unpack_files" ] || unpack_files=files_in_root
-   fi
-
-   unpack=yes
-   if [ -d "${dirs[0]}" ]
-   then
-      if Boolean "lazy"
-      then REPLY=u
-      elif Boolean "batch"
-      then REPLY=r
-      else
-         Log_Question "Directory '${basedirs[0]}' already exists."
-         Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
-      fi
-      case $REPLY in
-      [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
-      [Uu]) unpack=no ;;
-      [Cc]) exit 0 ;;
-      esac # esac is ridiculous.
-   fi
-
-   tempdir="$appname.$versionnumber.Compile.temp"
-   [ "$unpack" = "yes" ] && \
-   for ((i=0; i < ${#files[@]}; i++))
-   do
-      drop=.
-      skipdir=
-      if [ "$unpack_files" = "files_in_root" ]
-      then
-         drop="${dirs[0]}"
-      elif [ "$unpack_files" = "inside_first" ]
-      then
-         if [ $i -gt 0 ]
-         then
-            drop="${dirs[0]}"
-         fi
-      elif [ "$unpack_files" = "contents_inside_first" ]
-      then
-         drop="${dirs[0]}"
-         skipdir="${odirs[i]}"
-      elif [ "$unpack_files" = "dirs" ]
-      then
-         if [ "$i" -eq 0 ]
-         then
-            drop=.
-         else
-            drop="${dirs[i]}"
-            if [ ! "$keep_existing_target" ] && echo "$drop" | Quiet grep "$target"
-            then keep_existing_target=yes
-            fi
-         fi
-      fi
-
-      if [ "$unpack_files" -o $i -eq 0 ]; then
-         Quiet pushd "$compileSourcesDir"
-         [ -d "${tempdir}" ] && $sudo_exec rm -rf "${tempdir}"
-         mkdir "${tempdir}"
-      fi
-
-      Log_Normal "Unpacking file ${files[i]}..."
-      if [ "$uncompress" = "no" ]
-      then Verbose cp -v "${files[i]}" "${tempdir}" || Die "Could not copy '${files[i]}'."
-      else Verbose Unpack_Archive "${files[i]}" "${tempdir}" || Die "Could not unpack '${files[i]}'."
-      fi
-
-      if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
-         mkdir -p "$drop"
-         [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec $chown -R --reference="${tempdir}" "${tempdir}"
-         Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
-         rm -rf "${tempdir}"
-         Quiet popd
-      fi
-   done
-   if [ "$unpack" = "no" ]
-   then skippatching=yes
-   fi
-fi # [ "$cvs" ]
-
-cd "$dir" || Die "Directory $dir not found."
-
-##################################################
-# Apply patches
-##################################################
-
-# note: skippatching is not part of the public Compile API
-if ! [ "$skippatching" = "yes" ]
-then
-
-   Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
-   pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
-   for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
-   do
-      Log_Normal "Applying patch $i..."
-      patch -Np1 -i "$i" || Die "Failed on patch $i"
-   done
-
-   while read patch
-   do
-      Log_Verbose "Applying patch generated from ${patch}..."
-      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}") || Die "Failed on patch generated from $patch"
-   done < <(find "$recipedir" -name "*.patch.in" | sort)
-
-   popd &> /dev/null
 fi
 
 ##################################################
@@ -1009,16 +845,28 @@ fi
 # Compile!
 ##################################################
 
-Import Type_${recipe_type} || wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+Import BuildType_${recipe_type} || wrap_fail "Unsupported recipe_type in recipe '$recipe'."
 
 # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
 # Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
 # functionality than setting do_build=no and define the building procedure in the pre_build hook
 source "$recipe"
+
+# backwards compability fix, as some hooks in recipes might use "$dir"
+dir="$sourcedir"
 [ -e "$archrecipe" ] && source "$archrecipe"
 
+Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
+is_scm_recipe || is_function_set do_unpack && do_unpack
+
+cd "$sourcedir" || Die "Directory $sourcedir not found."
+
+Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
+# note: skippatching is not part of the public Compile API
+[ "$skippatching" = "yes" ] || is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
+
 build_tree_if "$create_dirs_first" = "yes"
-   
+
 # This hook should really be moved one step later, but is kept here for compability
 Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
 make_and_cd_to_build_dir
