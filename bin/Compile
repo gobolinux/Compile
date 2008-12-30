@@ -210,8 +210,10 @@ function undo_mounts() {
 }
 
 function wrap_fail() {
+   local message="${1}"
+   local cleantree="${2}"
    # Rollback left-over stuff when compilation fails.
-   if [ -e "$target" ]
+   if [ -e "$target" -a "${cleantree}" == "yes" ]
    then
       PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
       Quiet rmdir -p "$target"
@@ -224,7 +226,7 @@ function wrap_fail() {
       fi
    fi
    undo_mounts "--dont-exit"
-   Die "$appname $versionnumber - $1"
+   Die "$appname $versionnumber - $message"
 }
 
 function cleanup() {
@@ -683,8 +685,8 @@ then
    done
    Boolean "no-build" && exit 0
    install_extras
-   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation." "yes"
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed." "yes"
    wrapup
 fi
 
@@ -868,33 +870,33 @@ Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 build_tree_if "$create_dirs_first" = "yes"
 
 # This hook should really be moved one step later, but is kept here for compability
-Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
+Run_Hook pre_build || wrap_fail "Failure in pre-build operation." "$create_dirs_first"
 make_and_cd_to_build_dir
-{ ! Boolean "lazy" && is_function_set do_configuration; } && { do_configuration || wrap_fail "Configuration failed."; }
+{ ! Boolean "lazy" && is_function_set do_configuration; } && { do_configuration || wrap_fail "Configuration failed." "$create_dirs_first"; }
 if ! [ "$do_build" = "no" ]
-then is_function_set do_build && { do_build || wrap_fail "Build step failed."; }
+then is_function_set do_build && { do_build || wrap_fail "Build step failed." "$create_dirs_first"; }
 fi
 
 [ "$no_install" == "yes" ] && exit
 build_tree_if "$create_dirs_first" != "yes"
 
 Boolean "no-requirements" || assert_requirements
-Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
+Run_Hook pre_install || wrap_fail "Failure in pre-install operation." "yes"
 ! [ "$do_install" = "no" ] && is_function_set do_install && {
    setup_sandbox_options
-   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed." "yes"
    Boolean "no-strip" || do_strip
 }
-install_extras || wrap_fail "Failed installing files."
+install_extras || wrap_fail "Failed installing files." "yes"
 
 if ! Boolean "no-symlink"
 then
-   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation." "yes"
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed." "yes"
 fi
 
 check_direct_dependencies
-Run_Hook post_install || wrap_fail "Failure in post-install operation."
-Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" wrap_fail "Failure in post-install operation."
+Run_Hook post_install || wrap_fail "Failure in post-install operation." "yes"
+Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" wrap_fail "Failure in post-install operation." "yes"
 
 wrapup
