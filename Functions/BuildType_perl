@@ -50,6 +50,6 @@ then
    }
 
    function perl_do_install() {
-      makefile_do_install
+      makefile_do_install "${1}" "${2}"
    }
 fi

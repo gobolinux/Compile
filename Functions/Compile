@@ -323,7 +323,7 @@ function do_build() {
 }
 
 function do_install() {
-   is_function_set ${recipe_type}_do_install && ${recipe_type}_do_install
+   is_function_set ${recipe_type}_do_install && ${recipe_type}_do_install "${1}" "${2}"
 }
 
 function do_strip() {

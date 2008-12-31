@@ -23,5 +23,5 @@ function cmake_do_build() {
 }
 
 function cmake_do_install() {
-   makefile_do_install
+   makefile_do_install "${1}" "${2}"
 }

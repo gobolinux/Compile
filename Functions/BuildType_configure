@@ -35,5 +35,5 @@ function configure_do_build() {
 }
 
 function configure_do_install() {
-   makefile_do_install
+   makefile_do_install "${1}" "${2}"
 }

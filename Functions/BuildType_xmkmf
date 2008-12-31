@@ -34,5 +34,5 @@ function xmkmf_do_build() {
 }
 
 function xmkmf_do_install() {
-   makefile_do_install
+   makefile_do_install "${1}" "${2}"
 }
