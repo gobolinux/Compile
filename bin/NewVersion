@@ -109,12 +109,12 @@ fi
 if [ "$newurl" ]
 then
    # TODO: generalize mirror system
-   newurl=`echo "$newurl" | sed 's,http://.*\.dl.sourceforge.net/sourceforge/,$httpSourceforge/,'`
-   newurl=`echo "$newurl" | sed 's,ftp://ftp\.gnu\.org/gnu/,$ftpGnu/,'`
+   newurl=`echo "$newurl" | sed 's|http://.*\.dl.sourceforge.net/sourceforge/|$httpSourceforge/|'`
+   newurl=`echo "$newurl" | sed 's|ftp://ftp\.gnu\.org/gnu/|$ftpGnu/|'`
 
    source Recipe
-   switchurls="s,$url,$newurl,g;"
-   switchurls="${switchurls}s,^url=.*$,url=\"$newurl\",g;"
+   switchurls="s|$url|$newurl|g;"
+   switchurls="${switchurls}s|^url=.*$|url=\"$newurl\"|g;"
 fi
 
 # convert old recipe type to new recipe type
