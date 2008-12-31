@@ -315,8 +315,6 @@ function do_patch() {
 }
 
 function do_configuration() {
-   echo here >&2
-   is_function_set ${recipe_type}_do_configuration && echo mymy >&2
    is_function_set ${recipe_type}_do_configuration && ${recipe_type}_do_configuration
 }
 
