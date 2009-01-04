@@ -860,12 +860,13 @@ dir="$sourcedir"
 
 Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
 is_scm_recipe || is_function_set do_unpack && do_unpack
+Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
 
 cd "$sourcedir" || Die "Directory $sourcedir not found."
 
 Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 # note: skippatching is not part of the public Compile API
-[ "$skippatching" = "yes" ] || is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
+[ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
 
 build_tree_if "$create_dirs_first" = "yes"
 
