@@ -130,7 +130,8 @@ handle_description() {
                   fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
                   d7b37bf80a3df5a65b355433ae36d206) newlicense="GNU Lesser General Public License version 2.1" ;;
                   fbc093901857fcd118f065f900982c24) newlicense="GNU Lesser General Public License version 2.1" ;;
-		  13b7ddb75583d236cf6855762f047e34) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  13b7ddb75583d236cf6855762f047e34) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  e3eda01d9815f8d24aae2dbd89b68b06) newlicense="GNU Lesser General Public License version 2.1" ;;
                   # MPL1.1
                   bfe1f75d606912a4111c90743d6c7325) newlicense="Mozilla Public License 1.1" ;;
                   # Apache License 2.0
