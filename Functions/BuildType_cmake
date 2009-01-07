@@ -15,7 +15,7 @@ function cmake_do_configuration(){
       val=`echo $i | cut -d= -f 2-`
       eval export $var=\'$val\'
    done
-   cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${dir}"
+   cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
 }
 
 function cmake_do_build() {

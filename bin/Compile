@@ -762,10 +762,10 @@ then
    save_directory="${sourcedir%%/*}"
 fi
 
-if [ "$dir" ]
+if [ "$sourcedir" ]
 then
    if [ ! -n "${dirs[*]}" ]
-   then dirs=("$dir")
+   then dirs=("$sourcedir")
    fi
 else
    if [ ! -n "${dirs[*]}" ]
@@ -859,10 +859,10 @@ dir="$sourcedir"
 [ -e "$archrecipe" ] && source "$archrecipe"
 
 Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
-is_scm_recipe || is_function_set do_unpack && do_unpack
+is_scm_recipe || { is_function_set do_unpack && do_unpack; }
 Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
 
-cd "$sourcedir" || Die "Directory $sourcedir not found."
+cd "$sourcedir" &>/dev/null || Die "Directory $sourcedir not found."
 
 Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 # note: skippatching is not part of the public Compile API

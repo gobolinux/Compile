@@ -164,11 +164,11 @@ function Add_Use_Flags_Options_To_Array() {
 }
 
 function do_fetch() {
-   savedir="--save-to $(echo ${dir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
+   savedir="--save-to $(echo ${sourcedir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
    if is_scm_recipe
    then
       # If sources were already fetched, do not patch again
-      if [ -d "${dir}" ]
+      if [ -d "${sourcedir}" ]
       then
          if [ -z "$(echo "${version}" | grep -qiE "svn|cvs|git|bzr|hg")" ]
          then
