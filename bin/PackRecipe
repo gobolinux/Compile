@@ -126,6 +126,7 @@ handle_description() {
                   f30a9716ef3762e3467a2f62bf790f0a) newlicense="GNU Library General Public License version 2" ;;
                   c46bda00ffbb0ba1dac22f8d087f54d9) newlicense="GNU Library General Public License version 2" ;;
 		  1e992216ed56a0fc1b6ea4a2de2962c7) newlicense="GNU Library General Public License version 2" ;;
+		  6e29c688d912da12b66b73e32b03d812) newlicense="GNU Library General Public License version 2" ;;
                   # LGPL2.1
                   fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
                   d7b37bf80a3df5a65b355433ae36d206) newlicense="GNU Lesser General Public License version 2.1" ;;
