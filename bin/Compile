@@ -873,9 +873,9 @@ build_tree_if "$create_dirs_first" = "yes"
 # This hook should really be moved one step later, but is kept here for compability
 Run_Hook pre_build || wrap_fail "Failure in pre-build operation." "$create_dirs_first"
 make_and_cd_to_build_dir
-{ ! Boolean "lazy" && is_function_set do_configuration; } && { do_configuration || wrap_fail "Configuration failed." "$create_dirs_first"; }
+Boolean "lazy" || do_configuration || wrap_fail "Configuration failed." "$create_dirs_first";
 if ! [ "$do_build" = "no" ]
-then is_function_set do_build && { do_build || wrap_fail "Build step failed." "$create_dirs_first"; }
+do_build || wrap_fail "Build step failed." "$create_dirs_first";
 fi
 
 [ "$no_install" == "yes" ] && exit

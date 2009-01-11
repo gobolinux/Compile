@@ -315,15 +315,15 @@ function do_patch() {
 }
 
 function do_configuration() {
-   is_function_set ${recipe_type}_do_configuration && ${recipe_type}_do_configuration
+   ! is_function_set ${recipe_type}_do_configuration || ${recipe_type}_do_configuration
 }
 
 function do_build() {
-   is_function_set ${recipe_type}_do_build && ${recipe_type}_do_build
+   ! is_function_set ${recipe_type}_do_build || ${recipe_type}_do_build
 }
 
 function do_install() {
-   is_function_set ${recipe_type}_do_install && ${recipe_type}_do_install "${1}" "${2}"
+   ! is_function_set ${recipe_type}_do_install || ${recipe_type}_do_install "${1}" "${2}"
 }
 
 function do_strip() {
