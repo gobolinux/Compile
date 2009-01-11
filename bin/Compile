@@ -762,13 +762,13 @@ then
    save_directory="${sourcedir%%/*}"
 fi
 
-if [ "$sourcedir" ]
+if [ "$dir" ]
 then
-   if [ ! -n "${dirs[*]}" ]
-   then dirs=("$sourcedir")
+   if [ -z "${dirs[*]}" ]
+   then dirs=("$dir")
    fi
 else
-   if [ ! -n "${dirs[*]}" ]
+   if [ -z "${dirs[*]}" ]
    then
       remove_archive_extension() { echo "$1" | sed -r "s/\.(tar|tbz|tgz|zip).*//" ;}
       String_To_Array dirs "`Map remove_archive_extension "${files[@]}"`"
