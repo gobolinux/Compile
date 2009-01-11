@@ -7,7 +7,7 @@ pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
 sitepackages="${target}/lib/python${pythonversion}/site-packages"
 
 for i in setup.py configure.py build.py
-do [ -e "$i" ] && build_script="$i"
+do [ -e "${sourcedir}/${i}" ] && build_script="$i"
 done
 build_target="build"
 
