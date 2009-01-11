@@ -875,6 +875,7 @@ Run_Hook pre_build || wrap_fail "Failure in pre-build operation." "$create_dirs_
 make_and_cd_to_build_dir
 Boolean "lazy" || do_configuration || wrap_fail "Configuration failed." "$create_dirs_first";
 if ! [ "$do_build" = "no" ]
+then
 do_build || wrap_fail "Build step failed." "$create_dirs_first";
 fi
 
