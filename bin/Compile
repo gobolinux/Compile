@@ -759,6 +759,7 @@ then
    else
       sourcedir="${dir}"
    fi
+   dirs=("${sourcedir}")
    save_directory="${sourcedir%%/*}"
 fi
 
