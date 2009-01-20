@@ -471,7 +471,7 @@ if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
    Log_Normal "Checking dependencies..."
    selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
-     $noweb --quiet-progress  "$app" "$versionandrevision" \
+     $noweb --quiet-progress $batch "$app" "$versionandrevision" \
      "recipe" "$recipedir") || Die "Aborted."
    selecteddeps=$(echo "$selecteddeps" | awk '{ print $4 }' )
    unset askeddeps
@@ -643,7 +643,7 @@ then
          iname=`echo "$item" | sed 's/--.*//'`
          iversion=`echo "$item" | sed 's/.*--//'`
          includedeps=$(CheckDependencies --types=recipe --mode=missing \
-            $noweb --quiet-progress  "$iname" "$iversion" \
+            $noweb $batch --quiet-progress  "$iname" "$iversion" \
             "recipe" "$recipedir") || Die "Aborted."
          selectedincludedeps="$(echo "$includedeps" | awk '{ print $4 }' ) ${selectedincludedeps:+${selectedincludedeps}}"
       done
