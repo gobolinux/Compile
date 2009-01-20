@@ -130,6 +130,7 @@ trap undo_mounts TERM INT STOP HUP
 Import Compile
 
 function wrapup() {
+   Post_Installation_Clean_Up "$appname" "$versionnumber"
    if [ "$app" = "$appname" ]
    then
       # Add information inside binary package Resources directory
@@ -211,19 +212,13 @@ function undo_mounts() {
 
 function wrap_fail() {
    local message="${1}"
-   local cleantree="${2}"
    # Rollback left-over stuff when compilation fails.
-   if [ -e "$target" -a "${cleantree}" == "yes" ]
+   if [ -e "$target" ]
    then
       PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
-      if [ -d "${target}" ]
-      then
-         [ -d "${target}-failed" ] && $sudo_exec rm -rf "${target}-failed"
-         $sudo_exec mv "${target}" "${target}-failed"
-         Log_Terse "Installation was moved to ${target}-failed"
-      fi
+      Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
    fi
    undo_mounts "--dont-exit"
    Die "$appname $versionnumber - $message"
@@ -300,7 +295,7 @@ function config_is_autoconf() {
 function build_tree_if() {
    if [ "$@" ]
    then
-      PrepareProgram --tree $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+      PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
    fi
 }
 
@@ -539,11 +534,9 @@ variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target version
 
-if [ -d "$target" ] && ! Boolean "batch" && ! Boolean "keep" && ! Boolean "no-build"
+if ! Boolean "keep" && ! Boolean "no-build"
 then
-   if ! Ask "$target already exists. Continue?"
-   then exit 0
-   fi
+   Pre_Installation_Preparation $appname $versionnumber
 fi
 
 ##################################################
