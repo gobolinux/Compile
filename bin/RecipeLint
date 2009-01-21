@@ -344,7 +344,7 @@ cat Recipe | perl -e '
             exit 1;
          }
       } else {
-         if (/^#.*$/) {
+         if (/^[[:blank:]]*#.*$/) {
          } elsif (/^[[:blank:]]*$/) {
          } elsif (/^((pre|post)_(patch|install|build|link)|private__[a-z0-9_]*)[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*$/) {
             $fn_name = $1;
