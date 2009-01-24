@@ -28,10 +28,11 @@ submissionTarget='http://recipes.gobolinux.org/review/submit?ver=1'
 ### Options ###################################################################
 
 scriptDescription="Contribute a recipe to the global store"
-scriptCredits="Copyright (C) 2008 Michael Homer. Released under the GNU GPL."
+scriptCredits="Copyright (C) 2008-2009 Michael Homer. Released under the GNU GPL."
 helpOnNoArguments=yes
 scriptUsage="{ <recipe dir> | <recipe name> [<recipe version>] }"
 scriptExample="firefox"
+Add_Option_Boolean "p" "pretend" "Don't really submit, just dump the report to stdout."
 Parse_Options "$@"
 
 ### Operation #################################################################
@@ -113,7 +114,6 @@ then
    diff -urNa $base $program/$version>temp-$$/patch
 else
    cp temp-$$/empty-patch temp-$$/patch
-   echo no base found $base
 fi
 
 # Generate the report and save it to a file because wget requires that
@@ -133,7 +133,14 @@ fi
    cat temp-$$/patch|base64
 } > temp-$$/report
 
-if ! wget -O - -q --post-file=temp-$$/report "$submissionTarget"
+if Boolean "pretend"
+then
+   cat temp-$$/report
+   echo
+   echo
+   echo "Submission report ends. Unencoded update patch follows."
+   cat temp-$$/patch
+elif ! wget -O - -q --post-file=temp-$$/report "$submissionTarget"
 then
    Log_Error "There was an error using wget to submit your recipe."
    Log_Error "This may be a temporary network problem or a firewall issue."
