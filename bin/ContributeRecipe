@@ -99,14 +99,21 @@ compileVersion=`Get_Version Compile Current`
 mkdir temp-$$
 mkdir -p empty-$$/$program
 diff -urNa empty-$$/$program $program/$version>temp-$$/empty-patch
-if [ -e $compileGetRecipeDir/$program ]
+base_recipe="$(FindPackage -l --type=recipe $program $version|grep -v LocalRecipes|head -n 1)"
+if ! [ "$base_recipe" ]
+then
+   base_recipe="$(FindPackage -l --type=recipe $program|grep -v LocalRecipes|head -n 1)"
+fi
+base=$(GetRecipe "$base_recipe")
+if [ -e "$base" ]
 then
    # It's an updated version of an existing recipe
-   lastversion=$(GuessLatest $(ls $compileGetRecipeDir/$program))
+   lastversion=$(basename $base)
    echo "Generating diff from $lastversion->$version"
-   diff -urNa $compileGetRecipeDir/$program/$lastversion $program/$version>temp-$$/patch
+   diff -urNa $base $program/$version>temp-$$/patch
 else
    cp temp-$$/empty-patch temp-$$/patch
+   echo no base found $base
 fi
 
 # Generate the report and save it to a file because wget requires that
