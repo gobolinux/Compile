@@ -254,20 +254,6 @@ function check_direct_dependencies() {
    fi
 }
 
-function in_host() {
-   if [ "$goboCrossCompiling" = "yes" ]
-   then
-      unset goboCrossCompiling goboPrefix
-      "$@"
-      ret=$?
-      export goboCrossCompiling=yes
-      Parse_Conf Directories.conf
-      return $ret
-   else
-      "$@"
-   fi
-}
-
 function config_is_autoconf() {
    [ "$configure" ] || configure="./configure"
    grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
@@ -326,43 +312,20 @@ Check_Dir_Variable compileSourcesDir
 Check_Dir_Variable compilePackedRecipesDir
 [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
 
-##################################################
-# Find and Get Recipe
-##################################################
+recipe=$(Find_Recipe $(Arg 1) $(Arg 2) $(Arg 3))
 
-#unset directrecipe
-# support for direct recipe passing
-if [ -f "$(Arg 1)/Recipe" -o "`echo $(Arg 1) | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "$(Arg 1)"
-then
-   #directrecipe=yes
-   rawrecipes="$(Arg 1)"
-   Log_Normal "Using passed recipe $rawrecipes"
-else
-   app="$(Arg 1)"
-   versionandrevision="$(Arg 2)"
-   version="`String_Version "$versionandrevision"`"
+app=$(Get_Token "$recipe" "/" "-3")
+versionandrevision=$(Get_Token "$recipe" "/" "-2")
 
-   # Find recipe:
-   Log_Normal "Locating a recipe for $app $versionandrevision..."
-   String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$versionandrevision" 2> /dev/null`"
-   [ "${rawrecipes[*]}" ] || {
-      FindPackage $noweb --type=recipe "$app" &> /dev/null && {
-         Log_Terse "Could not find recipe for $app $versionandrevision."
-         { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
-         } && NewVersion $app $version "$(Arg 3)"  && {
-            String_To_Array rawrecipes "`FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null`"
-         }
-      }
-   } || Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
-   Log_Normal "Found recipe for $app $versionandrevision"
+ncapp=`NamingConventions $app`
+if [ "$ncapp" != "$app" ]
+then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
 fi
 
-bakedrecipedir=`in_host GetRecipe "${rawrecipes[@]}"`
-[ "$bakedrecipedir" ] || Die "Error getting recipe"
-Log_Normal "Recipe placed in $bakedrecipedir"
-
-[ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
-recipe=$bakedrecipedir/Recipe
+recipedir="$(dirname "$recipe")"
+reciperesources="$recipedir/Resources"
+archreciperesources="$archsubdir/Resources"
+useflags=($(UseFlags "$recipedir"))
 
 ##################################################
 # Check if we are cross-compiling
@@ -394,8 +357,8 @@ then
    )
    # ARCH is taken from the cross config file
    arch=`Get_Architecture $cross_uname_m`
-   archsubdir=$bakedrecipedir/$arch
-   archrecipe=$bakedrecipedir/$arch/Recipe
+   archsubdir="$recipedir/$arch"
+   archrecipe="$recipedir/$arch/Recipe"
    compileSourcesDir="$compileDir/Sources-$arch_conf"
    mkdir -p $compileSourcesDir
 
@@ -415,26 +378,13 @@ else
    cross_make_variables=""
 
    arch=`Get_Architecture`
-   archsubdir=$bakedrecipedir/$arch
-   archrecipe=$bakedrecipedir/$arch/Recipe
+   archsubdir="$recipedir/$arch"
+   archrecipe="$recipedir/$arch/Recipe"
 fi
 
 ##################################################
 # Check dependencies
 ##################################################
-
-app=`Get_Token "$bakedrecipedir" "/" "-2"`
-versionandrevision=`Get_Token "$bakedrecipedir" "/" "-1"`
-
-ncapp=`NamingConventions $app`
-if [ "$ncapp" != "$app" ]
-then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
-fi
-
-recipedir="$bakedrecipedir"
-reciperesources="$recipedir/Resources"
-archreciperesources="$archsubdir/Resources"
-useflags=(`UseFlags $bakedrecipedir`)
 
 if ! Boolean "no-dependencies" && ! Boolean "no-build"
 then
@@ -456,7 +406,7 @@ fi
 # Dependency variables
 ##################################################
 
-dependencies_file=$bakedrecipedir/Resources/Dependencies
+dependencies_file="${recipedir}/Resources/Dependencies"
 if [ -f "$dependencies_file" ]
 then
    while read dep

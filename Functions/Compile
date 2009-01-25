@@ -19,7 +19,7 @@ fi
 compileSupportedArchitectures=("i686" "ppc" "arm" "sh4")
 
 ##################################################
-# Helper functions
+# API functions
 ##################################################
 
 function Check_Dir_Variable() {
@@ -83,6 +83,59 @@ function Verify_Files() {
       fi
    done
    return 0
+}
+
+Find_Recipe() {
+   nameorrecipe="$1"
+   versionandrevision="$2"
+   tarballurl="$3"
+   # support for direct recipe passing
+   if [ -f "${nameorrecipe}/Recipe" -o "`echo ${nameorrecipe} | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "${nameorrecipe}"
+   then
+      rawrecipes="${nameorrecipe}"
+      Log_Normal "Using passed recipe $rawrecipes"
+   else
+      app="${nameorrecipe}"
+      version="$(String_Version "$versionandrevision")"
+
+      # Find recipe:
+      Log_Normal "Locating a recipe for $app $versionandrevision..."
+      String_To_Array rawrecipes "$(FindPackage $noweb --full-list --type=recipe "$app" "$versionandrevision" 2> /dev/null)"
+      [ "${rawrecipes[*]}" ] || {
+         FindPackage $noweb --type=recipe "$app" &> /dev/null && {
+            Log_Terse "Could not find recipe for $app $versionandrevision."
+            { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
+            } && NewVersion $app $version "${tarballurl}"  && {
+               String_To_Array rawrecipes "$(FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null)"
+            }
+         }
+      } || Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
+      Log_Normal "Found recipe for $app $versionandrevision"
+   fi
+
+   bakedrecipedir=$(in_host GetRecipe "${rawrecipes[@]}")
+   [ "$bakedrecipedir" ] || Die "Error getting recipe"
+   Log_Normal "Recipe placed in $bakedrecipedir"
+   [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
+   echo "$bakedrecipedir/Recipe"
+}
+
+##################################################
+# Helper functions
+##################################################
+
+in_host() {
+   if [ "$goboCrossCompiling" = "yes" ]
+   then
+      unset goboCrossCompiling goboPrefix
+      "$@"
+      ret=$?
+      export goboCrossCompiling=yes
+      Parse_Conf Directories.conf
+      return $ret
+   else
+      "$@"
+   fi
 }
 
 function foreach_if_array_set() {
