@@ -254,17 +254,6 @@ function check_direct_dependencies() {
    fi
 }
 
-function combine_arrays() {
-   merge="$1=("
-   shift
-   while [ "$1" ]
-   do eval '[ -n "${'$1'[*]}" ] && merge=$merge'\'' "${'$1'[@]}" '\'
-      shift
-   done
-   merge=$merge")"
-   echo "$merge"
-}
-
 function in_host() {
    if [ "$goboCrossCompiling" = "yes" ]
    then
@@ -787,17 +776,17 @@ then
    then cross_array=compileMakeOptions
    else cross_array=""
    fi
-   eval `combine_arrays $cross_array $cross_array cross_make_variables`
+   eval $(Combine_Arrays $cross_array $cross_array cross_make_variables)
 fi
 
 ##################################################
 # Gather common options from the recipe
 ##################################################
 unset buildmerged
-eval `combine_arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables`
+eval $(Combine_Arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables)
 ! [ "$install_target" ] && install_target="install"
 unset installmerged
-eval `combine_arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables`
+eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables
 
 if [ ! -z "$goboIndex" ]
 then
