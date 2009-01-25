@@ -471,3 +471,35 @@ function assert_requirements() {
    Log_Normal "Asserting that requirements are met..."
    Process_Requirements_File "$recipedir"
 }
+
+function mark_export() {
+   export variablestoexport="$variablestoexport $*"
+}
+
+function export_marked() {
+   for var in $variablestoexport
+   do
+      export $var
+   done
+}
+
+get_dependency_variables() {
+   dependencies_file="$1"
+   if [ -f "$dependencies_file" ]
+   then
+      while read dep
+      do
+         depname="$(echo $dep | cut -d ' ' -f1)"
+         depverrev="$(echo $dep | cut -d ' ' -f2)"
+         depver="$(echo $depverrev | cut -d '-' -f1)"
+         depdir="$(echo $dep | cut -d' ' -f4)"
+         lowercasename=`echo $depname | tr '[:upper:]-+' '[:lower:]__'`
+         dep_settings_path="$(Get_Dir runtimeSettings ${depname} ${depver})"
+         dep_variable_path="$(Get_Dir runtimeVariable ${depname} ${depver})"
+         eval $lowercasename'_path="'"$depdir"'"'
+         eval $lowercasename'_settings_path="'"$dep_settings_path"'"'
+         eval $lowercasename'_variable_path="'"$dep_variable_path"'"'
+         mark_export ${lowercasename}_path ${lowercasename}_settings_path ${lowercasename}_variable_path
+      done < <(CheckDependencies --no-recursive --types=installed --quiet-progress --mode=all --file "$dependencies_file")
+   fi
+}
