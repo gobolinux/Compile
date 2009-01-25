@@ -779,7 +779,7 @@ unset buildmerged
 eval $(Combine_Arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables)
 ! [ "$install_target" ] && install_target="install"
 unset installmerged
-eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables
+eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables)
 
 if [ ! -z "$goboIndex" ]
 then
