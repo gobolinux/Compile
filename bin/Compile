@@ -602,8 +602,8 @@ then
    done
    Boolean "no-build" && exit 0
    install_extras
-   Run_Hook pre_link || wrap_fail "Failure in pre-link operation." "yes"
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed." "yes"
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    wrapup
 fi
 
@@ -774,34 +774,34 @@ Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 [ "yes" = "$create_dirs_first" ] && { PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."; }
 
 # This hook should really be moved one step later, but is kept here for compability
-Run_Hook pre_build || wrap_fail "Failure in pre-build operation." "$create_dirs_first"
+Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
 make_and_cd_to_build_dir
-Boolean "lazy" || do_configuration || wrap_fail "Configuration failed." "$create_dirs_first";
+Boolean "lazy" || do_configuration || wrap_fail "Configuration failed."
 if ! [ "$do_build" = "no" ]
 then
-do_build || wrap_fail "Build step failed." "$create_dirs_first";
+do_build || wrap_fail "Build step failed."
 fi
 
 [ "$no_install" == "yes" ] && exit
 [ "yes" = "$create_dirs_first" ] || PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
 
 Boolean "no-requirements" || assert_requirements
-Run_Hook pre_install || wrap_fail "Failure in pre-install operation." "yes"
+Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
 ! [ "$do_install" = "no" ] && is_function_set do_install && {
    setup_sandbox_options
-   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed." "yes"
+   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
    Boolean "no-strip" || do_strip
 }
-install_extras || wrap_fail "Failed installing files." "yes"
+install_extras || wrap_fail "Failed installing files."
 
 if ! Boolean "no-symlink"
 then
-   Run_Hook pre_link || wrap_fail "Failure in pre-link operation." "yes"
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed." "yes"
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
 fi
 
 check_direct_dependencies
-Run_Hook post_install || wrap_fail "Failure in post-install operation." "yes"
-Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation." "yes"
+Run_Hook post_install || wrap_fail "Failure in post-install operation."
+Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
 
 wrapup
