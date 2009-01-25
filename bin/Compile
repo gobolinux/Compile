@@ -278,7 +278,7 @@ function setup_sandbox_options() {
    done
    if [ "$goboIndex" ]
    then sandboxopts=()
-   else sandboxopts=$(merge_array "sandbox_options")
+   else sandboxopts=$(${sandbox_options:+"${sandbox_options[@]}"})
    fi
 
    subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)

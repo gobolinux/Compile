@@ -138,27 +138,6 @@ in_host() {
    fi
 }
 
-function foreach_if_array_set() {
-   local array=$1
-   local cmd=$2
-   eval "
-      if [ \"\${$array[*]}\" ]
-      then
-         for item in \"\${$array[@]}\"
-         do
-            $cmd
-         done
-      fi
-   "
-}
-
-function merge_array() {
-   local array=$1
-   foreach_if_array_set "$array" '
-      echo -n "$item "
-   '
-}
-
 function is_function_set() {
    [ "`type -t $1`" = "function" ]
 }
@@ -427,7 +406,7 @@ function do_symlink() {
       [ "$forcelink" = "yes" ] && forcesymlinking="--force"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
-      symlinkopts=$(merge_array "symlink_options")
+      symlinkopts=$(${symlink_options:+"${symlink_options[@]}"})
       SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || wrap_fail "Linking step failed."
    fi
 }
