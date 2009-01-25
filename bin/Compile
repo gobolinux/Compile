@@ -273,13 +273,6 @@ function config_is_autoconf() {
    grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
 }
 
-function build_tree_if() {
-   if [ "$@" ]
-   then
-      PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
-   fi
-}
-
 function mark_export() {
    export variablestoexport="$variablestoexport $*"
 }
@@ -828,7 +821,7 @@ Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 # note: skippatching is not part of the public Compile API
 [ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
 
-build_tree_if "$create_dirs_first" = "yes"
+[ "yes" = "$create_dirs_first" ] && PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
 
 # This hook should really be moved one step later, but is kept here for compability
 Run_Hook pre_build || wrap_fail "Failure in pre-build operation." "$create_dirs_first"
@@ -840,7 +833,7 @@ do_build || wrap_fail "Build step failed." "$create_dirs_first";
 fi
 
 [ "$no_install" == "yes" ] && exit
-build_tree_if "$create_dirs_first" != "yes"
+[ "yes" = "$create_dirs_first" ] || PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
 
 Boolean "no-requirements" || assert_requirements
 Run_Hook pre_install || wrap_fail "Failure in pre-install operation." "yes"
