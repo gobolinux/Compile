@@ -233,18 +233,10 @@ function cleanup() {
       fi
       [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && $sudo_exec rm -rf "$installprefix-Compile-old"
    fi
-   Boolean "remove-archive" && Map remove_archives "${files[@]}"
-   Boolean "remove-sources" && Map remove_source_dir "${dirs[@]}"
+   Boolean "remove-archive" && Map "rm -f" "${files[@]}"
+   Boolean "remove-sources" && Map "rm -rf" "${dirs[@]}"
    undo_mounts "--dont-exit"
    exit 0
-}
-
-function remove_archives() {
-   rm -f "$1"
-}
-
-function remove_source_dir() {
-   rm -rf "$1"
 }
 
 function check_direct_dependencies() {
