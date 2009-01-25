@@ -823,21 +823,6 @@ then keep="--keep"
 fi
 
 ##################################################
-# Safe linking
-##################################################
-
-if [ -d "$installprefix" -a "$needs_safe_linking" = "yes" ]
-then
-   if [ -d "$installprefix-Compile-old" ]
-   then Die "Backup version of this program already exists at $installprefix-Compile-old. Please check this."
-   else
-      $sudo_exec cp -R "$installprefix" "$installprefix-Compile-old"
-      do_symlink --force-link "$appname" "$version-Compile-old"
-   fi
-fi
-
-
-##################################################
 # Compile!
 ##################################################
 
