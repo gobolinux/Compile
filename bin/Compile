@@ -422,10 +422,6 @@ fi
 
 get_dependency_variables "${recipedir}/Resources/Dependencies"
 
-##################################################
-# Set name and version (used in Meta-recipes)
-##################################################
-
 if ! Boolean "keep" && ! Boolean "no-build"
 then
    Pre_Installation_Preparation $appname $versionnumber
@@ -664,8 +660,8 @@ fi
 odirs=("${dirs[@]}")
 odir=${dirs[0]}
 
-make_basedir() { echo "$compileSourcesDir/"`echo "$1" | sed 's,/.*,,'` ;}
-String_To_Array "basedirs" "`Map make_basedir "${dirs[@]}"`"
+make_basedir() { echo "$compileSourcesDir/${1%%/*}" ;}
+String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
 
 make_absolute() {
    if [ "${1:0:1}" = "/" ]
