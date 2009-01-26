@@ -32,7 +32,7 @@ build_python_options() {
          ;;
       esac
    fi
-   eval `combine_arrays opts python_options default_python_options`
+   eval $(Combine_Arrays opts python_options default_python_options)
    Add_Use_Flags_Options_To_Array opts
 
    if [ ! -z "$goboIndex" ]

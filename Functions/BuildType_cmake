@@ -6,7 +6,7 @@ Import BuildType_makefile
 needs_build_directory="yes"
 
 function cmake_do_configuration(){
-   eval `combine_arrays config cmake_options usercmakeoptions`
+   eval $(Combine_Arrays config cmake_options usercmakeoptions)
    Add_Use_Flags_Options_To_Array config
    # cmake always use its own build directory
    for i in "${cmake_variables[@]}"

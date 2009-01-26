@@ -6,7 +6,7 @@ configure="./configure"
 autogen="autogen.sh"
 
 function configure_do_configuration() {
-   eval `combine_arrays config configure_options userconfigureoptions`
+   eval $(Combine_Arrays config configure_options userconfigureoptions)
    Add_Use_Flags_Options_To_Array config
    [ "$needs_build_directory" = "yes" ] && configure="${sourcedir}/$configure"
 

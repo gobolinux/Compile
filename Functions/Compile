@@ -190,7 +190,7 @@ function Add_Use_Flags_Options_To_Array() {
    do
       if [ -n "`eval echo '$'with_$flag`" ]
       then
-         eval `combine_arrays $array $array with_$flag`
+         eval $(Combine_Arrays $array $array with_$flag)
       fi
    done
 }
