@@ -119,7 +119,7 @@ compileInstallOptions=(
 ### Temporary test for those tracking SVN ###
 PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
 
-trap undo_mounts TERM INT STOP HUP
+trap "wrap_fail 'Caught signal. Exiting...'" TERM INT STOP HUP
 
 #############################################
 
@@ -218,21 +218,14 @@ function wrap_fail() {
       PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
-      Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
    fi
+   Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
    undo_mounts "--dont-exit"
    Die "$appname $versionnumber - $message"
 }
 
 function cleanup() {
-   if [ -d "$installprefix-Compile-old" ]
-   then
-      if Boolean "batch"
-      then REPLY=y
-      else Ask_Option "Remove $installprefix-Compile-old (backup from safe linking)? [y/N]"
-      fi
-      [ "$REPLY" = "y" -o "$REPLY" = "Y" ] && $sudo_exec rm -rf "$installprefix-Compile-old"
-   fi
+   Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
    Boolean "remove-archive" && Map "rm -f" "${files[@]}"
    Boolean "remove-sources" && Map "rm -rf" "${dirs[@]}"
    undo_mounts "--dont-exit"
