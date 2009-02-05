@@ -211,12 +211,12 @@ function do_fetch() {
             elif Boolean "batch"
             then REPLY=r
             else
-               Log_Question "Directory '${basedirs[0]}' already exists."
+               Log_Question "Directory '${basedir}' already exists."
                Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
             fi
             case $REPLY in
-            [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-            [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
+            [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedir}" ;;
+            [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
             [Uu]) nofetch=yes; skippatching=yes ;;
             [Cc]) exit 0 ;;
             esac # esac is ridiculous.
@@ -264,12 +264,12 @@ function do_unpack() {
       elif Boolean "batch"
       then REPLY=r
       else
-         Log_Question "Directory '${basedirs[0]}' already exists."
+         Log_Question "Directory '${basedir}' already exists."
          Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
       fi
       case $REPLY in
-      [Rr]) rm -rf "${basedirs[0]}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-      [Bb]) mv "${basedirs[0]}" "${basedirs[0]}.backup" || { $sudo_exec mv "${basedirs[0]}" "${basedirs[0]}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedirs[0]}.backup"; } ;;
+      [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
+      [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
       [Uu]) unpack=no; skippatching="yes" ;;
       [Cc]) exit 0 ;;
       esac # esac is ridiculous.
@@ -333,7 +333,7 @@ function do_unpack() {
 }
 
 function do_patch() {
-   pushd "$compileSourcesDir/${odir%%/*}" &> /dev/null
+   pushd "${basedir}" &> /dev/null
 
    for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
    do

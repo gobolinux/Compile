@@ -275,15 +275,6 @@ function setup_sandbox_options() {
    [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox $[subdirs-1]" "${sandboxopts[@]}")
 }
 
-function make_and_cd_to_build_dir() {
-   if [ "$needs_build_directory" = "yes" ]
-   then
-      builddir="${sourcedir}/_build"
-      mkdir -p "$builddir"
-      cd "$builddir"
-   fi
-}
-
 ##################################################
 # Prepare Environment
 ##################################################
@@ -662,6 +653,7 @@ odir=${dirs[0]}
 
 make_basedir() { echo "$compileSourcesDir/${1%%/*}" ;}
 String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
+basedir="${basedir[0]}"
 
 make_absolute() {
    if [ "${1:0:1}" = "/" ]
@@ -672,7 +664,14 @@ make_absolute() {
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
 
-mark_export dir sourcedir archsubdir recipedir
+if [ "$needs_build_directory" = "yes" ]
+then
+   builddir="${sourcedir}/_build"
+else
+   builddir="${sourcedir}"
+fi
+
+mark_export dir sourcedir builddir archsubdir recipedir
 
 ##################################################
 # Create the cross_make_variables array
@@ -729,7 +728,7 @@ Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fe
 is_scm_recipe || { is_function_set do_unpack && do_unpack; }
 Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
 
-cd "$sourcedir" &>/dev/null || Die "Directory $sourcedir not found."
+[ -d "$sourcedir" ] && { mkdir -p "$builddir" && cd "$builddir" &>/dev/null; } || Die "Directory $sourcedir not found."
 
 Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 # note: skippatching is not part of the public Compile API
@@ -739,7 +738,6 @@ Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 
 # This hook should really be moved one step later, but is kept here for compability
 Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
-make_and_cd_to_build_dir
 Boolean "lazy" || do_configuration || wrap_fail "Configuration failed."
 if ! [ "$do_build" = "no" ]
 then
