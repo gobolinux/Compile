@@ -28,7 +28,7 @@ scriptsversion=`Get_Version Scripts Current`
 
 if echo "$scriptsversion" | grep -qi GIT || \
    echo "$scriptsversion" | grep -qi SVN || \
-   [ "`GuessLatest $scriptsversion 2.9.5`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.9.8`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
@@ -646,7 +646,7 @@ odir=${dirs[0]}
 
 make_basedir() { echo "$compileSourcesDir/${1%%/*}" ;}
 String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
-basedir="${basedir[0]}"
+basedir="${basedirs[0]}"
 
 make_absolute() {
    if [ "${1:0:1}" = "/" ]
