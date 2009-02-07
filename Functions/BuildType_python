@@ -1,6 +1,12 @@
 #!/bin/bash
 Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
 
+create_dirs_first="yes"
+
+pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
+sitepackages="${target}/lib/python${pythonversion}/site-packages"
+build_target="build"
+
 build_python_options() {
    # should exist in other modes too (eg, configure)
    if [ "$override_default_options" = "yes" ]
@@ -30,19 +36,11 @@ build_python_options() {
    fi
 }
 
-python_do_configuration() {
-   create_dirs_first="yes"
-
-   pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
-   sitepackages="${target}/lib/python${pythonversion}/site-packages"
-
+python_do_build() {
    for i in setup.py configure.py build.py
    do [ -e "${sourcedir}/${i}" ] && build_script="$i"
    done
-   build_target="build"
-}
 
-python_do_build() {
    $sudo_exec mkdir -p "$sitepackages"
    build_python_options $build_target
    python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
