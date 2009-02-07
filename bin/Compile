@@ -706,7 +706,13 @@ fi
 # Compile!
 ##################################################
 
-Import BuildType_${recipe_type} || wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+unset okbuildtype
+for buildtype in $(Available_BuildTypes)
+do
+   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
+   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
+done
+[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
 is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
 
 # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
