@@ -1,11 +1,13 @@
 #!/bin/bash
+Import BuildType_makefile
+
 cmake_sane_check() {
    Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
 }
 
-Import BuildType_makefile
-
-needs_build_directory="yes"
+cmake_init() {
+   needs_build_directory="yes"
+}
 
 cmake_do_configuration(){
    eval $(Combine_Arrays config cmake_options usercmakeoptions)

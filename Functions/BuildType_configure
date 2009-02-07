@@ -2,8 +2,10 @@
 
 Import BuildType_makefile
 
-configure="./configure"
-autogen="autogen.sh"
+configure_init() {
+   configure="./configure"
+   autogen="autogen.sh"
+}
 
 configure_do_configuration() {
    eval $(Combine_Arrays config configure_options userconfigureoptions)

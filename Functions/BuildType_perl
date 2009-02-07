@@ -1,15 +1,15 @@
 #!/bin/bash
 perl_sane_check() {
    Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
-}
 
-# Quick hack: won't add these to the dependencies list because
-# that would be like adding GCC to all C-based packages.
-if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
-then
-   [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-   [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
-fi
+   # Quick hack: won't add these to the dependencies list because
+   # that would be like adding GCC to all C-based packages.
+   if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
+   then
+      [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+   fi
+}
 
 [ "$PERL5LIB" ] || {
    export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"

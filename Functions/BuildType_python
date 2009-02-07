@@ -3,11 +3,13 @@ python_sane_check() {
    Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
 }
 
-create_dirs_first="yes"
-
 pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
 sitepackages="${target}/lib/python${pythonversion}/site-packages"
-build_target="build"
+
+python_init() {
+   create_dirs_first="yes"
+   build_target="build"
+}
 
 build_python_options() {
    # should exist in other modes too (eg, configure)

@@ -3,8 +3,10 @@ cabal_sane_check() {
    Quiet ghc -V || Die "This is a cabal recipe and you don't seem to have GHC installed."
 }
 
-create_dirs_first="yes"
-post_install_message="Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
+cabal_init() {
+   create_dirs_first="yes"
+   post_install_message="Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
+}
 
 cabal_do_configuration(){
    [ "$runhaskell" ] || runhaskell="runhaskell"

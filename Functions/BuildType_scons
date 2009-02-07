@@ -3,9 +3,10 @@ scons_sane_check() {
    Quiet scons --version || Die "This is a scons type recipe and you don't seem to have scons installed."
 }
 
-create_dirs_first="yes"
-
-scons="scons"
+scons_init() {
+   create_dirs_first="yes"
+   scons="scons"
+}
 
 scons_do_build() {
    if [ ! "$override_default_options" = "yes" ]

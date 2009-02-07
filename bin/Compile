@@ -714,6 +714,7 @@ do
 done
 [ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
 is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
+is_function_set ${recipe_type}_init && ${recipe_type}_init
 
 # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
 # Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
