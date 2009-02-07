@@ -121,10 +121,7 @@ Find_Recipe() {
 }
 
 Available_BuildTypes() {
-   for btype in "${scriptPath}/../Functions"/BuildType_*
-   do
-      echo "$btype" | sed 's,.*Functions/BuildType_\(.*\)$,\1,'
-   done
+   sed 's,.*Functions/BuildType_\(.*\)$,\1,' < <(ls "${scriptPath}/../Functions"/BuildType_*)
 }
 
 ##################################################
