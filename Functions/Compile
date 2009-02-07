@@ -406,8 +406,7 @@ function do_symlink() {
       [ "$forcelink" = "yes" ] && forcesymlinking="--force"
       [ "$batch" ] && unmanaged_opts="--unmanaged install"
       Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
-      symlinkopts=${symlink_options:+"${symlink_options[@]}"}
-      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking $symlinkopts "$1" "$2" || wrap_fail "Linking step failed."
+      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking ${symlink_options:+"${symlink_options[@]}"} "$1" "$2" || wrap_fail "Linking step failed."
    fi
 }
 
