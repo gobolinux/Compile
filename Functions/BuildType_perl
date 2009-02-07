@@ -32,7 +32,7 @@ function perl_do_install() {
    Quiet popd
 }
 
-if [ -e ./Build.PL ]
+if ! [ -e ./Build.PL ]
 then
    # Old build system. Source makefile to inherit do_build and do_install from there
    Import BuildType_makefile
