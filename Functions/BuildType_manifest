@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function manifest_do_install() {
+manifest_do_install() {
    for i in "${manifest[@]}"
    do
       src=`echo $i | cut -d: -f1`

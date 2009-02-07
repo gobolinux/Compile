@@ -1,11 +1,13 @@
 #!/bin/bash
-Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
+cmake_sane_check() {
+   Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
+}
 
 Import BuildType_makefile
 
 needs_build_directory="yes"
 
-function cmake_do_configuration(){
+cmake_do_configuration(){
    eval $(Combine_Arrays config cmake_options usercmakeoptions)
    Add_Use_Flags_Options_To_Array config
    # cmake always use its own build directory
@@ -18,10 +20,10 @@ function cmake_do_configuration(){
    cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
 }
 
-function cmake_do_build() {
+cmake_do_build() {
    makefile_do_build
 }
 
-function cmake_do_install() {
+cmake_do_install() {
    makefile_do_install "${1}" "${2}"
 }

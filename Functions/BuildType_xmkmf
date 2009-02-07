@@ -2,7 +2,7 @@
 
 Import BuildType_makefile
 
-function xmkmf_do_configuration() {
+xmkmf_do_configuration() {
    xmkmf
    buildmerged=(
       "BINDIR=$target/bin"
@@ -29,10 +29,10 @@ function xmkmf_do_configuration() {
    $make Makefiles "${buildmerged[@]}"
 }
 
-function xmkmf_do_build() {
+xmkmf_do_build() {
    makefile_do_build
 }
 
-function xmkmf_do_install() {
+xmkmf_do_install() {
    makefile_do_install "${1}" "${2}"
 }

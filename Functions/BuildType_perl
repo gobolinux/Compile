@@ -1,5 +1,7 @@
 #!/bin/bash
-Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
+perl_sane_check() {
+   Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
+}
 
 # Quick hack: won't add these to the dependencies list because
 # that would be like adding GCC to all C-based packages.
@@ -13,12 +15,12 @@ fi
    export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
 }
 
-function perl_do_build() {
+perl_do_build() {
    perl ./Build.PL
    ./Build --install_base $target $build_target || wrap_fail "Build failed."
 }
 
-function perl_do_install() {
+perl_do_install() {
    SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c ./Build "$appname" "$versionnumber" -- --install_base $target $install_target || wrap_fail "Installation failed"
    if [ -d $target/script ]
    then

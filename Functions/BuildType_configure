@@ -5,7 +5,7 @@ Import BuildType_makefile
 configure="./configure"
 autogen="autogen.sh"
 
-function configure_do_configuration() {
+configure_do_configuration() {
    eval $(Combine_Arrays config configure_options userconfigureoptions)
    Add_Use_Flags_Options_To_Array config
    [ "$needs_build_directory" = "yes" ] && configure="${sourcedir}/$configure"
@@ -30,10 +30,10 @@ function configure_do_configuration() {
    ) || return 1
 }
 
-function configure_do_build() {
+configure_do_build() {
    makefile_do_build
 }
 
-function configure_do_install() {
+configure_do_install() {
    makefile_do_install "${1}" "${2}"
 }

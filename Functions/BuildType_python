@@ -1,5 +1,7 @@
 #!/bin/bash
-Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
+python_sane_check() {
+   Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
+}
 
 create_dirs_first="yes"
 

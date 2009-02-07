@@ -1,10 +1,12 @@
 #!/bin/bash
-Quiet ghc -V || Die "This is a cabal recipe and you don't seem to have GHC installed."
+cabal_sane_check() {
+   Quiet ghc -V || Die "This is a cabal recipe and you don't seem to have GHC installed."
+}
 
 create_dirs_first="yes"
 post_install_message="Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
 
-function cabal_do_configuration(){
+cabal_do_configuration(){
    [ "$runhaskell" ] || runhaskell="runhaskell"
    if [ ! "$override_default_options" = "yes" ]
    then
@@ -27,11 +29,11 @@ function cabal_do_configuration(){
    $runhaskell "$cabal_setup" configure "${cabal_options[@]}" || wrap_fail "Configure failed"
 }
 
-function cabal_do_build() {
+cabal_do_build() {
    $runhaskell "$cabal_setup" build "${build_variables[@]}" || wrap_fail "Build failed."
 }
 
-function cabal_do_install() {
+cabal_do_install() {
    # The package db should really be moved outside of ghc installation and functions should be added to Scripts to udpate the db
    pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
    SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
