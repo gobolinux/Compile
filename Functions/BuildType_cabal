@@ -34,6 +34,6 @@ function cabal_do_build() {
 function cabal_do_install() {
    # The package db should really be moved outside of ghc installation and functions should be added to Scripts to udpate the db
    pkg_dbloc=$(dirname `ghc-pkg list | head -n 1 | cut -f1 -d:`)
-   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -a $pkg_dbloc -c $runhaskell "$appname" "$versionnumber" -- "$cabal_setup" install "${install_variables[@]}" || wrap_fail "Installation failed."
 }
 

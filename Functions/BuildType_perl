@@ -19,7 +19,7 @@ function perl_do_build() {
 }
 
 function perl_do_install() {
-   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c ./Build "$appname" "$versionnumber" -- --install_base $target $install_target || wrap_fail "Installation failed"
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c ./Build "$appname" "$versionnumber" -- --install_base $target $install_target || wrap_fail "Installation failed"
    if [ -d $target/script ]
    then
       Quiet pushd $target/bin

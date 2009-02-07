@@ -48,5 +48,5 @@ python_do_build() {
 
 python_do_install() {
    build_python_options $install_target
-   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts[@]} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
 }
