@@ -212,13 +212,13 @@ done
 
 Log_Normal "Recipe template for $packagename $newversion created"
 Log_Normal "Printing result ($newrecipedir/Recipe):"
-cat "$newrecipedir/Recipe"
+cat "$newrecipedir/Recipe" >&$normalFD
 for arch in ${compileSupportedArchitectures[@]}
 do
    if [ -f $newrecipedir/$arch/Recipe ]
    then
       Log_Normal "Printing recipe for $arch architecture:"
-      cat "$newrecipedir/$arch/Recipe"
+      cat "$newrecipedir/$arch/Recipe" >&$normalFD
    fi
 done
 Log_Normal "Done"
