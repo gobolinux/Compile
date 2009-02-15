@@ -252,8 +252,6 @@ function do_unpack() {
    `
    String_To_Array files "$pfiles"
 
-   Boolean "no-build" && exit 0
-
    if [ "$uncompress" = "no" ]
    then
       [ "$dir" ] || dir=$appname
