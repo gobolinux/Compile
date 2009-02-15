@@ -406,11 +406,6 @@ fi
 
 get_dependency_variables "${recipedir}/Resources/Dependencies"
 
-if ! Boolean "keep" && ! Boolean "no-build"
-then
-   Pre_Installation_Preparation $appname $versionnumber
-fi
-
 ##################################################
 # Source recipe
 ##################################################
@@ -746,6 +741,7 @@ do_build || wrap_fail "Build step failed."
 fi
 
 [ "$no_install" == "yes" ] && exit
+Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
 [ "yes" = "$create_dirs_first" ] || PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
 
 Boolean "no-requirements" || assert_requirements
