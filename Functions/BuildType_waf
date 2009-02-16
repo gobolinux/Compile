@@ -1,9 +1,9 @@
 #!/bin/bash
 waf_init() {
-   build_target="build"
-   create_dirs_first="yes"
    waf="./waf"
 }
+
+build_target="build"
 
 waf_do_configuration() {
    if [ ! "$override_default_options" = "yes" ]
