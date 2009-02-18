@@ -6,7 +6,7 @@ cmake_sane_check() {
 }
 
 cmake_init() {
-   needs_build_directory="yes"
+   builddir="${sourcedir}/_build"
 }
 
 cmake_do_configuration(){
