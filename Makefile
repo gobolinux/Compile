@@ -1,6 +1,6 @@
 
 PROGRAM=Compile
-VERSION=svn-$(shell date +%Y%m%d)
+VERSION=1.12.1
 PACKAGE_DIR=$(HOME)
 PACKAGE_FILE=$(PACKAGE_DIR)/$(PROGRAM)--$(VERSION)--$(shell uname -m).tar.bz2
 goboPrograms ?= /Programs
