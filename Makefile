@@ -16,7 +16,7 @@ endif
 all_files = $(shell ListProgramFiles `pwd`)
 man_files = $(shell cd bin; grep -l Parse_Options * | xargs -i echo Shared/man/man1/{}.1)
 
-default:
+default: manuals
 
 version_check:
 ifeq (,$(findstring svn,$(VERSION)))
@@ -37,7 +37,7 @@ verify:
 	@{ svn status 2>&1 | grep -v "Resources/SettingsBackup" | grep "^\?" ;} && { echo -e "Error: unknown files exist. Please take care of them first.\n"; exit 1 ;} || exit 0
 	@{ svn status 2>&1 | grep "^M" ;} && { echo -e "Error: modified files exist. Please checkin/revert them first.\n"; exit 1 ;} || exit 0
 
-dist: version_check verify manuals
+dist: version_check verify
 	@echo; echo "Press enter to create a subversion tag and tarball for version $(VERSION) or ctrl-c to abort."
 	@read
 	@make tag
@@ -52,7 +52,7 @@ tag: version_check verify
 	@echo "Switching back to trunk"
 	@svn switch http://svn.gobolinux.org/tools/trunk/$(PROGRAM)
 
-tarball: $(PACKAGE_FILE)
+tarball: manuals $(PACKAGE_FILE)
 	@echo; echo "Tarball at $(PACKAGE_FILE)"
 
 $(PACKAGE_FILE): $(all_files)
