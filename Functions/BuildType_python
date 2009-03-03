@@ -7,6 +7,7 @@ pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
 sitepackages="${target}/lib/python${pythonversion}/site-packages"
 
 python_init() {
+   create_dirs_first="yes"
    build_target="build"
 }
 
@@ -44,11 +45,9 @@ python_do_build() {
    do [ -e "${sourcedir}/${i}" ] && build_script="$i"
    done
 
-   [ -e "${target}" ] || targetexists=no
    $sudo_exec mkdir -p "$sitepackages"
    build_python_options $build_target
    python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
-   [ "no" = "$targetexists" ] && find "$target" -type d -print0 | xargs -0 $sudo_exec rmdir -p --ignore-fail-on-non-empty &> /dev/null
 }
 
 python_do_install() {

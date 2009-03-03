@@ -210,8 +210,16 @@ function undo_mounts() {
    [ "$1" = "--dont-exit" ] && return || exit 1
 }
 
-function wrap_fail() {
+wrap_fail() {
+   wrap_exit "$*" 1
+}
+
+function wrap_exit() {
    local message="${1}"
+   local ret
+   local status
+   [ -n "$2" ] && ret=${2} || ret=0
+   [ $ret -eq 0 ] && status=success || status=failed
    # Rollback left-over stuff when compilation fails.
    if [ -e "$target" ]
    then
@@ -219,9 +227,10 @@ function wrap_fail() {
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
    fi
-   Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
+   Post_Installation_Clean_Up "$appname" "$versionnumber" "${status}"
    undo_mounts "--dont-exit"
-   Die "$appname $versionnumber - $message"
+   
+   Exit_With "$ret" "$appname $versionnumber - $message"
 }
 
 function cleanup() {
@@ -731,7 +740,10 @@ Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
 # note: skippatching is not part of the public Compile API
 [ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
 
-[ "yes" = "$create_dirs_first" ] && { PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."; }
+[ "yes" = "$create_dirs_first" ] && {
+   Boolean "keep" || [ "yes" = "$no_install" ] || Pre_Installation_Preparation $appname $versionnumber
+   PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+}
 
 # This hook should really be moved one step later, but is kept here for compability
 Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
@@ -741,9 +753,11 @@ then
 do_build || wrap_fail "Build step failed."
 fi
 
-[ "$no_install" == "yes" ] && exit
-Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
-[ "yes" = "$create_dirs_first" ] || PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+[ "$no_install" = "yes" ] && wrap_exit "Will not install."
+[ "yes" = "$create_dirs_first" ] || {
+   Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
+   PrepareProgram --tree $batch "$appname" "$versionnumber" || Die "Cannot build program tree."
+}
 
 Boolean "no-requirements" || assert_requirements
 Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
