@@ -661,14 +661,7 @@ make_absolute() {
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
 
-if [ "$needs_build_directory" = "yes" ]
-then
-   builddir="${sourcedir}/_build"
-else
-   builddir="${sourcedir}"
-fi
-
-mark_export dir sourcedir builddir archsubdir recipedir
+mark_export dir sourcedir archsubdir recipedir
 
 ##################################################
 # Create the cross_make_variables array
@@ -724,6 +717,8 @@ is_function_set ${recipe_type}_init && ${recipe_type}_init
 # Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
 # functionality than setting do_build=no and define the building procedure in the pre_build hook
 source "$recipe"
+[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
+mark_export builddir
 
 # backwards compability fix, as some hooks in recipes might use "$dir"
 dir="$sourcedir"
