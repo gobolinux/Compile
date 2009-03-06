@@ -19,6 +19,7 @@ Import Versions
 Import Requirements
 Import Archive
 Import UnionFS
+Import Log
 
 ##################################################
 # Checking Scripts package version
