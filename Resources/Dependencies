@@ -9,6 +9,6 @@ Make
 Patch
 Perl # RecipeLint
 Python # ApplyVariables
-Scripts >= 2.9.5
+Scripts > 2.9.8
 Sed
 Sudo
