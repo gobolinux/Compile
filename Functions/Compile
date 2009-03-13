@@ -254,12 +254,12 @@ function do_unpack() {
 
    if [ "$uncompress" = "no" ]
    then
-      [ "$dir" ] || dir=$appname
+      [ "$basedir" ] || basedir=$appname
       [ "$unpack_files" ] || unpack_files=files_in_root
    fi
 
    unpack=yes
-   if [ -d "${dirs[0]}" ]
+   if [ -d "${basedirs[0]}" ]
    then
       if Boolean "lazy"
       then REPLY=u
@@ -285,24 +285,24 @@ function do_unpack() {
       skipdir=
       if [ "$unpack_files" = "files_in_root" ]
       then
-         drop="${dirs[0]}"
+         drop="${basedirs[0]}"
       elif [ "$unpack_files" = "inside_first" ]
       then
          if [ $i -gt 0 ]
          then
-            drop="${dirs[0]}"
+            drop="${basedirs[0]}"
          fi
       elif [ "$unpack_files" = "contents_inside_first" ]
       then
-         drop="${dirs[0]}"
-         skipdir="${odirs[i]}"
+         drop="${basedirs[0]}"
+         skipdir="${basedirs[i]}"
       elif [ "$unpack_files" = "dirs" ]
       then
          if [ "$i" -eq 0 ]
          then
             drop=.
          else
-            drop="${dirs[i]}"
+            drop="${basedirs[i]}"
             if [ ! "$keep_existing_target" ] && echo "$drop" | Quiet grep "$target"
             then keep_existing_target=yes
             fi
