@@ -9,6 +9,10 @@ sitepackages="${target}/lib/python${pythonversion}/site-packages"
 python_init() {
    create_dirs_first="yes"
    build_target="build"
+
+   for i in setup.py configure.py build.py
+   do [ -e "${sourcedir}/${i}" ] && build_script="$i"
+   done
 }
 
 build_python_options() {
@@ -41,10 +45,6 @@ build_python_options() {
 }
 
 python_do_build() {
-   for i in setup.py configure.py build.py
-   do [ -e "${sourcedir}/${i}" ] && build_script="$i"
-   done
-
    $sudo_exec mkdir -p "$sitepackages"
    build_python_options $build_target
    python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
