@@ -235,7 +235,7 @@ function wrap_exit() {
 }
 
 function cleanup() {
-   Post_Installation_Clean_Up "$appname" "$versionnumber" "failed"
+   Post_Installation_Clean_Up "$appname" "$versionnumber"
    Boolean "remove-archive" && Map "rm -f" "${files[@]}"
    Boolean "remove-sources" && Map "rm -rf" "${dirs[@]}"
    undo_mounts "--dont-exit"
