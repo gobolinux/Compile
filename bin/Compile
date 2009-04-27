@@ -510,6 +510,15 @@ then
       Log_Normal "Checking dependencies for included recipes..."
       for item in "${include[@]}"
       do
+         if Is_Entry_Set "start-at"
+         then
+            if [ "`Downcase $iname`" = "`Downcase $(Entry start-at)`" ]
+            then started=yes
+            fi
+            if [ "$started" = "no" ]
+            then continue
+            fi
+         fi
          iname=`echo "$item" | sed 's/--.*//'`
          iversion=`echo "$item" | sed 's/.*--//'`
          includedeps=$(CheckDependencies --types=recipe --mode=missing \
@@ -533,6 +542,7 @@ then
    esac
    [ -n "$symlink" ] && compileoptions="$compileoptions --symlink=${symlink}"
 
+   started=no
    export compileMetaRecipe=1
    for item in "${include[@]}"
    do
