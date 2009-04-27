@@ -752,7 +752,7 @@ fi
 [ "$no_install" = "yes" ] && wrap_exit "Will not install."
 [ "yes" = "$create_dirs_first" ] || {
    Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
-   PrepareProgram --tree $batch "$appname" "$versionnumber" || Die "Cannot build program tree."
+   PrepareProgram --tree $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
 }
 
 Boolean "no-requirements" || assert_requirements
