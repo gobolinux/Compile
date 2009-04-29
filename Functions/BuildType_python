@@ -38,18 +38,19 @@ build_python_options() {
    if [ ! -z "$goboIndex" ]
    then opts=(`echo ${opts[@]} | sed "s,$target,$goboIndex,g"`)
    fi
-}
 
-python_do_build() {
-   # This has to happen here, rather than in _init, as it requires the source
-   # to have been unpacked already. Must guard so as not to overwrite a
-   # recipe-set build_script value.
+   # This must occur after the source is unpacked, so it can't go in _init.
+   # We have to guard against build_script being set from the recipe, or
+   # earlier in the compile process.
    if ! [ "${build_script}" ]
    then
       for i in setup.py configure.py build.py
       do [ -e "${sourcedir}/${i}" ] && build_script="$i"
       done
    fi
+}
+
+python_do_build() {
    $sudo_exec mkdir -p "$sitepackages"
    build_python_options $build_target
    python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
