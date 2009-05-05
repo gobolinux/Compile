@@ -19,7 +19,7 @@ cmake_do_configuration(){
       val=`echo $i | cut -d= -f 2-`
       eval export $var=\'$val\'
    done
-   cmake -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
+   cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
 }
 
 cmake_do_build() {
