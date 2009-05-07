@@ -337,11 +337,14 @@ function do_unpack() {
 function do_patch() {
    pushd "${basedir}" &> /dev/null
 
-   for i in `ls "$recipedir/"*.patch 2> /dev/null | sort` `ls "$archsubdir/"*.patch 2> /dev/null | sort`
+   shopt nullglob &>dev/null && nullglob=1 || nullglob=0
+   shopt -s nullglob
+   for i in "$recipedir/"*.patch "$archsubdir/"*.patch
    do
       Log_Normal "Applying patch $i..."
       patch -Np1 -i "$i" || Die "Failed on patch $i"
    done
+   [ "1" = "$nullglob" ] || shopt -u nullglob
 
    while read patch
    do
