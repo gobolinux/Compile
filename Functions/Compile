@@ -338,7 +338,7 @@ function do_patch() {
    pushd "${basedir}" &> /dev/null
 
    # Store state of nullglob and then set it explicitly
-   shopt nullglob &>dev/null && nullglob=1 || nullglob=0
+   shopt nullglob &>/dev/null && nullglob=1 || nullglob=0
    shopt -s nullglob
    
    for i in "$recipedir/"*.patch "$archsubdir/"*.patch
