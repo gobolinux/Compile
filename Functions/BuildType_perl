@@ -26,7 +26,7 @@ function perl_do_configuration() {
       then
          withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
       fi
-      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} prefix=$target
+      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} PREFIX="$target"
    fi
 }
 
