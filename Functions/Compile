@@ -230,8 +230,14 @@ function do_fetch() {
             esac # esac is ridiculous.
          else skippatching=yes
          fi
+      else
+         if Boolean "no-web"
+         then
+            "Files are not available and --no-web was used."
+            return 1
+         fi
       fi
-      in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
+      [ "$nofetch" = "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
    else
       if ! Boolean "no-web"
       then
