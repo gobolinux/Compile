@@ -233,7 +233,7 @@ function do_fetch() {
       else
          if Boolean "no-web"
          then
-            "Files are not available and --no-web was used."
+            Log_Error "Files are not available and --no-web was used."
             return 1
          fi
       fi
