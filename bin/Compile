@@ -612,6 +612,10 @@ then
       # the recipe
       source "$recipe"
       [ -e "$archrecipe" ] && source "$archrecipe"
+      if [ "$appname" != "$app" ]
+      then
+         Log_Normal "$app will be installed as part of $appname $versionnumber."
+      fi
    fi
 fi
    
