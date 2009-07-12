@@ -1,0 +1,50 @@
+#!/bin/bash (source)
+
+# unionImplementation is defined in Scripts/Directories.conf
+
+function Union_Backend() {
+   local union=
+   for union in "${unionImplementations[@]}"
+   do
+      case "$union" in
+         "funionfs") GetSupportedFilesystems | grep -q "fuse" && funionfs -V &> /dev/null ;;
+         "unionfs") GetSupportedFilesystems | grep -q "unionfs" ;;
+         "unionfs-fuse") GetSupportedFilesystems | grep -q "fuse" && unionfs -V &> /dev/null ;;
+      esac
+      [ $? = 0 ] && echo "$union" && break
+   done
+}
+
+function Union_Is_Supported() {
+   local union=`Union_Backend`
+   [ "$union" ] && return 0 || return 1
+}
+
+function Union_Mount() {
+   local union="$1"
+   case "$union" in
+      "funionfs") $sudo_exec funionfs -o dirs="$2" -o nonempty none "$3" ;;
+      "unionfs")  $sudo_exec mount -t unionfs -o dirs="$2" none "$3" ;;
+      "unionfs-fuse") $sudo_exec unionfs -o cow -o nonempty "$2" "$3";;
+   esac
+}
+
+function Union_Add() {
+   local union="$1"
+   case "$union" in
+      "funionfs") false ;;
+      "unionfs") $sudo_exec mount -t unionfs -o remount,add=:"$2" none "$3" ;;
+      "unionfs-fuse") false ;;
+   esac
+}
+
+function Union_Umount() {
+   local mp=
+   local union="$1"
+   shift
+   case "$union" in
+      "funionfs") for mp in $@; do $sudo_exec fusermount -u "$mp"; done ;;
+      "unionfs")  for mp in $@; do $sudo_exec umount "$mp"; done ;;
+      "unionfs-fuse") for mp in $@; do $sudo_exec fusermount -u "$mp"; done ;;
+   esac
+}

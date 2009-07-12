@@ -1,0 +1,174 @@
+#!/bin/bash
+
+### Imports ##############################################################
+
+source ScriptFunctions
+Import File
+Import GoboLinux
+Import Log
+Import OptionParser
+Import Directories
+Import Array
+
+### Options ##############################################################
+
+helpOnNoArguments=yes
+scriptDescription="prepares applications for instalation, running the 'configure' script."
+scriptCredits="Copyright (C) 2001-2005 Hisham Muhammad - Released under the GNU GPL."
+scriptUsage="<target_name> <version_nr> [ -- <additional_options> ]"
+scriptExample="KDE 2.2"
+scriptNotes="The directory hierarchy for the program is only created with --tree."
+
+# This option should be removed; there's no more interaction in this script.
+Add_Option_Boolean "b" "batch" "batch mode: no user interaction" 
+
+Add_Option_Boolean "t" "tree" "Prepare directories only, do not attempt to run configure."
+Add_Option_Boolean "T" "tree-cleanup" "Like --tree, but instead of creating directories, remove empty ones"
+Add_Option_Boolean "k" "keep" "Keep the directory if it already exists in the directory hierarchy."
+Add_Option_Boolean "r" "remove" "Remove the directory if it already exists in the directory hierarchy."
+Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' script." "./configure"
+Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
+Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
+Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
+
+Parse_Options "$@"
+
+Is_Entry "configure" && export PATH="$PATH:."
+
+### Functions ############################################################
+
+# TODO: this function is now in Compile and should probably disappear in the future
+function config_is_autoconf() {
+   Boolean "autoconf" && return 0
+   Boolean "no-autoconf" && return 1
+   grep -i "Generated .* autoconf" "$configureprogram" &> /dev/null
+}
+
+function config_accepts_prefix() {
+   grep -- "--prefix" "$configureprogram" &> /dev/null
+}
+
+function config_accepts_sysconfdir() {
+   grep -- "--sysconfdir" "$configureprogram" &> /dev/null
+}
+
+function build_change() {
+   echo "/-L/!s/"$1"/"$2"/g;"
+}
+
+make_symlink() {
+    local bname=`basename "$1"`
+    Exists "${baseprogramdir}/${bname}" && ln -nsf "${baseprogramdir}/${bname}" "$1"
+}
+
+remove_symlink() {
+    Exists "$(readlink -f "$1")" || rm -f -- "$1"
+}
+
+### Operation #############################################################
+
+programname="$(Arg 1)"
+[ -z "$programname" ] && Die "Missing argument."
+Dir_Set Case && {
+   # Respect capitalization passed, if any.
+   if [ "$programname" = `echo "$programname" | tr '[:upper:]' '[:lower:]'` ]
+   then programname=`GuessProgramCase "$programname"`
+   fi
+}
+
+if [ "$(Arg 2)" ]
+then
+   versionnumber="$(Arg 2)"
+else
+   Die "Please specify version."
+fi
+
+programname=`NamingConventions "$programname"`
+
+baseprogramdir=`Get_Dir runtime "$programname" ''`
+programdir=`Get_Dir runtime "$programname" "$versionnumber"`
+settingsdir=`Get_Dir runtimeSettings "$programname" "$versionnumber"`
+variabledir=`Get_Dir runtimeVariable "$programname" "$versionnumber"`
+
+Dir_Set Install && installdir=`Get_Dir install "$programname" "$versionnumber"`
+
+if Boolean "tree"
+then
+   Dir_Set Install && Create_Program_Tree "$installdir" || Create_Program_Tree "$programdir"
+   exit $?
+elif Boolean "tree-cleanup"
+then
+   Clean_Program_Tree "$programdir"
+   exit $?
+fi
+
+configureprogram=`Entry "configure"`
+
+echo
+Log_Normal "Preparing..."
+rm -f config.cache
+
+Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
+   
+if [ "$goboIndex" ]
+then configureprefix="$goboIndex"
+else configureprefix="$programdir"
+fi
+configurevariable="$goboVariable"
+configuresettings="$settingsdir"
+
+if Boolean "no-default-options"
+then
+   configure_options=()
+elif config_is_autoconf
+then
+   Log_Normal "Autoconf configure script detected."
+   configure_options=(
+      --prefix="$configureprefix"
+      --sysconfdir="$configuresettings"
+      --localstatedir="$configurevariable"
+   )
+   if Dir_Set Manuals
+   then configure_options=("${configure_options[@]}" --mandir="$configureprefix/man")
+   else configure_options=("${configure_options[@]}" --mandir="$configureprefix/share/man")
+   fi
+   if [ "$goboCrossCompiling" = "yes" ]
+   then
+      configure_options=(
+         "${configure_options[@]}"
+         --build=$cross_configure_build
+         --host=$cross_configure_host
+         --cache-file=$cross_cache_file
+         --x-includes=$goboHeaders
+         --x-libraries=$goboLibraries
+      )
+      cp -f ${goboSettings}/Compile/Cross/$cross_cache_file .
+   fi
+elif config_accepts_prefix
+then
+   Log_Normal "Non-autoconf configure script detected (accepts --prefix)."
+   configure_options=(
+      --prefix="$configureprefix"
+   )
+   if config_accepts_sysconfdir
+   then
+      configure_options=(
+         "${configure_options[@]}"
+         --sysconfdir="$configuresettings"
+      )
+   fi
+else
+   configure_options=()
+fi
+
+eval `Args_To_Array args 3`
+if [ -n "$goboIndex" -a -n "$args" ]
+then args=(`echo ${args[@]} | sed "s,$programdir,$goboIndex,g"`)
+fi
+
+"$configureprogram" ${configure_options:+"${configure_options[@]}"} ${args:+"${args[@]}"} 2>&1 | Color_Output configure >&$normalFD
+if [ "${PIPESTATUS[0]}" != 0 ]
+then Die "configure failed."
+fi
+
+exit 0

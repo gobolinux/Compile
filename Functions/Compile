@@ -410,7 +410,7 @@ function do_symlink() {
 
    if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
    then
-      PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
+      Clean_Program_Tree "${goboPrograms}/$1/$2" || wrap_fail "Failed cleaning up tree."
    else
       unset updateoptions
       Boolean "batch" && updateoptions="--auto"
