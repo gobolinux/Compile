@@ -89,7 +89,17 @@ destinationDir="$compileLocalRecipesDir"
 newrecipedir="$destinationDir/$packagename/$newversion"
 
 mkdir -p "$destinationDir/$packagename"
-cp -R "$oldrecipedir" "$newrecipedir"
+if [ "$oldrecipedir" = "$newrecipedir" ]
+then
+	Log_Question "There is already a recipe for $packagename $newversion, at"
+	Log_Question "$oldrecipedir"
+	if ! Ask "Create another?"
+	then
+		exit 0
+	fi
+else
+	cp -R "$oldrecipedir" "$newrecipedir"
+fi
 
 cd "$newrecipedir" || Die "Failed creating new recipe dir."
 

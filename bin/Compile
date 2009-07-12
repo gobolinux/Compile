@@ -305,6 +305,15 @@ if [ "$ncapp" != "$app" ]
 then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
 fi
 
+if [ "Compile" = "$app" ] || [ "Scripts" = "$app" ]
+then
+   if ! [ "$(Arg 2)" ]
+   then
+      Die "Scripts and Compile should be updated using InstallPackage.
+         To force the use of a recipe provide the version or path."
+   fi
+fi
+
 recipedir="$(dirname "$recipe")"
 reciperesources="$recipedir/Resources"
 archreciperesources="$archsubdir/Resources"
@@ -422,6 +431,7 @@ get_dependency_variables "${recipedir}/Resources/Dependencies"
 
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
+
 
 if ! Boolean "no-build"
 then
@@ -603,6 +613,10 @@ then
       # the recipe
       source "$recipe"
       [ -e "$archrecipe" ] && source "$archrecipe"
+      if [ "$appname" != "$app" ]
+      then
+         Log_Normal "$app will be installed as part of $appname $versionnumber."
+      fi
    fi
 fi
    
