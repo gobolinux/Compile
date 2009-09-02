@@ -246,6 +246,9 @@ function check_direct_dependencies() {
    local fullversion="$2"
    if [ -d ${goboShared}/Compile/Recompile/${appname} -o -L ${goboShared}/Compile/Recompile/${appname} ]
    then
+      # Store state of nullglob and then set it explicitly
+      shopt nullglob &>/dev/null && nullglob=1 || nullglob=0
+      shopt -s nullglob
       for i in ${goboShared}/Compile/Recompile/${appname}/*
       do
          depapp=`basename $i`
@@ -254,6 +257,8 @@ function check_direct_dependencies() {
          Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
          Compile $batch $lazy $noweb $depapp
       done
+      # restore state of nullglob
+      [ "1" = "$nullglob" ] || shopt -u nullglob
    fi
 }
 
