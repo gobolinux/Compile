@@ -179,7 +179,7 @@ function real_run_hook() {
    echo "Import Log" >> ${hookscript}
    for v in ${variablestoexport[@]}
    do
-      echo "export ${v}=$(eval echo \$${v})" >> ${hookscript}
+      echo "export ${v}=\"$(eval echo \$${v})\"" >> ${hookscript}
    done
    echo "source $goboSettings/Compile/Compile.conf" >> ${hookscript}
    echo "source ${recipe}" >> ${hookscript}
