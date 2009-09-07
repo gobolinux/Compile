@@ -194,14 +194,14 @@ if Executable_Exists_In_Path "udevadm"
 then echo "udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
 else echo "udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
 fi
-echo "exec \"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
+echo "\"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
 
 chmod a+x "${sandbox_mp}/.wrapper"
 
 # Run program in chrooted sandbox
 chroot $sandbox_mp /.wrapper
 result=$?
-       
+
 # Cleanup
 cleanup
 
