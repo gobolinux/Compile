@@ -458,7 +458,7 @@ then
    do
       var=`echo $i | cut -d= -f 1`
       val=`echo $i | cut -d= -f 2-`
-      eval export $var=\'$val\'
+      eval export $var=\'${val}\'
       mark_export $var
    done
 fi
@@ -709,7 +709,6 @@ eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions mak
 if [ ! -z "$goboIndex" ]
 then
    buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
-   installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
 fi
 
 if [ "$makefile" = "" ]
