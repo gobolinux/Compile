@@ -716,7 +716,6 @@ eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions mak
 if [ ! -z "$goboIndex" ]
 then
    buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
-   installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
 fi
 
 if [ "$makefile" = "" ]
