@@ -1,0 +1,31 @@
+#!/bin/bash
+Import BuildType_makefile
+
+cmake_sane_check() {
+   Quiet cmake --version || Die "This is a CMake type recipe and you don't seem to have CMake installed."
+}
+
+cmake_init() {
+   needs_build_directory="yes"
+}
+
+cmake_do_configuration(){
+   eval $(Combine_Arrays config cmake_options usercmakeoptions)
+   Add_Use_Flags_Options_To_Array config
+   # cmake always use its own build directory
+   for i in "${cmake_variables[@]}"
+   do
+      var=`echo $i | cut -d= -f 1`
+      val=`echo $i | cut -d= -f 2-`
+      eval export $var=\'$val\'
+   done
+   cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
+}
+
+cmake_do_build() {
+   makefile_do_build
+}
+
+cmake_do_install() {
+   makefile_do_install "${1}" "${2}"
+}

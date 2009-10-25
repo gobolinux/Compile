@@ -1,0 +1,522 @@
+#!/bin/bash
+
+Import File
+
+##################################################
+# Setting up variables
+##################################################
+
+if [ "$compileRecipeDir" ]
+then
+   compileRecipeDirs=("$compileRecipeDir" "${compileRecipeDirs[@]}")
+fi
+
+if [ -z "$compileRecipeDir" ]
+then
+   compileRecipeDir="${compileRecipeDirs[0]}"
+fi
+
+compileSupportedArchitectures=("i686" "ppc" "arm" "sh4")
+
+##################################################
+# API functions
+##################################################
+
+function Check_Dir_Variable() {
+   var="$1"
+   eval [ "\"\${${var}}\"" ] || Die "Variable \\\$$var is not set. Please update your Compile.conf."
+   eval Assert_Dir "\"\${${var}}\""
+}
+
+# Return status:
+# 0 - Files were verified and are okay.
+# 1 - Files are corrupted: must delete.
+# 2 - Files look incomplete or cannot be verified:
+#     may delete or try to continue download.
+# 3 - Files are missing.
+function Verify_Files() {
+   local myfiles=($1)
+   local sizes=($2)
+   local md5s=($3)
+   local i=0
+   for i in $(seq 0 $[${#myfiles[@]}-1])
+   do
+      file="$compileArchivesDir/${myfiles[i]}"
+      file_size="${sizes[i]}"
+      file_md5="${md5s[i]}"
+      if [ -f "$file" ]
+      then
+         siz=$(Get_Size "$file")
+         md5=$(Get_MD5 "$file")
+         if [ -n "$file_size" ] && [ "$file_size" != "$siz" ]
+         then
+            Log_Terse "Warning: $file is either not complete or corrupted."
+            return 2
+         elif [ -n "$file_size" ]
+         then
+            if [ -z "$file_md5" ]
+            then
+               Log_Normal "Warning: no MD5 checksum."
+               Log_Normal "Assuming $file is complete based only on size."
+            elif [ "$file_md5" = "$md5" ]
+            then
+               Log_Verbose "$file is complete and matches MD5 checksum."
+            else
+               Log_Error "According to MD5 checksum, $file is corrupted."
+               return 1
+            fi
+         else
+            if [ -z "$file_md5" ]
+            then
+               Log_Terse "Warning: no file size or MD5 checksum. $file cannot be verified"
+               return 2
+            elif [ "$file_md5" = "$md5" ]
+            then
+               Log_Normal "Warning: file size could not be verified but $file matches MD5 checksum."
+            else
+               Log_Error "According to MD5 checksum, $file is corrupted."
+               return 1
+            fi
+         fi
+      else
+         return 3
+      fi
+   done
+   return 0
+}
+
+Find_Recipe() {
+   nameorrecipe="$1"
+   versionandrevision="$2"
+   tarballurl="$3"
+   # support for direct recipe passing
+   if [ -f "${nameorrecipe}/Recipe" -o "`echo ${nameorrecipe} | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "${nameorrecipe}"
+   then
+      rawrecipes="${nameorrecipe}"
+      Log_Normal "Using passed recipe $rawrecipes"
+   else
+      app="${nameorrecipe}"
+      version="$(String_Version "$versionandrevision")"
+
+      # Find recipe:
+      Log_Normal "Locating a recipe for $app $versionandrevision..."
+      String_To_Array rawrecipes "$(FindPackage $noweb --full-list --type=recipe "$app" "$versionandrevision" 2> /dev/null)"
+      [ "${rawrecipes[*]}" ] || {
+         FindPackage $noweb --type=recipe "$app" &> /dev/null && {
+            Log_Terse "Could not find recipe for $app $versionandrevision."
+            { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
+            } && NewVersion $app $version "${tarballurl}"  && {
+               String_To_Array rawrecipes "$(FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null)"
+            }
+         }
+      } || {
+         Log_Error "Could not find recipe for $app $versionandrevision"
+         GetAvailable -t recipe|cut -d' ' -f2|uniq|Corrections --log-name Compile --stdin "$app">&2
+         Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
+      }
+      Log_Normal "Found recipe for $app $versionandrevision"
+   fi
+
+   bakedrecipedir=$(in_host GetRecipe "${rawrecipes[@]}")
+   [ "$bakedrecipedir" ] || Die "Error getting recipe"
+   Log_Normal "Recipe placed in $bakedrecipedir"
+   [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
+   echo "$bakedrecipedir/Recipe"
+}
+
+Available_BuildTypes() {
+   sed 's,.*Functions/BuildType_\(.*\)$,\1,' < <(ls "${scriptPath}/../Functions"/BuildType_*)
+}
+
+##################################################
+# Helper functions
+##################################################
+
+in_host() {
+   if [ "$goboCrossCompiling" = "yes" ]
+   then
+      unset goboCrossCompiling goboPrefix
+      "$@"
+      ret=$?
+      export goboCrossCompiling=yes
+      Parse_Conf Directories.conf
+      return $ret
+   else
+      "$@"
+   fi
+}
+
+function is_function_set() {
+   [ "`type -t $1`" = "function" ]
+}
+
+### Future Scripts functions... ###
+
+function Run_Hook() {
+   hook="$1"
+   ret=0
+   if is_function_set "$hook"
+   then
+      real_run_hook "$hook" || ret=$?
+   fi
+   for flag in "${useflags[@]}"
+   do
+      if is_function_set "using_${flag}_${hook}"
+      then
+         real_run_hook "using_${flag}_${hook}" || ret=$?
+      fi
+   done
+   return $ret
+}
+
+function real_run_hook() {
+   Parameters "$@" hookname
+   hookscript=./${hookname}.sh
+   echo "#!/bin/bash" > ${hookscript}
+   echo "source ScriptFunctions" >> ${hookscript}
+   echo "Import GoboLinux" >> ${hookscript}
+   echo "Import OptionParser" >> ${hookscript}
+   echo "Import Log" >> ${hookscript}
+   for v in ${variablestoexport[@]}
+   do
+      echo "export ${v}=\"$(eval echo \$${v})\"" >> ${hookscript}
+   done
+   echo "source $goboSettings/Compile/Compile.conf" >> ${hookscript}
+   echo "source ${recipe}" >> ${hookscript}
+   [ -e "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
+   echo "$hookname" >> ${hookscript}
+   $sudo_exec chmod a+x "${hookscript}"
+   $sudo_exec env SUDO_OK=1 "${hookscript}"
+   rtn=$?
+   rm -f ${hookscript}
+   return ${rtn}
+}
+
+function Add_Use_Flags_Options_To_Array() {
+   array=$1
+   for flag in "${useflags[@]}"
+   do
+      if [ -n "`eval echo '$'with_$flag`" ]
+      then
+         eval $(Combine_Arrays $array $array with_$flag)
+      fi
+   done
+}
+
+function do_fetch() {
+   savedir="--save-to $(echo ${sourcedir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
+   if is_scm_recipe
+   then
+      # If sources were already fetched, do not patch again
+      if [ -d "${sourcedir}" ]
+      then
+         if [ -z "$(echo "${version}" | grep -qiE "svn|cvs|git|bzr|hg")" ]
+         then
+            if Boolean "lazy"
+            then REPLY=u
+            elif Boolean "no-web"
+            then REPLY=u
+            elif Boolean "batch"
+            then REPLY=r
+            else
+               Log_Question "Directory '${basedir}' already exists."
+               Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
+            fi
+            case $REPLY in
+            [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedir}" ;;
+            [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
+            [Uu]) nofetch=yes; skippatching=yes ;;
+            [Cc]) exit 0 ;;
+            esac # esac is ridiculous.
+         else skippatching=yes
+         fi
+      else
+         if Boolean "no-web"
+         then
+            Log_Error "Files are not available and --no-web was used."
+            return 1
+         fi
+      fi
+      [ "$nofetch" = "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
+   else
+      if ! Boolean "no-web"
+      then
+         in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || Die "Error fetching archive(s)."
+      else
+         Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
+         result=$?
+         case $result in
+         1) Die "Files are corrupted. Exiting.";;
+         2) Boolean "batch" || Ask_Continue "Continue anyway?";;
+         3) Die "Files are not available. Exiting.";;
+         esac
+      fi
+   fi
+}
+
+function do_unpack() {
+   pfiles=`
+      for i in "${files[@]}"
+      do ls "$compileArchivesDir"/"$i"
+      done
+   `
+   String_To_Array files "$pfiles"
+
+   if [ "$uncompress" = "no" ]
+   then
+      [ "$basedir" ] || basedir=$appname
+      [ "$unpack_files" ] || unpack_files=files_in_root
+   fi
+
+   unpack=yes
+   if [ -d "${basedirs[0]}" ]
+   then
+      if Boolean "lazy"
+      then REPLY=u
+      elif Boolean "batch"
+      then REPLY=r
+      else
+         Log_Question "Directory '${basedir}' already exists."
+         Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
+      fi
+      case $REPLY in
+      [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
+      [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
+      [Uu]) unpack=no; skippatching="yes" ;;
+      [Cc]) exit 0 ;;
+      esac # esac is ridiculous.
+   fi
+
+   tempdir="$appname.$versionnumber.Compile.temp"
+   [ "$unpack" = "yes" ] && \
+   for ((i=0; i < ${#files[@]}; i++))
+   do
+      drop=.
+      skipdir=
+      if [ "$unpack_files" = "files_in_root" ]
+      then
+         drop="${basedirs[0]}"
+      elif [ "$unpack_files" = "inside_first" ]
+      then
+         if [ $i -gt 0 ]
+         then
+            drop="${basedirs[0]}"
+         fi
+      elif [ "$unpack_files" = "contents_inside_first" ]
+      then
+         drop="${basedirs[0]}"
+         skipdir="${basedirs[i]}"
+      elif [ "$unpack_files" = "dirs" ]
+      then
+         if [ "$i" -eq 0 ]
+         then
+            drop=.
+         else
+            drop="${basedirs[i]}"
+            if [ ! "$keep_existing_target" ] && echo "$drop" | Quiet grep "$target"
+            then keep_existing_target=yes
+            fi
+         fi
+      fi
+
+      if [ "$unpack_files" -o $i -eq 0 ]; then
+         Quiet pushd "$compileSourcesDir"
+         [ -d "${tempdir}" ] && $sudo_exec rm -rf "${tempdir}"
+         mkdir "${tempdir}"
+      fi
+
+      Log_Normal "Unpacking file ${files[i]}..."
+      if [ "$uncompress" = "no" ]
+      then Verbose cp -v "${files[i]}" "${tempdir}" || Die "Could not copy '${files[i]}'."
+      else Verbose Unpack_Archive "${files[i]}" "${tempdir}" || Die "Could not unpack '${files[i]}'."
+      fi
+
+      if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
+         mkdir -p "$drop"
+         [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec $chown -R --reference="${tempdir}" "${tempdir}"
+         Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
+         rm -rf "${tempdir}"
+         Quiet popd
+      fi
+   done
+   if [ "$unpack" = "no" ]
+   then skippatching=yes
+   fi
+}
+
+function do_patch() {
+   pushd "${basedir}" &> /dev/null
+
+   # Store state of nullglob and then set it explicitly
+   shopt nullglob &>/dev/null && nullglob=1 || nullglob=0
+   shopt -s nullglob
+   
+   for i in "$recipedir/"*.patch "$archsubdir/"*.patch
+   do
+      Log_Normal "Applying patch $i..."
+      patch -Np1 -i "$i" || Die "Failed on patch $i"
+   done
+   # restore state of nullglob
+   [ "1" = "$nullglob" ] || shopt -u nullglob
+
+   while read patch
+   do
+      Log_Verbose "Applying patch generated from ${patch}..."
+      patch -Np1 < <(export_marked; ApplyVariables -i Compile "${patch}") || Die "Failed on patch generated from $patch"
+   done < <(find "$recipedir" -name "*.patch.in" | sort)
+
+   popd &> /dev/null
+}
+
+function do_configuration() {
+   ! is_function_set ${recipe_type}_do_configuration || ${recipe_type}_do_configuration
+}
+
+function do_build() {
+   ! is_function_set ${recipe_type}_do_build || ${recipe_type}_do_build
+}
+
+function do_install() {
+   ! is_function_set ${recipe_type}_do_install || ${recipe_type}_do_install "${1}" "${2}"
+}
+
+function do_strip() {
+   Log_Normal "Stripping executables..."
+   [ "$STRIP" ] || STRIP=strip
+   local d
+   for d in bin sbin
+   do
+      Quiet pushd "$target/$d"
+      for i in *
+      do
+         if file "$i" | grep -q -i "ELF .* executable"
+         then Verbose $STRIP "$i"
+         fi
+      done
+      Quiet popd
+   done
+}
+
+function do_symlink() {
+   local forcelink=no
+   [ "force" == "$(Entry symlink)" ] && forcelink=yes
+   while true
+   do
+      case "$1" in
+      --force-link) forcelink=yes ; shift ;;
+      *) break ;;
+      esac # it still is.
+   done
+
+   if [ "$(Entry symlink)" == "no" ] && [ "$forcelink" != "yes" ]
+   then
+      PrepareProgram --tree-cleanup $batch "$1" "$2" || wrap_fail "Failed cleaning up tree."
+   else
+      unset updateoptions
+      Boolean "batch" && updateoptions="--auto"
+      if [ ! "$compileMetaRecipe" ] || [ "$compileMetaRecipe" -a "$update_each_settings" = "yes" ]
+      then
+         if ! Boolean "no-updatesettings"
+         then UpdateSettings $updateoptions "$1" "$2" || wrap_fail "Failed updating settings."
+         fi
+      fi
+      [ "$needs_safe_linking" = "yes" ] && safeopts="--libraries safe --executables safe"
+      [ "$forcelink" = "yes" ] && forcesymlinking="--force"
+      [ "$batch" ] && unmanaged_opts="--unmanaged install"
+      Boolean "no-unmanaged" && unmanaged_opts="--unmanaged skip"
+      SymlinkProgram $safeopts $unmanaged_opts $forcesymlinking ${symlink_options:+"${symlink_options[@]}"} "$1" "$2" || wrap_fail "Linking step failed."
+   fi
+}
+
+function install_extras() {
+   if [ -d "$reciperesources" ]
+   then
+      $sudo_exec cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ -d "$archreciperesources" ]
+   then
+      $sudo_exec cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+   fi
+   if [ "$revision" ]
+   then
+      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
+   fi
+
+   if [ "$app" = "$appname" ]
+   then
+      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
+   fi
+
+   if [ "$app" ]
+   then name=$app
+   else name=$appname
+   fi
+   unixname=`echo $name | tr "[:upper:]" "[:lower:]"`-$version
+   docdir="$installprefix/doc/$unixname"
+
+   for d in "${dirs[@]}"
+   do
+      Quiet pushd "$d" && {
+         for i in COPYING LICENSE README* NEWS AUTHORS BUGS TODO COPYRIGHT ${docs:+"${docs[@]}"}
+         do
+            if [ -e "$d/$i" ]
+            then
+               $sudo_exec mkdir -p "$docdir" || return 1
+               $sudo_exec cp -a "$d/$i" "$docdir" || return 1
+            fi
+         done
+         Quiet popd
+      }
+   done
+
+   if [ "${unmanaged_files[*]}" ] 
+   then
+      $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
+      for file in "${unmanaged_files[@]}"
+      do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
+      done
+      if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
+      then
+         $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
+         $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
+      fi
+   fi
+   return 0
+}
+
+function assert_requirements() {
+   Log_Normal "Asserting that requirements are met..."
+   Process_Requirements_File "$recipedir"
+}
+
+function mark_export() {
+   export variablestoexport="$variablestoexport $*"
+}
+
+function export_marked() {
+   for var in $variablestoexport
+   do
+      export $var
+   done
+}
+
+get_dependency_variables() {
+   dependencies_file="$1"
+   if [ -f "$dependencies_file" ]
+   then
+      while read dep
+      do
+         depname="$(echo $dep | cut -d ' ' -f1)"
+         depverrev="$(echo $dep | cut -d ' ' -f2)"
+         depver="$(echo $depverrev | cut -d '-' -f1)"
+         depdir="$(echo $dep | cut -d' ' -f4)"
+         lowercasename=`echo $depname | tr '[:upper:]-+' '[:lower:]__'`
+         dep_settings_path="$(Get_Dir runtimeSettings ${depname} ${depver})"
+         dep_variable_path="$(Get_Dir runtimeVariable ${depname} ${depver})"
+         eval $lowercasename'_path="'"$depdir"'"'
+         eval $lowercasename'_settings_path="'"$dep_settings_path"'"'
+         eval $lowercasename'_variable_path="'"$dep_variable_path"'"'
+         mark_export ${lowercasename}_path ${lowercasename}_settings_path ${lowercasename}_variable_path
+      done < <(CheckDependencies --no-recursive --types=installed --quiet-progress --mode=all --file "$dependencies_file")
+   fi
+}
