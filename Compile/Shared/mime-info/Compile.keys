@@ -1,8 +1,0 @@
-application/x-gobo-recipe
-	category=Archive
-	description=GoboLinux recipe
-	icon_filename=application-x-gobo-recipe
-	open=Compile %f
-	short_list_application_ids_for_novice_user_level=Compile
-	short_list_application_ids_for_intermediate_user_level=Compile
-	short_list_application_ids_for_advanced_user_level=Compile

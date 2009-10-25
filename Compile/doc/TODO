@@ -1,5 +1,0 @@
-* Check recipes: Sox, Binutils, Perl
-* write more documentation!
-* make_unix_dirs=yes (unix legacy dirs for broken installers)
-* wget --spider does not always work (ftp), ends up downloading entire package.
-* Compile --root (hard to implement)
