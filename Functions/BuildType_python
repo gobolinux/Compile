@@ -4,7 +4,7 @@ python_sane_check() {
 }
 
 # Can be overridden by the recipe
-python_major=2
+python_major=
 
 python=python${python_major}
 pythonversion=$($python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
