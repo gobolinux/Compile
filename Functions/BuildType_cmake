@@ -10,7 +10,7 @@ cmake_init() {
 }
 
 cmake_do_configuration(){
-   eval $(Combine_Arrays config cmake_options usercmakeoptions)
+   eval $(Combine_Arrays config cmake_options userconfigureoptions)
    Add_Use_Flags_Options_To_Array config
    # cmake always use its own build directory
    for i in "${cmake_variables[@]}"
