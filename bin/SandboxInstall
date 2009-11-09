@@ -201,6 +201,7 @@ then
    rm -rf Files/Compile/Sources
    rm -f Programs/Glibc/Settings/ld.so.cache
    rm -f System/Variable/cache/ldconfig/aux-cache
+   rm -f Data/cache/ldconfig/aux-cache
    rm -rf System/Variable/cache/fontconfig
    rm -rf System/Variable/scrollkeeper
    rm -f System/Variable/log/scrollkeeper.log
