@@ -56,15 +56,6 @@ function build_change() {
    echo "/-L/!s/"$1"/"$2"/g;"
 }
 
-make_symlink() {
-    local bname=`basename "$1"`
-    Exists "${baseprogramdir}/${bname}" && ln -nsf "${baseprogramdir}/${bname}" "$1"
-}
-
-remove_symlink() {
-    Exists "$(readlink -f "$1")" || rm -f -- "$1"
-}
-
 ### Operation #############################################################
 
 programname="$(Arg 1)"
@@ -130,7 +121,6 @@ then
    )
    if Dir_Set Manuals
    then configure_options=("${configure_options[@]}" --mandir="$configureprefix/man")
-   else configure_options=("${configure_options[@]}" --mandir="$configureprefix/share/man")
    fi
    if [ "$goboCrossCompiling" = "yes" ]
    then
@@ -166,6 +156,7 @@ if [ -n "$goboIndex" -a -n "$args" ]
 then args=(`echo ${args[@]} | sed "s,$programdir,$goboIndex,g"`)
 fi
 
+echo "$configureprogram" ${configure_options:+"${configure_options[@]}"} ${args:+"${args[@]}"} >&2
 "$configureprogram" ${configure_options:+"${configure_options[@]}"} ${args:+"${args[@]}"} 2>&1 | Color_Output configure >&$normalFD
 if [ "${PIPESTATUS[0]}" != 0 ]
 then Die "configure failed."
