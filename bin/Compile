@@ -345,6 +345,15 @@ variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target version
 
+if [ "$goboIndex" ]
+then
+   compileInstallOptions=(
+      "${compileInstallOptions[@]}"
+      prefix="${target}"
+      LIBTOOL="${goboExecutables}/libtool"
+   )
+fi
+
 ##################################################
 # Check if we are cross-compiling
 ##################################################
