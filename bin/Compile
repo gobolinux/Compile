@@ -94,8 +94,8 @@ Boolean "no-install" && no_install=yes
 arg1="$(Arg 1)"
 if ! [ "${arg1#*:}" = "$arg1" ]
 then
-    $sudo_exec Alien --install "$(Arg 1)"
-    exit $?
+   $sudo_exec Alien --install "$(Arg 1)"
+   exit $?
 fi
 
 if Is_Entry "configure-options"
