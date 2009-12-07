@@ -198,7 +198,7 @@ then
    rm -rf System/Variable/tmp/{*,.*} &> /dev/null
    rm -rf System/Kernel/Objects
    rm -f System/Kernel/Modules/*/modules.*
-   rm -rf Files/Compile/Sources
+   rm -rf Data/Compile/Sources
    rm -f Programs/Glibc/Settings/ld.so.cache
    rm -f System/Variable/cache/ldconfig/aux-cache
    rm -f Data/cache/ldconfig/aux-cache
