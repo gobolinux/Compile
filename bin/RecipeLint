@@ -828,6 +828,7 @@ cat Recipe | grep -q "recipe_type=meta" || test_resources
 
 valid_vars="
 Compile_goboDevices
+Compile_goboDevices
 Compile_goboModules
 Compile_goboExecutables
 Compile_goboHeaders
@@ -837,6 +838,7 @@ Compile_goboPrograms
 Compile_goboSettings
 Compile_goboTemp
 Compile_goboVariable
+Compile_goboData
 Compile_target
 Compile_settings_target
 Compile_variable_target
