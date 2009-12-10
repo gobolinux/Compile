@@ -510,7 +510,7 @@ get_dependency_variables() {
          depverrev="$(echo $dep | cut -d ' ' -f2)"
          depver="$(echo $depverrev | cut -d '-' -f1)"
          depdir="$(echo $dep | cut -d' ' -f4)"
-         lowercasename=`echo $depname | tr '[:upper:]-+' '[:lower:]__'`
+         lowercasename=`echo $depname | tr '[:upper:]-+:' '[:lower:]___'`
          dep_settings_path="$(Get_Dir runtimeSettings ${depname} ${depver})"
          dep_variable_path="$(Get_Dir runtimeVariable ${depname} ${depver})"
          eval $lowercasename'_path="'"$depdir"'"'
