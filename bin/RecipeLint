@@ -497,6 +497,12 @@ test_urls() {
                   lzma -t $file || {
                      ERROR "Downloaded file $file is corrupted."
                   }
+               elif [ ${file%.xz} != $file ]
+               then
+                  msg "Testing integrity of archive $file..."
+                  xz -t $file || {
+                     ERROR "Downloaded file $file is corrupted."
+                  }
                else
                   WARN "Type of archive $file not detected. No integrity check performed."
                fi
