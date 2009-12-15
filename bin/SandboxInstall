@@ -195,23 +195,23 @@ then
    # Postprocess contents of $sandbox_rw here
    Log_Normal "Postprocessing Sandbox"
    Quiet pushd $sandbox_rw
-   rm -rf System/Variable/tmp/{*,.*} &> /dev/null
-   rm -rf System/Kernel/Objects
-   rm -f System/Kernel/Modules/*/modules.*
-   rm -rf Data/Compile/Sources
-   rm -f Programs/Glibc/Settings/ld.so.cache
-   rm -f System/Variable/cache/ldconfig/aux-cache
-   rm -f Data/cache/ldconfig/aux-cache
-   rm -rf System/Variable/cache/fontconfig
-   rm -rf System/Variable/scrollkeeper
-   rm -f System/Variable/log/scrollkeeper.log
+   rm -rf ./$goboData/Compile/Sources
+   rm -rf ./$goboKernel/Objects
+   rm -f  ./$goboKernel/Kernel/Modules/*/modules.*
+   rm -f  ./$goboKernel/Devices/null
+   rm -f  ./$goboKernel/Devices/tty
+   rm -rf ./$goboVariable/tmp/{*,.*} &> /dev/null
+   rm -f  ./$goboVariable/cache/ldconfig/aux-cache
+   rm -rf ./$goboVariable/cache/fontconfig
+   rm -rf ./$goboVariable/scrollkeeper
+   rm -f  ./$goboVariable/log/scrollkeeper.log
+   rm -f  ./$goboVariable/cache/ldconfig/aux-cache
+   rm -f  ./$goboSettings/{passwd,passwd-,group,group-}
+   rm -f  ./$goboSettings/mtab
+   rm -f  Programs/Glibc/Settings/ld.so.cache
    if [ "$package" != "Python" -a -d Programs/Python ]
    then find Programs/Python -type f -name "*.pyc" -or -name "*.pyo" | xargs rm -f &> /dev/null
    fi
-   rm -f System/Settings/{passwd,passwd-,group,group-}
-   rm -f System/Settings/mtab
-   rm -f System/Kernel/Devices/null
-   rm -f System/Kernel/Devices/tty
    rm -rf Users/*/.distcc
    find -type f -name "*__dir_opaque" | xargs rm -f &> /dev/null
    find -type f -name "*_HIDDEN~" | xargs rm -f &> /dev/null
