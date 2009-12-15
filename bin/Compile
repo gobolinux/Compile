@@ -696,8 +696,15 @@ make_absolute() {
 }
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
+[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
 
-mark_export dir basedir sourcedir archsubdir recipedir
+mark_export dir basedir sourcedir archsubdir recipedir builddir
+
+# Re-source recipe for two purposes. First let the recipe use all variables we have defined.
+# Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
+# functionality than setting do_build=no and define the building procedure in the pre_build hook
+source "$recipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
 
 ##################################################
 # Create the cross_make_variables array
@@ -748,16 +755,8 @@ done
 is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
 is_function_set ${recipe_type}_init && ${recipe_type}_init
 
-# Re-source recipe for two purposes. First let the recipe use all variables we have defined.
-# Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
-# functionality than setting do_build=no and define the building procedure in the pre_build hook
-source "$recipe"
-[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
-mark_export builddir
-
 # backwards compability fix, as some hooks in recipes might use "$dir"
 dir="$sourcedir"
-[ -e "$archrecipe" ] && source "$archrecipe"
 
 Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
 Boolean "no-build" && exit 0
