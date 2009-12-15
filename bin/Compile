@@ -345,6 +345,11 @@ variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target version
 
+compileInstallOptions=(
+   "${compileInstallOptions[@]}"
+   LDCONFIG="true"
+)
+
 if [ "$goboIndex" ]
 then
    compileInstallOptions=(
