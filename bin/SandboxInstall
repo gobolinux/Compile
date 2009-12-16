@@ -227,7 +227,7 @@ then
          cp -a ./$installPackageDir/$wrong_version/* $installPackageDir/$version/
          rm -rf ./Programs
       fi
-      cp -a $sandbox_rw/$goboIndex/* $installPackageDir/$version
+      cp -a $sandbox_rw/$goboIndex/* $installPackageDir/$version 2>/dev/null
       rm -rf $sandbox_rw/$goboIndex
       rmdir $sandbox_rw/System 2> /dev/null
    fi
