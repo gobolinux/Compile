@@ -232,7 +232,7 @@ then
       rmdir $sandbox_rw/System 2> /dev/null
    fi
    Quiet popd
-   [ -d "$sandbox_rw" ] && leftovers=`(cd $sandbox_rw; find *) 2>/dev/null`
+   [ -d "$sandbox_rw" ] && leftovers=`(cd $sandbox_rw; find * | grep -v ${installPackageDir}/${version}-safelinking) 2>/dev/null`
    [ "$leftovers" ] && {
       Log_Normal "Left over files:\n$leftovers"
       if ! Boolean "allow-leftovers"
