@@ -187,12 +187,15 @@ Is_Entry_Set "directory" && newpwd=`Entry "directory"`
 echo "#!/bin/bash" >"${sandbox_mp}/.wrapper"
 echo "cd $newpwd" >>"${sandbox_mp}/.wrapper"
 Args_To_Array command >> "${sandbox_mp}/.wrapper"
-echo "mkdir -p $goboDevices; mount -t tmpfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
-echo "mkdir -p $goboStatus; mount -t proc none $goboStatus" >> "${sandbox_mp}/.wrapper"
-echo "cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
-if Executable_Exists_In_Path "udevadm"
-then echo "udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
-else echo "udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
+if [ "$unionbackend" != "unionfs" ]
+then
+    echo "mkdir -p $goboDevices; mount -t tmpfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
+    echo "mkdir -p $goboStatus; mount -t proc none $goboStatus" >> "${sandbox_mp}/.wrapper"
+    echo "cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
+    if Executable_Exists_In_Path "udevadm"
+    then echo "udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
+    else echo "udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
+    fi
 fi
 echo "\"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
 
