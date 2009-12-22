@@ -3,8 +3,8 @@
 Import BuildType_makefile
 
 configure_init() {
-   configure="./configure"
-   autogen="autogen.sh"
+   [ -n "${configure}" ] || configure="./configure"
+   [ -n "${autogen}" ] || autogen="autogen.sh"
 }
 
 configure_do_configuration() {
