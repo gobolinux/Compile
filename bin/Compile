@@ -355,6 +355,8 @@ then
    compileInstallOptions=(
       "${compileInstallOptions[@]}"
       prefix="${target}"
+   )
+   compileMakeOptions=(
       LIBTOOL="${goboExecutables}/libtool"
    )
 fi
