@@ -9,7 +9,7 @@ cabal_init() {
    [ "$runhaskell" ] || runhaskell="runhaskell"
 
    for f in Setup.lhs Setup.hs ; do
-      [ -e $f ] && cabal_setup="$f";
+      [ -e ${sourcedir}/${f} ] && cabal_setup="$f";
    done
    [ ! -z "$cabal_setup" ] || Die "Cabal Setup.hs or Setup.lhs not found"
 }
