@@ -29,7 +29,7 @@ scriptsversion=`Get_Version Scripts Current`
 
 if echo "$scriptsversion" | grep -qi GIT || \
    echo "$scriptsversion" | grep -qi SVN || \
-   [ "`GuessLatest $scriptsversion 2.9.9rc1`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.10.0`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
