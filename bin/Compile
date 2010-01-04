@@ -94,7 +94,8 @@ Boolean "no-install" && no_install=yes
 arg1="$(Arg 1)"
 if ! Is_URL "$arg1" && ! [ "${arg1#*:}" = "$arg1" ]
 then
-   $sudo_exec Alien --install "$(Arg 1)"
+   Log_Normal "Alien install of $(Arg 1) $(Arg 2)"
+   $sudo_exec Alien --install "$(Arg 1)" "$(Arg 2)"
    exit $?
 fi
 
@@ -427,12 +428,23 @@ then
    selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress $batch "$app" "$versionandrevision" \
      "recipe" "$recipedir") || Die "Aborted."
-   selecteddeps=$(echo "$selecteddeps" | awk '{ print $4 }' )
+   selecteddeps=$(echo "$selecteddeps" | awk '
+      NF==3 { print $3 }
+      NF==4 && index($4,":") { printf("%s~%s\n", $4, $2) }
+      NF==4 && !index($4,":") { print $4 }
+      ' )
    unset askeddeps
    for d_url in ${selecteddeps}
    do
       Array_Contains askeddeps "$d_url" && continue
-      Compile $compileoptions --no-dependencies $d_url || exit $?
+	  # d_url is either "/Program/..." path or "Alien:Pkg" or "Alien:Pkg~ver"
+	  # the latter
+      (
+        IFS='~'  # to split name from version as set by awk above
+        set - $d_url
+        IFS=' '
+        Compile $compileoptions --no-dependencies $1 $2 || exit $?
+      )
       askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
    done
 fi
