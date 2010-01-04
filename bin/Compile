@@ -356,10 +356,12 @@ then
       "${compileInstallOptions[@]}"
       prefix="${target}"
    )
-   compileMakeOptions=(
-      LIBTOOL="${goboExecutables}/libtool"
-   )
 fi
+[ -n "$LIBTOOL" ] && \
+compileMakeOptions=(
+   "${compileMakeOptions[@]}"
+   LIBTOOL="${goboExecutables}/libtool"
+)
 
 ##################################################
 # Check if we are cross-compiling
