@@ -312,8 +312,6 @@ then
 fi
 
 recipedir="$(dirname "$recipe")"
-reciperesources="$recipedir/Resources"
-archreciperesources="$archsubdir/Resources"
 useflags=($(UseFlags "$recipedir"))
 
 if Is_Entry "app-name"
@@ -417,6 +415,9 @@ else
    archsubdir="$recipedir/$arch"
    archrecipe="$recipedir/$arch/Recipe"
 fi
+
+reciperesources="$recipedir/Resources"
+archreciperesources="$archsubdir/Resources"
 
 ##################################################
 # Check dependencies
