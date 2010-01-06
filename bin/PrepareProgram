@@ -150,7 +150,15 @@ fi
 
 eval `Args_To_Array args 3`
 if [ -n "$goboIndex" -a -n "$args" ]
-then args=(`echo ${args[@]} | sed "s,$programdir,$goboIndex,g"`)
+then
+   for a in "${args[@]}"
+   do
+      tmpargs=(
+         "${tmpargs[@]}"
+         "$(echo "${a}" | sed "s,$programdir,$goboIndex,g")"
+      )
+   done
+   args=("${tmpargs[@]}")
 fi
 
 export LDFLAGS="-L$programdir/lib"
