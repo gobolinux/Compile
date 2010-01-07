@@ -9,6 +9,7 @@ Import Log
 Import OptionParser
 Import Directories
 Import Array
+Import String
 
 ### Options ##############################################################
 
@@ -54,6 +55,10 @@ function config_accepts_sysconfdir() {
 
 function config_accepts_mandir() {
    grep -- "--mandir" "$configureprogram" &> /dev/null
+}
+
+function config_accepts_libexecdir() {
+   grep -- "--libexecdir" "$configureprogram" &> /dev/null
 }
 
 function build_change() {
@@ -128,6 +133,7 @@ then
       --sysconfdir="$configuresettings"
       --localstatedir="$configurevariable"
       --mandir="${configuremandir}"
+      --libexecdir="${configureprefix}/lib/(Downcase ${programname})"
    )
    if [ "$goboCrossCompiling" = "yes" ]
    then
@@ -159,6 +165,13 @@ then
       configure_options=(
          "${configure_options[@]}"
          --mandir="$configuremandir"
+      )
+   fi
+   if config_accepts_libexecdir
+   then
+      configure_options=(
+         "${configure_options[@]}"
+         --libexecdir="${configureprefix}/lib/$(Downcase ${programname})"
       )
    fi
 else
