@@ -52,6 +52,10 @@ function config_accepts_sysconfdir() {
    grep -- "--sysconfdir" "$configureprogram" &> /dev/null
 }
 
+function config_accepts_mandir() {
+   grep -- "--mandir" "$configureprogram" &> /dev/null
+}
+
 function build_change() {
    echo "/-L/!s/"$1"/"$2"/g;"
 }
@@ -102,11 +106,16 @@ rm -f config.cache
 Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
    
 if [ "$goboIndex" ]
-then configureprefix="$goboIndex"
-else configureprefix="$programdir"
+then
+   configureprefix="$goboIndex"
+   configuresettings="$goboSettings"
+   configuremandir="${goboShared}/man"
+else
+   configureprefix="$programdir"
+   configuresettings="$settingsdir"
+   configuremandir="${target}/Shared/man"
 fi
 configurevariable="$goboVariable"
-configuresettings="$settingsdir"
 
 if Boolean "no-default-options"
 then
@@ -118,6 +127,7 @@ then
       --prefix="$configureprefix"
       --sysconfdir="$configuresettings"
       --localstatedir="$configurevariable"
+      --mandir="${configuremandir}"
    )
    if [ "$goboCrossCompiling" = "yes" ]
    then
@@ -142,6 +152,13 @@ then
       configure_options=(
          "${configure_options[@]}"
          --sysconfdir="$configuresettings"
+      )
+   fi
+   if config_accepts_mandir
+   then
+      configure_options=(
+         "${configure_options[@]}"
+         --sysconfdir="$configuremandir"
       )
    fi
 else

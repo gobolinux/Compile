@@ -353,6 +353,8 @@ then
    compileInstallOptions=(
       "${compileInstallOptions[@]}"
       prefix="${target}"
+      sysconfdir="${settings_target}"
+      mandir="${target}/share/man"
    )
 fi
 [ -n "$LIBTOOL" ] && \
