@@ -133,7 +133,7 @@ then
       --sysconfdir="$configuresettings"
       --localstatedir="$configurevariable"
       --mandir="${configuremandir}"
-      --libexecdir="${configureprefix}/lib/(Downcase ${programname})"
+      --libexecdir="${configureprefix}/lib/$(Downcase ${programname})"
    )
    if [ "$goboCrossCompiling" = "yes" ]
    then
