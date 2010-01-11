@@ -330,8 +330,6 @@ then
 fi
 
 recipedir="$(dirname "$recipe")"
-reciperesources="$recipedir/Resources"
-archreciperesources="$archsubdir/Resources"
 useflags=($(UseFlags "$recipedir"))
 
 if Is_Entry "app-name"
@@ -362,6 +360,12 @@ settings_target=$(Get_Dir runtimeSettings $appname $versionnumber)
 variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target version
+
+[ -n "$LIBTOOL" ] && \
+compileMakeOptions=(
+   "${compileMakeOptions[@]}"
+   LIBTOOL="${goboExecutables}/libtool"
+)
 
 ##################################################
 # Check if we are cross-compiling
@@ -417,6 +421,9 @@ else
    archsubdir="$recipedir/$arch"
    archrecipe="$recipedir/$arch/Recipe"
 fi
+
+reciperesources="$recipedir/Resources"
+archreciperesources="$archsubdir/Resources"
 
 ##################################################
 # Check dependencies
