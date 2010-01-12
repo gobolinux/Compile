@@ -745,8 +745,6 @@ then
       )
    done
    buildmerged=("${tmpbuildmerged[@]}")
-
-   buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
 fi
 
 if [ "$makefile" = "" ]
