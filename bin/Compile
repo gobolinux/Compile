@@ -355,6 +355,7 @@ then
       prefix="${target}"
       sysconfdir="${settings_target}"
       mandir="${target}/share/man"
+      libexecdir="${target}/lib/$(Downcase ${appname})"
    )
 fi
 [ -n "$LIBTOOL" ] && \
