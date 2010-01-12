@@ -736,6 +736,15 @@ eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions mak
 
 if [ ! -z "$goboIndex" ]
 then
+   for bm in "${buildmerged[@]}"
+   do
+      tmpargs=(
+         "${tmpbuildmerged[@]}"
+         "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
+      )
+   done
+   buildmerged=("${tmpbuildmerged[@]}")
+
    buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
 fi
 
