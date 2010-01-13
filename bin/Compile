@@ -739,7 +739,7 @@ if [ ! -z "$goboIndex" ]
 then
    for bm in "${buildmerged[@]}"
    do
-      tmpargs=(
+      tmpbuildmerged=(
          "${tmpbuildmerged[@]}"
          "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
       )
