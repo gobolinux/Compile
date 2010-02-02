@@ -717,8 +717,24 @@ make_absolute() {
 }
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
+# Must source recipe_types here so that _init is run before needs_build_dir
+# is used.
+unset okbuildtype
+for buildtype in $(Available_BuildTypes)
+do
+   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
+   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
+done
+[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+# _sane_check and _init are run before re-sourcing, to allow the recipe to
+# override values set in them.
+is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
+is_function_set ${recipe_type}_init && ${recipe_type}_init
+
 [ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
 
+# backwards compability fix, as some hooks in recipes might use "$dir"
+dir="$sourcedir"
 mark_export dir basedir sourcedir archsubdir recipedir builddir
 
 # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
@@ -766,18 +782,6 @@ fi
 # Compile!
 ##################################################
 
-unset okbuildtype
-for buildtype in $(Available_BuildTypes)
-do
-   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
-   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
-done
-[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
-is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
-is_function_set ${recipe_type}_init && ${recipe_type}_init
-
-# backwards compability fix, as some hooks in recipes might use "$dir"
-dir="$sourcedir"
 
 Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
 Boolean "no-build" && exit 0
