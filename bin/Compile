@@ -484,6 +484,16 @@ fi
 [ "$is_manifest" = "yes" ] && recipe_type="manifest"
 
 ##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
+
+##################################################
 # Set up enviroment
 ##################################################
 
@@ -527,16 +537,6 @@ then
       fi
    fi
 fi
-
-##################################################
-# Get the active useflags for this recipe, and
-# execute the hooks here so any variable updates
-# occur in time.
-##################################################
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
 
 ##################################################
 # Meta-recipe
