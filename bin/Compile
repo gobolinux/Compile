@@ -484,31 +484,6 @@ fi
 [ "$is_manifest" = "yes" ] && recipe_type="manifest"
 
 ##################################################
-# Get the active useflags for this recipe, and
-# execute the hooks here so any variable updates
-# occur in time.
-##################################################
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
-
-##################################################
-# Set up enviroment
-##################################################
-
-if [ "${environment[*]}" ]
-then
-   for i in "${environment[@]}"
-   do
-      var=`echo $i | cut -d= -f 1`
-      val=`echo $i | cut -d= -f 2-`
-      eval export $var=\'$val\'
-      mark_export $var
-   done
-fi
-
-##################################################
 # Check recipe's Compile version
 ##################################################
 
@@ -742,6 +717,31 @@ mark_export dir basedir sourcedir archsubdir recipedir builddir
 # functionality than setting do_build=no and define the building procedure in the pre_build hook
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
+
+##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
+
+##################################################
+# Set up enviroment
+##################################################
+
+if [ "${environment[*]}" ]
+then
+   for i in "${environment[@]}"
+   do
+      var=`echo $i | cut -d= -f 1`
+      val=`echo $i | cut -d= -f 2-`
+      eval export $var=\'$val\'
+      mark_export $var
+   done
+fi
 
 ##################################################
 # Create the cross_make_variables array
