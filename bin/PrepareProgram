@@ -191,7 +191,6 @@ then
    args=("${tmpargs[@]}")
 fi
 
-export LDFLAGS="-L$programdir/lib"
 "$configureprogram" ${configure_options:+"${configure_options[@]}"} ${args:+"${args[@]}"} 2>&1 | Color_Output configure >&$normalFD
 if [ "${PIPESTATUS[0]}" != 0 ]
 then Die "configure failed."

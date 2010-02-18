@@ -363,6 +363,10 @@ compileMakeOptions=(
    "${compileMakeOptions[@]}"
    LIBTOOL="${goboExecutables}/libtool"
 )
+configure_variables=(
+   "${configure_variables[@]}"
+   LDFLAGS="-L$programdir/lib"
+)
 
 ##################################################
 # Check if we are cross-compiling
