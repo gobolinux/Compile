@@ -708,7 +708,6 @@ make_absolute() {
 }
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
-[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
 
 mark_export dir basedir sourcedir archsubdir recipedir builddir
 
@@ -773,6 +772,7 @@ done
 [ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
 is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
 is_function_set ${recipe_type}_init && ${recipe_type}_init
+[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
 
 # backwards compability fix, as some hooks in recipes might use "$dir"
 dir="$sourcedir"
