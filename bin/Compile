@@ -365,7 +365,7 @@ compileMakeOptions=(
 )
 configure_variables=(
    "${configure_variables[@]}"
-   LDFLAGS="-L$programdir/lib"
+   LDFLAGS="-L${target}/lib"
 )
 
 ##################################################
