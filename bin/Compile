@@ -451,7 +451,7 @@ then
         set - $d_url
         IFS=' '
         Compile $compileoptions --no-dependencies $1 $2 || exit $?
-      )
+      ) || exit $?
       askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
    done
 fi
