@@ -125,7 +125,9 @@ fi
    echo "Compile: $compileVersion"
    echo "Scripts: $scriptsVersion"
    echo -n "GoboLinuxVersion: "
-   cat $goboSettings/GoboLinuxVersion
+   # GoboLinuxVersion had a newline on the end in some versions
+   # including 012, which corrupts the submission. Cut it off.
+   echo $(cat $goboSettings/GoboLinuxVersion)
    echo "Origin: ${lastversion:-none}"
    echo
    cat temp-$$/empty-patch|base64
