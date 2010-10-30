@@ -646,7 +646,6 @@ test_recipe() {
       do_build=configure,makefile,cmake,python,cabal,waf
       do_install=configure,makefile,cmake,xmkmf,python,scons,cabal,waf
       needs_build_directory=configure
-      manifest=manifest
       without=perl
       create_dirs_first=configure,makefile,cmake,perl
       python_options=python
