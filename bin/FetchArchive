@@ -141,7 +141,7 @@ then
    for hg in "${hgs[@]}"
    do
       if [ ! -d "${sourcedir}" ]
-      then hg clone "${hg}" "${sourcedir}" || exit $?
+      then hg clone ${hg} "${sourcedir}" || exit $?
       else cd "${sourcedir}" && hg update || exit $?
       fi
    done
