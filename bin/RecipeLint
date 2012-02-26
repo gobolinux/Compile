@@ -355,6 +355,15 @@ cat Recipe | perl -e '
             }
             $functions{%fn_name} = 1;
             $want_bracket = 1;
+        } elsif(/^do_(fetch|unpack|patch|configuration|build|install|symlink)\(\)/) {
+            $fn_name = $1;
+            if ($functions{$fn_name} == 1) {
+               print "Error at line ".$n.": function redefinition:\n";
+               print;
+               exit 1;
+            }
+            $functions{%fn_name} = 1;
+            $in_shell = 1;
          } elsif (/^((pre|post)_(patch|install|build|link)|private__[a-z0-9_]*|using_[a-z0-9_]+|do_(fetch|unpack|patch|configuration|build|install|symlink))[[:blank:]]*\([[:blank:]]*\)[[:blank:]]*\{/) {
             $fn_name = $1;
             if ($functions{$fn_name} == 1) {
@@ -647,7 +656,7 @@ test_recipe() {
       do_install=configure,makefile,cmake,xmkmf,python,scons,cabal,waf
       needs_build_directory=configure
       without=perl
-      create_dirs_first=configure,makefile,cmake,perl
+      create_dirs_first=configure,makefile,cmake,perl,manifest
       python_options=python
       override_default_options=python,scons,configure,cabal,waf
       build_script=python
