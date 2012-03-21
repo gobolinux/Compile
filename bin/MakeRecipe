@@ -109,6 +109,7 @@ else
 
    bname=`basename "$source_url" .tar.gz`
    bname=`basename "$bname" .tar.bz2`
+   bname=`basename "$bname" .tar.xz`
    bname=`basename "$bname" .tgz`
    bname=`basename "$bname" .tbz2`
    bname=`basename "$bname" .zip`
