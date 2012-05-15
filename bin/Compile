@@ -47,7 +47,6 @@ scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL
 scriptUsage="<program> [<version>]"
 Add_Option_Entry "n" "app-name" "Override application name." ""
 Add_Option_Entry "e" "version-number" "Override version number." ""
-Add_Option_Entry "x" "cross-compile" "Cross-compile to another architecture." ""
 Add_Option_Entry "c" "configure-options" "Options to be passed explicitly to './configure'." ""
 Add_Option_Boolean "k" "keep" "Keep files if program directory already exists."
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
@@ -113,7 +112,6 @@ chown="${compileChownCommand:-chown}"
 
 # Options to be propagated in sub-calls to Compile
 unset compileoptions
-Is_Entry cross-compile && compileoptions="$compileoptions --cross-compile `Entry cross-compile`"
 Boolean no-install && compileoptions="$compileoptions --no-install"
 Boolean no-build && compileoptions="$compileoptions --no-build"
 Boolean no-web && compileoptions="$compileoptions --no-web"
@@ -149,11 +147,7 @@ function wrapup() {
 
       # Save use flags information
       echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
-
-      if [ ! -z "$cross_uname_m" ]
-      then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
-      else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
-      fi
+      echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
 
       Log_Normal "Generating package's build information..."
       GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
@@ -211,13 +205,6 @@ function wrapup() {
 }
 
 function undo_mounts() {
-   if Is_Entry "cross-compile" && Union_Is_Supported
-   then 
-       Quiet Union_Umount $(Union_Backend) $cross_libc_libdir
-       for i in $goboPrograms/*/Current
-       do [ -d "$i/lib" ] && Quiet Union_Umount $(Union_Backend) $i
-       done
-   fi
    [ "$1" = "--dont-exit" ] && return || exit 1
 }
 
@@ -367,61 +354,9 @@ compileMakeOptions=(
    LIBTOOL="${goboExecutables}/libtool"
 )
 
-##################################################
-# Check if we are cross-compiling
-##################################################
-
-unset STRIP
-Is_Entry "cross-compile" && export goboCrossCompiling=yes cross_compiling=yes
-
-if [ "$goboCrossCompiling" = "yes" ]
-then
-   arch_conf=`Entry "cross-compile"`
-   Log_Normal "Cross-Compiling for $arch_conf"
-
-   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross/Cross-$arch_conf.conf
-   [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
-
-   source "${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf"
-   source "${crossConfFile}"
-   source GoboPath
-   Parse_Conf Directories.conf
-
-   # Extra arguments to be passed to 'make' and 'make install'
-   cross_make_variables=(
-      "CC=$CC"
-      "CPP=$CPP"
-      "CXX=$CXX"
-      "LIBTOOL=$LIBTOOL"
-      "CROSS=$cross_compiler"
-   )
-   # ARCH is taken from the cross config file
-   arch=`Get_Architecture $cross_uname_m`
-   archsubdir="$recipedir/$arch"
-   archrecipe="$recipedir/$arch/Recipe"
-   compileSourcesDir="$compileDir/Sources-$arch_conf"
-   mkdir -p $compileSourcesDir
-
-   if Union_Is_Supported
-   then
-       uniondirs="$cross_libc_libdir=rw"
-       for i in $goboPrograms/*/Current
-       do [ -d "$i/lib" ] && uniondirs="$uniondirs:$i/lib=ro"
-       done
-       if ! [ "$uniondirs" = "$cross_libc_libdir=rw" ]
-       then Union_Mount $(Union_Backend) "$uniondirs" "$cross_libc_libdir"
-       fi
-   fi
-
-   export CC HOSTCC LD
-else
-   cross_make_variables=""
-
-   arch=`Get_Architecture`
-   archsubdir="$recipedir/$arch"
-   archrecipe="$recipedir/$arch/Recipe"
-fi
-
+arch=`Get_Architecture`
+archsubdir="$recipedir/$arch"
+archrecipe="$recipedir/$arch/Recipe"
 reciperesources="$recipedir/Resources"
 archreciperesources="$archsubdir/Resources"
 
@@ -741,18 +676,6 @@ then
       eval export $var=\'$val\'
       mark_export $var
    done
-fi
-
-##################################################
-# Create the cross_make_variables array
-##################################################
-if [ "$goboCrossCompiling" = "yes" ]
-then
-   if [ "$recipe_type" != "configure" ]
-   then cross_array=compileMakeOptions
-   else cross_array=""
-   fi
-   eval $(Combine_Arrays $cross_array $cross_array cross_make_variables)
 fi
 
 ##################################################

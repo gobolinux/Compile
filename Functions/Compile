@@ -133,17 +133,7 @@ Available_BuildTypes() {
 ##################################################
 
 in_host() {
-   if [ "$goboCrossCompiling" = "yes" ]
-   then
-      unset goboCrossCompiling goboPrefix
-      "$@"
-      ret=$?
-      export goboCrossCompiling=yes
-      Parse_Conf Directories.conf
-      return $ret
-   else
-      "$@"
-   fi
+   "$@"
 }
 
 function is_function_set() {
