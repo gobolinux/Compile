@@ -121,8 +121,8 @@ then
    for git in "${gits[@]}"
    do
       if [ ! -d "${sourcedir}" ]
-      then git clone "${git}" "${sourcedir}" || exit $?
-      else cd "${sourcedir}" && git pull || exit $?
+      then GIT_SSL_NO_VERIFY=true git clone "${git}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && GIT_SSL_NO_VERIFY=true git pull || exit $?
       fi
    done
    exit 0
@@ -141,7 +141,7 @@ then
    for hg in "${hgs[@]}"
    do
       if [ ! -d "${sourcedir}" ]
-      then hg clone "${hg}" "${sourcedir}" || exit $?
+      then hg clone ${hg} "${sourcedir}" || exit $?
       else cd "${sourcedir}" && hg update || exit $?
       fi
    done

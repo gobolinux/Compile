@@ -29,7 +29,7 @@ scriptsversion=`Get_Version Scripts Current`
 
 if echo "$scriptsversion" | grep -qi GIT || \
    echo "$scriptsversion" | grep -qi SVN || \
-   [ "`GuessLatest $scriptsversion 2.9.9rc1`" = "$scriptsversion" ]
+   [ "`GuessLatest $scriptsversion 2.10.0`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
    :
@@ -47,7 +47,6 @@ scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL
 scriptUsage="<program> [<version>]"
 Add_Option_Entry "n" "app-name" "Override application name." ""
 Add_Option_Entry "e" "version-number" "Override version number." ""
-Add_Option_Entry "x" "cross-compile" "Cross-compile to another architecture." ""
 Add_Option_Entry "c" "configure-options" "Options to be passed explicitly to './configure'." ""
 Add_Option_Boolean "k" "keep" "Keep files if program directory already exists."
 Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
@@ -89,6 +88,16 @@ Boolean "verbose" && verbose="--verbose"
 Boolean "no-build" && Set_Boolean "keep"
 Boolean "no-install" && no_install=yes
 
+# If argument 1 has a colon in it, it's an Alien.
+# Pass it off to the Alien command and don't deal with it any further.
+arg1="$(Arg 1)"
+if ! Is_URL "$arg1" && ! [ "${arg1#*:}" = "$arg1" ]
+then
+   Log_Normal "Alien install of $(Arg 1) $(Arg 2)"
+   $sudo_exec Alien --install "$(Arg 1)" "$(Arg 2)"
+   exit $?
+fi
+
 if Is_Entry "configure-options"
 then userconfigureoptions=(`Entry "configure-options"`)
 else userconfigureoptions=()
@@ -103,7 +112,6 @@ chown="${compileChownCommand:-chown}"
 
 # Options to be propagated in sub-calls to Compile
 unset compileoptions
-Is_Entry cross-compile && compileoptions="$compileoptions --cross-compile `Entry cross-compile`"
 Boolean no-install && compileoptions="$compileoptions --no-install"
 Boolean no-build && compileoptions="$compileoptions --no-build"
 Boolean no-web && compileoptions="$compileoptions --no-web"
@@ -136,11 +144,7 @@ function wrapup() {
 
       # Save use flags information
       echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
-
-      if [ ! -z "$cross_uname_m" ]
-      then echo "$cross_uname_m" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
-      else echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
-      fi
+      echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
 
       Log_Normal "Generating package's build information..."
       GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
@@ -198,13 +202,6 @@ function wrapup() {
 }
 
 function undo_mounts() {
-   if Is_Entry "cross-compile" && Union_Is_Supported
-   then 
-       Quiet Union_Umount $(Union_Backend) $cross_libc_libdir
-       for i in $goboPrograms/*/Current
-       do [ -d "$i/lib" ] && Quiet Union_Umount $(Union_Backend) $i
-       done
-   fi
    [ "$1" = "--dont-exit" ] && return || exit 1
 }
 
@@ -243,6 +240,9 @@ function check_direct_dependencies() {
    local fullversion="$2"
    if [ -d ${goboShared}/Compile/Recompile/${appname} -o -L ${goboShared}/Compile/Recompile/${appname} ]
    then
+      # Store state of nullglob and then set it explicitly
+      shopt nullglob &>/dev/null && nullglob=1 || nullglob=0
+      shopt -s nullglob
       for i in ${goboShared}/Compile/Recompile/${appname}/*
       do
          depapp=`basename $i`
@@ -251,6 +251,8 @@ function check_direct_dependencies() {
          Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
          Compile $batch $lazy $noweb $depapp
       done
+      # restore state of nullglob
+      [ "1" = "$nullglob" ] || shopt -u nullglob
    fi
 }
 
@@ -368,61 +370,9 @@ configure_variables=(
    LDFLAGS="-L${target}/lib"
 )
 
-##################################################
-# Check if we are cross-compiling
-##################################################
-
-unset STRIP
-Is_Entry "cross-compile" && export goboCrossCompiling=yes cross_compiling=yes
-
-if [ "$goboCrossCompiling" = "yes" ]
-then
-   arch_conf=`Entry "cross-compile"`
-   Log_Normal "Cross-Compiling for $arch_conf"
-
-   crossConfFile=${goboPrograms}/Compile/Settings/Compile/Cross/Cross-$arch_conf.conf
-   [ ! -f "$crossConfFile" ] && Die "Could not find $crossConfFile."
-
-   source "${goboPrograms}/Compile/Settings/Compile/Cross/Cross-ResetEnv.conf"
-   source "${crossConfFile}"
-   source GoboPath
-   Parse_Conf Directories.conf
-
-   # Extra arguments to be passed to 'make' and 'make install'
-   cross_make_variables=(
-      "CC=$CC"
-      "CPP=$CPP"
-      "CXX=$CXX"
-      "LIBTOOL=$LIBTOOL"
-      "CROSS=$cross_compiler"
-   )
-   # ARCH is taken from the cross config file
-   arch=`Get_Architecture $cross_uname_m`
-   archsubdir="$recipedir/$arch"
-   archrecipe="$recipedir/$arch/Recipe"
-   compileSourcesDir="$compileDir/Sources-$arch_conf"
-   mkdir -p $compileSourcesDir
-
-   if Union_Is_Supported
-   then
-       uniondirs="$cross_libc_libdir=rw"
-       for i in $goboPrograms/*/Current
-       do [ -d "$i/lib" ] && uniondirs="$uniondirs:$i/lib=ro"
-       done
-       if ! [ "$uniondirs" = "$cross_libc_libdir=rw" ]
-       then Union_Mount $(Union_Backend) "$uniondirs" "$cross_libc_libdir"
-       fi
-   fi
-
-   export CC HOSTCC LD
-else
-   cross_make_variables=""
-
-   arch=`Get_Architecture`
-   archsubdir="$recipedir/$arch"
-   archrecipe="$recipedir/$arch/Recipe"
-fi
-
+arch=`Get_Architecture`
+archsubdir="$recipedir/$arch"
+archrecipe="$recipedir/$arch/Recipe"
 reciperesources="$recipedir/Resources"
 archreciperesources="$archsubdir/Resources"
 
@@ -436,12 +386,23 @@ then
    selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress $batch "$app" "$versionandrevision" \
      "recipe" "$recipedir") || Die "Aborted."
-   selecteddeps=$(echo "$selecteddeps" | awk '{ print $4 }' )
+   selecteddeps=$(echo "$selecteddeps" | awk '
+      NF==3 { print $3 }
+      NF==4 && index($4,":") { printf("%s~%s\n", $4, $2) }
+      NF==4 && !index($4,":") { print $4 }
+      ' )
    unset askeddeps
    for d_url in ${selecteddeps}
    do
       Array_Contains askeddeps "$d_url" && continue
-      Compile $compileoptions --no-dependencies $d_url || exit $?
+	  # d_url is either "/Program/..." path or "Alien:Pkg" or "Alien:Pkg~ver"
+	  # the latter
+      (
+        IFS='~'  # to split name from version as set by awk above
+        set - $d_url
+        IFS=' '
+        Compile $compileoptions --no-dependencies $1 $2 || exit $?
+      ) || exit $?
       askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
    done
 fi
@@ -475,21 +436,6 @@ fi
 [ "$is_manifest" = "yes" ] && recipe_type="manifest"
 
 ##################################################
-# Set up enviroment
-##################################################
-
-if [ "${environment[*]}" ]
-then
-   for i in "${environment[@]}"
-   do
-      var=`echo $i | cut -d= -f 1`
-      val=`echo $i | cut -d= -f 2-`
-      eval export $var=\'${val}\'
-      mark_export $var
-   done
-fi
-
-##################################################
 # Check recipe's Compile version
 ##################################################
 
@@ -518,16 +464,6 @@ then
       fi
    fi
 fi
-
-##################################################
-# Get the active useflags for this recipe, and
-# execute the hooks here so any variable updates
-# occur in time.
-##################################################
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
 
 ##################################################
 # Meta-recipe
@@ -709,6 +645,24 @@ make_absolute() {
 String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
 sourcedir="${dirs[0]}"
 
+# Must source recipe_types here so that _init is run before needs_build_dir
+# is used.
+unset okbuildtype
+for buildtype in $(Available_BuildTypes)
+do
+   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
+   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
+done
+[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+# _sane_check and _init are run before re-sourcing, to allow the recipe to
+# override values set in them.
+is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
+is_function_set ${recipe_type}_init && ${recipe_type}_init
+
+[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
+ 
+# backwards compability fix, as some hooks in recipes might use "$dir"
+dir="$sourcedir"
 mark_export dir basedir sourcedir archsubdir recipedir builddir
 
 # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
@@ -716,17 +670,30 @@ mark_export dir basedir sourcedir archsubdir recipedir builddir
 # functionality than setting do_build=no and define the building procedure in the pre_build hook
 source "$recipe"
 [ -e "$archrecipe" ] && source "$archrecipe"
+ 
+##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
 
 ##################################################
-# Create the cross_make_variables array
+# Set up enviroment
 ##################################################
-if [ "$goboCrossCompiling" = "yes" ]
+
+if [ "${environment[*]}" ]
 then
-   if [ "$recipe_type" != "configure" ]
-   then cross_array=compileMakeOptions
-   else cross_array=""
-   fi
-   eval $(Combine_Arrays $cross_array $cross_array cross_make_variables)
+   for i in "${environment[@]}"
+   do
+      var=`echo $i | cut -d= -f 1`
+      val=`echo $i | cut -d= -f 2-`
+      eval export $var=\'$val\'
+      mark_export $var
+   done
 fi
 
 ##################################################
@@ -763,19 +730,6 @@ fi
 # Compile!
 ##################################################
 
-unset okbuildtype
-for buildtype in $(Available_BuildTypes)
-do
-   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
-   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
-done
-[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
-is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
-is_function_set ${recipe_type}_init && ${recipe_type}_init
-[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
-
-# backwards compability fix, as some hooks in recipes might use "$dir"
-dir="$sourcedir"
 
 Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
 Boolean "no-build" && exit 0

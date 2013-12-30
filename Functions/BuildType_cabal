@@ -7,11 +7,6 @@ cabal_init() {
    create_dirs_first="yes"
    post_install_message="Package registered via ghc-pkg; manual update required on package changes (InstallPackage, RemoveProgram, etc.)"
    [ "$runhaskell" ] || runhaskell="runhaskell"
-
-   for f in Setup.lhs Setup.hs ; do
-      [ -e ${sourcedir}/${f} ] && cabal_setup="$f";
-   done
-   [ ! -z "$cabal_setup" ] || Die "Cabal Setup.hs or Setup.lhs not found"
 }
 
 cabal_do_configuration(){
@@ -27,6 +22,11 @@ cabal_do_configuration(){
    then
       cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
    fi
+
+   for f in Setup.lhs Setup.hs ; do
+      [ -e ${sourcedir}/${f} ] && cabal_setup="$f";
+   done
+   [ ! -z "$cabal_setup" ] || Die "Cabal Setup.hs or Setup.lhs not found"
 
    $runhaskell "$cabal_setup" configure "${cabal_options[@]}" || wrap_fail "Configure failed"
 }

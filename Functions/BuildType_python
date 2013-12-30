@@ -3,7 +3,11 @@ python_sane_check() {
    Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
 }
 
-pythonversion=$(python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
+# Can be overridden by the recipe
+python_major=
+
+python=python${python_major}
+pythonversion=$($python -V 2>&1 | sed 's,Python \([0-9]*\.[0-9]*\).*,\1,')
 sitepackages="${target}/lib/python${pythonversion}/site-packages"
 
 python_init() {
@@ -53,10 +57,10 @@ build_python_options() {
 python_do_build() {
    $sudo_exec mkdir -p "$sitepackages"
    build_python_options $build_target
-   python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
+   $python $build_script $build_target ${opts[*]} || wrap_fail "Build failed."
 }
 
 python_do_install() {
    build_python_options $install_target
-   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c $python "$appname" "$versionnumber" -- $build_script $install_target --root / ${opts[*]} || wrap_fail "Installation failed"
 }

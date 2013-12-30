@@ -39,7 +39,7 @@ verify:
 
 dist: version_check verify
 	@echo; echo "Press enter to create a subversion tag and tarball for version $(VERSION) or ctrl-c to abort."
-	@read
+	@read _
 	@make tag
 
 tag: version_check verify
