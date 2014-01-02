@@ -20,6 +20,7 @@ scriptExample='Allegro 4.1.12, NewVersion --source 0.9.7 Wine 0.9.14'
 
 Add_Option_Entry "s" "source" "Recipe version number to use as a base for the new version" ""
 Add_Option_Entry "n" "former-name" "App name of the Recipe to use as a base. Only necessary if it's different from the name of the new Recipe" ""
+Add_Option_Boolean "k" "keep-existing" "Keep existing recipe if one already exists"
 Parse_Options "$@"
 
 Parse_Conf Compile.conf
@@ -93,6 +94,7 @@ if [ "$oldrecipedir" = "$newrecipedir" ]
 then
 	Log_Question "There is already a recipe for $packagename $newversion, at"
 	Log_Question "$oldrecipedir"
+	Boolean "keep-existing" && exit 0
 	if ! Ask "Create another?"
 	then
 		exit 0
