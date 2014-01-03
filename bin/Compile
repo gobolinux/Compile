@@ -345,31 +345,6 @@ variable_target="${goboVariable}"
 installprefix="$target"
 mark_export target settings_target variable_target version
 
-compileInstallOptions=(
-   "${compileInstallOptions[@]}"
-   LDCONFIG="true"
-)
-
-if [ "$goboIndex" ]
-then
-   compileInstallOptions=(
-      "${compileInstallOptions[@]}"
-      prefix="${target}"
-      sysconfdir="${settings_target}"
-      mandir="${target}/share/man"
-      libexecdir="${target}/lib/$(Downcase ${appname})"
-   )
-fi
-[ -n "$LIBTOOL" ] && \
-compileMakeOptions=(
-   "${compileMakeOptions[@]}"
-   LIBTOOL="${goboExecutables}/libtool"
-)
-configure_variables=(
-   "${configure_variables[@]}"
-   LDFLAGS="-L${target}/lib"
-)
-
 arch=`Get_Architecture`
 archsubdir="$recipedir/$arch"
 archrecipe="$recipedir/$arch/Recipe"
@@ -582,6 +557,31 @@ fi
 ##################################################
 # Construct some variable arrays
 ##################################################
+
+compileInstallOptions=(
+   "${compileInstallOptions[@]}"
+   LDCONFIG="true"
+)
+
+if [ "$goboIndex" ]
+then
+   compileInstallOptions=(
+      "${compileInstallOptions[@]}"
+      prefix="${target}"
+      sysconfdir="${settings_target}"
+      mandir="${target}/share/man"
+      libexecdir="${target}/lib/$(Downcase ${appname})"
+   )
+fi
+[ -n "$LIBTOOL" ] && \
+compileMakeOptions=(
+   "${compileMakeOptions[@]}"
+   LIBTOOL="${goboExecutables}/libtool"
+)
+configure_variables=(
+   "${configure_variables[@]}"
+   LDFLAGS="-L${target}/lib"
+)
 
 for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
 do
