@@ -14,8 +14,8 @@ manifest_do_install() {
       fi
       Log_Normal "Installing ${fullsrc} into ${fulldst}"
       if [ -d "${fullsrc}" -a -d "${fulldst}" ]
-      then Log_Verbose $sudo_exec cp -Rv --no-preserve=ownership "${fullsrc}"/* "${fulldst}"
-      else Log_Verbose $sudo_exec cp -Rv --no-preserve=ownership ${fullsrc} "${fulldst}"
+      then $sudo_exec cp -Rv --no-preserve=ownership "${fullsrc}"/* "${fulldst}"
+      else $sudo_exec cp -Rv --no-preserve=ownership ${fullsrc} "${fulldst}"
       fi
    done
 }
