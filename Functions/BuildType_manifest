@@ -5,7 +5,7 @@ manifest_do_install() {
    do
       src=`echo $i | cut -d: -f1`
       dst=`echo $i | cut -d: -f2-`
-      fullsrc="${compileSourcesDir}/${src}"
+      fullsrc="${dir}/${src}"
       fulldst="${installprefix}/${dst}"
       $sudo_exec mkdir -p $(dirname "$fulldst")
       if Ends_With "/" "$fulldst"
