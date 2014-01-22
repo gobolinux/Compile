@@ -467,8 +467,8 @@ function install_extras() {
       done
       if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
       then
-         $sudo_exec mkdir -p "$target/Shared/Compile/Recompile/Linux"
-         $sudo_exec touch "$target/Shared/Compile/Recompile/Linux/$app"
+         $sudo_exec mkdir -p "$target/$(basename $goboShared)/Compile/Recompile/Linux"
+         $sudo_exec touch "$target/$(basename $goboShared)/Compile/Recompile/Linux/$app"
       fi
    fi
    return 0
