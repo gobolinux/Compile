@@ -14,7 +14,7 @@ INSTALL_TARGET=install-svn
 endif
 
 all_files = $(shell ListProgramFiles `pwd`)
-man_files = $(shell cd bin; grep -l Parse_Options * | xargs -i echo Shared/man/man1/{}.1)
+man_files = $(shell cd bin; grep -l Parse_Options * | xargs -i echo share/man/man1/{}.1)
 
 default: manuals
 
@@ -67,8 +67,8 @@ $(PACKAGE_FILE): $(all_files)
 
 manuals: $(man_files)
 
-$(man_files): Shared/man/man1/%.1: bin/%
-	@mkdir -p Shared/man/man1
+$(man_files): share/man/man1/%.1: bin/%
+	@mkdir -p share/man/man1
 	help2man --name=" " --source="GoboLinux" --no-info $< --output $@
 
 install: $(INSTALL_TARGET)
