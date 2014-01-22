@@ -11,4 +11,4 @@ Terminal=true
 NoDisplay=true
 MultipleArgs=false
 InitialPreference=15
-MimeType=application/x-bzip2-compressed-tar;application/x-bzip;application/x-bzip-compressed-tar;application/x-gzip;application/x-tbz;application/x-bzip2;application/x-compressed-tar;application/x-tar;application/x-gzip
+MimeType=application/x-bzip2-compressed-tar;application/x-bzip;application/x-bzip-compressed-tar;application/x-gzip;application/x-tbz;application/x-bzip2;application/x-compressed-tar;application/x-tar;application/x-gzip;

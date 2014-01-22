@@ -11,4 +11,4 @@ Terminal=true
 NoDisplay=true
 MultipleArgs=false
 InitialPreference=5
-MimeType=application/x-gobo-recipe
+MimeType=application/x-gobo-recipe;
