@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 # Workaround lack of ruby Environment
-$: << "/System/Links/Libraries/ruby/site_ruby/1.8"
+$: << "/System/Index/lib/ruby/site_ruby/1.8"
 
 require 'gobo'
 
