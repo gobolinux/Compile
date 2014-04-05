@@ -42,7 +42,7 @@ fi
 scriptsversion=`Get_Version Scripts Current`
 svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
 smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-is_svn=`echo $scriptsversion | grep -i SVN`
+is_svn=`echo "$scriptsversion" | egrep -i '(SVN|trunk|branch)'`
 if [ ! "$is_svn" ] && [ "$svnr" -gt 5 ] || \
    [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_svn" ]
 then

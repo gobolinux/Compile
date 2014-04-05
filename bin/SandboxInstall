@@ -201,11 +201,9 @@ then
    rm -f  ./$goboKernel/Devices/null
    rm -f  ./$goboKernel/Devices/tty
    rm -rf ./$goboVariable/tmp/{*,.*} &> /dev/null
-   rm -f  ./$goboVariable/cache/ldconfig/aux-cache
-   rm -rf ./$goboVariable/cache/fontconfig
+   rm -rf ./$goboVariable/cache/*
+   rm -rf ./$goboVariable/log/*
    rm -rf ./$goboVariable/scrollkeeper
-   rm -f  ./$goboVariable/log/scrollkeeper.log
-   rm -f  ./$goboVariable/cache/ldconfig/aux-cache
    rm -f  ./$goboSettings/{passwd,passwd-,group,group-}
    rm -f  ./$goboSettings/mtab
    rm -f  Programs/Glibc/Settings/ld.so.cache
@@ -224,13 +222,43 @@ then
       # We try to detect these cases here, moving files written there to the appropriate place.
       if wrong_version=`ls "./$installPackageDir" 2> /dev/null | grep -qv "$version\|Current\|Settings\|Variable"`
       then
-         cp -a ./$installPackageDir/$wrong_version/* $installPackageDir/$version/
-         rm -rf ./Programs
+         cp -a $verbose ./$installPackageDir/$wrong_version/* $installPackageDir/$version/
       fi
-      cp -a $sandbox_rw/$goboIndex/* $installPackageDir/$version 2>/dev/null
-      rm -rf $sandbox_rw/$goboIndex
+
+      # Aggressively move everything that was installed into other programs' dirs
+      # back into the area of the one we are installing.
+      for p in `ls ./Programs | grep -v "^$package$"`
+      do
+         for entry in ./Programs/$p/*
+         do
+            if Ends_With "/Settings" $entry
+            then
+               cp -a $verbose $entry/* $installPackageDir/Settings/
+            elif Ends_With "/Variable" $entry
+            then
+               cp -a $verbose $entry/* $installPackageDir/Variable/
+            else
+               cp -a $verbose $entry/* $installPackageDir/$version/
+            fi
+         done
+         rm -rf ./Programs/$p
+      done
+      rm -rf ./Programs
+
+      # This doesn't use $goboIndex because $goboIndex is actually /usr.
+      # This is confusing. We should clean this up.
+      cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
+      cp -a $verbose ./$goboSettings/* $installPackageDir/Settings 2>/dev/null
+      rm -rf ./$goboSystem/Index
+      rm -rf ./$goboSettings
+      rm ./usr/* 2> /dev/null
+      rmdir ./usr 2> /dev/null
+
       rmdir $sandbox_rw/System 2> /dev/null
    fi
+
+   rm -f $installPackageDir/$version/share/info/dir
+
    Quiet popd
    [ -d "$sandbox_rw" ] && leftovers=`(cd $sandbox_rw; find * | grep -v ${installPackageDir}/${version}-safelinking) 2>/dev/null`
    [ "$leftovers" ] && {

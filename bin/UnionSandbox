@@ -60,6 +60,10 @@ List_To_Array "map" mapmounts
 # Preset cmd status
 result=0
 
+function symlinks_in_root() {
+   find `gobohide --list 2> /dev/null | tail -n +1 | grep "^/"` /* -maxdepth 0 -type l
+}
+
 # Called at end of script and by signal handler
 function cleanup() {
     Log_Normal "Cleaning up."
@@ -108,9 +112,7 @@ function cleanup() {
 
     # Clean up legacy links
     rm -rf ${sandbox_mp}/usr
-    rm  ${sandbox_mp}/bin ${sandbox_mp}/dev ${sandbox_mp}/etc 
-    rm  ${sandbox_mp}/lib ${sandbox_mp}/proc ${sandbox_mp}/sbin 
-    rm  ${sandbox_mp}/sys ${sandbox_mp}/tmp ${sandbox_mp}/var 
+    rm `find ${sandbox_mp} -maxdepth 1 -type l`
 
     # Remove tmp dirs
     if Is_Entry_Set "writedir"
@@ -179,7 +181,7 @@ For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
 
 # Create legacy links
 cp -ar /usr "$sandbox_mp"
-cp -a /bin /dev /etc /lib /proc /sbin /sys /tmp /var "$sandbox_mp"
+cp -a `symlinks_in_root` "$sandbox_mp"
 
 # Create wrapper
 newpwd="$PWD"
@@ -189,9 +191,12 @@ echo "cd $newpwd" >>"${sandbox_mp}/.wrapper"
 Args_To_Array command >> "${sandbox_mp}/.wrapper"
 if [ "$unionbackend" != "unionfs" ]
 then
+    # delete entries in sandbox if they are legacy symlinks
+    echo "[ -L $goboDevices ] && rm $goboDevices" >> "${sandbox_mp}/.wrapper"
+    echo "[ -L $goboStatus ] && rm $goboStatus" >> "${sandbox_mp}/.wrapper"
     echo "mkdir -p $goboDevices; mount -t tmpfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
     echo "mkdir -p $goboStatus; mount -t proc none $goboStatus" >> "${sandbox_mp}/.wrapper"
-    echo "cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
+    echo "[ -e \"${goboLibraries}/udev/devices/\" ] && cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
     if Executable_Exists_In_Path "udevadm"
     then echo "udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
     else echo "udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"

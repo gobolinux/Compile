@@ -563,7 +563,7 @@ compileInstallOptions=(
    LDCONFIG="true"
 )
 
-if [ "$goboIndex" ]
+if [ "$goboIndex" ] && ! grep -q "fuse$" /proc/filesystems
 then
    compileInstallOptions=(
       "${compileInstallOptions[@]}"
