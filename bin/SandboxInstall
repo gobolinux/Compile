@@ -211,6 +211,8 @@ then
    then find Programs/Python -type f -name "*.pyc" -or -name "*.pyo" | xargs rm -f &> /dev/null
    fi
    rm -rf Users/*/.distcc
+   rm -rf Users/*/.cache
+   rmdir -f Users/* Users
    find -type f -name "*__dir_opaque" | xargs rm -f &> /dev/null
    find -type f -name "*_HIDDEN~" | xargs rm -f &> /dev/null
    find -type f -name "*_DELETED~" | xargs rm -f &> /dev/null
@@ -227,7 +229,7 @@ then
 
       # Aggressively move everything that was installed into other programs' dirs
       # back into the area of the one we are installing.
-      for p in `ls ./Programs | grep -v "^$package$"`
+      [ -d ./Programs ] && for p in `ls ./Programs | grep -v "^$package$"`
       do
          for entry in ./Programs/$p/*
          do
@@ -249,8 +251,10 @@ then
       # This is confusing. We should clean this up.
       cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
       cp -a $verbose ./$goboSettings/* $installPackageDir/Settings 2>/dev/null
+      cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
       rm -rf ./$goboSystem/Index
       rm -rf ./$goboSettings
+      rm -rf ./usr/local
       rm ./usr/* 2> /dev/null
       rmdir ./usr 2> /dev/null
 
