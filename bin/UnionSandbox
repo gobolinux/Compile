@@ -33,6 +33,8 @@ Parse_Options "$@"
 
 Parse_Conf Directories.conf
 
+Boolean "verbose" && verbose="--verbose"
+
 ### Operation #################################################################
 Verify_Superuser
 
@@ -61,7 +63,10 @@ List_To_Array "map" mapmounts
 result=0
 
 function symlinks_in_root() {
-   find `gobohide --list 2> /dev/null | tail -n +1 | grep "^/"` /* -maxdepth 0 -type l
+   # If we have a host running GoboLinux with gobohidden entries and a chroot environment
+   # where packages are being compiled with no hidden entries, then the same directory can
+   # be returned more than once. We use sort+uniq as a filter to workaround that problem.
+   find `gobohide --list 2> /dev/null | tail -n +1 | grep "^/"` /* -maxdepth 0 -type l | sort -n | uniq
 }
 
 # Called at end of script and by signal handler
@@ -120,7 +125,7 @@ function cleanup() {
 	writedir=`Entry "writedir"`
 	Log_Normal "Moving entries to: $writedir"
 	Assert_Dir $writedir
-	cp -ra "$sandbox_rw/." "$writedir"
+	cp -ra $verbose "$sandbox_rw/." "$writedir"
 	Quiet mv $sandbox_mp/* $writedir
     fi
     rm -rf $sandbox_rw
@@ -180,8 +185,8 @@ For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
 [ "$error" = "false" ] || sandbox_die "Unable to mount map areas in chroot"
 
 # Create legacy links
-cp -ar /usr "$sandbox_mp"
-cp -a `symlinks_in_root` "$sandbox_mp"
+cp -ar $verbose /usr "$sandbox_mp"
+cp -a $verbose `symlinks_in_root` "$sandbox_mp"
 
 # Create wrapper
 newpwd="$PWD"
