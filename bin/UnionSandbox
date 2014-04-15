@@ -209,6 +209,11 @@ then
 fi
 echo "\"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
 
+# Useful for debugging:
+#echo "res=\$?" >>"${sandbox_mp}/.wrapper"
+#echo "echo DEBUG SHELL; bash" >>"${sandbox_mp}/.wrapper"
+#echo "exit \$res" >>"${sandbox_mp}/.wrapper"
+
 chmod a+x "${sandbox_mp}/.wrapper"
 
 # Run program in chrooted sandbox
