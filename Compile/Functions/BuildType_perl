@@ -1,0 +1,59 @@
+#!/bin/bash
+perl_sane_check() {
+   Quiet perl --version || Die "This is a perl type recipe and it seems like you don't have perl installed"
+
+   # Quick hack: won't add these to the dependencies list because
+   # that would be like adding GCC to all C-based packages.
+   if [ "$appname" != "Perl-XML-Parser" -a "$appname" != "Perl-XML-Writer" ]
+   then
+      [ -e `Get_Dir runtime Perl-XML-Parser ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+      [ -e `Get_Dir runtime Perl-XML-Writer ''` ] || Die "You need Perl-XML-Parser and Perl-XML-Writer to build Perl modules."
+   fi
+}
+
+perl_init() {
+   [ "$PERL5LIB" ] || {
+      export PERL5LIB="${goboLibraries}/perl5/site_perl/$(perl -e 'printf "$vd", $^V')/"
+   }
+}
+
+function perl_do_configuration() {
+   if [ -e ./Build.PL ]
+   then
+      perl ./Build.PL
+   else
+      if [ "${without[*]}" ]
+      then
+         withoutopts=(`for w in "${without[@]}"; do echo --without-$w; done`)
+      fi
+      perl Makefile.PL ${withoutopts[@]} ${perl_options[@]} PREFIX="$target"
+   fi
+}
+
+perl_do_build() {
+   if [ -e ./Build.PL ]
+   then
+      ./Build --install_base $target $build_target || wrap_fail "Build failed."
+   else
+      makefile_do_build
+   fi   
+}
+
+perl_do_install() {
+   if [ -e ./Build.PL ]
+   then
+      SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c ./Build "${1}" "${2}" -- --install_base $target $install_target || wrap_fail "Installation failed"
+      if [ -d $target/script ]
+      then
+         Quiet pushd $target/bin
+         Quiet ln -nfs ../script/* .
+         Quiet popd
+      fi
+      Quiet pushd $target/lib
+      Quiet mkdir -p perl5
+      Quiet mv * perl5
+      Quiet popd
+   else
+      makefile_do_install "${1}" "${2}"
+   fi
+}

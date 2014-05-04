@@ -1,0 +1,216 @@
+#!/bin/bash
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import Terminal
+Import GoboLinux
+Import Array
+
+##################################################
+# Options and configuration
+##################################################
+
+Parse_Conf Compile.conf
+Import Compile
+
+helpOnNoArguments=yes
+scriptDescription="Given a recipe, download the files required to compile it."
+scriptUsage="<recipe> [arch-recipe]"
+scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
+Add_Option_Entry   "d" "save-directory" "Rename the directory into which the archive is unpacked/files checked out." ""
+Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compileArchivesDir"
+Add_Option_Boolean "b" "batch" "Avoid asking questions."
+Parse_Options "$@"
+
+savedir=$(Entry "save-to")
+sourcedir=$(Entry "save-directory")
+
+if wget --help | grep -q no-check-certificate
+then wget="wget --no-check-certificate"
+else wget="wget"
+fi
+
+##################################################
+# Fundamental variables
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
+smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+is_svn=`echo $scriptsversion | grep -i SVN`
+if [ ! "$is_svn" ] && [ "$svnr" -gt 5 ] || \
+   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_svn" ]
+then
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+recipe="$(Arg 1)"
+[ "$recipe" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
+[ -e "$recipe" ] || Die "File not found: $recipe"
+. "$recipe"
+
+archrecipe="$(Arg 2)"
+[ -e "$archrecipe" ] && source "$archrecipe"
+
+[ -z "${sourcedir}" ] && sourcedir="${dir%%/*}"
+
+##################################################
+# Get sources
+##################################################
+
+for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
+do
+   eval '
+      if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
+      then '$var's=("$'$var'")
+      fi
+   '
+done
+
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${savedir}" -o ! -x "${savedir}" ] && $sudo_exec chown `whoami` "${savedir}"
+
+savesourcedir="${sourcedir}"
+[ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
+
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "${sourcedir}" ] && [ ! -w "${sourcedir}" -o ! -x "${sourcedir}" ] && $sudo_exec chown -R `whoami` "${sourcedir}"
+
+cd "$savedir"
+
+if [ "${cvss[*]}" ]
+then
+   for cvs in "${cvss[@]}"
+   do
+      if echo "$cvs" | grep -q " "
+      then
+         origcvs="$cvs"
+         cvs="${origcvs% *}"
+         cvs_modules=("${origcvs#* }")
+      fi
+      if [ "$cvs_password" ]
+      then Log_Normal "When asked for a password, enter \"$cvs_password\"."
+      else Log_Normal "If asked for a password, just press Enter."
+      fi
+   
+      login_method=`echo ${cvs} | cut -b-5`
+      [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
+      [ "$login_method" != ":ext:" ] && cvs -d${cvs} login || exit $?
+      for cvs_module in "${cvs_modules[@]}"
+      do
+         checkout_dir=`basename "$sourcedir"`
+         cvs -d${cvs} ${cvs_opts} ${cvs_options} checkout -d"$checkout_dir" ${cvs_checkout_options} ${cvs_module} || exit $?
+      done
+   done
+   exit 0
+elif [ "${svns[*]}" ]
+then
+   for svn in "${svns[@]}"
+   do
+      if [ "$svn_username" ] 
+      then svn checkout "${svn}" "${sourcedir}" --username "${svn_username}" --password "${svn_password}" || exit $?
+      else svn checkout "${svn}" "${sourcedir}" || exit $?
+      fi
+   done
+   exit 0
+elif [ "${gits[*]}" ]
+then
+   for git in "${gits[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then GIT_SSL_NO_VERIFY=true git clone "${git}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && GIT_SSL_NO_VERIFY=true git pull || exit $?
+      fi
+   done
+   exit 0
+elif [ "${bzrs[*]}" ]
+then
+   for bzr in "${bzrs[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then bzr branch "${bzr}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && bzr pull || exit $?
+      fi
+   done
+   exit 0
+elif [ "${hgs[*]}" ]
+then
+   for hg in "${hgs[@]}"
+   do
+      if [ ! -d "${sourcedir}" ]
+      then hg clone ${hg} "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && hg update || exit $?
+      fi
+   done
+   exit 0
+elif ! [ -n "${urls[*]}" ]
+then
+   Die "Missing URL in recipe '$recipe'."
+else
+   sourcedir="${savesourcedir}"
+fi
+
+if ! [ "${files[*]}" ]
+then files=(`Map basename "${urls[@]}"`)
+fi
+
+for i in `seq 0 $[${#urls[@]}-1]`
+do
+   file="${files[i]}"
+   [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
+   Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}"
+   result=$?
+   if [ "$result" = "0" ]
+   then
+      continue
+   elif [ "$result" = "1" ]
+   then
+      rm -f -- ${file}
+   elif [ "$result" = "2" ]
+   then
+      if Boolean "batch" || Ask "Remove and download again?"
+      then rm -f ${file}
+      else continue
+      fi
+   fi
+
+   function wget_url() {
+      fileindex=$1
+      mirrorlevel=$2
+      urlcount="${#urls[@]}"
+      if [ "$mirrorlevel" = 0 ]
+      then fetch="${urls[fileindex]}"
+      else fetch="${mirror_urls[(mirrorlevel-1)*urlcount+fileindex]}"
+      fi
+      if [ -z "$fetch" ]
+      then
+         # Fail! No more mirrors!
+         return 1
+      fi
+      local file="${files[fileindex]}"
+      unset LANG LC_ALL # So that wget's output is not translated
+      if [ -e "$file" ]
+      then
+         if Starts_With "http:" "$fetch"
+         then
+            expectedlength=`$wget --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
+            locallength=`wc -c "$file" | cut -d" " -f1`
+            if [ "$expectedlength" = "$locallength" ]
+            then
+               Log_Verbose "$file is already fully retrieved."
+               return 0
+            fi
+         fi
+      fi
+      $wget -O "$file" -c --passive-ftp "$fetch" || {
+         wget_url "$fileindex" "$[mirrorlevel+1]"
+      }
+   }
+
+   wget_url "$i" 0 || {
+      Die "Could not fetch '$url'."
+   }
+done

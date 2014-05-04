@@ -1,0 +1,758 @@
+#!/bin/bash
+
+# Welcome back to Hacklandia.
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import String
+Import Terminal
+Import GoboLinux
+Import Array
+Import Directories
+Import PostInstall
+Import Versions
+Import Requirements
+Import Archive
+Import UnionFS
+Import Log
+
+##################################################
+# Checking Scripts package version
+##################################################
+
+scriptsversion=`Get_Version Scripts Current`
+
+if echo "$scriptsversion" | grep -qi GIT || \
+   echo "$scriptsversion" | grep -qi SVN || \
+   [ "`GuessLatest $scriptsversion 2.10.0`" = "$scriptsversion" ]
+then
+   # Version is valid, proceed.
+   :
+else
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+##################################################
+# Options and configuration
+##################################################
+
+helpOnNoArguments=yes
+scriptDescription="Automated program compilation tool."
+scriptCredits="(C)2003-2007 by Hisham Muhammad et al. Released under the GNU GPL."
+scriptUsage="<program> [<version>]"
+Add_Option_Entry "n" "app-name" "Override application name." ""
+Add_Option_Entry "e" "version-number" "Override version number." ""
+Add_Option_Entry "c" "configure-options" "Options to be passed explicitly to './configure'." ""
+Add_Option_Boolean "k" "keep" "Keep files if program directory already exists."
+Add_Option_Boolean "b" "batch" "Batch mode: avoid asking questions."
+Add_Option_Boolean "B" "no-build" "Do not build, just fetch the sources."
+Add_Option_Boolean "I" "no-install" "Do not actually install the program."
+Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
+Add_Option_Boolean "S" "no-symlink" "Do not symlink. Deprecated - use --symlink=no instead."
+Add_Option_Entry   "l" "symlink" "If symlinks should be created and wether they should be forced on conflicts."  "yes" "yes no force"
+Add_Option_Boolean "T" "no-strip" "Do not strip executables."
+Add_Option_Boolean "G" "no-sign" "Do not sign program."
+Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the program"
+Add_Option_Boolean "M" "no-unmanaged" "Do not install unmanaged files."
+Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
+Add_Option_Entry   "A" "start-at" "Skip sub-recipes when building a meta-recipe: start include list at given recipe; effective only with --lazy; debugging aid: do NOT use it for building packages."
+Add_Option_Boolean "D" "no-dependencies" "Do not try to fulfill dependencies."
+Add_Option_Boolean "i" "install-separately" "If the application is part of a meta recipe, do not install it into the containing application but install it into a separate directory."
+Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful build"
+Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
+Add_Option_Boolean "P" "no-postinstall" "Do not run the PostInstall script after installation"
+Add_Option_Boolean "R" "no-requirements" "Do not process the Requirements script after installation"
+
+Parse_Conf Compile.conf
+Parse_Options "$@"
+
+if [ -z "$ROOTLESS_GOBOLINUX" ] && ! $sudo_validate
+then
+   Ask "You are trying to compile $(Arg 1) as normal user without privileges.\n\
+Should a rootless environment be set up instead?" && {
+      CreateRootlessEnvironment && . ~/Programs/Rootless/Current/bin/StartRootless
+   }
+fi
+
+[ "$compileFlags" ] && Parse_Options $compileFlags
+
+Boolean "lazy" && Set_Boolean "no-web"
+Boolean "no-web" && noweb="--no-web"
+Boolean "batch" && batch="--batch"
+Boolean "verbose" && verbose="--verbose"
+Boolean "no-build" && Set_Boolean "keep"
+Boolean "no-install" && no_install=yes
+
+# If argument 1 has a colon in it, it's an Alien.
+# Pass it off to the Alien command and don't deal with it any further.
+arg1="$(Arg 1)"
+if ! Is_URL "$arg1" && ! [ "${arg1#*:}" = "$arg1" ]
+then
+   Log_Normal "Alien install of $(Arg 1) $(Arg 2)"
+   $sudo_exec Alien --install "$(Arg 1)" "$(Arg 2)"
+   exit $?
+fi
+
+if Is_Entry "configure-options"
+then userconfigureoptions=(`Entry "configure-options"`)
+else userconfigureoptions=()
+fi
+
+if [ "$compileDisableSudo" = "yes" ]
+then sudo_exec=
+fi
+
+make="${compileMakeCommand:-ColorMake}"
+chown="${compileChownCommand:-chown}"
+
+# Options to be propagated in sub-calls to Compile
+unset compileoptions
+Boolean no-install && compileoptions="$compileoptions --no-install"
+Boolean no-build && compileoptions="$compileoptions --no-build"
+Boolean no-web && compileoptions="$compileoptions --no-web"
+Boolean batch && compileoptions="$compileoptions --batch"
+Boolean lazy && compileoptions="$compileoptions --lazy"
+Is_Entry symlink && compileoptions="$compileoptions --symlink=$(Entry symlink)"
+Boolean "remove-archive" && compileoptions="$compileoptions --remove-archive"
+Boolean "remove-sources" && compileoptions="$compileoptions --remove-sources"
+
+compileInstallOptions=(
+   "GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1"
+)
+
+### Temporary test for those tracking SVN ###
+PrepareProgram --help | grep -q no-default-options || Die "Please update your Scripts snapshot."
+
+trap "wrap_fail 'Caught signal. Exiting...'" TERM INT STOP HUP
+
+#############################################
+
+##################################################
+# Helper functions
+##################################################
+
+Import Compile
+
+function wrapup() {
+   Post_Installation_Clean_Up "$appname" "$versionnumber"
+   if [ "$app" = "$appname" ]
+   then
+      # Add information inside binary package Resources directory
+      Quiet mkdir -p $target/Resources
+
+      # Save use flags information
+      echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
+      echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
+
+      Log_Normal "Generating package's build information..."
+      GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
+
+      if ! Boolean "no-sign"
+      then
+         if [ -e "$target/Resources/Dependencies" ]
+         then
+            Log_Normal "Generating package's signature..."
+            SignProgram "$appname" "$versionnumber"
+         else
+            Log_Terse "Program does not have a Resources/Dependencies file."
+            Log_Terse "Not signing it yet."
+         fi
+      fi
+   fi
+   # Some additional actions for LocalRecipes (adding info inside Resources, packing)
+   if Starts_With "$compileLocalRecipesDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   then
+      if [ "$app" = "$appname" ]
+      then
+         recipedeps="$reciperesources/Dependencies"
+         Quiet mkdir -p "$reciperesources"
+
+         cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation" || wrap_fail "Failed installing file."
+
+         if [ ! -f "$recipedeps" ]
+         then
+            cp "$target/Resources/BuildInformation" "$recipedeps" || wrap_fail "Failed installing file."
+            Log_Verbose $(cat "$recipedeps")
+         fi
+      fi
+      packerror=
+      if ! Boolean "batch"
+      then
+         Log_Normal "Packing recipe directory..."
+         PackRecipe $noweb "$app" "$versionandrevision" || {
+            Log_Error "Failed packing recipe."
+            packerror=yes
+         }
+      fi
+      Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+      if [ "${packerror}" == "yes" ]
+      then 
+         Log_Terse "You need to fix the errors reported by RecipeLint before running 'ContributeRecipe $app $versionandrevision'."
+      else
+         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      fi
+   fi
+   if [ -n "$post_install_message" ]
+   then
+      Log_Normal "$app: $post_install_message"
+   fi
+   cleanup
+}
+
+function undo_mounts() {
+   [ "$1" = "--dont-exit" ] && return || exit 1
+}
+
+wrap_fail() {
+   wrap_exit "$*" 1
+}
+
+function wrap_exit() {
+   local message="${1}"
+   local ret
+   local status
+   [ -n "$2" ] && ret=${2} || ret=0
+   [ $ret -eq 0 ] && status=success || status=failed
+   # Rollback left-over stuff when compilation fails.
+   if [ -e "$target" ]
+   then
+      PrepareProgram --tree-cleanup $batch "$appname" "$versionnumber"
+      Quiet rmdir -p "$target"
+      Quiet rmdir -p "$settings_target"
+   fi
+   Post_Installation_Clean_Up "$appname" "$versionnumber" "${status}"
+   undo_mounts "--dont-exit"
+   
+   Exit_With "$ret" "$appname $versionnumber - $message"
+}
+
+function cleanup() {
+   Post_Installation_Clean_Up "$appname" "$versionnumber"
+   Boolean "remove-archive" && Map "rm -f" "${files[@]}"
+   Boolean "remove-sources" && Map "rm -rf" "${dirs[@]}"
+   undo_mounts "--dont-exit"
+   exit 0
+}
+
+function check_direct_dependencies() {
+   local fullversion="$2"
+   if [ -d ${goboShared}/Compile/Recompile/${appname} -o -L ${goboShared}/Compile/Recompile/${appname} ]
+   then
+      # Store state of nullglob and then set it explicitly
+      shopt nullglob &>/dev/null && nullglob=1 || nullglob=0
+      shopt -s nullglob
+      for i in ${goboShared}/Compile/Recompile/${appname}/*
+      do
+         depapp=`basename $i`
+         # An application cannot depend on itself
+         [ "$(Downcase ${depapp})" == "$(Downcase ${appname})" ] && continue
+         Boolean "batch" || Ask "${depapp} depends directly on ${appname}. Would you like to compile it?" || continue
+         Compile $batch $lazy $noweb $depapp
+      done
+      # restore state of nullglob
+      [ "1" = "$nullglob" ] || shopt -u nullglob
+   fi
+}
+
+function config_is_autoconf() {
+   [ "$configure" ] || configure="./configure"
+   grep -i "Generated .* autoconf" "$dir/$configure" &> /dev/null
+}
+
+function setup_sandbox_options() {
+   [ "${unmanaged_files[*]}" ] &&
+   for unmanaged in "${unmanaged_files[@]}"
+   do
+      unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
+   done
+   if [ "$goboIndex" ]
+   then sandboxopts=()
+   else sandboxopts=(${sandbox_options:+"${sandbox_options[@]}"})
+   fi
+
+   subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
+   [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
+   [ $subdirs -gt 1 ] && sandboxopts=("--expand-sandbox" "$[subdirs-1]" "${sandboxopts[@]}")
+}
+
+##################################################
+# Prepare Environment
+##################################################
+
+Check_Dir_Variable compileDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileDir}"
+[ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
+for compileRecipeDir in "${compileRecipeDirs[@]}"
+do
+   Assert_Dir "$compileRecipeDir"
+done
+Check_Dir_Variable compileDependenciesDir
+Check_Dir_Variable compileArchivesDir
+Check_Dir_Variable compileSourcesDir
+Check_Dir_Variable compilePackedRecipesDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
+
+recipe=$(Find_Recipe $(Arg 1) $(Arg 2) $(Arg 3)) || exit $?
+
+app=$(Get_Token "$recipe" "/" "-3")
+versionandrevision=$(Get_Token "$recipe" "/" "-2")
+
+ncapp=`NamingConventions $app`
+if [ "$ncapp" != "$app" ]
+then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
+fi
+
+if [ "Compile" = "$app" ] || [ "Scripts" = "$app" ]
+then
+   if ! [ "$(Arg 2)" ]
+   then
+      Die "Scripts and Compile should be updated using InstallPackage.
+         To force the use of a recipe provide the version or path."
+   fi
+fi
+
+recipedir="$(dirname "$recipe")"
+useflags=($(UseFlags "$recipedir"))
+
+if Is_Entry "app-name"
+then appname=$(Entry "app-name")
+else appname="$app"
+fi
+
+revision="$(String_Revision "$versionandrevision")"
+version="$(String_Version "$versionandrevision")"
+
+if Is_Entry "version-number"
+then versionnumber=$(Entry "version-number")
+else versionnumber="$version"
+fi
+
+upperversion=$(Uppercase "$versionnumber")
+for upperscm in CVS SVN GIT BZR HG
+do
+   if [ "$upperversion" = "$upperscm" ]
+   then
+      versionnumber=$(date +%Y%m%d)"-$upperversion"
+      break
+   fi
+done
+
+target=$(Get_Dir runtime $appname $versionnumber)
+settings_target=$(Get_Dir runtimeSettings $appname $versionnumber)
+variable_target="${goboVariable}"
+installprefix="$target"
+mark_export target settings_target variable_target version
+
+[ -n "$LIBTOOL" ] && \
+compileMakeOptions=(
+   "${compileMakeOptions[@]}"
+   LIBTOOL="${goboExecutables}/libtool"
+)
+
+arch=`Get_Architecture`
+archsubdir="$recipedir/$arch"
+archrecipe="$recipedir/$arch/Recipe"
+reciperesources="$recipedir/Resources"
+archreciperesources="$archsubdir/Resources"
+
+##################################################
+# Check dependencies
+##################################################
+
+if ! Boolean "no-dependencies" && ! Boolean "no-build"
+then
+   Log_Normal "Checking dependencies..."
+   selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
+     $noweb --quiet-progress $batch "$app" "$versionandrevision" \
+     "recipe" "$recipedir") || Die "Aborted."
+   selecteddeps=$(echo "$selecteddeps" | awk '
+      NF==3 { print $3 }
+      NF==4 && index($4,":") { printf("%s~%s\n", $4, $2) }
+      NF==4 && !index($4,":") { print $4 }
+      ' )
+   unset askeddeps
+   for d_url in ${selecteddeps}
+   do
+      Array_Contains askeddeps "$d_url" && continue
+	  # d_url is either "/Program/..." path or "Alien:Pkg" or "Alien:Pkg~ver"
+	  # the latter
+      (
+        IFS='~'  # to split name from version as set by awk above
+        set - $d_url
+        IFS=' '
+        Compile $compileoptions --no-dependencies $1 $2 || exit $?
+      ) || exit $?
+      askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
+   done
+fi
+
+get_dependency_variables "${recipedir}/Resources/Dependencies"
+
+##################################################
+# Source recipe
+##################################################
+
+source "$recipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
+
+if ! Boolean "no-build"
+then
+   if [ "$revision" ]
+   then Log_Normal "Compiling $app version $version, revision $revision."
+   else Log_Normal "Compiling $app version $version."
+   fi
+fi
+
+# Backwards compability fix
+[ "$is_compileprogram" = "yes" ] && recipe_type="configure"
+[ "$is_makefile" = "yes" ] && recipe_type="makefile"
+[ "$is_python" = "yes" ] && recipe_type="python"
+[ "$is_perl" = "yes" ] && recipe_type="perl"
+[ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
+[ "$is_meta" = "yes" ] && recipe_type="meta"
+[ "$is_scons" = "yes" ] && recipe_type="scons"
+[ "$is_manifest" = "yes" ] && recipe_type="manifest"
+
+##################################################
+# Check recipe's Compile version
+##################################################
+
+if [ -n "$compile_version" ]
+then
+   develrelease=`echo $compile_version | sed 's/\([0-9]*\).*/\1/g'`
+   if [ "$compile_version" != "SVN" ] && [ "$develrelease" ] && [ "$develrelease" -gt "20000000" ]
+   then
+      compiledate=$(ls -l --time-style=+%Y%m%d $(which Compile) | awk '{print $6}')
+      if [ "$compiledate" -lt "$develrelease" -a "$compilemm" != "SVN" ]
+      then Boolean "batch" || Ask_Continue "Recipe was created with a development snapshot from $develrelease,\n"\
+"which is more recent than the Compile version you have installed.\n"\
+"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+      fi
+   elif [ "$compile_version" != "$scriptVersion" ]
+   then
+      if echo $scriptVersion | grep -qi SVN
+      then compilemm=SVN
+      else compilemm=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+      fi
+      recipemm=`echo $compile_version | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+      if [ `GuessLatest $compilemm $recipemm` != $compilemm -a "$compilemm" != "SVN" ]
+      then Boolean "batch" || Ask_Continue "Recipe was created with Compile $compile_version,\n"\
+"which is more recent than the one you have installed.\n"\
+"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+      fi
+   fi
+fi
+
+##################################################
+# Meta-recipe
+##################################################
+
+if [ "$recipe_type" = "meta" ]
+then
+   Add_Use_Flags_Options_To_Array include
+   [ -z "${include}" ] && Die "Recipe type is \"meta\", but no sub-recipes are included."
+   started=no
+   if ! Boolean "no-dependencies" && ! Boolean "no-build"
+   then
+      Log_Normal "Checking dependencies for included recipes..."
+      for item in "${include[@]}"
+      do
+         if Is_Entry_Set "start-at"
+         then
+            if [ "`Downcase $iname`" = "`Downcase $(Entry start-at)`" ]
+            then started=yes
+            fi
+            if [ "$started" = "no" ]
+            then continue
+            fi
+         fi
+         iname=`echo "$item" | sed 's/--.*//'`
+         iversion=`echo "$item" | sed 's/.*--//'`
+         includedeps=$(CheckDependencies --types=recipe --mode=missing \
+            $noweb $batch --quiet-progress  "$iname" "$iversion" \
+            "recipe" "$recipedir") || Die "Aborted."
+         selectedincludedeps="$(echo "$includedeps" | awk '{ print $4 }' ) ${selectedincludedeps:+${selectedincludedeps}}"
+      done
+      unset askedincludedeps
+      for d_url in ${selectedincludedeps}
+      do
+         Array_Contains askedincludedeps "$d_url" && continue
+         Compile $compileoptions --no-dependencies $d_url || exit $?
+         askedincludedeps=("$d_url" ${askedincludedeps:+"${askedincludedeps[@]}"})
+      done
+   fi
+
+   Array_Contains symlink_options "--conflict=overwrite" || Array_Contains symlink_options "--force" && symlink=force
+   case $(Entry symlink) in
+   "no" ) symlink=no ;;
+   "force" ) symlink=force ;;
+   esac
+   [ -n "$symlink" ] && compileoptions="$compileoptions --symlink=${symlink}"
+
+   started=no
+   export compileMetaRecipe=1
+   for item in "${include[@]}"
+   do
+      iname=`echo "$item" | sed 's/--.*//'`
+      iversion=`echo "$item" | sed 's/.*--//'`
+      if Is_Entry_Set "start-at"
+      then
+         if [ "`Downcase $iname`" = "`Downcase $(Entry start-at)`" ]
+         then started=yes
+         fi
+         if [ "$started" = "no" ]
+         then continue
+         fi
+      fi
+      in_host $0 $compileoptions --no-dependencies --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
+      if [ "$?" -gt 0 ]
+      then
+         Die "Compilation of $iname $iversion failed."
+      fi
+   done
+   Boolean "no-build" && exit 0
+   install_extras
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+   wrapup
+fi
+
+##################################################
+# Part of Meta but compiled by itself
+##################################################
+
+if [ "${compileMetaRecipe}" != "1" -a -n "$part_of" ]
+then
+   if ! ( Boolean "install-separately" || Boolean "no-build" )
+   then
+      appname="$part_of"
+      versionnumber=$(Get_Version "$appname" "Current")
+      [ -z "$versionnumber" ] && versionnumber=$(GuessLatest "$(ls -I Settings -I Variable $goboPrograms/$appname 2>/dev/null)" 2>/dev/null)
+      if [ -z "$versionnumber" ] 
+      then
+         if Boolean "batch" || Ask "$app is part of the $appname meta recipe, but no version of $appname could be found. Do you want to install $app separately?"
+         then
+            appname="$app"
+            versionnumber="$version"
+         else
+            exit 0
+         fi
+      else
+         Set_Boolean "keep"
+      fi
+      # We have to update the target name and version to reflect
+      # that we install into the containing application
+      target=`Get_Dir runtime $appname $versionnumber`
+      settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+      variable_target="${goboVariable}"
+      installprefix="$target"
+      # Then re-source the recipe, to update variables set in
+      # the recipe
+      source "$recipe"
+      [ -e "$archrecipe" ] && source "$archrecipe"
+      if [ "$appname" != "$app" ]
+      then
+         Log_Normal "$app will be installed as part of $appname $versionnumber."
+      fi
+   fi
+fi
+   
+##################################################
+# Construct some variable arrays
+##################################################
+
+for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
+do
+   eval '
+      if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
+      then '$var's=("$'$var'")
+      fi
+   '
+done
+
+function is_scm_recipe() {
+   [ "${cvss[*]}${svns[*]}${gits[*]}${bzrs[*]}${hgs[*]}" ]
+}
+
+if [ ! "${urls[*]}" ] && ! is_scm_recipe
+then Die "Missing URL or repository information in recipe '$recipe'."
+fi
+
+if ! [ "${files[*]}" ]
+then files=(`Map basename "${urls[@]}"`)
+fi
+
+if is_scm_recipe
+then
+   if [ -z "${dir}" ]
+   then
+      sourcedir="${appname}-${version}"
+   else
+      sourcedir="${dir}"
+   fi
+   dirs=("${sourcedir}")
+   save_directory="${sourcedir%%/*}"
+fi
+
+if [ "$dir" ]
+then
+   if [ -z "${dirs[*]}" ]
+   then dirs=("$dir")
+   fi
+else
+   if [ -z "${dirs[*]}" ]
+   then
+      remove_archive_extension() { echo "$1" | sed -r "s/\.(tar|tbz|tgz|zip).*//" ;}
+      String_To_Array dirs "`Map remove_archive_extension "${files[@]}"`"
+   fi
+fi
+
+odirs=("${dirs[@]}")
+odir=${dirs[0]}
+
+make_basedir() { echo "$compileSourcesDir/${1%%/*}" ;}
+String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
+basedir="${basedirs[0]}"
+
+make_absolute() {
+   if [ "${1:0:1}" = "/" ]
+   then echo "$1"
+   else echo "$compileSourcesDir/$1"
+   fi
+}
+String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
+sourcedir="${dirs[0]}"
+# Must source recipe_types here so that _init is run before needs_build_dir
+# is used.
+unset okbuildtype
+for buildtype in $(Available_BuildTypes)
+do
+   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
+   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
+done
+[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+# _sane_check and _init are run before re-sourcing, to allow the recipe to
+# override values set in them.
+is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
+is_function_set ${recipe_type}_init && ${recipe_type}_init
+
+[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
+
+# backwards compability fix, as some hooks in recipes might use "$dir"
+dir="$sourcedir"
+mark_export dir basedir sourcedir archsubdir recipedir builddir
+
+# Re-source recipe for two purposes. First let the recipe use all variables we have defined.
+# Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
+# functionality than setting do_build=no and define the building procedure in the pre_build hook
+source "$recipe"
+[ -e "$archrecipe" ] && source "$archrecipe"
+
+##################################################
+# Get the active useflags for this recipe, and
+# execute the hooks here so any variable updates
+# occur in time.
+##################################################
+for flag in "${useflags[@]}"
+do
+   is_function_set "using_$flag" && eval using_$flag
+done
+
+##################################################
+# Set up enviroment
+##################################################
+
+if [ "${environment[*]}" ]
+then
+   for i in "${environment[@]}"
+   do
+      var=`echo $i | cut -d= -f 1`
+      val=`echo $i | cut -d= -f 2-`
+      eval export $var=\'$val\'
+      mark_export $var
+   done
+fi
+
+##################################################
+# Gather common options from the recipe
+##################################################
+unset buildmerged
+eval $(Combine_Arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables)
+! [ "$install_target" ] && install_target="install"
+unset installmerged
+eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables)
+
+if [ ! -z "$goboIndex" ]
+then
+   buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
+fi
+
+if [ "$makefile" = "" ]
+then makefile=Makefile
+fi
+
+unset keep
+if Boolean "keep" || [ "$keep_existing_target" = "yes" ]
+then keep="--keep"
+fi
+
+##################################################
+# Compile!
+##################################################
+
+
+Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
+Boolean "no-build" && exit 0
+is_scm_recipe || { is_function_set do_unpack && do_unpack; }
+Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
+
+[ -d "$sourcedir" ] && { mkdir -p "$builddir" && cd "$builddir" &>/dev/null; } || Die "Directory $sourcedir not found."
+
+Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
+# note: skippatching is not part of the public Compile API
+[ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
+
+[ "yes" = "$create_dirs_first" ] && {
+   Boolean "keep" || [ "yes" = "$no_install" ] || Pre_Installation_Preparation $appname $versionnumber
+   PrepareProgram --tree $batch --keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+}
+
+# This hook should really be moved one step later, but is kept here for compability
+Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
+Boolean "lazy" || do_configuration || wrap_fail "Configuration failed."
+if ! [ "$do_build" = "no" ]
+then
+do_build || wrap_fail "Build step failed."
+fi
+
+[ "$no_install" = "yes" ] && wrap_exit "Will not install."
+[ "yes" = "$create_dirs_first" ] || {
+   Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
+   PrepareProgram --tree $batch $keep "$appname" "$versionnumber" || Die "Cannot build program tree."
+}
+
+Boolean "no-requirements" || assert_requirements
+Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
+! [ "$do_install" = "no" ] && is_function_set do_install && {
+   setup_sandbox_options
+   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
+   Boolean "no-strip" || do_strip
+}
+install_extras || wrap_fail "Failed installing files."
+
+if ! Boolean "no-symlink"
+then
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+fi
+
+check_direct_dependencies
+Run_Hook post_install || wrap_fail "Failure in post-install operation."
+Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
+
+wrapup

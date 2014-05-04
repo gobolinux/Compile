@@ -1,0 +1,41 @@
+#!/bin/bash
+
+Import BuildType_makefile
+
+configure_init() {
+   [ -n "${configure}" ] || configure="./configure"
+   [ -n "${autogen}" ] || autogen="autogen.sh"
+}
+
+configure_do_configuration() {
+   eval $(Combine_Arrays config configure_options userconfigureoptions)
+   Add_Use_Flags_Options_To_Array config
+   [ "$needs_build_directory" = "yes" ] && configure="${sourcedir}/$configure"
+
+   [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || $sudo_exec chmod +x "$configure" 2>/dev/null )
+   (
+      for i in "${configure_variables[@]}"
+      do
+         var=`echo $i | cut -d= -f 1`
+         val=`echo $i | cut -d= -f 2-`
+         eval export $var=\'$val\'
+      done
+      
+      [ -e "./$autogen" ] && autogen="./$autogen" && chmod +x $autogen
+      [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
+      prepareoptions=(
+         --verbose
+         --configure $configure
+         `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
+      )
+      PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || return 1
+   ) || return 1
+}
+
+configure_do_build() {
+   makefile_do_build
+}
+
+configure_do_install() {
+   makefile_do_install "${1}" "${2}"
+}

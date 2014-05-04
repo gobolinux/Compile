@@ -1,0 +1,277 @@
+#!/bin/bash
+
+##################################################
+# Imports
+##################################################
+
+. ScriptFunctions
+Import OptionParser
+Import File
+Import GoboLinux
+
+##################################################
+# Options and configuration
+##################################################
+
+Parse_Conf Compile.conf
+
+scriptDescription='Generate "packed recipes", ready for submission.'
+scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
+scriptUsage="[<program> [<version>]]"
+scriptNotes="Given no arguments, this script will take all recipes in $compileLocalRecipesDir and "\
+"pack them as Foo--1.0--recipe.tar.bz2 files at $compilePackedRecipesDir."
+Add_Option_Boolean "L" "no-lint" "Do not verify recipes (not recommended)."
+Add_Option_Boolean "W" "no-web" "Offline operation when running RecipeLint (avoid if possible)."
+Parse_Options "$@"
+
+if Boolean "no-web"
+then noweb=--no-web
+else noweb=
+fi
+
+##################################################
+# Helper functions
+##################################################
+
+Import Compile
+
+##################################################
+# Prepare Environment
+##################################################
+
+Check_Dir_Variable compilePackedRecipesDir
+Check_Dir_Variable compileLocalRecipesDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compilePackedRecipesDir}" -o ! -x "${compilePackedRecipesDir}" ] && $sudo_exec chown $(whoami) "${compilePackedRecipesDir}"
+
+##################################################
+# Operation
+##################################################
+
+handle_description() {
+   local name="$1"
+   local version="$2"
+
+   # Handle descriptions
+   description="$name/$version/Resources/Description"
+   if ! [ -e "$description" ]
+   then
+      mkdir -p $name/$version/Resources/
+      DescribeProgram -m ascii $name > "$description"
+      if [ `cat $description | wc -c` -eq 0 ]
+      then
+         rm $description
+         license=""
+         sourcedir="$compileSourcesDir/$(echo $name | tr '[:upper:]' '[:lower:]')-$version"
+         if [ ! -d "$sourcedir" ]
+         then
+            sourcedir="$compileSourcesDir/$name-$version"
+         fi
+         if [ -d "$sourcedir" ]
+         then
+            for licensefile in $sourcedir/COPYING* $sourcedir/LICENSE* $sourcedir/license*
+            do
+               if [ -e $licensefile ]
+               then
+                  md5license=`md5sum $licensefile | cut -d" " -f1`
+                  case "$md5license" in
+                  # GPL3
+                  f27defe1e96c2e1ecd4e0c9be8967949) newlicense="GNU General Public License version 3" ;;
+                  d32239bcb673463ab874e80d47fae504) newlicense="GNU General Public License version 3" ;;
+                  # GPL2 Mass Ave
+                  8ca43cbc842c2336e835926c2166c28b) newlicense="GNU General Public License version 2" ;;
+                  18810669f13b87348459e611d31ab760) newlicense="GNU General Public License version 2" ;;
+                  7975d4f2e1ca1e9df4dcfd94c6e1ae48) newlicense="GNU General Public License version 2" ;;
+                  cbbd794e2a0a289b9dfcc9f513d1996e) newlicense="GNU General Public License version 2" ;;
+                  e2ab865bd66f4d8e34f31582339c911a) newlicense="GNU General Public License version 2" ;;
+                  0278281246c1e59af1ef0ae1784a4948) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Franklin St mentions Library
+                  59530bdf33659b29e73d4adb9f9f6552) newlicense="GNU General Public License version 2" ;;
+                  751419260aa954499f7abaabaa882bbe) newlicense="GNU General Public License version 2" ;;
+                  eb723b61539feef013de476e68b5c50a) newlicense="GNU General Public License version 2" ;;
+                  a21edfd959813dc8af8161fe3f7ffaa2) newlicense="GNU General Public License version 2" ;;
+                  4325afd396febcb659c36b49533135d4) newlicense="GNU General Public License version 2" ;;
+                  eee1a5a93345d061765a5df481d19b7a) newlicense="GNU General Public License version 2" ;;
+                  6d5a9d4c4d3af25cd68fd83e8a8cb09c) newlicense="GNU General Public License version 2" ;;
+                  6ddd5335ef96fb858a138230af773710) newlicense="GNU General Public License version 2" ;;
+                  8ef380476f642c20ebf40fecb0add2ec) newlicense="GNU General Public License version 2" ;;
+                  9ea3144f04c41cd2eada5d3f472e6ea5) newlicense="GNU General Public License version 2" ;;
+                  892f569a555ba9c07a568a7c0c4fa63a) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Temple Place
+                  94d55d512a9ba36caa9b7df079bae19f) newlicense="GNU General Public License version 2" ;;
+                  393a5ca445f6965873eca0259a17f833) newlicense="GNU General Public License version 2" ;;
+                  fdafc691aa5fb7f8e2a9e9521fef771b) newlicense="GNU General Public License version 2" ;;
+                  0636e73ff0215e8d672dc4c32c317bb3) newlicense="GNU General Public License version 2" ;;
+                  a87895c4956801618eb9d3a4f8afe8f8) newlicense="GNU General Public License version 2" ;;
+                  c93c0550bd3173f4504b2cbd8991e50b) newlicense="GNU General Public License version 2" ;;
+                  5574c6965ae5f583e55880e397fbb018) newlicense="GNU General Public License version 2" ;;
+                  b0c80473f97008e42e29a9f80fcc55ff) newlicense="GNU General Public License version 2" ;;
+                  bae3019b4c6dc4138c217864bd04331f) newlicense="GNU General Public License version 2" ;;
+                  03b36fdd84f74b8d8189a202b980b67f) newlicense="GNU General Public License version 2" ;;
+                  7b0683f0a63b15f8cc8273f96fd564a9) newlicense="GNU General Public License version 2" ;;
+                  15fac19769be7c6091cda2f70757f064) newlicense="GNU General Public License version 2" ;;
+                  361b6b837cad26c6900a926b62aada5f) newlicense="GNU General Public License version 2" ;;
+                  878e3965c7b52d85827c75f5a2f3b314) newlicense="GNU General Public License version 2" ;;
+                  526c29250ae72f6933cdc01414b9943b) newlicense="GNU General Public License version 2" ;;
+                  9ac2e7cff1ddaf48b6eab6028f23ef88) newlicense="GNU General Public License version 2" ;;
+                  c46082167a314d785d012a244748d803) newlicense="GNU General Public License version 2" ;;
+                  # GPL2 Linux kernel
+                  d7810fab7487fb0aad327b76f1be7cd7) newlicense="GNU General Public License version 2" ;;
+                  # LGPL2 Mass Ave
+                  55ca817ccb7d5b5b66355690e9abc605) newlicense="GNU Library General Public License version 2" ;;
+                  ac4e4df3bbeacd481df543d2b12860b3) newlicense="GNU Library General Public License version 2" ;;
+                  252890d9eee26aab7b432e8b8a616475) newlicense="GNU Library General Public License version 2" ;;
+                  # LGPL2 Temple Place
+                  3bf50002aefd002f49e7bb854063f7e7) newlicense="GNU Library General Public License version 2" ;;
+                  7be2873b6270e45abacc503abbe2aa3d) newlicense="GNU Library General Public License version 2" ;;
+                  f30a9716ef3762e3467a2f62bf790f0a) newlicense="GNU Library General Public License version 2" ;;
+                  c46bda00ffbb0ba1dac22f8d087f54d9) newlicense="GNU Library General Public License version 2" ;;
+                  1e992216ed56a0fc1b6ea4a2de2962c7) newlicense="GNU Library General Public License version 2" ;;
+                  6e29c688d912da12b66b73e32b03d812) newlicense="GNU Library General Public License version 2" ;;
+                  # LGPL2.1
+                  fad9b3332be894bab9bc501572864b29) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  d7b37bf80a3df5a65b355433ae36d206) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  fbc093901857fcd118f065f900982c24) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  13b7ddb75583d236cf6855762f047e34) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  e3eda01d9815f8d24aae2dbd89b68b06) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  7fbc338309ac38fefcd64b04bb903e34) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  a049c5e22d3bd7bc3c9a2e9135a6d104) newlicense="GNU Lesser General Public License version 2.1" ;;
+                  # MPL1.1
+                  bfe1f75d606912a4111c90743d6c7325) newlicense="Mozilla Public License 1.1" ;;
+                  # Apache License 2.0
+                  218532c6a293a0aef9ab37fe496c3cd2) newlicense="Apache License 2.0" ;;
+                  *)
+                     Log_Terse "Could not autodetermine licensing for writing the Description file."
+                     Ask_Continue "Press Enter to view the license file $licensefile."
+                     ${PAGER:-less} $licensefile
+                     ;;
+                  esac # esac is ridiculous.
+                  if [ "$license" = "" ]
+                  then license="$newlicense"
+                  else license="$license, $newlicense"
+                  fi
+               fi
+            done
+         fi
+         if [ "$license" = "" ]
+         then license="***REPLACE THIS WITH THE NAME OF THE LICENSE***"
+         fi
+         if ! [ "$EDITOR" ] 
+         then
+            Log_Terse "EDITOR variable is not set. Can't edit description. Use \`export EDITOR='...'\` to set it."
+            return 0
+         fi
+cat <<EOF > $description
+[Name] $name
+[Summary] ***REPLACE THIS WITH A SHORT ONE LINE DESCRIPTION***
+[Description] ***REPLACE THIS WITH A MORE DETAILED DESCRIPTION***
+[License] $license
+[Homepage] ***REPLACE THIS WITH THE HOMEPAGE URL***
+EOF
+         $EDITOR $description
+         while grep -q "***REPLACE" $description
+         do
+            if Ask "Description wasn't filled properly. Retry?"
+            then $EDITOR $description
+            else
+               rm $description
+               return 1
+            fi
+         done
+      fi
+   fi
+   return 0
+}
+
+pack_recipe() {
+   local name="$1"
+   local version="$2"
+   archive="$name--$version--recipe.tar.bz2"
+   Log_Verbose "Package: $archive"
+   cd "$compileLocalRecipesDir"
+   tarball="$compilePackedRecipesDir/$name--$version--recipe.tar.bz2"
+
+   handle_description "$name" "$version"
+
+   create_tarball() {
+      recipe="$name/$version/Recipe"
+      resources="$name/$version/Resources"
+      description="$resources/Description"
+      Exists "$recipe" || return 1
+      if ! Exists "$description"
+      then
+         Quiet mkdir "$resources"
+         DescribeProgram --mode=ascii "$name" > "$description" || {
+            rm "$description"
+            Quiet rmdir "$resources"
+         }
+      fi
+      #remove backups
+      find "$name/$version" | grep -E '~$' | xargs rm -f
+      [ -f "$tarball" ] && rm -f "$tarball" 2>/dev/null || $sudo_exec rm -f "$tarball"
+      Verbose tar cjvf "$tarball" --exclude=.svn "$name/$version" || return 1
+      touch "$tarball" --reference="$name/$version/Recipe"
+      return 0
+   }
+
+   if create_tarball
+   then
+      if ! Boolean "no-lint"
+      then 
+         RecipeLint $noweb "$tarball"
+         recipestatus=$?
+         if [ "$recipestatus" -eq 1 ]
+         then
+            Log_Error "RecipeLint reported warnings in $name $version."
+            if ! Ask "Proceed and pack it anyway?"
+            then return 1
+            fi
+         elif [ "$recipestatus" -eq 2 ]
+         then
+            Log_Error "RecipeLint reported errors in $name $version from trunk. Not packing it."
+            rm "$tarball"
+            return 1
+         fi
+      fi
+      Log_Normal "Packed $tarball."
+   else
+      Log_Error "Failed packing $tarball."
+      return 1
+   fi
+   return 0
+}
+
+pack_all_versions() {
+   err=0
+   for version in "$compileLocalRecipesDir/$1/"*
+   do
+      [ -L "$version" ] && continue
+      pack_recipe "$1" `basename "$version"` || err=1
+   done
+   return $err
+}
+
+if [ "$(Arg 1)" ]
+then
+   name=`ls "$compileLocalRecipesDir" | grep -i "^$(Arg 1)$"`
+   if [ ! "$name" ]
+   then Die "Could not find recipe directory for $(Arg 1) in $compileLocalRecipesDir."
+   fi
+   if [ "$(Arg 2)" ]
+   then
+      pack_recipe "$name" "$(Arg 2)"
+      exit $?
+   else
+      pack_all_versions "$name"
+      exit $?
+   fi
+else
+   export lsfile="$compilePackedRecipesDir/RecipeList"
+   for name in "$compileLocalRecipesDir/"*
+   do
+       name=`basename "$name"`
+       pack_all_versions "$name"
+   done
+   cd "$compilePackedRecipesDir"
+   ls *--recipe.tar.bz2 >"$lsfile"
+fi
+

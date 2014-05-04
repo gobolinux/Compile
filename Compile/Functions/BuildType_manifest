@@ -1,0 +1,19 @@
+#!/bin/bash
+
+manifest_do_install() {
+   for i in "${manifest[@]}"
+   do
+      src=`echo $i | cut -d: -f1`
+      dst=`echo $i | cut -d: -f2-`
+      fulldst="$installprefix/$dst"
+      $sudo_exec mkdir -p $(dirname "$fulldst")
+      if Ends_With "/" "$fulldst"
+      then
+         $sudo_exec mkdir -p "$fulldst"
+      fi
+      if [ -d "$src" -a -d "$fulldst" ]
+      then $sudo_exec cp -R "$src"/* "$fulldst"
+      else $sudo_exec cp -R $src "$fulldst"
+      fi
+   done
+}

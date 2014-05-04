@@ -1,0 +1,382 @@
+#!/bin/bash
+
+source ScriptFunctions
+Import File
+Import Log
+Import OptionParser
+Import GoboLinux
+Import Archive
+
+scriptsversion=`Get_Version Scripts Current`
+
+if echo "$scriptsversion" | grep -q CVS || \
+   echo "$scriptsversion" | grep -q GIT || \
+   echo "$scriptsversion" | grep -q SVN || \
+   [ "`GuessLatest $scriptsversion 2.9.0`" = "$scriptsversion" ]
+then
+   # Version is valid, proceed.
+   :
+else
+   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
+fi
+
+### Options ###################################################################
+
+scriptDescription="Create a recipe template."
+scriptCredits="Copyright (C) 2003, Hisham Muhammad - Released under the GNU GPL."
+helpOnNoArguments=yes
+scriptUsage="{{[<app_name> [<app_version>]] <url>} | {<app_name> cvs <server> <module>} | {<app_name> svn <svn url>} | {<app_name> git <repository>} | {<app_name> bzr <branch>} | {<app_name> hg <repository> }"
+scriptNotes="A URL, a cvs, svn, git, bzr or hg command line should be passed as a parameter."
+scriptExample=("Help2Man 1.33.1 http://ftp.gnu.org/gnu/help2man/help2man_1.33.1.tar.gz
+DirectFB cvs :pserver:anonymous:@cvs.directfb.org:/cvs/directfb DirectFB
+SYSLINUX git http://www.kernel.org/pub/scm/boot/syslinux/syslinux.git")
+Add_Option_Boolean "F" "no-fetch" "Do not try to download the package. Assume it is already present."
+Add_Option_Boolean "C" "no-check" "Do not check for existing recipes for that program."
+Add_Option_Boolean "b" "batch" "Do not ask for confirmation."
+Parse_Options "$@"
+
+unset packagename versionnumber
+
+Import Compile
+Parse_Conf Compile.conf
+
+##################################################
+# Checking Scripts package version
+##################################################
+
+if wget --help | grep -q no-check-certificate
+then wget="wget --no-check-certificate"
+else wget="wget"
+fi
+
+[ "$PAGER" ] || PAGER=less
+
+Check_Dir_Variable compileLocalRecipesDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compileLocalRecipesDir}" -o ! -x "${compileLocalRecipesDir}" ] && $sudo_exec chown $(whoami) "${compileLocalRecipesDir}"
+
+if [ "$(Arg 3)" ]
+then
+   packagename="$(Arg 1)"
+   versionnumber="$(Arg 2)"
+   source_url="$(Arg 3)"
+elif [ "$(Arg 2)" ]
+then
+   packagename="$(Arg 1)"
+   source_url="$(Arg 2)"
+else
+   source_url="$(Arg 1)"
+fi
+
+[ "$source_url" ] || Die "Missing parameter."
+echo "$source_url" | grep -q ":" || Die "Expected URL as a last parameter."
+
+# catch parameter errors using cvs
+if [ "$packagename" = "cvs" -a "${versionnumber:0:1}" = ":" ]
+then Die "You must pass the program name when using a cvs command."
+fi
+
+svn=no
+cvs=no
+git=no
+bzr=no
+hg=no
+if [ "$versionnumber" = "cvs" ]
+then
+   cvs=yes
+   cvs_server="$source_url"
+   cvs_module="$(Arg 4)"
+   cvs_server=`echo "$cvs_server" | sed 's,anonymous@,anonymous:@,g'`
+elif [ "$versionnumber" = "svn" -o "$versionnumber" = "SVN" ]
+then
+   svn=yes
+   svn_uri="$source_url"
+elif [ "$versionnumber" = "git" ]
+then
+   git=yes
+   git_repository="$source_url"
+elif [ "$versionnumber" = "bzr" ]
+then
+   bzr=yes
+   bzr_repository="$source_url"
+elif [ "$versionnumber" = "hg" ]
+then
+   hg=yes
+   hg_repository="$source_url"
+else
+   # TODO: generalize mirror system
+   url=`echo "$source_url" | sed -r 's|http://.*.sourceforge.net(/sourceforge)?/|$httpSourceforge/|'`
+   url=`echo "$url" | sed 's|ftp://ftp\.gnu\.org/gnu/|$ftpGnu/|'`
+
+   bname=`basename "$source_url" .tar.gz`
+   bname=`basename "$bname" .tar.bz2`
+   bname=`basename "$bname" .tar.xz`
+   bname=`basename "$bname" .tgz`
+   bname=`basename "$bname" .tbz2`
+   bname=`basename "$bname" .zip`
+   bname=`basename "$bname" .tar.lzma`
+
+   if [ ! "$packagename" ]
+   then
+      packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
+      deduced=`DeduceName "README" "$packagename"`
+      [ "$deduced" ] && packagename=$deduced
+   fi
+   if [ ! "$versionnumber" ]
+   then
+      versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
+   fi
+fi
+
+# Enforce some naming conventions
+packagename=`NamingConventions "$packagename"`
+
+if ! Boolean "no-check" && ! Boolean "batch"
+then
+   sameversionrecipe=`FindPackage --types=recipe $packagename $versionnumber 2> /dev/null`
+   if [ "$sameversionrecipe" ]
+   then
+      Log_Question "There is already a recipe for $packagename $versionnumber, at"
+      Log_Question "$sameversionrecipe"
+      if ! Ask "Create another?"
+      then
+         exit 0
+      fi
+            
+   else
+      ignorelist="\--\(cvs\|svn\|git\|bzr\|hg\)\|/\(cvs\|svn\|git\|bzr\|hg\)-r[0-9]*"
+      sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null | grep -vi "$ignorelist"`
+      if [ "$sameprogramrecipe" ]
+      then
+         Log_Question "There is already a recipe for $packagename, at"
+         Log_Question "$sameprogramrecipe"
+         [ "${sameprogramrecipe:0:1}" = "/" ] && packagename=$(basename $(dirname $sameprogramrecipe))
+         if Ask "Use 'NewVersion $packagename $versionnumber' instead of MakeRecipe?"
+         then
+            NewVersion "$packagename" "$versionnumber" "$source_url"
+            exit 0
+         fi
+      fi
+   fi
+fi
+
+if ! Boolean "batch"
+then
+   unset buildtype
+   [ "$cvs" = yes ] && buildtype="CVS"
+   [ "$svn" = yes ] && buildtype="SVN"
+   [ "$git" = yes ] && buildtype="GIT"
+   [ "$bzr" = yes ] && buildtype="BZR"
+   [ "$hg"  = yes ] && buildtype="HG"
+   
+   if [ ! -z "$buildtype" ]
+   then Ask_Continue "Creating recipe template for $buildtype build of $packagename."
+   else Ask_Continue "Creating recipe template for $packagename version $versionnumber."
+   fi
+fi
+
+recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
+
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$packagename" ] && [ ! -w "$compileLocalRecipesDir/$packagename" -o ! -x "$compileLocalRecipesDir/$packagename" ] && $sudo_exec chown $(whoami) "$compileLocalRecipesDir/$packagename"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$packagename/$versionnumber" ] && [ ! -w "$compileLocalRecipesDir/$packagename/$versionnumber" -o ! -x "$compileLocalRecipesDir/$packagename/$versionnumber" ] && $sudo_exec chown -R $(whoami) "$compileLocalRecipesDir/$packagename/$versionnumber"
+mkdir -p $recipedir/Resources
+
+recipefile="$recipedir/Recipe"
+rm -f "$recipefile"
+
+if [ "$compileRecipeAuthor" != "" ]
+then echo "# Recipe (MakeRecipe) for $packagename by $compileRecipeAuthor, on" `date` >> "$recipefile"
+     echo "# Recipe for version $versionnumber by $compileRecipeAuthor, on" `date` >> "$recipefile"
+else Log_Terse "Please fill up 'compileRecipeAuthor' variable at $goboSettings/Compile/Compile.conf"
+fi
+
+echo "compile_version=$scriptVersion" >> "$recipefile"
+if [ "$cvs" = "yes" ]
+then
+   echo "cvs=\"$cvs_server\"" >> "$recipefile"
+   echo "cvs_module=$cvs_module" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-cvs"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$svn" = "yes" ]
+then
+   echo "svn=\"$svn_uri\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-svn"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$git" = "yes" ]
+then
+   echo "git=\"$git_repository\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-git"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$bzr" = "yes" ]
+then
+   echo "bzr=\"$bzr_repository\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-bzr"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+elif [ "$hg" = "yes" ]
+then
+   echo "hg=\"$hg_repository\"" >> "$recipefile"
+   checkoutdir="$compileSourcesDir/$packagename-hg"
+   fetchparams="--save-to $compileSourcesDir --save-directory $checkoutdir"
+else
+   echo "url=\"$url\"" >> "$recipefile"
+   basefile=$(basename "$source_url")
+   file="$compileArchivesDir/$basefile"
+   fetchparams="--save-to $compileArchivesDir"
+   if { ! Boolean "no-fetch" ;} && Starts_With "http" "$source_url"
+   then
+      # Detect URLs that feature redirects, like funky "...download.php?pkg=1234" URLs.
+      file_headers=`Temporary_File`
+      $wget --spider --server-response "$source_url" 2> $file_headers
+      filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//' | uniq`
+      if [ -z "$filename" ]
+      then
+         filename=`grep -i '=> .*' "$file_headers" | sed 's,.*=> .\(.*\).$,\1,' | tail -n 1`
+      fi
+      if [ -n "$filename" -a "$filename" != "$basefile" ]
+      then
+         basefile="$filename"
+         file="$compileArchivesDir/$basefile"
+         echo "file=\"$basefile\"" >> "$recipefile"
+      fi
+      rm $file_headers
+   fi
+fi
+
+if ! Boolean "no-fetch"
+then
+   FetchArchive $fetchparams "$recipefile" || Die "Could not fetch sources."
+elif ! [ -e "$file" ]
+then
+   Die "--no-fetch used, but source archive is not available in ${compileArchivesDir}."
+fi
+
+if [ "$url" ]
+then
+   echo "file_size="`Get_Size "$file"` >> "$recipefile"
+   echo "file_md5="`Get_MD5 "$file"` >> "$recipefile"
+   
+   # TODO: report if multiple directories, tell the user to verify it
+   file_contents=`Temporary_File`
+   List_Archive_Files "$file" >> "$file_contents"
+   # bdir=`grep "^[^/]*/$" "$file_contents" | tr -d "/" | head -n 1`
+   bdir=`head -n 1 "$file_contents" | sed 's,^\./,,;s,/[^/]*$,,'`
+   if [ -n "$bdir" -a "$bdir" != "$bname" ]
+   then
+      echo "dir='$bdir'" >> "$recipefile"
+   fi
+elif [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" -o "$hg" = "yes" ]
+then
+   file_contents=`Temporary_File`
+   find "$checkoutdir" | sed "s,^$compileSourcesDir/,,g" >> "$file_contents"
+fi
+
+if grep -q "CMakeLists.txt" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on CMake."
+   echo "recipe_type=cmake" >> "$recipefile"
+elif egrep -q "Setup.l?hs" "$file_contents"
+then
+   # Note: check Haskell Cabal before regular configure because cabal
+   # will often invoke autoconf operations
+   Log_Normal "$packagename $versionnumber build system seems to be based on Haskell Cabal."
+   echo "recipe_type=cabal" >> "$recipefile"
+elif grep -q "configure.in$" "$file_contents" \
+|| grep -q "configure.ac$" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on Autoconf."
+   echo "recipe_type=configure" >> "$recipefile"
+   if ! grep -q "configure$" "$file_contents"
+   then echo "autogen_before_configure=yes" >> "$recipefile"
+   fi
+elif grep -q "/configure$" "$file_contents"
+then
+   Log_Terse "$packagename $versionnumber build system seems to have a non-Autoconf configure. You may need to add the configure_options flag."
+   echo "recipe_type=configure" >> "$recipefile"
+elif grep -q "Makefile.PL$" "$file_contents" || grep -q "Build.PL$" "$file_contents" 
+then
+   Log_Normal "$packagename $versionnumber seems to be a Perl module."
+   echo "recipe_type=perl" >> "$recipefile"
+   echo $packagename | grep -q "^Perl-" || {
+      perlprefixed="$compileLocalRecipesDir/Perl-$packagename"
+      notprefixed=$(readlink -f "$recipedir/..")
+      if [ -e "$perlprefixed" ]
+      then 
+         mv "$recipedir" "$perlprefixed"
+         Quiet rmdir "$notprefixed"
+      else
+         mv "$notprefixed" "$perlprefixed"
+      fi
+      Log_Normal "Renamed $packagename to Perl-$packagename"
+   }
+elif grep -q "Imakefile$" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on imake."
+   echo "recipe_type=xmkmf" >> "$recipefile"
+elif grep -q "SConstruct$" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on SCons."
+   echo "recipe_type=scons" >> "$recipefile"
+elif ! cat "$file_contents" | cut -d"/" -f 1-2 | grep -iq makefile && \
+       grep -q "\.py$" "$file_contents"
+then
+   Log_Normal "$packagename $versionnumber build system seems to be based on Python."
+   echo "recipe_type=python" >> "$recipefile"
+else
+   basemakefile=`grep -i "^[^/]*/Makefile$" "$file_contents" 2>/dev/null`
+   if [ "$basemakefile" ]
+   then
+      Log_Normal "$packagename $versionnumber build system seems to be based on Makefiles."
+      echo "recipe_type=makefile" >> "$recipefile"
+      if [ "$cvs" = "yes" -o "$svn" = "yes" -o "$git" = "yes" -o "$bzr" = "yes" -o "$hg" = "yes" ]
+      then basemakefile="$compileSourcesDir/$basemakefile"
+      else Unpack_Archive "$file" . force "$basemakefile"
+      fi
+      if [ "$basemakefile" != "Makefile" ]
+      then echo "makefile='$(basename $basemakefile)'" >> "$recipefile"
+      fi
+      makevars=()
+      for var in BASEDIR DESTDIR PREFIX basedir destdir prefix
+      do
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*="  &> /dev/null || \
+            cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*?=" &> /dev/null
+         then
+            makevars=("${makevars[@]}" "\"$var=\$target\"")
+            Log_Normal "Detected Makefile variable $var."
+         fi
+      done
+      for var in sysconfdir
+      do
+         if cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*="  &> /dev/null || \
+            cat "$basemakefile" | grep "^[[:blank:]]*$var[[:blank:]]*?=" &> /dev/null
+         then
+            makevars=("${makevars[@]}" "\"$var=\$settings_target\"")
+            Log_Normal "Detected Makefile variable $var."
+         fi
+      done
+      if [ "${makevars[*]}" ]
+      then
+         echo "make_variables=(" >> "$recipefile"
+         for mv in "${makevars[@]}"
+         do
+            echo "   $mv" >> "$recipefile"
+         done
+         echo ")" >> "$recipefile"
+      else
+         Log_Normal "No variables detected. Do you want to look at the top Makefile? (Y/n)"
+         read
+         if [ "$REPLY" != "n" ]
+         then
+            $PAGER "$basemakefile"
+         fi
+      fi
+      if [ "$cvs" = "no" -a "$svn" = "no" -a "$git" = "no" -a "$bzr" = "no" -a "$hg" = "no" ]
+      then
+         rm "$basemakefile"
+         rmdir -p $(dirname "$basemakefile")
+      fi
+   else
+      Log_Terse "Could not detect recipe type. Recipe needs to be completed manually."
+   fi
+fi
+rm -f "$file_contents"
+
+Log_Verbose "Done creating recipe template for $packagename $versionnumber."
