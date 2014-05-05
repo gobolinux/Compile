@@ -106,12 +106,6 @@ function cleanup() {
        Quiet rmdir ${sandbox_mp}${each}
        Quiet rmdir ${sandbox_rw}${each}
        '
-    if [ "$cross_toolchain_dir" ]
-    then
-       Union_Umount ${unionbackend} "${sandbox_mp}/$cross_toolchain_dir" || error=true
-       [ "$error" = "false" ] && Quiet rmdir -p "${sandbox_mp}/$cross_toolchain_dir"
-    fi
-
     # Do not attempt to 'rm -rf' if some unmount failed.
     [ "$error" = "true" ] && exit 1
 
@@ -159,10 +153,6 @@ then ln -s / ${goboDevices}/root
 fi
 
 # Mount unionfs
-
-if [ "$cross_toolchain_dir" ]
-then mount_union "$cross_toolchain_dir"
-fi
 
 if [ "$goboIndex" ]
 then unionSandbox=( ${unionSandbox[@]} "$goboIndex" )

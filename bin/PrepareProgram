@@ -135,18 +135,6 @@ then
       --mandir="${configuremandir}"
       --libexecdir="${configureprefix}/lib/$(Downcase ${programname})"
    )
-   if [ "$goboCrossCompiling" = "yes" ]
-   then
-      configure_options=(
-         "${configure_options[@]}"
-         --build=$cross_configure_build
-         --host=$cross_configure_host
-         --cache-file=$cross_cache_file
-         --x-includes=$goboHeaders
-         --x-libraries=$goboLibraries
-      )
-      cp -f ${goboSettings}/Compile/Cross/$cross_cache_file .
-   fi
 elif config_accepts_prefix
 then
    Log_Normal "Non-autoconf configure script detected (accepts --prefix)."
