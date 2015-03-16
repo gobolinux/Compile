@@ -9,9 +9,7 @@ Import Archive
 
 scriptsversion=`Get_Version Scripts Current`
 
-if echo "$scriptsversion" | grep -q CVS || \
-   echo "$scriptsversion" | grep -q GIT || \
-   echo "$scriptsversion" | grep -q SVN || \
+if echo "$scriptsversion" | grep -qi GIT || \
    [ "`GuessLatest $scriptsversion 2.9.0`" = "$scriptsversion" ]
 then
    # Version is valid, proceed.
