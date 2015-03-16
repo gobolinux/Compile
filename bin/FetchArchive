@@ -111,7 +111,7 @@ then
    for git in "${gits[@]}"
    do
       if [ ! -d "${sourcedir}" ]
-      then GIT_SSL_NO_VERIFY=true git clone "${git}" "${sourcedir}" || exit $?
+      then GIT_SSL_NO_VERIFY=true git clone --depth=1 "${git}" "${sourcedir}" || exit $?
       else cd "${sourcedir}" && GIT_SSL_NO_VERIFY=true git pull || exit $?
       fi
    done
