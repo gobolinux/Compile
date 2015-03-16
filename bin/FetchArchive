@@ -39,16 +39,6 @@ fi
 # Fundamental variables
 ##################################################
 
-scriptsversion=`Get_Version Scripts Current`
-svnr=`echo $scriptsversion | sed 's/\([0-9]*\).*/\1/g'`
-smajormiddle=`echo $scriptsversion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-is_svn=`echo "$scriptsversion" | egrep -i '(SVN|trunk|branch)'`
-if [ ! "$is_svn" ] && [ "$svnr" -gt 5 ] || \
-   [ `GuessLatest $smajormiddle 2.1` != $smajormiddle -a ! "$is_svn" ]
-then
-   Die "Your Scripts package is too old. Please update it by running 'InstallPackage Scripts'."
-fi
-
 recipe="$(Arg 1)"
 [ "$recipe" ] || Die "Missing argument. Usage: $scriptName <recipe>. See --help."
 [ -e "$recipe" ] || Die "File not found: $recipe"
