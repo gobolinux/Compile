@@ -369,8 +369,8 @@ then
    for d_url in ${selecteddeps}
    do
       Array_Contains askeddeps "$d_url" && continue
-	  # d_url is either "/Program/..." path or "Alien:Pkg" or "Alien:Pkg~ver"
-	  # the latter
+          # d_url is either "/Program/..." path or "Alien:Pkg" or "Alien:Pkg~ver"
+          # the latter
       (
         IFS='~'  # to split name from version as set by awk above
         set - $d_url
@@ -415,26 +415,26 @@ fi
 
 if [ -n "$compile_version" ]
 then
+   if echo $scriptVersion | grep -qi git
+   then compilemajormiddle=git
+   else compilemajormiddle=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+   fi
    develrelease=`echo $compile_version | sed 's/\([0-9]*\).*/\1/g'`
-   if [ "$compile_version" != "SVN" ] && [ "$develrelease" ] && [ "$develrelease" -gt "20000000" ]
+   if [ "$compile_version" != "git" ] && [ "$develrelease" ] && [ "$develrelease" -gt "20000000" ]
    then
       compiledate=$(ls -l --time-style=+%Y%m%d $(which Compile) | awk '{print $6}')
-      if [ "$compiledate" -lt "$develrelease" -a "$compilemm" != "SVN" ]
+      if [ "$compiledate" -lt "$develrelease" -a "$compilemajormiddle" != "git" ]
       then Boolean "batch" || Ask_Continue "Recipe was created with a development snapshot from $develrelease,\n"\
 "which is more recent than the Compile version you have installed.\n"\
-"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+"Compilation may fail, upgrade ('Compile Compile') is recommended."
       fi
    elif [ "$compile_version" != "$scriptVersion" ]
    then
-      if echo $scriptVersion | grep -qi SVN
-      then compilemm=SVN
-      else compilemm=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-      fi
-      recipemm=`echo $compile_version | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
-      if [ `GuessLatest $compilemm $recipemm` != $compilemm -a "$compilemm" != "SVN" ]
+      recipemajormiddle=`echo $compile_version | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
+      if [ `GuessLatest $compilemajormiddle $recipemajormiddle` != $compilemajormiddle -a "$compilemajormiddle" != "git" ]
       then Boolean "batch" || Ask_Continue "Recipe was created with Compile $compile_version,\n"\
 "which is more recent than the one you have installed.\n"\
-"Compilation may fail, upgrade ('InstallPackage Compile') is recommended."
+"Compilation may fail, upgrade ('Compile Compile') is recommended."
       fi
    fi
 fi
