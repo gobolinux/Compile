@@ -490,7 +490,7 @@ function export_marked() {
    done
 }
 
-get_dependency_variables() {
+function Get_Dependency_Variables() {
    dependencies_file="$1"
    if [ -f "$dependencies_file" ]
    then
@@ -509,4 +509,16 @@ get_dependency_variables() {
          mark_export ${lowercasename}_path ${lowercasename}_settings_path ${lowercasename}_variable_path
       done < <(CheckDependencies --no-recursive --types=installed --quiet-progress --mode=all --file "$dependencies_file")
    fi
+}
+
+function Fix_Legacy_Recipe_Types() {
+   # Backwards compability fix
+   [ "$is_compileprogram" = "yes" ] && recipe_type="configure"
+   [ "$is_makefile" = "yes" ] && recipe_type="makefile"
+   [ "$is_python" = "yes" ] && recipe_type="python"
+   [ "$is_perl" = "yes" ] && recipe_type="perl"
+   [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
+   [ "$is_meta" = "yes" ] && recipe_type="meta"
+   [ "$is_scons" = "yes" ] && recipe_type="scons"
+   [ "$is_manifest" = "yes" ] && recipe_type="manifest"
 }

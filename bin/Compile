@@ -280,82 +280,88 @@ function setup_sandbox_options() {
 # Prepare Environment
 ##################################################
 
-Check_Dir_Variable compileDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileDir}"
-[ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
-for compileRecipeDir in "${compileRecipeDirs[@]}"
-do
-   Assert_Dir "$compileRecipeDir"
-done
-Check_Dir_Variable compileDependenciesDir
-Check_Dir_Variable compileArchivesDir
-Check_Dir_Variable compileSourcesDir
-Check_Dir_Variable compilePackedRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
-
-recipe=$(Find_Recipe $(Arg 1) $(Arg 2) $(Arg 3)) || exit $?
-
-app=$(Get_Token "$recipe" "/" "-3")
-versionandrevision=$(Get_Token "$recipe" "/" "-2")
-
-ncapp=`NamingConventions $app`
-if [ "$ncapp" != "$app" ]
-then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
-fi
-
-if [ "Compile" = "$app" ] || [ "Scripts" = "$app" ]
-then
-   if ! [ "$(Arg 2)" ]
+function prepare_environment() {
+   Check_Dir_Variable compileDir
+   [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileDir}"
+   [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
+   for compileRecipeDir in "${compileRecipeDirs[@]}"
+   do
+      Assert_Dir "$compileRecipeDir"
+   done
+   Check_Dir_Variable compileDependenciesDir
+   Check_Dir_Variable compileArchivesDir
+   Check_Dir_Variable compileSourcesDir
+   Check_Dir_Variable compilePackedRecipesDir
+   [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
+   
+   recipe=$(Find_Recipe $(Arg 1) $(Arg 2) $(Arg 3)) || exit $?
+   
+   app=$(Get_Token "$recipe" "/" "-3")
+   versionandrevision=$(Get_Token "$recipe" "/" "-2")
+   
+   ncapp=`NamingConventions $app`
+   if [ "$ncapp" != "$app" ]
+   then Die "$app does not follow proper naming conventions. Recipe should be named $ncapp."
+   fi
+   
+   if [ "Scripts" = "$app" ]
    then
-      Die "Scripts and Compile should be updated using InstallPackage.
+      if ! [ "$(Arg 2)" ]
+      then
+         Die "Scripts should be updated using InstallPackage.
          To force the use of a recipe provide the version or path."
+      fi
    fi
-fi
-
-recipedir="$(dirname "$recipe")"
-useflags=($(UseFlags "$recipedir"))
-
-if Is_Entry "app-name"
-then appname=$(Entry "app-name")
-else appname="$app"
-fi
-
-revision="$(String_Revision "$versionandrevision")"
-version="$(String_Version "$versionandrevision")"
-
-if Is_Entry "version-number"
-then versionnumber=$(Entry "version-number")
-else versionnumber="$version"
-fi
-
-upperversion=$(Uppercase "$versionnumber")
-for upperscm in CVS SVN GIT BZR HG
-do
-   if [ "$upperversion" = "$upperscm" ]
-   then
-      versionnumber=$(date +%Y%m%d)"-$upperversion"
-      break
+   
+   recipedir="$(dirname "$recipe")"
+   useflags=($(UseFlags "$recipedir"))
+   
+   if Is_Entry "app-name"
+   then appname=$(Entry "app-name")
+   else appname="$app"
    fi
-done
-
-target=$(Get_Dir runtime $appname $versionnumber)
-settings_target=$(Get_Dir runtimeSettings $appname $versionnumber)
-variable_target="${goboVariable}"
-installprefix="$target"
-mark_export target settings_target variable_target version
-
-arch=`Get_Architecture`
-archsubdir="$recipedir/$arch"
-archrecipe="$recipedir/$arch/Recipe"
-reciperesources="$recipedir/Resources"
-archreciperesources="$archsubdir/Resources"
+   
+   revision="$(String_Revision "$versionandrevision")"
+   version="$(String_Version "$versionandrevision")"
+   
+   if Is_Entry "version-number"
+   then versionnumber=$(Entry "version-number")
+   else versionnumber="$version"
+   fi
+   
+   upperversion=$(Uppercase "$versionnumber")
+   for upperscm in CVS SVN GIT BZR HG
+   do
+      if [ "$upperversion" = "$upperscm" ]
+      then
+         versionnumber=$(date +%Y%m%d)"-$upperversion"
+         break
+      fi
+   done
+   
+   target=$(Get_Dir runtime $appname $versionnumber)
+   settings_target=$(Get_Dir runtimeSettings $appname $versionnumber)
+   variable_target="${goboVariable}"
+   installprefix="$target"
+   mark_export target settings_target variable_target version
+   
+   arch=`Get_Architecture`
+   archsubdir="$recipedir/$arch"
+   archrecipe="$recipedir/$arch/Recipe"
+   reciperesources="$recipedir/Resources"
+   archreciperesources="$archsubdir/Resources"
+}
 
 ##################################################
 # Check dependencies
 ##################################################
 
-if ! Boolean "no-dependencies" && ! Boolean "no-build"
-then
+function check_dependencies() {
+   if Boolean "no-dependencies" || Boolean "no-build"
+   then
+      return
+   fi
+
    Log_Normal "Checking dependencies..."
    selecteddeps=$(CheckDependencies --types=recipe --mode=missing \
      $noweb --quiet-progress $batch "$app" "$versionandrevision" \
@@ -379,42 +385,34 @@ then
       ) || exit $?
       askeddeps=("$d_url" ${askeddeps:+"${askeddeps[@]}"})
    done
-fi
-
-get_dependency_variables "${recipedir}/Resources/Dependencies"
+}
 
 ##################################################
 # Source recipe
 ##################################################
 
-source "$recipe"
-[ -e "$archrecipe" ] && source "$archrecipe"
-
-
-if ! Boolean "no-build"
-then
-   if [ "$revision" ]
-   then Log_Normal "Compiling $app version $version, revision $revision."
-   else Log_Normal "Compiling $app version $version."
+function source_recipe() {
+   source "$recipe"
+   [ -e "$archrecipe" ] && source "$archrecipe"
+   
+   if ! Boolean "no-build"
+   then
+      if [ "$revision" ]
+      then Log_Normal "Compiling $app version $version, revision $revision."
+      else Log_Normal "Compiling $app version $version."
+      fi
    fi
-fi
-
-# Backwards compability fix
-[ "$is_compileprogram" = "yes" ] && recipe_type="configure"
-[ "$is_makefile" = "yes" ] && recipe_type="makefile"
-[ "$is_python" = "yes" ] && recipe_type="python"
-[ "$is_perl" = "yes" ] && recipe_type="perl"
-[ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
-[ "$is_meta" = "yes" ] && recipe_type="meta"
-[ "$is_scons" = "yes" ] && recipe_type="scons"
-[ "$is_manifest" = "yes" ] && recipe_type="manifest"
+   
+   Fix_Legacy_Recipe_Types
+}
 
 ##################################################
 # Check recipe's Compile version
 ##################################################
 
-if [ -n "$compile_version" ]
-then
+function check_compile_version() {
+   [ -n "$compile_version" ] || return
+   
    if echo $scriptVersion | grep -qi git
    then compilemajormiddle=git
    else compilemajormiddle=`echo $scriptVersion | sed 's/^\([0-9]*\.[0-9]*\).*$/\1/g'`
@@ -437,14 +435,15 @@ then
 "Compilation may fail, upgrade ('Compile Compile') is recommended."
       fi
    fi
-fi
+}
 
 ##################################################
 # Meta-recipe
 ##################################################
 
-if [ "$recipe_type" = "meta" ]
-then
+function handle_meta_recipe() {
+   [ "$recipe_type" != "meta" ] && return
+
    Add_Use_Flags_Options_To_Array include
    [ -z "${include}" ] && Die "Recipe type is \"meta\", but no sub-recipes are included."
    started=no
@@ -511,14 +510,15 @@ then
    Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
    wrapup
-fi
+}
 
 ##################################################
 # Part of Meta but compiled by itself
 ##################################################
 
-if [ "${compileMetaRecipe}" != "1" -a -n "$part_of" ]
-then
+function check_if_part_of_meta_compiled_by_itself() {
+   [ "${compileMetaRecipe}" != "1" -a -n "$part_of" ] || return
+
    if ! ( Boolean "install-separately" || Boolean "no-build" )
    then
       appname="$part_of"
@@ -551,232 +551,264 @@ then
          Log_Normal "$app will be installed as part of $appname $versionnumber."
       fi
    fi
-fi
+}
    
 ##################################################
 # Construct some variable arrays
 ##################################################
-
-compileInstallOptions=(
-   "${compileInstallOptions[@]}"
-   LDCONFIG="true"
-)
-
-if [ "$goboIndex" ] && ! grep -q "fuse$" /proc/filesystems
-then
-   compileInstallOptions=(
-      "${compileInstallOptions[@]}"
-      prefix="${target}"
-      sysconfdir="${settings_target}"
-      mandir="${target}/share/man"
-      libexecdir="${target}/lib/$(Downcase ${appname})"
-   )
-fi
-[ -n "$LIBTOOL" ] && \
-compileMakeOptions=(
-   "${compileMakeOptions[@]}"
-   LIBTOOL="${goboExecutables}/libtool"
-)
-configure_variables=(
-   "${configure_variables[@]}"
-   LDFLAGS="-L${target}/lib"
-)
-
-for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
-do
-   eval '
-      if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
-      then '$var's=("$'$var'")
-      fi
-   '
-done
-
+   
 function is_scm_recipe() {
    [ "${cvss[*]}${svns[*]}${gits[*]}${bzrs[*]}${hgs[*]}" ]
 }
 
-if [ ! "${urls[*]}" ] && ! is_scm_recipe
-then Die "Missing URL or repository information in recipe '$recipe'."
-fi
-
-if ! [ "${files[*]}" ]
-then files=(`Map basename "${urls[@]}"`)
-fi
-
-if is_scm_recipe
-then
-   if [ -z "${dir}" ]
+function construct_arrays() {
+   compileInstallOptions=(
+      "${compileInstallOptions[@]}"
+      LDCONFIG="true"
+   )
+   
+   if [ "$goboIndex" ] && ! grep -q "fuse$" /proc/filesystems
    then
-      sourcedir="${appname}-${version}"
+      compileInstallOptions=(
+         "${compileInstallOptions[@]}"
+         prefix="${target}"
+         sysconfdir="${settings_target}"
+         mandir="${target}/share/man"
+         libexecdir="${target}/lib/$(Downcase ${appname})"
+      )
+   fi
+   [ -n "$LIBTOOL" ] && \
+   compileMakeOptions=(
+      "${compileMakeOptions[@]}"
+      LIBTOOL="${goboExecutables}/libtool"
+   )
+   configure_variables=(
+      "${configure_variables[@]}"
+      LDFLAGS="-L${target}/lib"
+   )
+   
+   for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
+   do
+      eval '
+         if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
+         then '$var's=("$'$var'")
+         fi
+      '
+   done
+   
+   if [ ! "${urls[*]}" ] && ! is_scm_recipe
+   then Die "Missing URL or repository information in recipe '$recipe'."
+   fi
+   
+   if ! [ "${files[*]}" ]
+   then files=(`Map basename "${urls[@]}"`)
+   fi
+   
+   if is_scm_recipe
+   then
+      if [ -z "${dir}" ]
+      then
+         sourcedir="${appname}-${version}"
+      else
+         sourcedir="${dir}"
+      fi
+      dirs=("${sourcedir}")
+      save_directory="${sourcedir%%/*}"
+   fi
+   
+   if [ "$dir" ]
+   then
+      if [ -z "${dirs[*]}" ]
+      then dirs=("$dir")
+      fi
    else
-      sourcedir="${dir}"
+      if [ -z "${dirs[*]}" ]
+      then
+         remove_archive_extension() { echo "$1" | sed -r "s/\.(tar|tbz|tgz|zip).*//" ;}
+         String_To_Array dirs "`Map remove_archive_extension "${files[@]}"`"
+      fi
    fi
-   dirs=("${sourcedir}")
-   save_directory="${sourcedir%%/*}"
-fi
-
-if [ "$dir" ]
-then
-   if [ -z "${dirs[*]}" ]
-   then dirs=("$dir")
-   fi
-else
-   if [ -z "${dirs[*]}" ]
-   then
-      remove_archive_extension() { echo "$1" | sed -r "s/\.(tar|tbz|tgz|zip).*//" ;}
-      String_To_Array dirs "`Map remove_archive_extension "${files[@]}"`"
-   fi
-fi
-
-odirs=("${dirs[@]}")
-odir=${dirs[0]}
-
-make_basedir() { echo "$compileSourcesDir/${1%%/*}" ;}
-String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
-basedir="${basedirs[0]}"
-
-make_absolute() {
-   if [ "${1:0:1}" = "/" ]
-   then echo "$1"
-   else echo "$compileSourcesDir/$1"
-   fi
+   
+   odirs=("${dirs[@]}")
+   odir=${dirs[0]}
+   
+   function make_basedir() {
+      echo "$compileSourcesDir/${1%%/*}"
+   }
+   String_To_Array "basedirs" "$(Map make_basedir "${dirs[@]}")"
+   basedir="${basedirs[0]}"
+   
+   function make_absolute() {
+      if [ "${1:0:1}" = "/" ]
+      then echo "$1"
+      else echo "$compileSourcesDir/$1"
+      fi
+   }
+   String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
+   sourcedir="${dirs[0]}"
+   
+   # Must source recipe_types here so that _init is run before needs_build_dir
+   # is used.
+   unset okbuildtype
+   for buildtype in $(Available_BuildTypes)
+   do
+      Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
+      [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
+   done
+   [ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
+   # _sane_check and _init are run before re-sourcing, to allow the recipe to
+   # override values set in them.
+   is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
+   is_function_set ${recipe_type}_init && ${recipe_type}_init
+   
+   [ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
+    
+   # backwards compability fix, as some hooks in recipes might use "$dir"
+   dir="$sourcedir"
+   mark_export dir basedir sourcedir archsubdir recipedir builddir
+   
+   # Re-source recipe for two purposes. First let the recipe use all variables we have defined.
+   # Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
+   # functionality than setting do_build=no and define the building procedure in the pre_build hook
+   source "$recipe"
+   [ -e "$archrecipe" ] && source "$archrecipe"
 }
-String_To_Array dirs "`Map make_absolute "${dirs[@]}"`"
-sourcedir="${dirs[0]}"
-
-# Must source recipe_types here so that _init is run before needs_build_dir
-# is used.
-unset okbuildtype
-for buildtype in $(Available_BuildTypes)
-do
-   Import BuildType_${buildtype} || wrap_fail "Something went wrong when importing BuildType_${buildtype}."
-   [ "${recipe_type}" = "${buildtype}" ] && okbuildtype=1
-done
-[ -z "${okbuildtype}" ] && wrap_fail "Unsupported recipe_type in recipe '$recipe'."
-# _sane_check and _init are run before re-sourcing, to allow the recipe to
-# override values set in them.
-is_function_set ${recipe_type}_sane_check && ${recipe_type}_sane_check
-is_function_set ${recipe_type}_init && ${recipe_type}_init
-
-[ "$needs_build_directory" = "yes" ] && builddir="${sourcedir}/_build" || builddir="${sourcedir}"
- 
-# backwards compability fix, as some hooks in recipes might use "$dir"
-dir="$sourcedir"
-mark_export dir basedir sourcedir archsubdir recipedir builddir
-
-# Re-source recipe for two purposes. First let the recipe use all variables we have defined.
-# Secondly by re-sourcing the recipe it can overload pre_build and similar, which is a better
-# functionality than setting do_build=no and define the building procedure in the pre_build hook
-source "$recipe"
-[ -e "$archrecipe" ] && source "$archrecipe"
  
 ##################################################
 # Get the active useflags for this recipe, and
 # execute the hooks here so any variable updates
 # occur in time.
 ##################################################
-for flag in "${useflags[@]}"
-do
-   is_function_set "using_$flag" && eval using_$flag
-done
+
+function execute_useflag_hooks() {
+   for flag in "${useflags[@]}"
+   do
+      is_function_set "using_$flag" && eval using_$flag
+   done
+}
 
 ##################################################
 # Set up enviroment
 ##################################################
 
-if [ "${environment[*]}" ]
-then
-   for i in "${environment[@]}"
-   do
-      var=`echo $i | cut -d= -f 1`
-      val=`echo $i | cut -d= -f 2-`
-      eval export $var=\'$val\'
-      mark_export $var
-   done
-fi
+function set_up_environment_array() {
+   if [ "${environment[*]}" ]
+   then
+      for i in "${environment[@]}"
+      do
+         var=`echo $i | cut -d= -f 1`
+         val=`echo $i | cut -d= -f 2-`
+         eval export $var=\'$val\'
+         mark_export $var
+      done
+   fi
+}
 
 ##################################################
 # Gather common options from the recipe
 ##################################################
-unset buildmerged
-eval $(Combine_Arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables)
-! [ "$install_target" ] && install_target="install"
-unset installmerged
-eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables)
 
-if [ ! -z "$goboIndex" ]
-then
-   for bm in "${buildmerged[@]}"
-   do
-      tmpbuildmerged=(
-         "${tmpbuildmerged[@]}"
-         "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
-      )
-   done
-   buildmerged=("${tmpbuildmerged[@]}")
-fi
-
-if [ "$makefile" = "" ]
-then makefile=Makefile
-fi
-
-unset keep
-if Boolean "keep" || [ "$keep_existing_target" = "yes" ]
-then keep="--keep"
-fi
+function gather_common_options() {
+   unset buildmerged
+   eval $(Combine_Arrays buildmerged compileBuildOptions compileMakeOptions make_variables build_variables)
+   ! [ "$install_target" ] && install_target="install"
+   unset installmerged
+   eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables)
+   
+   if [ ! -z "$goboIndex" ]
+   then
+      for bm in "${buildmerged[@]}"
+      do
+         tmpbuildmerged=(
+            "${tmpbuildmerged[@]}"
+            "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
+         )
+      done
+      buildmerged=("${tmpbuildmerged[@]}")
+   fi
+   
+   if [ "$makefile" = "" ]
+   then makefile=Makefile
+   fi
+   
+   unset keep
+   if Boolean "keep" || [ "$keep_existing_target" = "yes" ]
+   then keep="--keep"
+   fi
+}
 
 ##################################################
 # Compile!
 ##################################################
 
+function compile_recipe() {
 
-Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
-Boolean "no-build" && exit 0
-is_scm_recipe || { is_function_set do_unpack && do_unpack; }
-Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
+   Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
+   Boolean "no-build" && exit 0
+   is_scm_recipe || { is_function_set do_unpack && do_unpack; }
+   Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
+   
+   [ -d "$sourcedir" ] && { mkdir -p "$builddir" && cd "$builddir" &>/dev/null; } || Die "Directory $sourcedir not found."
+   
+   Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
+   # note: skippatching is not part of the public Compile API
+   [ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
+   
+   [ "yes" = "$create_dirs_first" ] && {
+      Boolean "keep" || [ "yes" = "$no_install" ] || Pre_Installation_Preparation $appname $versionnumber
+      Create_Program_Tree "${target}" "keep" || Die "Cannot build program tree."
+   }
+   
+   # This hook should really be moved one step later, but is kept here for compability
+   Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
+   Boolean "lazy" || do_configuration || wrap_fail "Configuration failed."
+   if ! [ "$do_build" = "no" ]
+   then
+   do_build || wrap_fail "Build step failed."
+   fi
+   
+   [ "$no_install" = "yes" ] && wrap_exit "Will not install."
+   [ "yes" = "$create_dirs_first" ] || {
+      Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
+      Create_Program_Tree "${target}" ${keep:+"keep"} || Die "Cannot build program tree."
+   }
+   
+   Boolean "no-requirements" || assert_requirements
+   Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
+   ! [ "$do_install" = "no" ] && is_function_set do_install && {
+      setup_sandbox_options
+      do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
+      Boolean "no-strip" || do_strip
+   }
+   install_extras || wrap_fail "Failed installing files."
+   
+   if ! Boolean "no-symlink"
+   then
+      Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+      do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+   fi
+   
+   check_direct_dependencies
+   Run_Hook post_install || wrap_fail "Failure in post-install operation."
+   Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
+   
+   wrapup
 
-[ -d "$sourcedir" ] && { mkdir -p "$builddir" && cd "$builddir" &>/dev/null; } || Die "Directory $sourcedir not found."
-
-Run_Hook pre_patch || wrap_fail "Failure in pre-patch operation."
-# note: skippatching is not part of the public Compile API
-[ "$skippatching" != "yes" ] && is_function_set do_patch && { do_patch || wrap_fail "Patching failed"; }
-
-[ "yes" = "$create_dirs_first" ] && {
-   Boolean "keep" || [ "yes" = "$no_install" ] || Pre_Installation_Preparation $appname $versionnumber
-   Create_Program_Tree "${target}" "keep" || Die "Cannot build program tree."
 }
 
-# This hook should really be moved one step later, but is kept here for compability
-Run_Hook pre_build || wrap_fail "Failure in pre-build operation."
-Boolean "lazy" || do_configuration || wrap_fail "Configuration failed."
-if ! [ "$do_build" = "no" ]
-then
-do_build || wrap_fail "Build step failed."
-fi
-
-[ "$no_install" = "yes" ] && wrap_exit "Will not install."
-[ "yes" = "$create_dirs_first" ] || {
-   Boolean "keep" || Pre_Installation_Preparation $appname $versionnumber
-   Create_Program_Tree "${target}" ${keep:+"keep"} || Die "Cannot build program tree."
+function main() {
+   prepare_environment
+   check_dependencies
+   Get_Dependency_Variables "${recipedir}/Resources/Dependencies"
+   source_recipe
+   check_compile_version
+   handle_meta_recipe
+   check_if_part_of_meta_compiled_by_itself
+   construct_arrays
+   execute_useflag_hooks
+   set_up_environment_array
+   gather_common_options
+   compile_recipe
 }
 
-Boolean "no-requirements" || assert_requirements
-Run_Hook pre_install || wrap_fail "Failure in pre-install operation."
-! [ "$do_install" = "no" ] && is_function_set do_install && {
-   setup_sandbox_options
-   do_install "$appname" "$versionnumber" || wrap_fail "Installation failed."
-   Boolean "no-strip" || do_strip
-}
-install_extras || wrap_fail "Failed installing files."
-
-if ! Boolean "no-symlink"
-then
-   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
-   do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-fi
-
-check_direct_dependencies
-Run_Hook post_install || wrap_fail "Failure in post-install operation."
-Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
-
-wrapup
+main
