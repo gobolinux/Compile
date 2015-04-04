@@ -1,0 +1,98 @@
+#!/bin/sh
+
+source ScriptFunctions
+Import OptionParser
+
+helpOnNoArguments=yes
+scriptDescription="Compile patch streamlining tool. Run it once, edit the sources and run it again."
+scriptCredits="Copyright (C) Hisham Muhammad, 2014 - Released under the GNU GPL."
+scriptUsage="<program_name>"
+scriptExample="Bullet"
+Add_Option_Boolean "c" "clean" "Cleanup directories in Archives."
+Parse_Options "$@"
+
+if [ $(basename $(readlink -f .)) != "Sources" ]
+then
+   echo "This is designed to run in the Sources directory."
+   exit 1
+fi
+
+recipedir=`GetRecipe $(Arg 1) $(Arg 2)`
+source "$recipedir/Recipe"
+
+if [ -z "$dir" ]
+then
+   dir=`basename "$url" .tar.gz`
+   dir=`basename "$dir" .tar.bz2`
+   dir=`basename "$dir" .tar.xz`
+   dir=`basename "$dir" .tgz`
+   dir=`basename "$dir" .tbz2`
+fi
+if [ -z "$file" ]
+then
+   file=`basename "$url"`
+fi
+
+function cleanup() {
+   if [ -d "$dir" -o -d "$dir.old" ]
+   then
+      Log_Question "Delete $dir and $dir.old? "
+      read yn
+      if [ "$yn" = "y" ]
+      then
+         rm -rf "$dir"
+         rm -rf "$dir.old"
+      else
+         exit 1
+      fi
+   fi
+}
+
+# Step one: generate two clean directories
+# to start a diff.
+function step_one() {
+   Log_Normal "Directory: $dir"
+   cleanup
+   Log_Normal "Extracting ../Archives/$file"
+   aunpack "../Archives/$file"
+   cp -a "$dir" "$dir.old"
+}
+
+function step_two() {
+   diff -Nur "$dir.old" "$dir" | mtail --config /System/Settings/Scripts/diff.mtailrc
+   echo "*******************************************************************************"
+   echo
+   ls "$recipedir"/*.patch &> /dev/null && {
+      echo "Existing patches:"
+      ls "$recipedir"/*.patch
+      echo
+   }
+   Log_Question "Enter patch name (without path or .patch extension): "
+   read patchname
+   if [ "$patchname" != "" ]
+   then
+      Log_Question "Please write a description: "
+      read description
+      for i in `seq -w 20`
+      do
+         ls "$recipedir/$i"*".patch" &> /dev/null || break
+      done
+      patchfilename="$recipedir/$i-$patchname.patch"
+      Log_Normal "Writing $patchfilename ..."
+      echo "$description" > "$patchfilename"
+      echo >> "$patchfilename"
+      diff -Nur "$dir.old" "$dir" >> "$patchfilename"
+   fi
+   cleanup
+}
+
+if Boolean "clean"
+then
+   cleanup
+elif [ -e "$dir.old" ]
+then
+   step_two
+else
+   step_one
+fi
+
