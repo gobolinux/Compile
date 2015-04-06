@@ -129,6 +129,15 @@ then
    switchurls="${switchurls}s|^url=.*$|url=\"$newurl\"|g;"
 fi
 
+# if both old and new version are in "x.y.z" format...
+if echo "$oldversion;;;$newversion" | grep -q "^[^.]\+\.[^.]\+\.[^.]\+;;;[^.]\+\.[^.]\+\.[^.]\+$"
+then
+   # ...replace all "x.y" occurrences too
+   oldmajormiddle=`echo "$oldversion" | cut -d. -f 1-2`
+   newmajormiddle=`echo "$newversion" | cut -d. -f 1-2`
+   switchmajormiddle="s|$oldmajormiddle|$newmajormiddle|g;"
+fi
+
 # convert old recipe type to new recipe type
 # recipe type compileprogram is renamed to configure
 sed -i 's/is_\(.*\)=yes/recipe_type=\1/
@@ -140,7 +149,7 @@ Update_Recipe() {
    Quiet pushd $recipedir
    # Version-specific data should be stripped out
    mv Recipe Recipe.old
-   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${switchurls}" Recipe.old |\
+   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${switchurls};${switchmajormiddle}" Recipe.old |\
    awk '
    BEGIN { skip=0; }
    /^file_md5s=\([^)]*$/ { skip=2; }
