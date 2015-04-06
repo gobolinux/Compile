@@ -223,7 +223,7 @@ then
    then
       # Sometimes writes to symlinks let files appear in a previous directory of the same program.
       # We try to detect these cases here, moving files written there to the appropriate place.
-      if wrong_version=`ls "./$installPackageDir" 2> /dev/null | grep -qv "$version\|Current\|Settings\|Variable"`
+      if wrong_version=`ls "./$installPackageDir" 2> /dev/null | egrep -v "$version\|Current\|Settings\|Variable"`
       then
          cp -a $verbose ./$installPackageDir/$wrong_version/* $installPackageDir/$version/
       fi
