@@ -192,13 +192,21 @@ Update_Recipe() {
 
    if [ "$url" -o "$urls" ]
    then
+      if [ "$newversion" = "git" ]
+      then
+         sed -i "s,\(^url=.*\),git=\"$url\",g" "$recipedir/Recipe"
+      fi
       Log_Normal "Downloading source code..."
       if ! FetchArchive "$recipedir/Recipe"
       then
          rm -rf "$recipedir"
          Die "Could not download $arch source code, aborting."
       fi
-      if [ "$url" ]
+      if [ "$newversion" = "git" ]
+      then
+         # Do not append new file_size/file_md5 entries
+         true
+      elif [ "$url" ]
       then
          [ -z "${file}" ] && file="`basename $url`"
          filesize="`Get_Size $compileArchivesDir/$file`"
