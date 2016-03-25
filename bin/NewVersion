@@ -146,10 +146,14 @@ s/compileprogram/configure/' Recipe
 Update_Recipe() {
    recipedir=$1
    arch=$2
+   if [ "$compileRecipeAuthor" != "" ]
+   then startline=2
+   else startline=1
+   fi
    Quiet pushd $recipedir
    # Version-specific data should be stripped out
    mv Recipe Recipe.old
-   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${switchurls};${switchmajormiddle}" Recipe.old |\
+   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${startline}~1${switchmajormiddle};${switchurls}" Recipe.old |\
    awk '
    BEGIN { skip=0; }
    /^file_md5s=\([^)]*$/ { skip=2; }
