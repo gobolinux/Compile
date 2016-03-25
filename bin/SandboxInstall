@@ -253,13 +253,13 @@ then
       cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
       cp -a $verbose ./$goboSettings/* $installPackageDir/Settings 2>/dev/null
       cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
+      rm -rf ./usr/local
+      cp -a $verbose ./usr/* $installPackageDir/$version 2>/dev/null
+      rm -rf ./usr 2> /dev/null
       rm -f $installPackageDir/$version/etc/mtab
       rmdir --ignore-fail-on-non-empty $installPackageDir/$version/etc 2> /dev/null
       rm -rf ./$goboSystem/Index
       rm -rf ./$goboSettings
-      rm -rf ./usr/local
-      rm ./usr/* 2> /dev/null
-      rmdir ./usr 2> /dev/null
 
       rmdir $sandbox_rw/System 2> /dev/null
    fi
