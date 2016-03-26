@@ -284,7 +284,11 @@ function respawn_with_runner() {
    if [ -z "$GOBOLINUX_RUNNER" ] && Quiet which Runner
    then
       export recipe
-      exec Runner -d "${recipedir}/Resources/Dependencies" $0 "${savedOptions[@]}"
+      Runner -d "${recipedir}/Resources/Dependencies" $0 --symlink=no "${savedOptions[@]}"
+      if [ $? = 0 ]
+      then exec SymlinkProgram "$appname" "$versionnumber"
+      else exit $?
+      fi
    fi
    unset GOBOLINUX_RUNNER
 }
