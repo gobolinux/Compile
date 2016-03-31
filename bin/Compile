@@ -285,7 +285,7 @@ function respawn_with_runner() {
    then
       export recipe
       Runner -d "${recipedir}/Resources/Dependencies" $0 --symlink=no "${savedOptions[@]}"
-      if [ $? = 0 ]
+      if [ $? = 0 ] && ! Boolean "no-build" && ! Boolean "no-symlink"
       then exec SymlinkProgram "$appname" "$versionnumber"
       else exit $?
       fi
