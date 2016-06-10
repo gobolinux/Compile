@@ -284,7 +284,7 @@ function setup_sandbox_options() {
 ##################################################
 
 function respawn_with_runner() {
-   if [ -z "$GOBOLINUX_RUNNER" ] && Quiet which Runner
+   if ! Boolean "no-build" && [ -z "$GOBOLINUX_RUNNER" ] && Quiet which Runner
    then
       if Boolean "verbose"
       then local quiet=
@@ -300,7 +300,7 @@ function respawn_with_runner() {
       export wrapup_wanted=no
       Runner ${quiet} ${deps} $0 --symlink=no "${savedOptions[@]}"
       ret=$?
-      if [ $ret = 0 ] && ! Boolean "no-build" && ! Boolean "no-symlink"
+      if [ $ret = 0 ] && ! Boolean "no-symlink"
       then
          SymlinkProgram "$appname" "$versionnumber"
       fi
