@@ -143,13 +143,46 @@ fi
 sed -i 's/is_\(.*\)=yes/recipe_type=\1/
 s/compileprogram/configure/' Recipe
 
+Escaped() {
+   echo "$@" | sed 's,\.,\\.,g'
+}
+
 Update_Recipe() {
    recipedir=$1
    arch=$2
+   oldversion_escaped=$(Escaped $oldversion)
+   newversion_escaped=$(Escaped $newversion)
+   if [ "$compileRecipeAuthor" != "" ]
+   then startline=2
+   else startline=1
+   fi
    Quiet pushd $recipedir
    # Version-specific data should be stripped out
    mv Recipe Recipe.old
-   sed "s:${oldversion%_bin}:${newversion%_bin}:g;${switchurls};${switchmajormiddle}" Recipe.old |\
+   if [ "${switchmajormiddle}" -a "${switchurls}" ]
+   then
+      # Test case note: use a different minor on the version and on the url
+      # e.g., for minor in $(seq 9); do NewVersion Lua 5.1.9 http://www.lua.org/ftp/lua-5.1.${minor}.tar.gz; done
+      switchvar="${switchurls}${startline}~1$(Escaped ${switchmajormiddle})"
+      sed_args="${switchvar};s:${oldversion_escaped%_bin}:${newversion_escaped%_bin}:g"
+   elif [ "${switchmajormiddle}" ]
+   then
+      # Test case note: use a minor different from that of the oldversion
+      # e.g., for minor in $(seq 9); do NewVersion Lua 5.1.$minor; done
+      switchvar="$(Escaped ${switchmajormiddle})"
+      sed_args="s:${oldversion_escaped%_bin}:${newversion_escaped%_bin}:g;${switchvar}"
+   elif [ "${switchurls}" ]
+   then
+      # Test case note: remove or add a digit from the last known version, and provide a URL
+      # e.g., NewVersion Lua 5.9 http://www.lua.org/ftp/lua-5.9.tar.gz
+      switchvar=${switchurls}
+      sed_args="${switchvar};s:${oldversion_escaped%_bin}:${newversion_escaped%_bin}:g"
+   else
+      # Test case note: remove or add a digit from the last known version
+      # e.g., NewVersion Lua 5.9, NewVersion Lua 5.9.0.1
+      sed_args="s:${oldversion_escaped%_bin}:${newversion_escaped%_bin}:g"
+   fi
+   sed "${sed_args}" Recipe.old |\
    awk '
    BEGIN { skip=0; }
    /^file_md5s=\([^)]*$/ { skip=2; }
