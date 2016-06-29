@@ -85,10 +85,52 @@ function Verify_Files() {
    return 0
 }
 
+function get_url_basename() {
+   local url="$1"
+   if [ "$cached_bname_input" = "$url" ]
+   then
+      echo "$cached_bname_output"
+      return
+   fi
+   bname=`basename "$url" .tar.gz`
+   bname=`basename "$bname" .tar.bz2`
+   bname=`basename "$bname" .tar.xz`
+   bname=`basename "$bname" .tgz`
+   bname=`basename "$bname" .tbz2`
+   bname=`basename "$bname" .zip`
+   bname=`basename "$bname" .tar.lzma`
+   cached_bname_input="$url"
+   cached_bname_output="$bname"
+   echo "$bname"
+}
+
+function Package_Name_From_Url() {
+   local url="$1"
+   local bname=$(get_url_basename "$url")
+   local packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
+   local deduced=`DeduceName "README" "$packagename"`
+   [ "$deduced" ] && packagename=$deduced
+   echo "$packagename"
+}
+
+function Version_Number_From_Url() {
+   local url="$1"
+   local bname=$(get_url_basename "$url")
+   local versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
+   echo "$versionnumber"
+}
+
 Find_Recipe() {
    nameorrecipe="$1"
    versionandrevision="$2"
    tarballurl="$3"
+   
+   if Has_Substring "$versionandrevision" ":/"
+   then
+      tarballurl="$2"
+      versionandrevision=$(Version_Number_From_Url "$tarballurl")
+   fi
+   
    # support for direct recipe passing
    if [ -f "${nameorrecipe}/Recipe" -o "`echo ${nameorrecipe} | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "${nameorrecipe}"
    then
@@ -112,7 +154,17 @@ Find_Recipe() {
       } || {
          Log_Error "Could not find recipe for $app $versionandrevision"
          GetAvailable -t recipe|cut -d' ' -f2|uniq|Corrections --log-name Compile --stdin "$app">&2
-         Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
+         if Is_Empty "$(Arg 3)"
+         then Die_With $errorNotFound "Could not find recipe for $app $versionandrevision"
+         else
+            Log_Normal "Will attempt to create one based on URL '$(Arg 3)'..."
+            if MakeRecipe --batch "$(Arg 1)" "$(Arg 2)" "$(Arg 3)"
+            then
+               Log_Normal "Will attempt to use newly created recipe..."
+               String_To_Array rawrecipes "$(FindPackage $noweb --full-list --type=recipe "$app" "$version" 2> /dev/null)"
+            else Die_With $errorNotFound "Could not create recipe for $app $versionandrevision"
+            fi
+         fi
       }
       Log_Normal "Found recipe for $app $versionandrevision"
    fi

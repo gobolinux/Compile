@@ -105,24 +105,8 @@ else
    url=`echo "$source_url" | sed -r 's|http://.*.sourceforge.net(/sourceforge)?/|$httpSourceforge/|'`
    url=`echo "$url" | sed 's|ftp://ftp\.gnu\.org/gnu/|$ftpGnu/|'`
 
-   bname=`basename "$source_url" .tar.gz`
-   bname=`basename "$bname" .tar.bz2`
-   bname=`basename "$bname" .tar.xz`
-   bname=`basename "$bname" .tgz`
-   bname=`basename "$bname" .tbz2`
-   bname=`basename "$bname" .zip`
-   bname=`basename "$bname" .tar.lzma`
-
-   if [ ! "$packagename" ]
-   then
-      packagename=`echo "$bname" | sed 's/-[[:digit:]].*//g'`
-      deduced=`DeduceName "README" "$packagename"`
-      [ "$deduced" ] && packagename=$deduced
-   fi
-   if [ ! "$versionnumber" ]
-   then
-      versionnumber=`echo "$bname" | sed 's/.*-\([[:digit:]].*\)/\1/;s/\///g;'`
-   fi
+   [ "$packagename"   ] ||   packagename=$(Package_Name_From_Url   "$source_url")
+   [ "$versionnumber" ] || versionnumber=$(Version_Number_From_Url "$source_url")
 fi
 
 # Enforce some naming conventions
