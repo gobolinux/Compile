@@ -148,10 +148,6 @@ trap "sandbox_die 'Interrupted...'" SIGHUP SIGINT SIGTERM
 
 Log_Verbose "Preparing the sandbox..."
 
-if [ ! -h ${goboDevices}/root ]
-then ln -s / ${goboDevices}/root
-fi
-
 # Mount unionfs
 
 if [ "$goboIndex" ]
