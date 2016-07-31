@@ -267,6 +267,7 @@ cat Recipe | perl -e '
       without => "array",
       create_dirs_first => "bool",
       python_options => "array",
+      python_major => "string",
       override_default_options => "bool",
       build_script => "string",
       cvs => "string",
