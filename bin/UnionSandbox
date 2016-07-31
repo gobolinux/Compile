@@ -187,7 +187,11 @@ then
     # delete entries in sandbox if they are legacy symlinks
     echo "[ -L $goboDevices ] && rm $goboDevices" >> "${sandbox_mp}/.wrapper"
     echo "[ -L $goboStatus ] && rm $goboStatus" >> "${sandbox_mp}/.wrapper"
-    echo "mkdir -p $goboDevices; mount -t tmpfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
+    if grep -q devtmpfs "$goboStatus/filesystems"
+    then devfs=devtmpfs
+    else devfs=tmpfs
+    fi
+    echo "mkdir -p $goboDevices; mount -t $devfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
     echo "mkdir -p $goboStatus; mount -t proc none $goboStatus" >> "${sandbox_mp}/.wrapper"
     echo "[ -e \"${goboLibraries}/udev/devices/\" ] && cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
     if Executable_Exists_In_Path "udevadm"
