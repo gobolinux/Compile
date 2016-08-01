@@ -269,10 +269,7 @@ function setup_sandbox_options() {
    do
       unmanagedlist="${unmanaged}${unmanagedlist:+:$unmanagedlist}"
    done
-   if [ "$goboIndex" ]
-   then sandboxopts=()
-   else sandboxopts=(${sandbox_options:+"${sandbox_options[@]}"})
-   fi
+   sandboxopts=(${sandbox_options:+"${sandbox_options[@]}"})
 
    subdirs=$(echo "${odir%/}" | tr '/' '\n' | wc -l)
    [ "$needs_build_directory" ] && subdirs=$[${subdirs}+1]
