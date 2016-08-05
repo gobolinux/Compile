@@ -19,7 +19,15 @@ cmake_do_configuration(){
       val=`echo $i | cut -d= -f 2-`
       eval export $var=\'$val\'
    done
-   cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_INSTALL_PREFIX="${target}" ${config[@]} "${sourcedir}"
+   cmake \
+      -DCMAKE_VERBOSE_MAKEFILE=ON \
+      -DCMAKE_INSTALL_PREFIX="${target}" \
+      -DCMAKE_INSTALL_SYSCONFDIR="${settings_target}" \
+      -DCMAKE_INSTALL_LOCALSTATEDIR="${variable_target}" \
+      -DCMAKE_INSTALL_MANDIR="${target}/man" \
+      -DCMAKE_INSTALL_LIBEXECDIR="${target}/libexec" \
+      -DSYSCONFDIR="${settings_target}" \
+       ${config[@]} "${sourcedir}"
 }
 
 cmake_do_build() {
