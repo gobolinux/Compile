@@ -170,11 +170,12 @@ For_Each mapmounts 'lhs=$(echo $each | cut -d= -f1)
     '
 [ "$error" = "false" ] || sandbox_die "Unable to mount map areas in chroot"
 
-# Create legacy links
+# Create legacy links and directories
 if [ ! "$goboIndex" ]
 then cp -ar $verbose /usr "$sandbox_mp"
 fi
 cp -a $verbose `symlinks_in_root` "$sandbox_mp"
+mkdir -p "${sandbox_mp}/run"
 
 # Create wrapper
 newpwd="$PWD"
