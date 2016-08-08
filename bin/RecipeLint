@@ -27,6 +27,11 @@ then noweb=--no-web
 else noweb=
 fi
 
+if wget --help | grep -q no-check-certificate
+then wget="wget --no-check-certificate"
+else wget="wget"
+fi
+
 workingdir=$PWD
 lintdir=`Temporary_Dir`
 
@@ -433,12 +438,12 @@ test_urls() {
       then msg "Checking URL..."
       else msg "Downloading file ($file_size bytes)..."
       fi
-      if ! wget --quiet $spider --timeout=20 --tries=3 "$url"
+      if ! $wget --quiet $spider --timeout=20 --tries=3 "$url"
       then
          if [ "$mirror_url" ]
          then
             WARN "Primary URL unreacheable, trying the mirror instead..."
-            wget --quiet $spider --timeout=20 --tries=3 "$mirror_url"
+            $wget --quiet $spider --timeout=20 --tries=3 "$mirror_url"
          fi
       fi
    }
@@ -820,7 +825,7 @@ test_resources() {
             then
                WARN "Dependency $prog not available locally (web access disabled)."
             else
-               if ! wget -q -O /dev/null http://svn.gobolinux.org/recipes/revisions/$prog
+               if ! $wget -q -O /dev/null http://svn.gobolinux.org/recipes/revisions/$prog
                then ERROR "Dependency $prog not available."
                else WARN  "Dependency $prog is not available for public access yet."
                fi
