@@ -268,7 +268,7 @@ function do_fetch() {
             [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedir}" ;;
             [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
             [Uu]) nofetch=yes; skippatching=yes ;;
-            [Cc]) exit 0 ;;
+            [Cc]) exit 1 ;;
             esac # esac is ridiculous.
          else skippatching=yes
          fi
