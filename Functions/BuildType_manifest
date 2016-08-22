@@ -5,7 +5,12 @@ manifest_do_install() {
    do
       src=`echo $i | cut -d: -f1`
       dst=`echo $i | cut -d: -f2-`
-      fullsrc="${dir}/${src}"
+      if [ $(basename $(pwd)) != $(basename "${dir}") ]
+      then
+         fullsrc="${dir}/${src}"
+      else
+         fullsrc="${src}"
+      fi
       fulldst="${installprefix}/${dst}"
       $sudo_exec mkdir -p $(dirname "$fulldst")
       if Ends_With "/" "$fulldst"
