@@ -247,7 +247,7 @@ function Add_Use_Flags_Options_To_Array() {
 
 #
 # do_fetch
-#    Fetchs sources
+#    Fetches sources
 # returns:
 #  0 <- success
 #  1 <- Error fetching sources
