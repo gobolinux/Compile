@@ -1,7 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 source ScriptFunctions
 Import OptionParser
+Import GoboLinux
 
 helpOnNoArguments=yes
 scriptDescription="Compile patch streamlining tool. Run it once, edit the sources and run it again."
@@ -10,6 +11,10 @@ scriptUsage="<program_name>"
 scriptExample="Bullet"
 Add_Option_Boolean "c" "clean" "Cleanup directories in Archives."
 Parse_Options "$@"
+
+Parse_Conf Compile.conf
+
+cd "$compileSourcesDir"
 
 if [ $(basename $(readlink -f .)) != "Sources" ]
 then
@@ -32,6 +37,11 @@ if [ -z "$file" ]
 then
    file=`basename "$url"`
 fi
+
+while Has_Substring "$dir" "/"
+do
+   dir=`dirname "$dir"`
+done
 
 function cleanup() {
    if [ -d "$dir" -o -d "$dir.old" ]
