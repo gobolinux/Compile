@@ -789,7 +789,7 @@ function gather_common_options() {
 
 function compile_recipe() {
 
-   Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch
+   Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch || wrap_fail "Fetching sources failed"
    Boolean "no-build" && exit 0
    is_scm_recipe || { is_function_set do_unpack && do_unpack; }
    Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"
