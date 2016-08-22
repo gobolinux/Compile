@@ -245,6 +245,14 @@ function Add_Use_Flags_Options_To_Array() {
    done
 }
 
+#
+# do_fetch
+#    Fetchs sources
+# returns:
+#  0 <- success
+#  1 <- Error fetching sources
+#  2 <- Downloaded files were corrupted
+#  3 <- fetch cancelled by user
 function do_fetch() {
    savedir="--save-to $(echo ${sourcedir}|sed s/"\(.*\)\/${save_directory}.*"/"\1"/) --save-directory ${save_directory}"
    if is_scm_recipe
@@ -268,7 +276,7 @@ function do_fetch() {
             [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedir}" ;;
             [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
             [Uu]) nofetch=yes; skippatching=yes ;;
-            [Cc]) exit 1 ;;
+            [Cc]) Log_Error "Fetch cancelled by user."; return 3 ;;
             esac # esac is ridiculous.
          else skippatching=yes
          fi
@@ -279,18 +287,24 @@ function do_fetch() {
             return 1
          fi
       fi
-      [ "$nofetch" = "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || Die "Error fetching snapshot from repository."
+      [ "$nofetch" = "yes" ] || in_host FetchArchive $verbose $batch $savedir "$recipe" "$archrecipe" || {
+         Log_Error "Error fetching snapshot from repository."
+         return 1
+      }
    else
       if ! Boolean "no-web"
       then
-         in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || Die "Error fetching archive(s)."
+         in_host FetchArchive $verbose $batch "$recipe" "$archrecipe" || {
+            Log_Error "Error fetching archive(s)."
+            return 1
+         }
       else
          Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
          result=$?
          case $result in
-         1) Die "Files are corrupted. Exiting.";;
-         2) Boolean "batch" || Ask_Continue "Continue anyway?";;
-         3) Die "Files are not available. Exiting.";;
+         1) Log_Error "Files are corrupted. Exiting."; return 2 ;;
+         2) Boolean "batch" || Ask_Continue "Continue anyway?" || return 3 ;;
+         3) Log_Error "Files are not available. Exiting."; return 1 ;;
          esac
       fi
    fi
