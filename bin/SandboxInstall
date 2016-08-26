@@ -223,9 +223,8 @@ then
    then
       # Sometimes writes to symlinks let files appear in a previous directory of the same program.
       # We try to detect these cases here, moving files written there to the appropriate place.
-      wrong_version=`ls "./$installPackageDir" 2> /dev/null | grep -v "$version\|Current\|Settings\|Variable"`
-      if [ ! -z $wrong_version ]
-      then
+      ls "./$installPackageDir" 2> /dev/null | grep -v "$version\|Current\|Settings\|Variable" | while read wrong_version
+      do
          installPackageDirWrongVersion="./$installPackageDir/$wrong_version"
          installPackageDirVersion="$installPackageDir/$version"
          Log_Verbose "Fixing files copied into previous version"
@@ -234,7 +233,7 @@ then
             Log_Verbose "$installPackageDirWrongVersion/$file -> $installPackageDirVersion/"
             cp -a "$installPackageDirWrongVersion/$file" "$installPackageDirVersion/"
          done
-      fi
+      done
 
       # Aggressively move everything that was installed into other programs' dirs
       # back into the area of the one we are installing.
