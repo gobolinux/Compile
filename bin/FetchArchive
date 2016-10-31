@@ -24,11 +24,16 @@ scriptUsage="<recipe> [arch-recipe]"
 scriptExample="$compileRecipeDir/K3B/0.10/Recipe"
 Add_Option_Entry   "d" "save-directory" "Rename the directory into which the archive is unpacked/files checked out." ""
 Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compileArchivesDir"
+Add_Option_Entry   "P" "program" "Program name" "Bash"
+Add_Option_Entry   "V" "version-number" "Version number with revision" "4.0-r1"
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Parse_Options "$@"
 
 savedir=$(Entry "save-to")
 sourcedir=$(Entry "save-directory")
+
+programname=$(Entry "program")
+versionnumber=$(Entry "version-number")
 
 if wget --help | grep -q no-check-certificate
 then wget="wget --no-check-certificate"
@@ -177,8 +182,16 @@ do
       fi
       if [ -z "$fetch" ]
       then
-         # Fail! No more mirrors!
-         return 1
+         # No more mirrors in recipe
+         if [ -n "$programname" -a -n "$versionnumber" ]
+         then
+            version_no_rev="${versionnumber%-r*}"
+            # Try gobolinux.org mirror
+            $wget -O "$file" -c --passive-ftp "https://gobolinux.org/mirror_url/$programname/$version_no_rev/$file"
+            return $?
+         else
+            return 1
+         fi
       fi
       local file="${files[fileindex]}"
       unset LANG LC_ALL # So that wget's output is not translated
