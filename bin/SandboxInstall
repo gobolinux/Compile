@@ -203,7 +203,7 @@ then
    rm -rf ./$goboVariable/tmp/{*,.*} &> /dev/null
    rm -rf ./$goboVariable/cache/*
    rm -rf ./$goboVariable/log/*
-   rm -rf ./$goboVariable/run/mount/utab
+   rm -rf ./$goboVariable/{run,}/mount/utab
    rm -rf ./$goboVariable/scrollkeeper
    rm -f  ./$goboSettings/{passwd,passwd-,group,group-}
    rm -f  ./$goboSettings/mtab
