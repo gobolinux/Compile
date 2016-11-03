@@ -301,6 +301,7 @@ function respawn_with_runner() {
 
       if [ $ret = 0 ] && ! Boolean "no-symlink"
       then
+         check_if_part_of_meta_compiled_by_itself
          SymlinkProgram "$appname" "$versionnumber"
       fi
       if [ $ret = 0 ]
