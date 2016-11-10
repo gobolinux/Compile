@@ -296,7 +296,7 @@ function respawn_with_runner() {
 
       export recipe
       export wrapup_wanted=no
-      Runner ${quiet} ${deps} $0 --symlink=no "${savedOptions[@]}"
+      Runner ${quiet} ${deps} $0 --symlink=no --no-dependencies "${savedOptions[@]}"
       ret=$?
 
       if [ $ret = 0 ] && ! Boolean "no-symlink"
@@ -845,8 +845,8 @@ function compile_recipe() {
 
 function main() {
    prepare_environment
-   respawn_with_runner
    check_dependencies
+   respawn_with_runner
    Get_Dependency_Variables "${recipedir}/Resources/Dependencies"
    source_recipe
    check_compile_version
