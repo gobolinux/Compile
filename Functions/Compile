@@ -287,7 +287,7 @@ function do_fetch() {
             return 1
          fi
       fi
-      [ "$nofetch" = "yes" ] || in_host FetchArchive --program "$appname" --version "$versionnumber" $verbose $batch $savedir "$recipe" "$archrecipe" || {
+      [ "$nofetch" = "yes" ] || in_host FetchArchive -P "$appname" -V "$versionnumber" $verbose $batch $savedir "$recipe" "$archrecipe" || {
          Log_Error "Error fetching snapshot from repository."
          return 1
       }
