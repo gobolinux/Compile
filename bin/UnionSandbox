@@ -47,9 +47,9 @@ unionbackend=`Union_Backend`
 [ "$unionSandboxRW" = "" ] && Die "Please set unionSandboxRW in Settings/Scripts/Directories.conf"
 
 sandbox_mp=`mktemp -d "${unionSandboxMP}.tmp.XXXXXXXXXXX"` 2>/dev/null || Die "Unable to create UnionSandbox mount point at $unionSandboxMP"
-chmod a+rx "$sandbox_mp"
 sandbox_rw=`mktemp -d "${unionSandboxRW}.tmp.XXXXXXXXXXX"` 2>/dev/null || Die "Unable to create UnionSandbox read/write mount point at $unionSandboxRW"
-chmod a+rx "$sandbox_rw"
+sandbox_tmp=`mktemp -d "${unionSandboxRW}.tmp.XXXXXXXXXXX"` 2>/dev/null || Die "Unable to create UnionSandbox workdir mount point at $unionSandboxRW"
+chmod a+rx "$sandbox_mp" "$sandbox_rw" "$sandbox_tmp"
 
 function RealPath {
     readlink -f $@
@@ -105,6 +105,7 @@ function cleanup() {
        Union_Umount ${unionbackend} ${sandbox_mp}${each} || { echo "Error unmounting ${sandbox_mp}${each}"; error=true; }
        Quiet rmdir ${sandbox_mp}${each}
        Quiet rmdir ${sandbox_rw}${each}
+       Quiet rmdir ${sandbox_tmp}${each}
        '
     # Do not attempt to 'rm -rf' if some unmount failed.
     [ "$error" = "true" ] && exit 1
@@ -122,7 +123,7 @@ function cleanup() {
 	cp -ra $verbose "$sandbox_rw/." "$writedir"
 	Quiet mv $sandbox_mp/* $writedir
     fi
-    rm -rf $sandbox_rw
+    rm -rf $sandbox_rw $sandbox_tmp
     rmdir $sandbox_mp
 
     exit $result
@@ -139,7 +140,8 @@ function mount_union() {
     dir=$1
     Assert_Dir ${sandbox_mp}${dir}
     Assert_Dir ${sandbox_rw}${dir}
-    uniondirs=`echo "${sandbox_rw}${dir}=rw:${dir}=ro" | sed "s,$unionfsPackageDir=ro,$unionfsPackageDir=rw,g"`
+    Assert_Dir ${sandbox_tmp}${dir}
+    uniondirs=`echo "${sandbox_rw}${dir}=rw:${dir}=ro:${sandbox_tmp}${dir}=tmp" | sed "s,$unionfsPackageDir=ro,$unionfsPackageDir=rw,g"`
     Union_Mount "$unionbackend" "$uniondirs" "${sandbox_mp}${dir}"
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 }

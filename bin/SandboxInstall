@@ -37,7 +37,7 @@ Dir_Set Sandbox || Set_Boolean "no-sandbox"
 
 if Dir_Set Sandbox
 then
-   Is_Writable "$goboExecutables" || Verify_Superuser
+   Is_Writable "$goboPrograms" || Verify_Superuser
 fi
 
 ### Version ####################################################################
