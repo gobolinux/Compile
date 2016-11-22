@@ -155,6 +155,10 @@ then
    sandbox_rw="$installPackageDir/$version/.SandboxInstall_Root"
    rm -rf -- "$sandbox_rw"
    #map_settings="--map ${default_settings}=${settings}${unmanagedmap:+:${unmanagedmap}}"
+   if [ -z "$unmanagedmap" ]
+   then map_settings=
+   else map_settings="--map ${unmanagedmap}"
+   fi
    sandbox="UnionSandbox $verbose --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
 else
    sandbox="FiboSandbox $verbose --sandbox $allowed ${unmanagedmap:+--map ${unmanagedmap}} --"
