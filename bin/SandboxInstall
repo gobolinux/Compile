@@ -273,6 +273,17 @@ then
       rm -rf ./$goboSettings
 
       rmdir $sandbox_rw/System 2> /dev/null
+
+      # lib64 -> lib
+      if [ -d $installPackageDir/$version/lib64 ]
+      then
+          libfiles=$(find $installPackageDir/$version/lib -type f 2> /dev/null | wc -l | awk {'print $1'})
+          if [ $libfiles -eq 0 ]
+          then
+              rmdir $installPackageDir/$version/lib
+              mv $installPackageDir/$version/{lib64,lib}
+          fi
+      fi
    fi
 
    rm -f $installPackageDir/$version/share/info/dir
