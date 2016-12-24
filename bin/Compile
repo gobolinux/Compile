@@ -310,7 +310,7 @@ function respawn_with_runner() {
          wrapup
       fi
       exit $ret
-   elif [ -z "$GOBOLINUX_RUNNER" ]
+   elif ! Boolean "no-build" && [ -z "$GOBOLINUX_RUNNER" ]
    then
          Log_Normal "Running without dependency-based namespace (Runner not available)."
    fi
