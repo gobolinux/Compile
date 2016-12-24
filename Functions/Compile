@@ -582,7 +582,6 @@ function Fix_Legacy_Recipe_Types() {
    [ "$is_compileprogram" = "yes" ] && recipe_type="configure"
    [ "$is_makefile" = "yes" ] && recipe_type="makefile"
    [ "$is_python" = "yes" ] && recipe_type="python"
-   [ "$is_perl" = "yes" ] && recipe_type="perl"
    [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
    [ "$is_meta" = "yes" ] && recipe_type="meta"
    [ "$is_scons" = "yes" ] && recipe_type="scons"
