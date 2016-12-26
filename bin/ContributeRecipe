@@ -21,6 +21,7 @@ source ScriptFunctions
 Import GoboLinux
 Import OptionParser
 Import Versions
+Import Archive
 
 Parse_Conf Compile/Compile.conf
 
