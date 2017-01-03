@@ -21,6 +21,7 @@ source ScriptFunctions
 Import GoboLinux
 Import OptionParser
 Import Versions
+Import Archive
 
 Parse_Conf Compile/Compile.conf
 
@@ -146,8 +147,7 @@ elif ! wget -O - -q --post-file=temp-$$/report "$submissionTarget"
 then
    Log_Error "There was an error using wget to submit your recipe."
    Log_Error "This may be a temporary network problem or a firewall issue."
-   Log_Terse "You can also submit your recipe by emailing the packed"
-   Log_Terse "tarball to gobolinux-recipes@lists.gobolinux.org"
+   Log_Terse "Please check your internet connection and try again."
 fi
 
 rm -rf temp-$$ empty-$$

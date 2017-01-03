@@ -222,7 +222,6 @@ cat Recipe | perl -e '
    %decls = (
       is_compileprogram => "bool",
       is_makefile => "bool",
-      is_perl => "bool",
       is_python => "bool",
       is_xmkmf => "bool",
       is_manifest => "bool",
@@ -294,7 +293,6 @@ cat Recipe | perl -e '
       hg => "string",
       hgs => "array",
       unmanaged_files => "array",
-      perl_options => "array",
       part_of => "string",
       post_install_message => "string"
    );
@@ -569,7 +567,7 @@ test_recipe() {
    if [ ! "$recipe_type" ]
    then
    {
-       if [ "$is_compileprogram" -o "$is_makefile" -o "$is_python" -o "$is_perl" \
+       if [ "$is_compileprogram" -o "$is_makefile" -o "$is_python" \
             -o "$is_xmkmf" -o "$is_meta" -o "$is_manifest" ]
        then
            WARN "Recipe type is declarated in deprecated style."
@@ -577,7 +575,6 @@ test_recipe() {
            [ "$is_compileprogram" = "yes" ] && recipe_type="configure"
            [ "$is_makefile" = "yes" ] && recipe_type="makefile"
            [ "$is_python" = "yes" ] && recipe_type="python"
-           [ "$is_perl" = "yes" ] && recipe_type="perl"
            [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
            [ "$is_meta" = "yes" ] && recipe_type="meta"
            [ "$is_scons" = "yes" ] && recipe_type="scons"
@@ -588,7 +585,7 @@ test_recipe() {
    }
    fi
    case "$recipe_type" in
-     (configure | makefile | cmake | python | perl | xmkmf | meta | scons | manifest | cabal | waf)
+     (configure | makefile | cmake | python | xmkmf | meta | scons | manifest | cabal | waf)
        false;;
    esac && ERROR "Unknown Recipe type $recipe_type specified"
    [ "$recipe_type" = "meta" ] && {
@@ -667,8 +664,7 @@ test_recipe() {
       do_build=configure,makefile,cmake,python,cabal,waf
       do_install=configure,makefile,cmake,xmkmf,python,scons,cabal,waf
       needs_build_directory=configure
-      without=perl
-      create_dirs_first=configure,makefile,cmake,perl,manifest
+      create_dirs_first=configure,makefile,cmake,manifest
       python_options=python
       override_default_options=python,scons,configure,cabal,waf
       build_script=python
@@ -797,6 +793,9 @@ test_resources() {
    then
       grep -q "^# \*Warning\*" $depfile && {
          ERROR "Dependencies file contains unmatched library dependencies."
+      }
+      grep -q "^Perl-" $depfile && {
+         ERROR "Dependencies file contains deprecated Perl module dependency:\n$(grep "^Perl-" $depfile)\n\nUse instead:\n$(grep "^Perl-" $depfile | sed 's,Perl-,CPAN:,g;s,-,::,g')"
       }
       missing_deps() {
          CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist $name $version recipe $PWD | while read d_program d_version d_type d_url;
