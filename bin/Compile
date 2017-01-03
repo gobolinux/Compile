@@ -144,9 +144,35 @@ function wrapup() {
       # Add information inside binary package Resources directory
       Quiet mkdir -p $target/Resources
 
+      # Respawning with Runner has its oddities. We need to evaluate the recipe
+      # again to get the $url info needed to write the PackageSource meta-data.
+      source_recipe
+
       # Save use flags information
       echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
       echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
+
+      # Save PackageSource
+      local distro="GoboLinux $(cat $goboSettings/GoboLinuxVersion)"
+      local archinfo="$(uname -a)"
+      local fileinfo=
+      if [ "${urls[*]}" ]
+      then fileinfo=$(printf "[File] %s\n" "${urls[@]}")
+      elif [ "$url" ]
+      then fileinfo=$(printf "[File] %s\n" "$url")
+      elif [ "$cvs" ]
+      then fileinfo=$(printf "[File] %s\n" "$cvs")
+      elif [ "$svn" ]
+      then fileinfo=$(printf "[File] %s\n" "$svn")
+      elif [ "$git" ]
+      then fileinfo=$(printf "[File] %s\n" "$git")
+      elif [ "$brz" ]
+      then fileinfo=$(printf "[File] %s\n" "$bzr")
+      elif [ "$hg" ]
+      then fileinfo=$(printf "[File] %s\n" "$hg")
+      fi
+      local pkgsource=$(printf "%s\n[Distribution] %s\n[Host] %s\n" "$fileinfo" "$distro" "$archinfo")
+      echo "$pkgsource" | $sudo_exec tee "$target/Resources/PackageSource" >/dev/null || wrap_fail "Failed installing PackageSource file"
 
       Log_Normal "Generating package's build information..."
       GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
