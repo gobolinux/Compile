@@ -37,6 +37,7 @@ build_python_options() {
       install)
          default_python_options=(
             "--prefix $target"
+            "--exec-prefix $target"
          )
          ;;
       esac
