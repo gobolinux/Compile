@@ -254,6 +254,7 @@ cat Recipe | perl -e '
       build_variables => "array",
       install_variables => "array",
       make_variables => "array",
+      scons_variables => "array",
       configure => "string",
       make => "string",
       makefile => "string",
