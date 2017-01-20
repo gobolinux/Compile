@@ -107,7 +107,8 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 
 [ -e "Recipe" ] || Die "Recipe file not found."
 
-grep -v '# Recipe for version' Recipe > Recipe.old
+# Use -a to avoid considering the file as binary if there are multibyte characters
+grep -av '# Recipe for version' Recipe > Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
 then
@@ -130,7 +131,7 @@ then
 fi
 
 # if both old and new version are in "x.y.z" format...
-if echo "$oldversion;;;$newversion" | grep -q "^[^.]\+\.[^.]\+\.[^.]\+;;;[^.]\+\.[^.]\+\.[^.]\+$"
+if echo "$oldversion;;;$newversion" | grep -aq "^[^.]\+\.[^.]\+\.[^.]\+;;;[^.]\+\.[^.]\+\.[^.]\+$"
 then
    # ...replace all "x.y" occurrences too
    oldmajormiddle=`echo "$oldversion" | cut -d. -f 1-2`
