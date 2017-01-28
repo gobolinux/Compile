@@ -247,7 +247,8 @@ then
          do
             if Ends_With "/Settings" $entry
             then
-               cp -a $verbose $entry/* $installPackageDir/Settings/
+               mkdir -p $default_settings
+               cp -a $verbose $entry/* $default_settings/
             elif Ends_With "/Variable" $entry
             then
                cp -a $verbose $entry/* $installPackageDir/Variable/
@@ -261,8 +262,9 @@ then
 
       # This doesn't use $goboIndex because $goboIndex is actually /usr.
       # This is confusing. We should clean this up.
+      mkdir -p $default_settings
       cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
-      cp -a $verbose ./$goboSettings/* $installPackageDir/Settings 2>/dev/null
+      cp -a $verbose ./$goboSettings/* $default_settings 2>/dev/null
       cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
       rm -rf ./usr/local
       cp -a $verbose ./usr/* $installPackageDir/$version 2>/dev/null
