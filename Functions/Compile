@@ -16,7 +16,7 @@ then
    compileRecipeDir="${compileRecipeDirs[0]}"
 fi
 
-compileSupportedArchitectures=("i686" "ppc" "arm" "sh4")
+compileSupportedArchitectures=("i686" "x86_64" "ppc" "arm" "sh4")
 
 ##################################################
 # API functions
