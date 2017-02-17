@@ -293,6 +293,8 @@ cat Recipe | perl -e '
       bzrs => "array",
       hg => "string",
       hgs => "array",
+      tag => "string",
+      branch => "string",
       unmanaged_files => "array",
       part_of => "string",
       post_install_message => "string"

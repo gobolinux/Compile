@@ -115,8 +115,14 @@ elif [ "${gits[*]}" ]
 then
    for git in "${gits[@]}"
    do
+      bflag=""
+      if [ "${branch}" ]
+      then bflag="-b ${branch}"
+      elif [ "${tag}" ]
+      then bflag="-b ${tag}"
+      fi
       if [ ! -d "${sourcedir}" ]
-      then GIT_SSL_NO_VERIFY=true git clone --depth=1 "${git}" "${sourcedir}" || exit $?
+      then GIT_SSL_NO_VERIFY=true git clone --depth=1 ${bflag} "${git}" "${sourcedir}" || exit $?
       else cd "${sourcedir}" && GIT_SSL_NO_VERIFY=true git pull || exit $?
       fi
    done
