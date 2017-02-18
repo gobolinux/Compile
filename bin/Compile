@@ -470,7 +470,7 @@ function source_recipe() {
    source "$recipe"
    [ -e "$archrecipe" ] && source "$archrecipe"
    
-   if ! Boolean "no-build"
+   if ! Boolean "no-build" && [ -z "$GOBOLINUX_RUNNER" ]
    then
       if [ "$revision" ]
       then Log_Normal "Compiling $app version $version, revision $revision."
@@ -874,9 +874,9 @@ function compile_recipe() {
 function main() {
    prepare_environment
    check_dependencies
+   source_recipe
    respawn_with_runner
    Get_Dependency_Variables "${recipedir}/Resources/Dependencies"
-   source_recipe
    check_compile_version
    handle_meta_recipe
    check_if_part_of_meta_compiled_by_itself
