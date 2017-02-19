@@ -519,10 +519,10 @@ test_urls() {
                   xz -t $file || {
                      ERROR "Downloaded file $file is corrupted."
                   }
-               elif [ ${file%.xz} != $file ]
+               elif [ ${file%.lz} != $file ]
                then
                   msg "Testing integrity of archive $file..."
-                  xz -t $file || {
+                  lzip -t $file || {
                      ERROR "Downloaded file $file is corrupted."
                   }
                else
