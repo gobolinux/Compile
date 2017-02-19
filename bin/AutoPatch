@@ -69,6 +69,18 @@ function step_one() {
 }
 
 function step_two() {
+
+   packagename=`Get_Token "$recipedir" "/" "-2"`
+   versionandrevision=`Get_Token "$recipedir" "/" "-1"`
+   newrecipedir="$compileLocalRecipesDir/$packagename/$versionandrevision"
+   if [ "$recipedir" != "$newrecipedir" ]
+   then
+      Log_Normal "Copying recipe from $recipedir to $newrecipedir"
+      mkdir -p "$compileLocalRecipesDir/$packagename"
+      cp -R "$recipedir" "$newrecipedir"
+      recipedir="$newrecipedir"
+   fi
+
    diff -Nur "$dir.old" "$dir" | mtail --config /System/Settings/Scripts/diff.mtailrc
    echo "*******************************************************************************"
    echo
