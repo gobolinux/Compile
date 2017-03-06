@@ -322,9 +322,16 @@ function respawn_with_runner() {
       [ -e "${recipedir}/Resources/BuildDependencies" ] && \
          deps="-d ${recipedir}/Resources/BuildDependencies ${deps}"
 
+      # TODO: catch option-values separated by space (e.g., "--symlink yes")
+      local modified_options=("${savedOptions[@]}")
+      for delete in "-l=$(Entry symlink)" "--symlink=$(Entry symlink)"
+      do
+          modified_options=(${modified_options[@]/$delete})
+      done
+
       export recipe
       export wrapup_wanted=no
-      Runner ${quiet} ${deps} $0 --symlink=no --no-dependencies "${savedOptions[@]}"
+      Runner ${quiet} ${deps} $0 --symlink=no --no-dependencies "${modified_options[@]}"
       ret=$?
 
       if [ $ret = 0 ] && ! [ "$(Entry symlink)" == "no" ]
