@@ -856,12 +856,11 @@ function compile_recipe() {
       Boolean "no-strip" || do_strip
    }
    install_extras || wrap_fail "Failed installing files."
-   
-   if ! [ "$(Entry symlink)" == "no" ]
-   then
-      Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+
+   Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
+   [ "$(Entry symlink)" != "no" ] && {
       do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
-   fi
+   }
    
    check_direct_dependencies
    Run_Hook post_install || wrap_fail "Failure in post-install operation."
