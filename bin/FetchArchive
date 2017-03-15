@@ -58,7 +58,7 @@ archrecipe="$(Arg 2)"
 # Get sources
 ##################################################
 
-for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
+for var in url mirror_url file file_size file_md5 file_sha cvs cvs_module svn git bzr hg
 do
    eval '
       if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
@@ -158,11 +158,20 @@ if ! [ "${files[*]}" ]
 then files=(`Map basename "${urls[@]}"`)
 fi
 
+if [ ! -z ${file_shas} ];
+then
+    file_sums=${file_shas}
+    use_sha=1
+else
+    file_sums=${file_md5s}
+    use_sha=0
+fi
+
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
    [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
-   Verify_Files "$file" "${file_sizes[i]}" "${file_md5s[i]}"
+   Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
    result=$?
    if [ "$result" = "0" ]
    then

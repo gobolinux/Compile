@@ -37,44 +37,52 @@ function Check_Dir_Variable() {
 function Verify_Files() {
    local myfiles=($1)
    local sizes=($2)
-   local md5s=($3)
-   local i=0
+   local sums=($3)
+   local use_sha=($4)
+   if [ $use_sha == 1 ]
+   then
+      Get_Sum="Get_SHA"
+   else
+      Get_Sum="Get_MD5"
+   fi
    for i in $(seq 0 $[${#myfiles[@]}-1])
    do
       file="$compileArchivesDir/${myfiles[i]}"
       file_size="${sizes[i]}"
-      file_md5="${md5s[i]}"
+      file_sum="${sums[i]}"
       if [ -f "$file" ]
       then
-         siz=$(Get_Size "$file")
-         md5=$(Get_MD5 "$file")
-         if [ -n "$file_size" ] && [ "$file_size" != "$siz" ]
+         size=$(Get_Size "$file")
+         sum=$(${Get_Sum} "$file")
+         if [ -n "$file_size" ] && [ "$file_size" != "$size" ]
          then
             Log_Terse "Warning: $file is either not complete or corrupted."
             return 2
          elif [ -n "$file_size" ]
          then
-            if [ -z "$file_md5" ]
+            if [ -z "$file_sum" ]
             then
-               Log_Normal "Warning: no MD5 checksum."
+               Log_Normal "Warning: no MD5/SHA checksum."
                Log_Normal "Assuming $file is complete based only on size."
-            elif [ "$file_md5" = "$md5" ]
+               return 2
+            elif [ "$file_sum" = "$sum" ]
             then
-               Log_Verbose "$file is complete and matches MD5 checksum."
+               Log_Verbose "$file is complete and matches MD5/SHA checksum."
             else
-               Log_Error "According to MD5 checksum, $file is corrupted."
+               Log_Error "According to MD5/SHA checksum, $file is corrupted."
                return 1
             fi
          else
-            if [ -z "$file_md5" ]
+            if [ -z "$file_sum" ]
             then
-               Log_Terse "Warning: no file size or MD5 checksum. $file cannot be verified"
+               Log_Terse "Warning: no file size or MD5/SHA checksum. $file cannot be verified"
                return 2
-            elif [ "$file_md5" = "$md5" ]
+            elif [ "$file_sum" = "$sum" ]
             then
-               Log_Normal "Warning: file size could not be verified but $file matches MD5 checksum."
+               Log_Normal "Warning: file size could not be verified but $file matches MD5/SHA checksum."
+               return 2
             else
-               Log_Error "According to MD5 checksum, $file is corrupted."
+               Log_Error "According to MD5/SHA checksum, $file is corrupted."
                return 1
             fi
          fi
@@ -124,13 +132,13 @@ Find_Recipe() {
    nameorrecipe="$1"
    versionandrevision="$2"
    tarballurl="$3"
-   
+
    if Has_Substring "$versionandrevision" ":/"
    then
       tarballurl="$2"
       versionandrevision=$(Version_Number_From_Url "$tarballurl")
    fi
-   
+
    # support for direct recipe passing
    if [ -f "${nameorrecipe}/Recipe" -o "`echo ${nameorrecipe} | grep "/"`" ] || Ends_With "--recipe.tar.bz2" "${nameorrecipe}"
    then
@@ -299,7 +307,13 @@ function do_fetch() {
             return 1
          }
       else
-         Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}"
+         # Use sha checksum if available
+         if [ -n ${file_shas} ];
+         then
+            Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_shas[*]}" 1
+         else
+            Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" 0
+         fi
          result=$?
          case $result in
          1) Log_Error "Files are corrupted. Exiting."; return 2 ;;

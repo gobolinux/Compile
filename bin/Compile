@@ -662,7 +662,7 @@ function construct_arrays() {
       LDFLAGS="-L${target}/lib"
    )
    
-   for var in url mirror_url file file_size file_md5 cvs cvs_module svn git bzr hg
+   for var in url mirror_url file file_size file_md5 file_sha cvs cvs_module svn git bzr hg
    do
       eval '
          if [ -n "$'$var'" -a ! -n "${'$var's[*]}" ]
