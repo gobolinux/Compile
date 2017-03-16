@@ -66,6 +66,7 @@ Add_Option_Boolean "a" "remove-archive" "Remove archive(s) after a successful bu
 Add_Option_Boolean "s" "remove-sources" "Remove sources after a successful build"
 Add_Option_Boolean "P" "no-postinstall" "Do not run the PostInstall script after installation"
 Add_Option_Boolean "R" "no-requirements" "Do not process the Requirements script after installation"
+Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading source files. Note: This could be dangerous!"
 
 Parse_Conf Compile.conf
 Parse_Options "$@"
@@ -817,8 +818,9 @@ function gather_common_options() {
 ##################################################
 
 function compile_recipe() {
-
-   Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch || wrap_fail "Fetching sources failed"
+   ignore_certificate=0
+   Boolean "no-check-certificate" && ignore_certificate=1
+   Boolean "no-web" || [ "$nofetch" == "yes" ] || is_function_set do_fetch && do_fetch $ignore_certificate || wrap_fail "Fetching sources failed"
    Boolean "no-build" && exit 0
    is_scm_recipe || { is_function_set do_unpack && do_unpack; }
    Boolean "no-web" || [ "$nofetch" == "yes" ] && is_scm_recipe && skippatching="yes"

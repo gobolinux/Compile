@@ -24,11 +24,18 @@ scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
 #"recipe or an uncompressed one] is received, and the recipe is placed in" \
 #"$compileGetRecipeDir"
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes."
+Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading files. NOTE: This can be dangerous!"
 
 Parse_Options "$@"
 
 unset noweb
+unset ignore_certificate
+get_recipe_extra_params=""
 Boolean "no-web" && noweb="--no-web"
+Boolean "no-check-certificate" && {
+   ignore_certificate=1
+   get_recipe_extra_params="--no-check-certificate"
+}
 
 ##################################################
 # Prepare Environment
@@ -43,7 +50,7 @@ then
    url=`FindPackage --type=recipe $noweb $(Arg 1) $(Arg 2)`
    if [ "${url}" ]
    then
-      GetRecipe $noweb "${url}"   
+      GetRecipe $noweb "${url}" "$get_recipe_extra_params"   
       exit $?
    else
       Log_Terse "Recipe for" $(Arg 1) $(Arg 2) "not found" 
@@ -116,9 +123,11 @@ do
    if ! Boolean "no-web" && Is_URL "$rawrecipe"
    then
       Log_Normal "Downloading recipe from $rawrecipe"
-      if wget --help | grep -q no-check-certificate
-      then wget="wget --no-check-certificate"
-      else wget="wget"
+      wget="wget"
+      if [[ $ignore_certificate -eq 1 ]]
+      then
+         Log_Normal "NOTE: Ignoring certificates when downloading recipes"
+         wget="wget --no-check-certificate"
       fi
       $wget --header='Accept: application/x-gobo-recipe, application/x-bzip2;q=0.9, */*;q=0.1' -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
       [ ${PIPESTATUS[0]} != 0 ] && Die "Could not fetch recipe. Check URL (${rawrecipe})"

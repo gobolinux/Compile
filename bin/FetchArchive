@@ -27,17 +27,19 @@ Add_Option_Entry   "s" "save-to" "Save the files to the given directory" "$compi
 Add_Option_Entry   "P" "program" "Program name" "Bash"
 Add_Option_Entry   "V" "version-number" "Version number with revision" "4.0-r1"
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
+Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading files. NOTE: This can be dangerous!"
 Parse_Options "$@"
 
 savedir=$(Entry "save-to")
 sourcedir=$(Entry "save-directory")
-
 programname=$(Entry "program")
 versionnumber=$(Entry "version-number")
 
-if wget --help | grep -q no-check-certificate
-then wget="wget --no-check-certificate"
-else wget="wget"
+wget="wget"
+if Boolean "no-check-certificate"
+then
+    Log_Normal "NOTE: Ignoring certificates when downloading sources"
+    wget="wget --no-check-certificate"
 fi
 
 ##################################################
