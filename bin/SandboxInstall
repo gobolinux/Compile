@@ -284,6 +284,10 @@ then
           then
               rmdir $installPackageDir/$version/lib
               mv $installPackageDir/$version/{lib64,lib}
+          elif [ -d $installPackageDir/$version/lib ]
+          then
+              cp -a $installPackageDir/$version/lib64/* $installPackageDir/$version/lib
+              rm -rf -- $installPackageDir/$version/lib64
           fi
       fi
    fi
