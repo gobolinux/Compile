@@ -90,7 +90,7 @@ then
       then Log_Normal "When asked for a password, enter \"$cvs_password\"."
       else Log_Normal "If asked for a password, just press Enter."
       fi
-   
+
       login_method=`echo ${cvs} | cut -b-5`
       [ "$cvs_rsh" ] && export CVS_RSH=$cvs_rsh || export CVS_RSH=ssh
       [ "$login_method" != ":ext:" ] && cvs -d${cvs} login || exit $?
@@ -105,7 +105,7 @@ elif [ "${svns[*]}" ]
 then
    for svn in "${svns[@]}"
    do
-      if [ "$svn_username" ] 
+      if [ "$svn_username" ]
       then svn checkout "${svn}" "${sourcedir}" --username "${svn_username}" --password "${svn_password}" || exit $?
       else svn checkout "${svn}" "${sourcedir}" || exit $?
       fi
@@ -171,13 +171,17 @@ for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
    [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
+   # First verification to know if we need to download it again
    Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
    result=$?
+   # File was ok
    if [ "$result" = "0" ]
    then
       continue
+   # File was corrupted, delete it
    elif [ "$result" = "1" ]
    then
+      Log_Normal "File $file is corruped, downloading it again!"
       rm -f -- ${file}
    elif [ "$result" = "2" ]
    then
@@ -228,7 +232,20 @@ do
       }
    }
 
+   # Note: calling this function modifies the value of $file!
    wget_url "$i" 0 || {
       Die "Could not fetch '$url'."
    }
+
+   # Verify the new downloaded file
+   # Since file variable has been modified by wget_url(!?) we need to
+   # set it again
+   file=${files[i]}
+   Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
+   result=$?
+   case $result in
+   1) Die "File $file is corrupted. Exiting." ;;
+   2) Die "File $file is incomplete or can not be verified" ;;
+   3) Die "Files $file is not available. Exiting." ;;
+   esac
 done

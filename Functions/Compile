@@ -30,9 +30,8 @@ function Check_Dir_Variable() {
 
 # Return status:
 # 0 - Files were verified and are okay.
-# 1 - Files are corrupted: must delete.
-# 2 - Files look incomplete or cannot be verified:
-#     may delete or try to continue download.
+# 1 - Files are corrupted
+# 2 - Files look incomplete or cannot be verified
 # 3 - Files are missing.
 function Verify_Files() {
    local myfiles=($1)
