@@ -14,6 +14,8 @@ scriptExample="Foo--1.0--recipe.tar.bz2"
 Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use cache)."
 Add_Option_Boolean "D" "quick-and-dirty" "cut some corners (don't download files, etc; not recommended)."
 Add_Option_Boolean "W" "no-web" "fully offline operation (not recommended)."
+Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading files. NOTE: This can be dangerous!"
+
 Parse_Options "$@"
 
 [ "$httpSourceforge" ] || {
@@ -27,9 +29,11 @@ then noweb=--no-web
 else noweb=
 fi
 
-if wget --help | grep -q no-check-certificate
-then wget="wget --no-check-certificate"
-else wget="wget"
+wget="wget"
+if Boolean "no-check-certificate"
+then
+   Log_Normal "NOTE: Ignoring certificates when downloading sources" 
+   wget="wget --no-check-certificate"
 fi
 
 workingdir=$PWD
