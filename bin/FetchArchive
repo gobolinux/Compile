@@ -36,11 +36,13 @@ sourcedir=$(Entry "save-directory")
 programname=$(Entry "program")
 versionnumber=$(Entry "version-number")
 
-wget="wget"
+wget_bin="wget"
+git_bin="git"
 if Boolean "no-check-certificate"
 then
     Log_Normal "NOTE: Ignoring certificates when downloading sources"
-    wget="wget --no-check-certificate"
+    wget_bin="wget --no-check-certificate"
+    git_bin="GIT_SSL_NO_VERIFY=true git"
 fi
 
 ##################################################
@@ -125,8 +127,8 @@ then
       then bflag="-b ${tag}"
       fi
       if [ ! -d "${sourcedir}" ]
-      then GIT_SSL_NO_VERIFY=true git clone --depth=1 ${bflag} "${git}" "${sourcedir}" || exit $?
-      else cd "${sourcedir}" && GIT_SSL_NO_VERIFY=true git pull || exit $?
+      then $git_bin clone --depth=1 ${bflag} "${git}" "${sourcedir}" || exit $?
+      else cd "${sourcedir}" && $git_bin pull || exit $?
       fi
    done
    exit 0
@@ -215,7 +217,7 @@ do
          then
             version_no_rev="${versionnumber%-r*}"
             # Try gobolinux.org mirror
-            $wget -O "$file" -c --passive-ftp "https://gobolinux.org/mirror_url/$programname/$version_no_rev/$file"
+            $wget_bin -O "$file" -c --passive-ftp "https://gobolinux.org/mirror_url/$programname/$version_no_rev/$file"
             return $?
          else
             return 1
@@ -227,7 +229,7 @@ do
       then
          if Starts_With "http:" "$fetch"
          then
-            expectedlength=`$wget --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
+            expectedlength=`$wget_bin --spider "$fetch" 2>&1 | grep "Length:" | tr -d ".," | cut -d" " -f2`
             locallength=`wc -c "$file" | cut -d" " -f1`
             if [ "$expectedlength" = "$locallength" ]
             then
@@ -236,7 +238,7 @@ do
             fi
          fi
       fi
-      $wget -O "$file" -c --passive-ftp "$fetch" || {
+      $wget_bin -O "$file" -c --passive-ftp "$fetch" || {
          wget_url "$fileindex" "$[mirrorlevel+1]"
       }
    }
