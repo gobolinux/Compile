@@ -28,6 +28,7 @@ Add_Option_Entry   "P" "program" "Program name" "Bash"
 Add_Option_Entry   "V" "version-number" "Version number with revision" "4.0-r1"
 Add_Option_Boolean "b" "batch" "Avoid asking questions."
 Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading files. NOTE: This can be dangerous!"
+Add_Option_Boolean "" "no-verify-files" "Do not verify downloaded files, this flag is normally passed when creating a new recipe"
 Parse_Options "$@"
 
 savedir=$(Entry "save-to")
@@ -173,9 +174,15 @@ for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
    [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
+   Log_Normal "File ${file} has been already downloaded"
    # First verification to know if we need to download it again
-   Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
-   result=$?
+   if Boolean "no-verify-files"
+   then
+      result=2
+   else
+      Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
+      result=$?
+   fi
    # File was ok
    if [ "$result" = "0" ]
    then
@@ -242,9 +249,14 @@ do
    # Verify the new downloaded file
    # Since file variable has been modified by wget_url(!?) we need to
    # set it again
-   file=${files[i]}
-   Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
-   result=$?
+   if Boolean "no-verify-files"
+   then
+      result=0
+   else
+      file=${files[i]}
+      Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
+      result=$?
+   fi
    case $result in
    1) Die "File $file is corrupted. Exiting." ;;
    2) Die "File $file is incomplete or can not be verified" ;;
