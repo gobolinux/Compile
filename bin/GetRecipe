@@ -50,7 +50,7 @@ then
    url=`FindPackage --type=recipe $noweb $(Arg 1) $(Arg 2)`
    if [ "${url}" ]
    then
-      GetRecipe $noweb "${url}" "$get_recipe_extra_params"   
+      GetRecipe $noweb "${url}" $get_recipe_extra_params
       exit $?
    else
       Log_Terse "Recipe for" $(Arg 1) $(Arg 2) "not found" 
