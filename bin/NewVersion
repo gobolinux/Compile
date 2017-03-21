@@ -231,7 +231,7 @@ Update_Recipe() {
          sed -i "s,\(^url=.*\),git=\"$url\",g" "$recipedir/Recipe"
       fi
       Log_Normal "Downloading source code..."
-      if ! FetchArchive --no-very-files "$recipedir/Recipe"
+      if ! FetchArchive --no-verify-files "$recipedir/Recipe"
       then
          rm -rf "$recipedir"
          Die "Could not download $arch source code, aborting."
