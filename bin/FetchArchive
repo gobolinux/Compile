@@ -176,11 +176,13 @@ for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
    [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
-   Log_Normal "File ${file} has been already downloaded"
    # First verification to know if we need to download it again
    if Boolean "no-verify-files"
    then
-      result=2
+      if [ -f "${file}" ]
+      then result=2 # incomplete
+      else result=3 # missing
+      fi
    else
       Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
       result=$?
@@ -196,7 +198,7 @@ do
       rm -f -- ${file}
    elif [ "$result" = "2" ]
    then
-      if Boolean "batch" || Ask "Remove and download again?"
+      if Boolean "batch" || { Log_Normal "File ${file} has been already downloaded"; Ask "Remove and download again?"; }
       then rm -f ${file}
       else continue
       fi
