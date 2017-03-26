@@ -39,10 +39,8 @@ function Verify_Files() {
    local sums=($3)
    local use_sha=($4)
    if [ $use_sha == 1 ]
-   then
-      Get_Sum="Get_SHA"
-   else
-      Get_Sum="Get_MD5"
+   then Get_Sum="Get_SHA"
+   else Get_Sum="Get_MD5"
    fi
    for i in $(seq 0 $[${#myfiles[@]}-1])
    do
@@ -312,11 +310,9 @@ function do_fetch() {
          }
       else
          # Use sha checksum if available
-         if [ -n ${file_shas} ];
-         then
-            Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_shas[*]}" 1
-         else
-            Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" 0
+         if [ -n "${file_shas}" ];
+         then Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_shas[*]}" 1
+         else Verify_Files "${files[*]}" "${file_sizes[*]}" "${file_md5s[*]}" 0
          fi
          result=$?
          case $result in
