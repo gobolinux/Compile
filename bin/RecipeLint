@@ -242,8 +242,10 @@ cat Recipe | perl -e '
       files => "array",
       file_size => "string",
       file_md5 => "string",
+      file_sha => "string",
       file_sizes => "array",
       file_md5s => "array",
+      file_shas => "array",
       uncompress => "string",
       unpack_files => "string",
       docs => "array",
@@ -532,14 +534,20 @@ test_urls() {
                else
                   WARN "Type of archive $file not detected. No integrity check performed."
                fi
-               if [ "$file_md5" ]
+               if [ "$file_sha" ]
+               then
+                  msg "Checking SHA for $file..."
+                  [ `sha256sum "$file" | cut -d" " -f1` = "$file_sha" ] || {
+                     ERROR "SHA sum in recipe for $file does not match."
+                  }
+               elif [ "$file_md5" ]
                then
                   msg "Checking MD5 for $file..."
                   [ `md5sum "$file" | cut -d" " -f1` = "$file_md5" ] || {
                      ERROR "MD5 sum in recipe for $file does not match."
                   }
                else
-                  WARN "No MD5 sum in recipe."
+                  WARN "No MD5/SHA sum in recipe."
                fi
                if [ "$file_size" ]
                then
