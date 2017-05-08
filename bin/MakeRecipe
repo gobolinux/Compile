@@ -229,7 +229,8 @@ fi
 
 if ! Boolean "no-fetch"
 then
-   FetchArchive --no-verify-files $fetchparams "$recipefile" || Die "Could not fetch sources."
+   programversion="--program $packagename --version-number $versionnumber"
+   FetchArchive --no-verify-files $programversion $fetchparams "$recipefile" || Die "Could not fetch sources."
 elif ! [ -e "$file" ]
 then
    Die "--no-fetch used, but source archive is not available in ${compileArchivesDir}."
