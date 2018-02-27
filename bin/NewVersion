@@ -210,9 +210,9 @@ Update_Recipe() {
    then
       Quiet pushd "$compileArchivesDir"
       Log_Normal "Checking URL '$url'..."
-      quietflag="--quiet"
+      quietflag="--silent"
       Boolean "verbose" && unset quietflag
-      if ! wget -t 5 $quietflag --spider "$url"
+      if ! curl $quietflag -I --retry 5 "$url"
       then
          Log_Terse "URL may be invalid. Please check."
       fi
@@ -231,7 +231,7 @@ Update_Recipe() {
          sed -i "s,\(^url=.*\),git=\"$url\",g" "$recipedir/Recipe"
       fi
       Log_Normal "Downloading source code..."
-      if ! FetchArchive --program "$packagename" --version-number "$newversion" --no-verify-files "$recipedir/Recipe"
+      if ! FetchArchive --no-verify-files "$recipedir/Recipe"
       then
          rm -rf "$recipedir"
          Die "Could not download $arch source code, aborting."

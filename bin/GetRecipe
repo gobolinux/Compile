@@ -123,13 +123,13 @@ do
    if ! Boolean "no-web" && Is_URL "$rawrecipe"
    then
       Log_Normal "Downloading recipe from $rawrecipe"
-      wget="wget"
+      curl="curl"
       if [[ $ignore_certificate -eq 1 ]]
       then
          Log_Normal "NOTE: Ignoring certificates when downloading recipes"
-         wget="wget --no-check-certificate"
+         curl="curl --insecure"
       fi
-      $wget --header='Accept: application/x-gobo-recipe, application/x-bzip2;q=0.9, */*;q=0.1' -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
+      $curl --header 'Accept: application/x-gobo-recipe, application/x-bzip2;q=0.9, */*;q=0.1' --retry 5 "$rawrecipe" --silent | Verbose tar xjvf - -C "$compileGetRecipeDir"
       [ ${PIPESTATUS[0]} != 0 ] && Die "Could not fetch recipe. Check URL (${rawrecipe})"
       
       if [ -d "$compileGetRecipeDir/$app/$version" ]

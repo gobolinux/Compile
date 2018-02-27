@@ -65,7 +65,7 @@ else
    do
       lsfile="$getRecipeStoreHttp/RecipeList"
       Log_Normal "Updating recipes from store $getRecipeStoreHttp"
-      tmpls=$(wget $lsfile -O - 2>/dev/null)
+      tmpls=$(curl $lsfile 2>/dev/null)
       
       for recipename in ${tmpls}
       do

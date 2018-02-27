@@ -117,7 +117,7 @@ else
    cp temp-$$/empty-patch temp-$$/patch
 fi
 
-# Generate the report and save it to a file because wget requires that
+# Generate the report and save it to a file
 {
    echo "ContributeRecipe protocol 1"
    echo "Submitter: $compileRecipeAuthor"
@@ -143,9 +143,9 @@ then
    echo
    echo "Submission report ends. Unencoded update patch follows."
    cat temp-$$/patch
-elif ! wget -O - -q --post-file=temp-$$/report "$submissionTarget"
+elif ! curl -X POST -d "@temp-$$/report" "$submissionTarget" > /dev/null
 then
-   Log_Error "There was an error using wget to submit your recipe."
+   Log_Error "There was an error using curl to submit your recipe."
    Log_Error "This may be a temporary network problem or a firewall issue."
    Log_Terse "Please check your internet connection and try again."
 fi

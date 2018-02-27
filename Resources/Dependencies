@@ -12,3 +12,4 @@ Python >= 2.5, < 3.0 # ApplyVariables
 Scripts > 2.9.8
 Sed
 Sudo
+Curl

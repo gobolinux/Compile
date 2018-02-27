@@ -44,11 +44,11 @@ Parse_Conf Compile.conf
 # Checking Scripts package version
 ##################################################
 
-wget="wget"
+curl="curl"
 if Boolean "no-check-certificate"
 then
    Log_Normal "NOTE: Ignoring certificates when downloading sources"
-   wget="wget --no-check-certificate"
+   curl="curl --insecure"
 fi
 
 [ "$PAGER" ] || PAGER=less
@@ -211,7 +211,7 @@ else
    then
       # Detect URLs that feature redirects, like funky "...download.php?pkg=1234" URLs.
       file_headers=`Temporary_File`
-      $wget --spider --server-response "$source_url" 2> $file_headers
+      $curl --silent --head "$source_url" > $file_headers
       filename=`grep -i "content-disposition:.*filename=" "$file_headers" | sed 's/.*filename=\([^;]*\).*/\1/;s/^["'\'']//;s/["'\'']$//' | uniq`
       if [ -z "$filename" ]
       then
@@ -229,8 +229,7 @@ fi
 
 if ! Boolean "no-fetch"
 then
-   programversion="--program $packagename --version-number $versionnumber"
-   FetchArchive --no-verify-files $programversion $fetchparams "$recipefile" || Die "Could not fetch sources."
+   FetchArchive --no-verify-files $fetchparams "$recipefile" || Die "Could not fetch sources."
 elif ! [ -e "$file" ]
 then
    Die "--no-fetch used, but source archive is not available in ${compileArchivesDir}."

@@ -29,11 +29,11 @@ then noweb=--no-web
 else noweb=
 fi
 
-wget="wget"
+curl="curl"
 if Boolean "no-check-certificate"
 then
    Log_Normal "NOTE: Ignoring certificates when downloading sources" 
-   wget="wget --no-check-certificate"
+   curl="curl --insecure"
 fi
 
 workingdir=$PWD
@@ -426,7 +426,7 @@ test_urls() {
       if [ "$cached" = "yes" ]
       then
          msg "Using cached file $file from $compileArchivesDir..."
-         spider=--spider
+         head=--head
          cp "$compileArchivesDir/$file" .
       fi
    }
@@ -441,16 +441,16 @@ test_urls() {
       then
          use_cached_file
       fi
-      if [ "$spider" ]
+      if [ "$head" ]
       then msg "Checking URL..."
       else msg "Downloading file ($file_size bytes)..."
       fi
-      if ! $wget --quiet $spider --timeout=20 --tries=3 "$url"
+      if ! $curl $head --silent --connect-timeout 20 --retry 3 "$url"
       then
          if [ "$mirror_url" ]
          then
             WARN "Primary URL unreacheable, trying the mirror instead..."
-            $wget --quiet $spider --timeout=20 --tries=3 "$mirror_url"
+            $curl $head --silent --connect-timeout 20 --retry 3 "$mirror_url"
          fi
       fi
    }
@@ -464,14 +464,14 @@ test_urls() {
       if [ "$file_md5" -o "$file_size" ]
       then
          full_check=yes
-         spider=
+         head=
          if [ "$file_size" = "0" ]
          then
             ERROR "Zero file size specified for $url."
          fi
       else
          full_check=no
-         spider=--spider
+         head=--head
       fi
       [ "$file" ] || file=`basename "$url"`
 
@@ -486,7 +486,7 @@ test_urls() {
       then
          WARN "File is big, will not download (to force, run with --thorough)."
          full_check=no
-         spider=--spider
+         head=--head
       fi
 
       if get_file "$url"
@@ -839,7 +839,7 @@ test_resources() {
             then
                WARN "Dependency $prog not available locally (web access disabled)."
             else
-               if ! $wget -q -O /dev/null http://svn.gobolinux.org/recipes/revisions/$prog
+               if ! $curl --head --silent https://github.com/gobolinux/Recipes/tree/master/trunk/$prog
                then ERROR "Dependency $prog not available."
                else WARN  "Dependency $prog is not available for public access yet."
                fi
