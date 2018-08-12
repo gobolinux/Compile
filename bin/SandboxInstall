@@ -218,6 +218,7 @@ then
    rm -rf Users/*/.distcc
    rm -rf Users/*/.cache
    rmdir Users/* Users &> /dev/null
+   find -type c | xargs rm -f &> /dev/null
    find -type f -name "*__dir_opaque" | xargs rm -f &> /dev/null
    find -type f -name "*_HIDDEN~" | xargs rm -f &> /dev/null
    find -type f -name "*_DELETED~" | xargs rm -f &> /dev/null
