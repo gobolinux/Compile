@@ -587,6 +587,10 @@ function handle_meta_recipe() {
       then
          Die "Compilation of $iname $iversion failed."
       fi
+      if [ "$symlink_each_time" = "yes" ]
+      then
+         do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+      fi
    done
    Boolean "no-build" && exit 0
    install_extras
