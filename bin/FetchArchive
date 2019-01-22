@@ -127,7 +127,9 @@ then
       then bflag="-b ${tag}"
       fi
       if [ ! -d "${sourcedir}" ]
-      then $git_bin clone --depth=1 ${bflag} "${git}" "${sourcedir}" || exit $?
+      then
+         $git_bin clone --depth=1 ${bflag} "${git}" "${sourcedir}" || exit $?
+         cd "${sourcedir}" && $git_bin submodule update --init || true
       else cd "${sourcedir}" && $git_bin pull || exit $?
       fi
    done
