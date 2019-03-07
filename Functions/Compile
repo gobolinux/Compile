@@ -598,6 +598,7 @@ function Fix_Legacy_Recipe_Types() {
    [ "$is_python" = "yes" ] && recipe_type="python"
    [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
    [ "$is_meta" = "yes" ] && recipe_type="meta"
+   [ "$is_meson" = "yes" ] && recipe_type="meson"
    [ "$is_scons" = "yes" ] && recipe_type="scons"
    [ "$is_manifest" = "yes" ] && recipe_type="manifest"
 }

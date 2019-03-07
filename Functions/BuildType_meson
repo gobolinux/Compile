@@ -1,0 +1,39 @@
+#!/bin/bash
+
+meson_sane_check() {
+   Quiet meson --help || Die "This is a meson type recipe and you don't seem to have meson installed."
+   Quiet ninja --version || Die "This is a meson type recipe and you don't seem to have ninja installed."
+}
+
+meson_init() {
+   needs_build_directory="yes"
+   meson="meson"
+   ninja="ninja"
+}
+
+meson_do_build() {
+   if [ ! "$override_default_options" = "yes" ]
+   then
+      meson_variables=(
+         "${meson_variables[@]}"
+         "--prefix=$target"
+      )
+      ninja_variables=(
+      )
+   fi
+   Add_Use_Flags_Options_To_Array meson_variables
+   Add_Use_Flags_Options_To_Array ninja_variables
+
+   if [ ! -z "$goboIndex" ]
+   then
+      meson_variables=(`echo ${meson_variables[@]} | sed "s,$target,$goboIndex,g"`)
+      ninja_variables=(`echo ${ninja_variables[@]} | sed "s,$target,$goboIndex,g"`)
+   fi
+
+   $meson "${sourcedir}" "${meson_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
+   $ninja || wrap_fail "Build failed."
+}
+
+meson_do_install() {
+   SandboxInstall $verbose ${unmanagedlist:+--unmanaged-files "${unmanagedlist}"} ${sandboxopts:+"${sandboxopts[@]}"} -c "$ninja install" "$appname" "$versionnumber" -- "${ninja_variables[@]}" "${install_variables[@]}" $install_target || wrap_fail "Installation failed"
+}

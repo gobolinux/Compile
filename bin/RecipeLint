@@ -229,6 +229,7 @@ cat Recipe | perl -e '
       is_python => "bool",
       is_xmkmf => "bool",
       is_manifest => "bool",
+      is_meson => "bool",
       is_scons => "bool",
       is_meta => "bool",
       recipe_type => "string",
@@ -260,6 +261,8 @@ cat Recipe | perl -e '
       build_variables => "array",
       install_variables => "array",
       make_variables => "array",
+      meson_variables => "array",
+      ninja_variables => "array",
       scons_variables => "array",
       configure => "string",
       make => "string",
@@ -592,6 +595,7 @@ test_recipe() {
            [ "$is_python" = "yes" ] && recipe_type="python"
            [ "$is_xmkmf" = "yes" ] && recipe_type="xmkmf"
            [ "$is_meta" = "yes" ] && recipe_type="meta"
+           [ "$is_meson" = "yes" ] && recipe_type="meson"
            [ "$is_scons" = "yes" ] && recipe_type="scons"
            [ "$is_manifest" = "yes" ] && recipe_type="manifest"
        else
@@ -600,7 +604,7 @@ test_recipe() {
    }
    fi
    case "$recipe_type" in
-     (configure | makefile | cmake | python | xmkmf | meta | scons | manifest | cabal | waf)
+     (configure | makefile | cmake | python | xmkmf | meta | meson | scons | manifest | cabal | waf)
        false;;
    esac && ERROR "Unknown Recipe type $recipe_type specified"
    [ "$recipe_type" = "meta" ] && {
@@ -668,21 +672,25 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       autogen=configure
-      build_variables=configure,makefile,cmake,xmkmf,scons,cabal,waf
-      install_variables=configure,makefile,cmake,xmkmf,scons,cabal,waf
+      build_variables=configure,makefile,cmake,xmkmf,meson,scons,cabal,waf
+      install_variables=configure,makefile,cmake,xmkmf,meson,scons,cabal,waf
       make_variables=configure,makefile,xmkmf
       cmake_variables=cmake
       configure=configure
       makefile=configure,makefile,cmake,xmkmf
-      build_target=configure,makefile,cmake,xmkmf,python,scons,waf
-      install_target=configure,makefile,cmake,xmkmf,python,scons,waf
+      build_target=configure,makefile,cmake,xmkmf,python,meson,scons,waf
+      install_target=configure,makefile,cmake,xmkmf,python,meson,scons,waf
       do_build=configure,makefile,cmake,python,cabal,waf
-      do_install=configure,makefile,cmake,xmkmf,python,scons,cabal,waf
+      do_install=configure,makefile,cmake,xmkmf,python,meson,scons,cabal,waf
       needs_build_directory=configure
       create_dirs_first=configure,makefile,cmake,manifest
       python_options=python
-      override_default_options=python,scons,configure,cabal,waf
+      override_default_options=python,meson,scons,configure,cabal,waf
       build_script=python
+      ninja=meson
+      ninja_variables=meson
+      meson=meson
+      meson_variables=meson
       scons=scons
       scons_variables=scons
       cabal_options=cabal
