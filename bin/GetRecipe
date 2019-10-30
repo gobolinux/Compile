@@ -99,6 +99,7 @@ do
       #####################################################
       # Case #2: recipe is a local directory, but not at $compileRecipeDirs[@]
       #####################################################
+      mkdir -p "$compileGetRecipeDir/$app/$version"
       cp -R "${rawrecipe%%/}"/* "$compileGetRecipeDir/$app/$version"
       echo "$compileGetRecipeDir/$app/$version"
       exit 0
