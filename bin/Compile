@@ -422,7 +422,7 @@ function prepare_environment() {
    done
    
    target=$(Get_Dir runtime $appname $versionnumber)
-   settings_target=$(Get_Dir runtimeSettings $appname $versionnumber)
+   settings_target=$(Get_Dir installSettings $appname $versionnumber)
    variable_target="${goboVariable}"
    installprefix="$target"
    mark_export target settings_target variable_target version
@@ -621,7 +621,7 @@ function check_if_part_of_meta_compiled_by_itself() {
       # We have to update the target name and version to reflect
       # that we install into the containing application
       target=`Get_Dir runtime $appname $versionnumber`
-      settings_target=`Get_Dir runtimeSettings $appname $versionnumber`
+      settings_target=`Get_Dir installSettings $appname $versionnumber`
       variable_target="${goboVariable}"
       installprefix="$target"
       # Then re-source the recipe, to update variables set in

@@ -171,10 +171,18 @@ if [ -n "$goboIndex" -a -n "$args" ]
 then
    for a in "${args[@]}"
    do
-      tmpargs=(
-         "${tmpargs[@]}"
-         "$(echo "${a}" | sed "s,$programdir,$goboIndex,g")"
-      )
+      if echo "${a}" | grep -q "/Resources/Defaults/Settings"
+      then
+         tmpargs=(
+            "${tmpargs[@]}"
+            "$(echo "${a}")"
+         )
+      else
+         tmpargs=(
+            "${tmpargs[@]}"
+            "$(echo "${a}" | sed "s,$programdir,$goboIndex,g")"
+         )
+      fi
    done
    args=("${tmpargs[@]}")
 fi
