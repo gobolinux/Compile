@@ -1,6 +1,6 @@
 #!/bin/bash
 python_sane_check() {
-   Quiet python -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
+   Quiet python${python_major} -V || wrap_fail "This is a python type recipe and you don't seem to have python installed."
 }
 
 # Can be overridden by the recipe
