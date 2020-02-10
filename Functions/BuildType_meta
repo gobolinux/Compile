@@ -1,0 +1,8 @@
+#!/bin/bash
+
+meta_do_install() {
+    # All installation is performed by the recipes declared
+    # in the include=() array. We just have to return success
+    # to keep the caller happy.
+    true
+}
