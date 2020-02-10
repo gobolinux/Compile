@@ -591,6 +591,7 @@ function handle_meta_recipe() {
    install_extras
    Run_Hook pre_link || wrap_fail "Failure in pre-link operation."
    do_symlink "$appname" "$versionnumber" || wrap_fail "Symlinking failed."
+   wrapup_wanted=yes
    wrapup
 }
 
