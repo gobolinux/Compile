@@ -293,6 +293,14 @@ then
               rm -rf -- $installPackageDir/$version/lib64
           fi
       fi
+
+      # share/pkgconfig -> lib/pkgconfig
+      if [ -d $installPackageDir/$version/share/pkgconfig ]
+      then
+          mkdir -p $installPackageDir/$version/lib/pkgconfig
+          cp -a $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
+          rm -rf -- $installPackageDir/$version/share/pkgconfig
+      fi
    fi
 
    rm -f $installPackageDir/$version/share/info/dir
