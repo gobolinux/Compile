@@ -276,7 +276,6 @@ then
       rmdir --ignore-fail-on-non-empty $installPackageDir/$version/etc 2> /dev/null
       rm -rf ./$goboSystem/Index
       rm -rf ./$goboSettings
-
       rmdir $sandbox_rw/System 2> /dev/null
 
       # lib64 -> lib
@@ -304,6 +303,9 @@ then
    fi
 
    rm -f $installPackageDir/$version/share/info/dir
+
+   # LibTool .la files are deprecated
+   rm -f -- $installPackageDir/$version/lib/*.la
 
    Quiet popd
    [ -d "$sandbox_rw" ] && leftovers=`(cd $sandbox_rw; find * | grep -v ${installPackageDir}/${version}-safelinking) 2>/dev/null`
