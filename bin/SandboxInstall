@@ -300,6 +300,15 @@ then
           cp -a $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
           rm -rf -- $installPackageDir/$version/share/pkgconfig
       fi
+
+      # man -> share/man
+      rmdir $installPackageDir/$version/man 2> /dev/null
+      if [ -d $installPackageDir/$version/man ]
+      then
+          mkdir -p $installPackageDir/$version/share/man
+          cp -a $installPackageDir/$version/man/* $installPackageDir/$version/share/man
+          rm -rf -- $installPackageDir/$version/man
+      fi
    fi
 
    rm -f $installPackageDir/$version/share/info/dir
