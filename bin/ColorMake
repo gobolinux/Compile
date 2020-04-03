@@ -6,9 +6,9 @@ Import GoboLinux
 
 # XXX "Real vs. rootless" support
 if [ -x /bin/make ]
-then makecmd=/bin/make
+then makecmd="/bin/make -j$(nproc)"
 elif [ -x /usr/bin/make ]
-then makecmd=/usr/bin/make
+then makecmd="/usr/bin/make -j$(nproc)"
 fi
 
 for i in "$@"
