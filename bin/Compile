@@ -205,22 +205,9 @@ function wrapup() {
             Log_Verbose $(cat "$recipedeps")
          fi
       fi
-      packerror=
-      if ! Boolean "batch" && [ -z "$GOBOLINUX_RUNNER" ]
-      then
-         Log_Normal "Packing recipe directory..."
-         PackRecipe $noweb "$app" "$versionandrevision" || {
-            Log_Error "Failed packing recipe."
-            packerror=yes
-         }
-      fi
+
       Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-      if [ "${packerror}" == "yes" ]
-      then 
-         Log_Terse "You need to fix the errors reported by RecipeLint before running 'ContributeRecipe $app $versionandrevision'."
-      else
-         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
-      fi
+      Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
    fi
    if [ -n "$post_install_message" ]
    then
