@@ -61,7 +61,7 @@ function Verify_Files() {
             then
                Log_Normal "Warning: no MD5/SHA checksum."
                Log_Normal "Assuming $file is complete based only on size."
-               return 2
+               return 0
             elif [ "$file_sum" = "$sum" ]
             then
                Log_Verbose "$file is complete and matches MD5/SHA checksum."
