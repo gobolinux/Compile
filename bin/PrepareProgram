@@ -31,6 +31,7 @@ Add_Option_Entry   "c" "configure" "Specify program to be used as 'configure' sc
 Add_Option_Boolean "a" "autoconf" "Assume configure is based on autoconf, skipping detection."
 Add_Option_Boolean "A" "no-autoconf" "Assume configure is NOT based on autoconf, skipping detection."
 Add_Option_Boolean "D" "no-default-options" "Skip detection altogether, use only configure options passed on the command-line."
+Add_Option_Boolean "p" "programs" "Prepare for build directly in /Programs, not $goboIndex"
 
 Parse_Options "$@"
 
@@ -110,7 +111,7 @@ rm -f config.cache
 
 Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
    
-if [ "$goboIndex" ]
+if [ "$goboIndex" ] ! Boolean "programs"
 then
    configureprefix="$goboIndex"
    configuresettings="$goboSettings"

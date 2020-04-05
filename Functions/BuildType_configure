@@ -27,6 +27,7 @@ configure_do_configuration() {
          --verbose
          --configure $configure
          `[ "$override_default_options" = "yes" ] && echo "--no-default-options"`
+         `[ "$build_in_programs" = "yes" ] && echo "--programs"`
       )
       PrepareProgram $batch $keep ${prepareoptions[*]} "$appname" "$versionnumber" ${config:+"--" "${config[@]}"} || return 1
    ) || return 1
