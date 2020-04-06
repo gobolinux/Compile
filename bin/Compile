@@ -623,7 +623,7 @@ function construct_arrays() {
       LDCONFIG="true"
    )
    
-   if [ "$goboIndex" ] && ! grep -q "fuse$" /proc/filesystems
+   if ! grep -q "fuse$" /proc/filesystems
    then
       compileInstallOptions=(
          "${compileInstallOptions[@]}"
@@ -771,17 +771,14 @@ function gather_common_options() {
    unset installmerged
    eval $(Combine_Arrays installmerged compileInstallOptions compileMakeOptions make_variables install_variables)
    
-   if [ ! -z "$goboIndex" ]
-   then
-      for bm in "${buildmerged[@]}"
-      do
-         tmpbuildmerged=(
-            "${tmpbuildmerged[@]}"
-            "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
-         )
-      done
-      buildmerged=("${tmpbuildmerged[@]}")
-   fi
+   for bm in "${buildmerged[@]}"
+   do
+      tmpbuildmerged=(
+         "${tmpbuildmerged[@]}"
+         "$(echo "${bm}" | sed "s,$target,$goboIndex,g")"
+      )
+   done
+   buildmerged=("${tmpbuildmerged[@]}")
    
    if [ "$makefile" = "" ]
    then makefile=Makefile

@@ -21,11 +21,8 @@ xmkmf_do_configuration() {
       "${installmerged[@]}"
    )
 
-   if [ ! -z "$goboIndex" ]
-   then
-      buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
-      installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
+   buildmerged=(`echo ${buildmerged[@]} | sed "s,$target,$goboIndex,g"`)
+   installmerged=(`echo ${installmerged[@]} | sed "s,$target,$goboIndex,g"`)
    $make Makefiles "${buildmerged[@]}"
 }
 

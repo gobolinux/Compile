@@ -208,89 +208,87 @@ then
    find -type f -name "*_DELETED~" | xargs rm -f &> /dev/null
    find -type f -name "\.wh.*" | xargs rm -f &> /dev/null
    find -type d | xargs rmdir -p --ignore-fail-on-non-empty &> /dev/null
-   if [ "$goboIndex" ]
+
+   # Sometimes writes to symlinks let files appear in a previous directory of the same program.
+   # We try to detect these cases here, moving files written there to the appropriate place.
+   ls "./$installPackageDir" 2> /dev/null | grep -v "$version\|Current\|Settings\|Variable" | while read wrong_version
+   do
+      installPackageDirWrongVersion="./$installPackageDir/$wrong_version"
+      installPackageDirVersion="$installPackageDir/$version"
+      Log_Verbose "Fixing files copied into previous version"
+      for file in $(ls $installPackageDirWrongVersion)
+      do
+         Log_Verbose "$installPackageDirWrongVersion/$file -> $installPackageDirVersion/"
+         cp -a "$installPackageDirWrongVersion/$file" "$installPackageDirVersion/"
+      done
+   done
+
+   # Aggressively move everything that was installed into other programs' dirs
+   # back into the area of the one we are installing.
+   [ -d ./Programs ] && for p in `ls ./Programs | grep -v "^$package$"`
+   do
+      for entry in ./Programs/$p/*
+      do
+         if Ends_With "/Settings" $entry
+         then
+            mkdir -p $default_settings
+            cp -a $verbose $entry/* $default_settings/
+         elif Ends_With "/Variable" $entry
+         then
+            cp -a $verbose $entry/* $installPackageDir/Variable/
+         else
+            cp -a $verbose $entry/* $installPackageDir/$version/
+         fi
+      done
+      rm -rf ./Programs/$p
+   done
+   rm -rf ./Programs
+
+   # This doesn't use $goboIndex because $goboIndex is actually /usr.
+   # This is confusing. We should clean this up.
+   mkdir -p $default_settings
+   cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
+   cp -a $verbose ./$goboSettings/* $default_settings 2>/dev/null
+   cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
+   rm -rf ./usr/local
+   cp -a $verbose ./usr/* $installPackageDir/$version 2>/dev/null
+   rm -rf ./usr 2> /dev/null
+   rm -f $installPackageDir/$version/etc/mtab
+   rmdir --ignore-fail-on-non-empty $installPackageDir/$version/etc 2> /dev/null
+   rm -rf ./$goboSystem/Index
+   rm -rf ./$goboSettings
+   rmdir $sandbox_rw/System 2> /dev/null
+
+   # lib64 -> lib
+   if [ -d $installPackageDir/$version/lib64 ]
    then
-      # Sometimes writes to symlinks let files appear in a previous directory of the same program.
-      # We try to detect these cases here, moving files written there to the appropriate place.
-      ls "./$installPackageDir" 2> /dev/null | grep -v "$version\|Current\|Settings\|Variable" | while read wrong_version
-      do
-         installPackageDirWrongVersion="./$installPackageDir/$wrong_version"
-         installPackageDirVersion="$installPackageDir/$version"
-         Log_Verbose "Fixing files copied into previous version"
-         for file in $(ls $installPackageDirWrongVersion)
-         do
-            Log_Verbose "$installPackageDirWrongVersion/$file -> $installPackageDirVersion/"
-            cp -a "$installPackageDirWrongVersion/$file" "$installPackageDirVersion/"
-         done
-      done
+       libfiles=$(find $installPackageDir/$version/lib -type f 2> /dev/null | wc -l | awk {'print $1'})
+       if [ $libfiles -eq 0 ]
+       then
+           rmdir $installPackageDir/$version/lib
+           mv $installPackageDir/$version/{lib64,lib}
+       elif [ -d $installPackageDir/$version/lib ]
+       then
+           cp -a $installPackageDir/$version/lib64/* $installPackageDir/$version/lib
+           rm -rf -- $installPackageDir/$version/lib64
+       fi
+   fi
 
-      # Aggressively move everything that was installed into other programs' dirs
-      # back into the area of the one we are installing.
-      [ -d ./Programs ] && for p in `ls ./Programs | grep -v "^$package$"`
-      do
-         for entry in ./Programs/$p/*
-         do
-            if Ends_With "/Settings" $entry
-            then
-               mkdir -p $default_settings
-               cp -a $verbose $entry/* $default_settings/
-            elif Ends_With "/Variable" $entry
-            then
-               cp -a $verbose $entry/* $installPackageDir/Variable/
-            else
-               cp -a $verbose $entry/* $installPackageDir/$version/
-            fi
-         done
-         rm -rf ./Programs/$p
-      done
-      rm -rf ./Programs
+   # share/pkgconfig -> lib/pkgconfig
+   if [ -d $installPackageDir/$version/share/pkgconfig ]
+   then
+       mkdir -p $installPackageDir/$version/lib/pkgconfig
+       cp -a $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
+       rm -rf -- $installPackageDir/$version/share/pkgconfig
+   fi
 
-      # This doesn't use $goboIndex because $goboIndex is actually /usr.
-      # This is confusing. We should clean this up.
-      mkdir -p $default_settings
-      cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
-      cp -a $verbose ./$goboSettings/* $default_settings 2>/dev/null
-      cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
-      rm -rf ./usr/local
-      cp -a $verbose ./usr/* $installPackageDir/$version 2>/dev/null
-      rm -rf ./usr 2> /dev/null
-      rm -f $installPackageDir/$version/etc/mtab
-      rmdir --ignore-fail-on-non-empty $installPackageDir/$version/etc 2> /dev/null
-      rm -rf ./$goboSystem/Index
-      rm -rf ./$goboSettings
-      rmdir $sandbox_rw/System 2> /dev/null
-
-      # lib64 -> lib
-      if [ -d $installPackageDir/$version/lib64 ]
-      then
-          libfiles=$(find $installPackageDir/$version/lib -type f 2> /dev/null | wc -l | awk {'print $1'})
-          if [ $libfiles -eq 0 ]
-          then
-              rmdir $installPackageDir/$version/lib
-              mv $installPackageDir/$version/{lib64,lib}
-          elif [ -d $installPackageDir/$version/lib ]
-          then
-              cp -a $installPackageDir/$version/lib64/* $installPackageDir/$version/lib
-              rm -rf -- $installPackageDir/$version/lib64
-          fi
-      fi
-
-      # share/pkgconfig -> lib/pkgconfig
-      if [ -d $installPackageDir/$version/share/pkgconfig ]
-      then
-          mkdir -p $installPackageDir/$version/lib/pkgconfig
-          cp -a $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
-          rm -rf -- $installPackageDir/$version/share/pkgconfig
-      fi
-
-      # man -> share/man
-      rmdir $installPackageDir/$version/man 2> /dev/null
-      if [ -d $installPackageDir/$version/man ]
-      then
-          mkdir -p $installPackageDir/$version/share/man
-          cp -a $installPackageDir/$version/man/* $installPackageDir/$version/share/man
-          rm -rf -- $installPackageDir/$version/man
-      fi
+   # man -> share/man
+   rmdir $installPackageDir/$version/man 2> /dev/null
+   if [ -d $installPackageDir/$version/man ]
+   then
+       mkdir -p $installPackageDir/$version/share/man
+       cp -a $installPackageDir/$version/man/* $installPackageDir/$version/share/man
+       rm -rf -- $installPackageDir/$version/man
    fi
 
    rm -f $installPackageDir/$version/share/info/dir
@@ -299,6 +297,7 @@ then
    rm -f -- $installPackageDir/$version/lib/*.la
 
    Quiet popd
+
    [ -d "$sandbox_rw" ] && leftovers=`(cd $sandbox_rw; find * | grep -v ${installPackageDir}/${version}-safelinking) 2>/dev/null`
    [ "$leftovers" ] && {
       Log_Normal "Left over files:\n$leftovers"

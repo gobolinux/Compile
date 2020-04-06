@@ -29,10 +29,7 @@ waf_do_configuration() {
 }
 
 waf_do_build() {
-   if [ ! -z "$goboIndex" ]
-   then waf_variables=(`echo ${waf_variables[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
-
+   waf_variables=(`echo ${waf_variables[@]} | sed "s,$target,$goboIndex,g"`)
    $waf "${waf_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
 }
 

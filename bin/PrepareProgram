@@ -111,7 +111,7 @@ rm -f config.cache
 
 Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
    
-if [ "$goboIndex" ] && ! Boolean "programs"
+if ! Boolean "programs"
 then
    configureprefix="$goboIndex"
    configuresettings="$goboSettings"
@@ -168,7 +168,7 @@ else
 fi
 
 eval `Args_To_Array args 3`
-if [ -n "$goboIndex" -a -n "$args" ]
+if [ -n "$args" ]
 then
    for a in "${args[@]}"
    do

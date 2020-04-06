@@ -19,10 +19,7 @@ scons_do_build() {
    fi
    Add_Use_Flags_Options_To_Array scons_variables
 
-   if [ ! -z "$goboIndex" ]
-   then scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
-
+   scons_variables=(`echo ${scons_variables[@]} | sed "s,$target,$goboIndex,g"`)
    $scons "${scons_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
 }
 

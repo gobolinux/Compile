@@ -18,10 +18,7 @@ cabal_do_configuration(){
       )
    fi
    Add_Use_Flags_Options_To_Array cabal_options
-   if [ ! -z "$goboIndex" ]
-   then
-      cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
-   fi
+   cabal_options=(`echo ${cabal_options[@]} | sed "s,$target,$goboIndex,g"`)
 
    for f in Setup.lhs Setup.hs ; do
       [ -e ${sourcedir}/${f} ] && cabal_setup="$f";
