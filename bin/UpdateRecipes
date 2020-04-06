@@ -41,55 +41,7 @@ fi
 # Prepare Environment
 ##################################################
 
-Check_Dir_Variable compileGetRecipeDir
+Check_Dir_Variable compileRecipeDir
 
-##################################################
-# Operation
-##################################################
-
-app="$(Arg 1)"
-
-function get_recipes_for_app() {
-   for recipe in `FindPackage --types=recipe --full-list $1`
-   do
-      #[detsch], getrecipe now receives a full url/path
-      GetRecipe "$recipe" > /dev/null
-   done
-}
-
-if [ "$app" ]
-then       
-   get_recipes_for_app "$app"
-else
-   for getRecipeStoreHttp in "${getRecipeStores[@]}"
-   do
-      lsfile="$getRecipeStoreHttp/RecipeList"
-      Log_Normal "Updating recipes from store $getRecipeStoreHttp"
-      tmpls=$(wget $lsfile -O - 2>/dev/null)
-      
-      for recipename in ${tmpls}
-      do
-         noext="$recipename"
-         noext=${noext%--recipe.tar.bz2}
-         packagename=${noext%--*}
-         packageversion=${noext##*--}
-         recipeurl="$getRecipeStoreHttp/$recipename"
-         if Boolean "all"
-         then # getrecipe
-            GetRecipe "$recipeurl" > /dev/null
-         elif Boolean "all-latest"
-         then
-            if [ `FindPackage --type recipe $packagename 2> /dev/null` = "$recipeurl" ]
-            then GetRecipe "$recipeurl" > /dev/null
-            fi
-         else # only create stub directory
-            $sudo mkdir -p "$compileGetRecipeDir/$packagename/$packageversion"
-         fi
-      done
-
-      if [ "$?" == "0" ] && ! Boolean "thorough"
-      then
-         break 2
-      fi
-   done
-fi
+cd $compileRecipeDir
+git pull

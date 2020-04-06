@@ -189,8 +189,7 @@ function wrapup() {
          fi
       fi
    fi
-   # Some additional actions for LocalRecipes (adding info inside Resources, packing)
-   if Starts_With "$compileLocalRecipesDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   if [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
       if [ "$app" = "$appname" ]
       then
@@ -206,8 +205,11 @@ function wrapup() {
          fi
       fi
 
-      Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-      Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      if git status "$recipedir/Recipe" --porcelain | grep -q "\?\?"
+      then
+         Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      fi
    fi
    if [ -n "$post_install_message" ]
    then
@@ -354,7 +356,6 @@ function prepare_environment() {
    Check_Dir_Variable compileDependenciesDir
    Check_Dir_Variable compileArchivesDir
    Check_Dir_Variable compileSourcesDir
-   Check_Dir_Variable compilePackedRecipesDir
    [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
    
    # if $recipe is inherited via Runner respawn...

@@ -72,11 +72,11 @@ function step_two() {
 
    packagename=`Get_Token "$recipedir" "/" "-2"`
    versionandrevision=`Get_Token "$recipedir" "/" "-1"`
-   newrecipedir="$compileLocalRecipesDir/$packagename/$versionandrevision"
+   newrecipedir="$compileRecipesDir/$packagename/$versionandrevision"
    if [ "$recipedir" != "$newrecipedir" ]
    then
       Log_Normal "Copying recipe from $recipedir to $newrecipedir"
-      mkdir -p "$compileLocalRecipesDir/$packagename"
+      mkdir -p "$compileRecipesDir/$packagename"
       cp -R "$recipedir" "$newrecipedir"
       recipedir="$newrecipedir"
    fi

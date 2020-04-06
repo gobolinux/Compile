@@ -53,8 +53,8 @@ fi
 
 [ "$PAGER" ] || PAGER=less
 
-Check_Dir_Variable compileLocalRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compileLocalRecipesDir}" -o ! -x "${compileLocalRecipesDir}" ] && $sudo_exec chown $(whoami) "${compileLocalRecipesDir}"
+Check_Dir_Variable compileRecipesDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compileRecipesDir}" -o ! -x "${compileRecipesDir}" ] && $sudo_exec chown $(whoami) "${compileRecipesDir}"
 
 if [ "$(Arg 3)" ]
 then
@@ -118,11 +118,9 @@ packagename=`NamingConventions "$packagename"`
 
 if ! Boolean "no-check" && ! Boolean "batch"
 then
-   sameversionrecipe=`FindPackage --types=recipe $packagename $versionnumber 2> /dev/null`
-   if [ "$sameversionrecipe" ]
+   if Has_Recipe pull $packagename $versionnumber
    then
-      Log_Question "There is already a recipe for $packagename $versionnumber, at"
-      Log_Question "$sameversionrecipe"
+      Log_Question "There is already a recipe for $packagename $versionnumber."
       if ! Ask "Create another?"
       then
          exit 0
@@ -130,7 +128,7 @@ then
             
    else
       ignorelist="\--\(cvs\|svn\|git\|bzr\|hg\)\|/\(cvs\|svn\|git\|bzr\|hg\)-r[0-9]*"
-      sameprogramrecipe=`FindPackage --types=recipe $packagename 2> /dev/null | grep -vi "$ignorelist"`
+      sameprogramrecipe=`Which_Recipe none $packagename | grep -vi "$ignorelist"`
       if [ "$sameprogramrecipe" ]
       then
          Log_Question "There is already a recipe for $packagename, at"
@@ -160,10 +158,10 @@ then
    fi
 fi
 
-recipedir="$compileLocalRecipesDir/$packagename/$versionnumber"
+recipedir="$compileRecipesDir/$packagename/$versionnumber"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$packagename" ] && [ ! -w "$compileLocalRecipesDir/$packagename" -o ! -x "$compileLocalRecipesDir/$packagename" ] && $sudo_exec chown $(whoami) "$compileLocalRecipesDir/$packagename"
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$packagename/$versionnumber" ] && [ ! -w "$compileLocalRecipesDir/$packagename/$versionnumber" -o ! -x "$compileLocalRecipesDir/$packagename/$versionnumber" ] && $sudo_exec chown -R $(whoami) "$compileLocalRecipesDir/$packagename/$versionnumber"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename" ] && [ ! -w "$compileRecipesDir/$packagename" -o ! -x "$compileRecipesDir/$packagename" ] && $sudo_exec chown $(whoami) "$compileRecipesDir/$packagename"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename/$versionnumber" ] && [ ! -w "$compileRecipesDir/$packagename/$versionnumber" -o ! -x "$compileRecipesDir/$packagename/$versionnumber" ] && $sudo_exec chown -R $(whoami) "$compileRecipesDir/$packagename/$versionnumber"
 mkdir -p $recipedir/Resources
 
 recipefile="$recipedir/Recipe"

@@ -9,6 +9,7 @@ Import OptionParser
 Import File
 Import GoboLinux
 Import Compile
+Import RecipeTools
 
 ##################################################
 # Options and configuration
@@ -19,133 +20,20 @@ Parse_Conf Compile.conf
 helpOnNoArguments=yes
 scriptDescription="Fetch a recipe and insert it in the recipes tree."
 scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
-scriptUsage="[<recipe-url>|<recipe-path>|<program-name> [program-version]]"
-#scriptNotes="A full path to a recipe [that can be an url, a compressed local" \
-#"recipe or an uncompressed one] is received, and the recipe is placed in" \
-#"$compileGetRecipeDir"
-Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes."
-Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when downloading files. NOTE: This can be dangerous!"
+scriptUsage="<program-name> [program-version]"
+Add_Option_Boolean "W" "no-web" "fully offline operation."
 
 Parse_Options "$@"
-
-unset noweb
-unset ignore_certificate
-get_recipe_extra_params=""
-Boolean "no-web" && noweb="--no-web"
-Boolean "no-check-certificate" && {
-   ignore_certificate=1
-   get_recipe_extra_params="--no-check-certificate"
-}
 
 ##################################################
 # Prepare Environment
 ##################################################
 
-Check_Dir_Variable compileGetRecipeDir
-# Ensure that current user can read and write recipes
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileGetRecipeDir" -o ! -x "$compileGetRecipeDir" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir"
+cd $compileRecipesDir
 
-if ! Is_URL "$(Arg 1)" && ! { echo "$(Arg 1)" | Quiet grep "/" ;} && ! [ -f "$(Arg 1)" ]
-then
-   url=`FindPackage --type=recipe $noweb $(Arg 1) $(Arg 2)`
-   if [ "${url}" ]
-   then
-      GetRecipe $noweb "${url}" $get_recipe_extra_params
-      exit $?
-   else
-      Log_Terse "Recipe for" $(Arg 1) $(Arg 2) "not found" 
-      exit 1
-   fi
-fi
+# sets 'recipedir', 'program' and 'version'
+# fails if recipe is not found
+Set_Recipe_Program_And_Version_From_Args $(Boolean "no-web" && echo none)
 
-for (( i=1 ; i<=$(Number_Of_Arguments) ; i++ ))
-do
-   rawrecipe=$(Arg $i)
-   # Getting program name and version
-   if [ -d "$rawrecipe" ]
-   then
-      app=`Get_Token "${rawrecipe%/}" "/" "-2"`
-      version=`Get_Token "${rawrecipe%/}" "/" "-1"`
-   else
-      x=`basename "$rawrecipe"`
-      app=`Get_Token "$x" "--" "0"`
-      version=`Get_Token "$x" "--" "1"`
-   fi
-   
-   Log_Verbose "Trying to get $app $version from $rawrecipe"
-   Log_Normal "Trying to get $rawrecipe"
-
-   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app" ] && [ ! -w "$compileGetRecipeDir/$app" -o ! -x "$compileGetRecipeDir/$app" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app"
-   [ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileGetRecipeDir/$app/$version" ] && [ ! -w "$compileGetRecipeDir/$app/$version" -o ! -x "$compileGetRecipeDir/$app/$version" ] && $sudo_exec chown `whoami` "$compileGetRecipeDir/$app/$version"
-
-   #####################################################
-   # Case #1 and #2: recipe is a local directory
-   #####################################################
-   if [ -d "$(Arg 1)" ]
-   then
-      #####################################################
-      # Case #1: recipe is already in $compileRecipeDirs[@]
-      #####################################################
-   
-      for compileRecipeDir in "${compileRecipeDirs[@]}"
-      do
-         if Starts_With $compileRecipeDir "$rawrecipe"
-         then
-            echo "$compileRecipeDir/$app/$version"
-            exit 0
-         fi
-      done
-      
-      #####################################################
-      # Case #2: recipe is a local directory, but not at $compileRecipeDirs[@]
-      #####################################################
-      mkdir -p "$compileGetRecipeDir/$app/$version"
-      cp -R "${rawrecipe%%/}"/* "$compileGetRecipeDir/$app/$version"
-      echo "$compileGetRecipeDir/$app/$version"
-      exit 0
-   fi
-   
-   
-   #####################################################
-   # Case #3: recipe is a local compressed file
-   #####################################################
-   if [ -f "$rawrecipe" ] && Ends_With "--recipe.tar.bz2" "$rawrecipe"
-   then
-      Verbose tar xjvf "$rawrecipe" -C "$compileGetRecipeDir"
-      echo "$compileGetRecipeDir/$app/$version"
-      exit 0
-   fi
-   
-   
-   #####################################################
-   # Case #4: recipe is a remote compressed file (url)
-   #####################################################
-   
-   if ! Boolean "no-web" && Is_URL "$rawrecipe"
-   then
-      Log_Normal "Downloading recipe from $rawrecipe"
-      wget="wget"
-      if [[ $ignore_certificate -eq 1 ]]
-      then
-         Log_Normal "NOTE: Ignoring certificates when downloading recipes"
-         wget="wget --no-check-certificate"
-      fi
-      $wget --header='Accept: application/x-gobo-recipe, application/x-bzip2;q=0.9, */*;q=0.1' -t 5 "$rawrecipe" -O - -q | Verbose tar xjvf - -C "$compileGetRecipeDir"
-      [ ${PIPESTATUS[0]} != 0 ] && Die "Could not fetch recipe. Check URL (${rawrecipe})"
-      
-      if [ -d "$compileGetRecipeDir/$app/$version" ]
-      then
-         echo "$compileGetRecipeDir/$app/$version"
-         exit 0
-      fi
-   fi
-   
-   #####################################################
-   # Case #5: error...
-   #####################################################
-   
-   Log_Normal "Error getting recipe $rawrecipe"
-
-done
-
-Die "Could not get recipe"
+echo "$recipedir"
+exit 0
