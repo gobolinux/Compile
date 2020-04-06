@@ -326,12 +326,8 @@ function respawn_with_runner() {
 function prepare_environment() {
    Check_Dir_Variable compileDir
    chown `whoami` "${compileDir}"
-   [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
-   for compileRecipeDir in "${compileRecipeDirs[@]}"
-   do
-      Assert_Dir "$compileRecipeDir"
-   done
-   Check_Dir_Variable compileDependenciesDir
+   [ -z "${compileRecipesDir}" ] && Die "\$compileRecipesDir is not set. Please update your Compile.conf."
+   Assert_Dir "$compileRecipesDir"
    Check_Dir_Variable compileArchivesDir
    Check_Dir_Variable compileSourcesDir
    chown `whoami` "${compileSourcesDir}"

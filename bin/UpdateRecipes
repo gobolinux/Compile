@@ -21,7 +21,7 @@ scriptCredits="(C) 2003-2004 Carlo Calica et al. Released under the GNU GPL."
 scriptUsage="[<program>]"
 scriptNotes="When updating a single program, $scriptName will download "\
 "all its available recipes. When no program is specified, $scriptName will "\
-"fetch the recipe list and populate $compileGetRecipeDir with directory "\
+"fetch the recipe list and populate $compileRecipesDir with directory "\
 "entries (and download the recipes only if --all is used)."
 Add_Option_Boolean "a" "all" "Download contents of updated recipes. "\
 "By default, $scriptName will only fetch the recipe list and generate "\
@@ -32,7 +32,7 @@ Add_Option_Boolean "t" "thorough" "Check all availabe mirrors for updates. "\
 "By default, only the first working mirror (as configured in Compile.conf) is used."
 Parse_Options "$@"
 
-if Is_Writable "$compileGetRecipeDir"
+if Is_Writable "$compileRecipesDir"
 then sudo=
 else sudo="sudo -u #0"
 fi

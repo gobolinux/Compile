@@ -7,14 +7,9 @@ Import RecipeTools
 # Setting up variables
 ##################################################
 
-if [ "$compileRecipeDir" ]
-then
-   compileRecipeDirs=("$compileRecipeDir" "${compileRecipeDirs[@]}")
-fi
-
 if [ -z "$compileRecipeDir" ]
 then
-   compileRecipeDir="${compileRecipeDirs[0]}"
+   compileRecipeDir="${compileRecipesDir}"
 fi
 
 compileSupportedArchitectures=("i686" "x86_64" "ppc" "arm" "sh4")
