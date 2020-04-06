@@ -166,32 +166,29 @@ function wrapup() {
       Log_Normal "Generating package's build information..."
       GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
    fi
-   if [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   if [ "$app" = "$appname" ]
    then
-      if [ "$app" = "$appname" ]
+      recipedeps="$reciperesources/Dependencies"
+      Quiet mkdir -p "$reciperesources"
+
+      cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation" || wrap_fail "Failed installing file."
+
+      if [ ! -f "$recipedeps" ]
       then
-         recipedeps="$reciperesources/Dependencies"
-         Quiet mkdir -p "$reciperesources"
-
-         cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation" || wrap_fail "Failed installing file."
-
-         if [ ! -f "$recipedeps" ]
-         then
-            cp "$target/Resources/BuildInformation" "$recipedeps" || wrap_fail "Failed installing file."
-            Log_Verbose $(cat "$recipedeps")
-         fi
+         cp "$target/Resources/BuildInformation" "$recipedeps" || wrap_fail "Failed installing file."
+         Log_Verbose $(cat "$recipedeps")
       fi
-
-      (
-         cd "$recipedir"
-         if git status "Recipe" --porcelain | grep -q "\?\?"
-         then
-            echo
-            Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-            Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
-         fi
-      )
    fi
+
+   (
+      cd "$recipedir"
+      if git status "Recipe" --porcelain | grep -q "\?\?"
+      then
+         echo
+         Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+      fi
+   )
    if [ -n "$post_install_message" ]
    then
       Log_Normal "$app: $post_install_message"
@@ -328,7 +325,7 @@ function respawn_with_runner() {
 
 function prepare_environment() {
    Check_Dir_Variable compileDir
-   [ -z "$ROOTLESS_GOBOLINUX" ] && chown `whoami` "${compileDir}"
+   chown `whoami` "${compileDir}"
    [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
    for compileRecipeDir in "${compileRecipeDirs[@]}"
    do
@@ -337,7 +334,7 @@ function prepare_environment() {
    Check_Dir_Variable compileDependenciesDir
    Check_Dir_Variable compileArchivesDir
    Check_Dir_Variable compileSourcesDir
-   [ -z "$ROOTLESS_GOBOLINUX" ] && chown `whoami` "${compileSourcesDir}"
+   chown `whoami` "${compileSourcesDir}"
    
    # if $recipe is inherited via Runner respawn...
    if [ "$recipe" ]

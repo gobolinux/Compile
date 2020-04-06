@@ -29,7 +29,7 @@ Import Compile
 unset packagename versionnumber
 
 Check_Dir_Variable compileRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileRecipesDir" -o ! -x "$compileRecipesDir" ] && chown `whoami` "${compileRecipesDir}"
+[ ! -w "$compileRecipesDir" -o ! -x "$compileRecipesDir" ] && chown `whoami` "${compileRecipesDir}"
 
 if [ -z "$(Arg 2)" ]
 then
@@ -40,8 +40,8 @@ app="$(Arg 1)"
 newversion="$(Arg 2)"
 newurl="$(Arg 3)"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$app" ] && [ ! -w "$compileRecipesDir/$app" -o ! -x "$compileRecipesDir/$app" ] && chown `whoami` "$compileRecipesDir/$app"
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$app/$newversion" ] && [ ! -w "$compileRecipesDir/$app/$newversion" -o ! -x "$compileRecipesDir/$app/$newversion" ] && chown -R `whoami` "$compileRecipesDir/$app/$newversion"
+[ -d "$compileRecipesDir/$app" ] && [ ! -w "$compileRecipesDir/$app" -o ! -x "$compileRecipesDir/$app" ] && chown `whoami` "$compileRecipesDir/$app"
+[ -d "$compileRecipesDir/$app/$newversion" ] && [ ! -w "$compileRecipesDir/$app/$newversion" -o ! -x "$compileRecipesDir/$app/$newversion" ] && chown -R `whoami` "$compileRecipesDir/$app/$newversion"
 
 if Is_Entry "former-name"
 then srcApp="`Entry "former-name"`"

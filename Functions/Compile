@@ -280,7 +280,7 @@ function do_fetch() {
             fi
             case $REPLY in
             [Rr]) rm -rf "${basedir}" 2>/dev/null ;;
-            [Bb]) mv "${basedir}" "${basedir}.backup" ;;
+            [Bb]) mv "${basedir}" "${basedir}.backup"; chown -R `whoami` "${basedir}.backup" ;;
             [Uu]) nofetch=yes; skippatching=yes ;;
             [Cc]) Log_Error "Fetch cancelled by user."; return 3 ;;
             esac # esac is ridiculous.
@@ -347,7 +347,7 @@ function do_unpack() {
       fi
       case $REPLY in
       [Rr]) rm -rf "${basedir}" 2>/dev/null || rm -rf "${basedirs[0]}" ;;
-      [Bb]) mv "${basedir}" "${basedir}.backup" ;;
+      [Bb]) mv "${basedir}" "${basedir}.backup"; chown -R `whoami` "${basedir}.backup" ;;
       [Uu]) unpack=no; skippatching="yes" ;;
       [Cc]) exit 0 ;;
       esac # esac is ridiculous.
@@ -399,7 +399,7 @@ function do_unpack() {
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
          mkdir -p "$drop"
-         [ -z "$ROOTLESS_GOBOLINUX" ] && $chown -R --reference="${tempdir}" "${tempdir}"
+         $chown -R --reference="${tempdir}" "${tempdir}"
          Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
          rm -rf "${tempdir}"
          Quiet popd

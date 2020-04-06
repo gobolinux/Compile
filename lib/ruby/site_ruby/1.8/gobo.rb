@@ -256,16 +256,12 @@ class GoboApplication
     end
 
     def verifySuperuser
-      if ENV['ROOTLESS_GOBOLINUX']
-        logNormal "Bypassing verification for superuser"
-      else
-        if Process.uid != 0
-          logVerbose "Running as superuser..."
-          # Revalidate password for another 5 mins"
-          system 'sudo -u "#0" -v' 
-          # Run with superuser's HOME.
-          exec "sudo " << ["-u", "\"#0\"", "-H", $0, "#{@savedArgs.join(' ')}"].join(" ")
-        end
+      if Process.uid != 0
+        logVerbose "Running as superuser..."
+        # Revalidate password for another 5 mins"
+        system 'sudo -u "#0" -v'
+        # Run with superuser's HOME.
+        exec "sudo " << ["-u", "\"#0\"", "-H", $0, "#{@savedArgs.join(' ')}"].join(" ")
       end
     end # End of verifySuperuser
  
