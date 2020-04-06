@@ -51,12 +51,9 @@ unset unionsandbox
 
 if ! Boolean "no-sandbox"
 then
-   if [ "$NO_UNIONFS" ]
+   if ! Union_Is_Supported
    then
-      Log_Terse "unionfs was bypassed with NO_UNIONFS. Fallback to FiboSandbox."
-   elif ! Union_Is_Supported
-   then
-      Log_Terse "unionfs is unavailable. Fallback to FiboSandbox."
+      Die "unionfs is unavailable. Cannot proceed with the installation."
    else
       Log_Normal "$(Union_Backend) is available. Using UnionSandbox."
       unionsandbox=yes
@@ -154,8 +151,6 @@ then
    else map_settings="--map ${unmanagedmap}"
    fi
    sandbox="UnionSandbox $verbose --writedir $sandbox_rw --sandbox $allowed $map_settings -- "
-else
-   sandbox="FiboSandbox $verbose --sandbox $allowed ${unmanagedmap:+--map ${unmanagedmap}} --"
 fi
 
 Boolean "no-sandbox" && sandbox=
