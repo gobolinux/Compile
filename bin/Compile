@@ -189,8 +189,7 @@ function wrapup() {
          fi
       fi
    fi
-   # Some additional actions for LocalRecipes (adding info inside Resources, packing)
-   if Starts_With "$compileLocalRecipesDir" "$reciperesources" && [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
+   if [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
       if [ "$app" = "$appname" ]
       then
@@ -205,20 +204,10 @@ function wrapup() {
             Log_Verbose $(cat "$recipedeps")
          fi
       fi
-      packerror=
-      if ! Boolean "batch" && [ -z "$GOBOLINUX_RUNNER" ]
+
+      if git status "$recipedir/Recipe" --porcelain | grep -q "\?\?"
       then
-         Log_Normal "Packing recipe directory..."
-         PackRecipe $noweb "$app" "$versionandrevision" || {
-            Log_Error "Failed packing recipe."
-            packerror=yes
-         }
-      fi
-      Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-      if [ "${packerror}" == "yes" ]
-      then 
-         Log_Terse "You need to fix the errors reported by RecipeLint before running 'ContributeRecipe $app $versionandrevision'."
-      else
+         Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
          Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
       fi
    fi
@@ -367,7 +356,6 @@ function prepare_environment() {
    Check_Dir_Variable compileDependenciesDir
    Check_Dir_Variable compileArchivesDir
    Check_Dir_Variable compileSourcesDir
-   Check_Dir_Variable compilePackedRecipesDir
    [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
    
    # if $recipe is inherited via Runner respawn...

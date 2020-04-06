@@ -4,13 +4,14 @@
 Import File
 Import GoboLinux
 Import OptionParser
+Import RecipeTools
 Parse_Conf Compile/Compile.conf
 
 helpOnNoArguments=yes
-scriptDescription="Perform all sorts of sanity checks in a recipe."
-scriptCredits="(C)2005-2006 Hisham Muhammad, released under the GNU GPL."
-scriptUsage="<recipe-file>"
-scriptExample="Foo--1.0--recipe.tar.bz2"
+scriptDescription="Perform all sorts of sanity checks on a recipe."
+scriptCredits="(C)2005-2020 Hisham Muhammad, released under the GNU GPL."
+scriptUsage="<recipe-name> [<recipe-version>]"
+scriptExample="Foo 1.0"
 Add_Option_Boolean "t" "thorough" "Perform thorough URL/file testing (don't use cache)."
 Add_Option_Boolean "D" "quick-and-dirty" "cut some corners (don't download files, etc; not recommended)."
 Add_Option_Boolean "W" "no-web" "fully offline operation (not recommended)."
@@ -23,6 +24,9 @@ Parse_Options "$@"
    errors=$[errors+1]
    exit 1
 }
+
+# sets 'recipedir', 'program' and 'version'
+Set_Recipe_Program_And_Version_From_Args $(Boolean "no-web" && echo none)
 
 if Boolean "no-web"
 then noweb=--no-web
@@ -88,11 +92,8 @@ function FATAL() {
 
 errors=0
 warnings=0
-recipetar=$(readlink -f "$(Arg 1)")
-[ "$recipetar" ] || recipetar="$(Arg 1)"
-recipename=$(basename "$recipetar")
 
-report=$goboTemp/$(basename "$recipetar" .tar.bz2).report.txt
+report=$goboTemp/$program--$version.report.txt
 touch "$report" &> /dev/null
 [ -w "$report" ] || {
    echo "No write permission for report file '$report'."
@@ -104,30 +105,12 @@ touch "$report" &> /dev/null
 echo
 msg "RecipeLint"
 msg "=========="
-msg "Checking $recipename on `date`"
+msg "Checking $program $version on `date`"
 ###############################################################################
-msg "Checking recipe file..."
-[ -f "$recipetar" ] || {
-   FATAL "$recipetar: Not a readable file."
+[ "$program" == `NamingConventions $program` ] || {
+   ERROR "Name $program does not follow naming conventions."
 }
-file "$recipetar" | grep -q "bzip2 compressed data" || {
-   FATAL "$recipetar: Not a bzip2 file."
-}
-###############################################################################
-msg "Checking recipe package name..."
-name="${recipename%%--*}"
-version="${recipename#*--}"
-rest="${version#*--}"
-version="${version%%--*}"
-
-msg "Checking name for conventions..."
-[ "$rest" == "recipe.tar.bz2" ] || {
-   FATAL "Invalid file name (does not end in --recipe.tar.bz2)."
-}
-[ "$name" == `NamingConventions $name` ] || {
-   ERROR "Name $name does not follow naming conventions."
-}
-echo "$recipetar" | grep -q " " && {
+echo "$program--$version" | grep -q " " && {
    ERROR "Name or version contains spaces."
 }
 
@@ -151,23 +134,6 @@ echo "$pureversion" | grep -q "[0-9]\|^cvs$\|^svn$\|^git$\|^bzr$\|^hg$" || {
 }
 
 ###############################################################################
-cd $lintdir
-tar jxpf "$recipetar" || {
-   FATAL "Could not unpack. Corrupted file?"
-}
-msg "Checking recipe package structure..."
-[ -d "$name" ] || {
-   FATAL "Can't find program directory inside tarball."
-}
-[ -d "$name/$version" ] || {
-   FATAL "Can't find version directory inside tarball."
-}
-[ "`ls`" == "$name" ] || {
-   WARN "Spurious files in root of recipe tarball: `ls | grep -v ^$name$`."
-}
-[ "`ls \"$name\"`" == "$version" ] || {
-   WARN "Spurious files in package dir of recipe tarball: `ls \"$name\" | grep -v ^$version$`."
-}
 arches=()
 function check_dir() {
    local file
@@ -198,13 +164,13 @@ function check_dir() {
       esac
    done
 }
-check_dir root "$name/$version"
+check_dir root "$recipedir"
 for arch in "${arches[@]}"
 do
-   check_dir non-root "$name/$version/$arch"
+   check_dir non-root "$recipedir/$arch"
 done
 ###############################################################################
-cd "$name/$version"
+cd "$recipedir"
 msg "Checking recipe contents..."
 [ -f Recipe ] || {
    FATAL "No Recipe file."
@@ -576,8 +542,8 @@ test_urls() {
 }
 
 test_recipe() {
-   target="${goboPrograms}/$name/$version"
-   settings_target="${goboPrograms}/$name/Settings"
+   target="${goboPrograms}/$program/$version"
+   settings_target="${goboPrograms}/$program/Settings"
    variable_target="${goboVariable}"
    source Recipe
    [ "$1" -a -e "$1/Recipe" ] && source "$1/Recipe"
@@ -626,7 +592,7 @@ test_recipe() {
          }
          Boolean "quick-and-dirty" && continue
          msg "Checking availability of sub-recipe $iname $version..."
-         FindPackage $noweb --type recipe "$iname" "$iversion" &> /dev/null || {
+         Has_Recipe none "$iname" "$iversion" || {
             ERROR "Required recipe $iname $iversion not found in repository."
          }
       done
@@ -799,10 +765,7 @@ test_resources() {
    msg "Checking resources..."
    if [ "$part_of" ]
    then
-      if [ "$noweb" ]
-      then meta=`FindPackage --type recipe "$part_of" &> /dev/null`
-      else meta=`GetRecipe "$part_of"`
-      fi
+      meta=`GetRecipe "$noweb" "$part_of"`
       [ $? != 0 ] && ERROR "Meta-recipe $part_of not found in repository."
       Quiet pushd $meta
    fi
@@ -823,7 +786,7 @@ test_resources() {
          ERROR "Dependencies file contains deprecated Perl module dependency:\n$(grep "^Perl-" $depfile)\n\nUse instead:\n$(grep "^Perl-" $depfile | sed 's,Perl-,CPAN:,g;s,-,::,g')"
       }
       missing_deps() {
-         CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist $name $version recipe $PWD | while read d_program d_version d_type d_url;
+         CheckDependencies $noweb --types=$1 --mode=all --quiet-progress --no-recursive --no-blacklist $program $version recipe $PWD | while read d_program d_version d_type d_url;
          do
             if [ "$d_type" = "None" ]
             then

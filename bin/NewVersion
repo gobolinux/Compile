@@ -28,8 +28,8 @@ Import Compile
 
 unset packagename versionnumber
 
-Check_Dir_Variable compileLocalRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileLocalRecipesDir" -o ! -x "$compileLocalRecipesDir" ] && $sudo_exec chown `whoami` "${compileLocalRecipesDir}"
+Check_Dir_Variable compileRecipesDir
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "$compileRecipesDir" -o ! -x "$compileRecipesDir" ] && $sudo_exec chown `whoami` "${compileRecipesDir}"
 
 if [ -z "$(Arg 2)" ]
 then
@@ -40,8 +40,8 @@ app="$(Arg 1)"
 newversion="$(Arg 2)"
 newurl="$(Arg 3)"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app" ] && [ ! -w "$compileLocalRecipesDir/$app" -o ! -x "$compileLocalRecipesDir/$app" ] && $sudo_exec chown `whoami` "$compileLocalRecipesDir/$app"
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileLocalRecipesDir/$app/$newversion" ] && [ ! -w "$compileLocalRecipesDir/$app/$newversion" -o ! -x "$compileLocalRecipesDir/$app/$newversion" ] && $sudo_exec chown -R `whoami` "$compileLocalRecipesDir/$app/$newversion"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$app" ] && [ ! -w "$compileRecipesDir/$app" -o ! -x "$compileRecipesDir/$app" ] && $sudo_exec chown `whoami` "$compileRecipesDir/$app"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$app/$newversion" ] && [ ! -w "$compileRecipesDir/$app/$newversion" -o ! -x "$compileRecipesDir/$app/$newversion" ] && $sudo_exec chown -R `whoami` "$compileRecipesDir/$app/$newversion"
 
 if Is_Entry "former-name"
 then srcApp="`Entry "former-name"`"
@@ -53,14 +53,9 @@ then sourceVersion="`Entry "source"`"
 else sourceVersion=''
 fi
 
-Log_Normal "Locating a recipe for $srcApp..."
-rawrecipe=`FindPackage --type=recipe "$srcApp" "$sourceVersion"  2> /dev/null`
-[ "$rawrecipe" ] || Die "Could not find a recipe for $srcApp"
-Log_Normal "Found recipe for $srcApp at $rawrecipe"
-
-bakedrecipedir=`GetRecipe $rawrecipe`
+bakedrecipedir=`GetRecipe "$srcApp" "$sourceVersion"`
 [ "$bakedrecipedir" ] || Die "Error getting recipe"
-Log_Normal "Recipe placed in $bakedrecipedir"
+Log_Normal "Recipe found in $bakedrecipedir"
 
 [ -f "$bakedrecipedir/Recipe" ] || Die "$bakedrecipedir/Recipe not found"
 oldrecipe=$bakedrecipedir/Recipe
@@ -86,7 +81,7 @@ fi
 
 Log_Normal "Creating recipe for $packagename $newversion based on $oldversionandrevision."
 
-destinationDir="$compileLocalRecipesDir"
+destinationDir="$compileRecipesDir"
 newrecipedir="$destinationDir/$packagename/$newversion"
 
 mkdir -p "$destinationDir/$packagename"

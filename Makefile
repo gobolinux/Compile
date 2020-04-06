@@ -6,7 +6,7 @@ DESTDIR = $(PREFIX)/$(goboPrograms)/$(PROGRAM)/$(VERSION)
 INSTALL_DIR = install -d
 INSTALL_FILE = install
 man_files = $(shell grep -l Parse_Options bin/* | xargs -i echo {}.1)
-scripts = ApplyVariables Compile FetchArchive GoboPath2Ruby NewVersion PrepareProgram  AutoPatch ContributeRecipe FiboSandbox NoRecipe RecipeLint UnionSandbox ColorMake EditRecipe GetRecipe MakeRecipe PackRecipe SandboxInstall UpdateRecipes 
+scripts = ApplyVariables Compile FetchArchive GoboPath2Ruby NewVersion PrepareProgram  AutoPatch ContributeRecipe FiboSandbox NoRecipe RecipeLint UnionSandbox ColorMake EditRecipe GetRecipe MakeRecipe SandboxInstall UpdateRecipes 
 
 .PHONY: all clean install uninstall
 
