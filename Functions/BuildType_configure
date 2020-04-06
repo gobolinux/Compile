@@ -12,7 +12,7 @@ configure_do_configuration() {
    Add_Use_Flags_Options_To_Array config
    [ "$needs_build_directory" = "yes" ] && configure="${sourcedir}/$configure"
 
-   [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || $sudo_exec chmod +x "$configure" 2>/dev/null )
+   [ -f "$configure" ] && ( chmod +x "$configure" 2>/dev/null || chmod +x "$configure" 2>/dev/null )
    (
       for i in "${configure_variables[@]}"
       do

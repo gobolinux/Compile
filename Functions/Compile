@@ -228,8 +228,8 @@ function real_run_hook() {
    echo "source ${recipe}" >> ${hookscript}
    [ -e "$archrecipe" ] && echo "source ${archrecipe}" >> ${hookscript}
    echo "$hookname" >> ${hookscript}
-   $sudo_exec chmod a+x "${hookscript}"
-   $sudo_exec env SUDO_OK=1 "${hookscript}"
+   chmod a+x "${hookscript}"
+   "${hookscript}"
    rtn=$?
    rm -f ${hookscript}
    return ${rtn}
@@ -279,8 +279,8 @@ function do_fetch() {
                Ask_Option "What to do? [R]emove and check out/[B]ackup and check out/[U]se it/[C]ancel."
             fi
             case $REPLY in
-            [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedir}" ;;
-            [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
+            [Rr]) rm -rf "${basedir}" 2>/dev/null || rm -rf "${basedir}" ;;
+            [Bb]) mv "${basedir}" "${basedir}.backup" || { mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && chown -R `whoami` "${basedir}.backup"; } ;;
             [Uu]) nofetch=yes; skippatching=yes ;;
             [Cc]) Log_Error "Fetch cancelled by user."; return 3 ;;
             esac # esac is ridiculous.
@@ -346,8 +346,8 @@ function do_unpack() {
          Ask_Option "What to do? [R]emove and reunpack/[B]ackup and reunpack/[U]se it/[C]ancel."
       fi
       case $REPLY in
-      [Rr]) rm -rf "${basedir}" 2>/dev/null || $sudo_exec rm -rf "${basedirs[0]}" ;;
-      [Bb]) mv "${basedir}" "${basedir}.backup" || { $sudo_exec mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown -R `whoami` "${basedir}.backup"; } ;;
+      [Rr]) rm -rf "${basedir}" 2>/dev/null || rm -rf "${basedirs[0]}" ;;
+      [Bb]) mv "${basedir}" "${basedir}.backup" || { mv "${basedir}" "${basedir}.backup"; [ -z "$ROOTLESS_GOBOLINUX" ] && chown -R `whoami` "${basedir}.backup"; } ;;
       [Uu]) unpack=no; skippatching="yes" ;;
       [Cc]) exit 0 ;;
       esac # esac is ridiculous.
@@ -387,7 +387,7 @@ function do_unpack() {
 
       if [ "$unpack_files" -o $i -eq 0 ]; then
          Quiet pushd "$compileSourcesDir"
-         [ -d "${tempdir}" ] && $sudo_exec rm -rf "${tempdir}"
+         [ -d "${tempdir}" ] && rm -rf "${tempdir}"
          mkdir "${tempdir}"
       fi
 
@@ -399,7 +399,7 @@ function do_unpack() {
 
       if [ "$unpack_files" -o $i -eq $(( ${#files[@]} - 1 )) ]; then
          mkdir -p "$drop"
-         [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec $chown -R --reference="${tempdir}" "${tempdir}"
+         [ -z "$ROOTLESS_GOBOLINUX" ] && $chown -R --reference="${tempdir}" "${tempdir}"
          Quiet mv "${tempdir}"/"$skipdir"/* "${tempdir}"/"$skipdir"/.[A-z]* "$drop"
          rm -rf "${tempdir}"
          Quiet popd
@@ -497,20 +497,20 @@ function do_symlink() {
 function install_extras() {
    if [ -d "$reciperesources" ]
    then
-      $sudo_exec cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
+      cp -Rf "$reciperesources" "$installprefix" || wrap_fail "Failed copying files."
    fi
    if [ -d "$archreciperesources" ]
    then
-      $sudo_exec cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
+      cp -Rf "$archreciperesources" "$installprefix" || wrap_fail "Failed copying files."
    fi
    if [ "$revision" ]
    then
-      echo "$revision" | $sudo_exec tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
+      echo "$revision" | tee "$installprefix/Resources/Revision" >/dev/null || wrap_fail "Failed installing file."
    fi
 
    if [ "$app" = "$appname" ]
    then
-      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | $sudo_exec tee "$installprefix/Resources/Dependencies" >/dev/null
+      CheckDependencies --mode=convert --file $recipedir/Resources/Dependencies | tee "$installprefix/Resources/Dependencies" >/dev/null
    fi
 
    if [ "$app" ]
@@ -527,8 +527,8 @@ function install_extras() {
          do
             if [ -e "$d/$i" ]
             then
-               $sudo_exec mkdir -p "$docdir" || return 1
-               $sudo_exec cp -a "$d/$i" "$docdir" || return 1
+               mkdir -p "$docdir" || return 1
+               cp -a "$d/$i" "$docdir" || return 1
             fi
          done
          Quiet popd
@@ -537,14 +537,14 @@ function install_extras() {
 
    if [ "${unmanaged_files[*]}" ] 
    then
-      $sudo_exec rm -f -- $target/Resources/UnmanagedFiles
+      rm -f -- $target/Resources/UnmanagedFiles
       for file in "${unmanaged_files[@]}"
-      do echo $file | sed 's,'"$goboPrefix"'/,/,' | $sudo_exec tee -a "$target/Resources/UnmanagedFiles" >/dev/null
+      do echo $file | sed 's,'"$goboPrefix"'/,/,' | tee -a "$target/Resources/UnmanagedFiles" >/dev/null
       done
       if echo "${unmanaged_files[@]}" | grep -q "$goboModules" && [ "$app" != "Linux" ]
       then
-         $sudo_exec mkdir -p "$target/$(basename $goboShared)/Compile/Recompile/Linux"
-         $sudo_exec touch "$target/$(basename $goboShared)/Compile/Recompile/Linux/$app"
+         mkdir -p "$target/$(basename $goboShared)/Compile/Recompile/Linux"
+         touch "$target/$(basename $goboShared)/Compile/Recompile/Linux/$app"
       fi
    fi
    return 0

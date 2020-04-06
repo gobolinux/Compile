@@ -12,15 +12,15 @@ manifest_do_install() {
          fullsrc="${src}"
       fi
       fulldst="${installprefix}/${dst}"
-      $sudo_exec mkdir -p $(dirname "$fulldst")
+      mkdir -p $(dirname "$fulldst")
       if Ends_With "/" "$fulldst"
       then
-         $sudo_exec mkdir -p "$fulldst"
+         mkdir -p "$fulldst"
       fi
       Log_Normal "Installing ${fullsrc} into ${fulldst}"
       if [ -d "${fullsrc}" -a -d "${fulldst}" ]
-      then $sudo_exec cp -Rv --no-preserve=ownership "${fullsrc}"/* "${fulldst}"
-      else $sudo_exec cp -Rv --no-preserve=ownership ${fullsrc} "${fulldst}"
+      then cp -Rv --no-preserve=ownership "${fullsrc}"/* "${fulldst}"
+      else cp -Rv --no-preserve=ownership ${fullsrc} "${fulldst}"
       fi
    done
 }

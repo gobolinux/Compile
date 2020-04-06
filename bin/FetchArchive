@@ -72,12 +72,12 @@ do
    '
 done
 
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${savedir}" -o ! -x "${savedir}" ] && $sudo_exec chown `whoami` "${savedir}"
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${savedir}" -o ! -x "${savedir}" ] && chown `whoami` "${savedir}"
 
 savesourcedir="${sourcedir}"
 [ -z "${sourcedir}" ] && sourcedir="$(echo ${recipe} | sed 's,.*/\([^/]*\)/\([^/]*\)/Recipe,\1-\2,')"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "${sourcedir}" ] && [ ! -w "${sourcedir}" -o ! -x "${sourcedir}" ] && $sudo_exec chown -R `whoami` "${sourcedir}"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "${sourcedir}" ] && [ ! -w "${sourcedir}" -o ! -x "${sourcedir}" ] && chown -R `whoami` "${sourcedir}"
 
 cd "$savedir"
 
@@ -177,7 +177,7 @@ fi
 for i in `seq 0 $[${#urls[@]}-1]`
 do
    file="${files[i]}"
-   [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && $sudo_exec chown `whoami` "$file"
+   [ -z "$ROOTLESS_GOBOLINUX" -a -f "${file}" -a ! -w "${file}" ] && chown `whoami` "$file"
    # First verification to know if we need to download it again
    if Boolean "no-verify-files"
    then
