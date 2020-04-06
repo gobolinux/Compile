@@ -111,7 +111,7 @@ rm -f config.cache
 
 Exists "$configureprogram" || Die "configure script "`[ $configureprogram != "./configure" ] && echo " ($configureprogram) "`"not found."
    
-if [ "$goboIndex" ] ! Boolean "programs"
+if [ "$goboIndex" ] && ! Boolean "programs"
 then
    configureprefix="$goboIndex"
    configuresettings="$goboSettings"
