@@ -1,0 +1,102 @@
+function Find_Recipe_Program_And_Version() {
+   local action="$1"
+   local entry="$2"
+   version="$3"
+
+   if [ "$action" = "pull" ]
+   then
+      (
+         cd $compileRecipesDir
+         git pull >&2
+      )
+   fi
+
+   if ! echo $entry | grep -q /
+   then
+      entry=`ls "$compileRecipesDir" | grep -i "^$entry$"`
+      [ "$entry" ] || return 1
+      entry="$compileRecipesDir/$entry"
+   else
+      if [ -f "$entry/Recipe" ]
+      then
+         version=$(basename $entry)
+         entry=$(dirname $entry)
+      fi
+   fi
+   
+   [ -d "$entry" ] || return 2
+
+   program=`basename $entry`
+   recipedir="$entry/$version"
+
+   if ! [ "$version" ]
+   then
+      [ `ls "$entry" | wc -l` -eq 1 ] || {
+         # pick latest
+         version=$(ls --sort=version "$compileRecipesDir/$program" | tail -n 1)
+         if [ "$version" ]
+         then
+            recipedir="$compileRecipesDir/$program/$version"
+            return 0
+         else
+            return 3
+         fi
+      }
+      version=`ls "$entry"`
+   fi
+
+   recipedir="$entry/$version"
+   [ -d "$recipedir" ] || return 4
+
+   return 0
+}
+
+# if you only want to know if where a recipe is without the side effects
+function Which_Recipe() {
+   saverecipedir=$recipedir
+   saveprogram=$program
+   saveversion=$version
+
+   Find_Recipe_Program_And_Version "$@"
+   ret=$?
+   if [ "$ret" = 0 ]
+   then
+      echo $recipedir
+   fi
+
+   recipedir=$saverecipedir
+   program=$saveprogram
+   version=$saveversion
+
+   return $ret
+}
+
+# if you only want to know if a recipe exists without the side effects
+function Has_Recipe() {
+   Which_Recipe "$@" &>/dev/null
+   return $?
+}
+
+function Set_Recipe_Program_And_Version_From_Args() {
+   action=$1
+   [ "$action" ] || action=pull
+   
+   if file "$(Arg 1)" | grep -q bzip2
+   then
+      Die "Recipe files are not supported."
+   fi
+
+   Find_Recipe_Program_And_Version "$action" "$(Arg 1)" "$(Arg 2)"
+   case $? in
+   1) Die "Could not find $(Arg 1) in $compileRecipesDir."
+      ;;
+   2) Die "Could not read $(Arg 1)."
+      ;;
+   3) Die "Could not find a version of $(Arg 1) in $compileRecipesDir."
+      ;;
+   4) Die "Version $(Arg 2) does not exist for $(Arg 1). Available versions are:\n$(ls $recipedir/..)"
+      ;;
+   esac # esac is still ridiculous!
+
+   return 0   
+}
