@@ -258,6 +258,7 @@ cat Recipe | perl -e '
       cmake_options => "array",
       autogen => "string",
       autogen_before_configure => "bool",
+      build_in_programs => "bool",
       build_variables => "array",
       install_variables => "array",
       make_variables => "array",
@@ -672,6 +673,7 @@ test_recipe() {
       configure_options=configure
       autogen_before_configure=configure
       autogen=configure
+      build_in_programs=configure,makefile,cmake,xmkmf,meson,scons,cabal,waf
       build_variables=configure,makefile,cmake,xmkmf,meson,scons,cabal,waf
       install_variables=configure,makefile,cmake,xmkmf,meson,scons,cabal,waf
       make_variables=configure,makefile,xmkmf
