@@ -35,7 +35,7 @@ Parse_Options "$@"
 
 ### Operation #################################################################
 
-Verify_Superuser
+Is_Writable "${goboPrograms}" || Die "Needs write access to ${goboPrograms}"
 
 Is_Directory "$sandboxroot" && Quiet rmdir "$sandboxroot"
 Is_Directory "$sandboxroot" && Die "Could not remove $sandboxroot"

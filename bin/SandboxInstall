@@ -37,7 +37,7 @@ Dir_Set Sandbox || Set_Boolean "no-sandbox"
 
 if Dir_Set Sandbox
 then
-   Is_Writable "$goboPrograms" || Verify_Superuser
+   Is_Writable "${goboPrograms}" || Die "Needs write access to ${goboPrograms}"
 fi
 
 ### Version ####################################################################

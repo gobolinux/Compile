@@ -36,7 +36,8 @@ Parse_Conf Directories.conf
 Boolean "verbose" && verbose="--verbose"
 
 ### Operation #################################################################
-Verify_Superuser
+
+Is_Writable "${goboPrograms}" || Die "Needs write access to ${goboPrograms}"
 
 [ "$1" ] || Die "Please specify a command to be executed inside the sandbox."
 Union_Is_Supported || Die "unionfs is unavailabe on this system."

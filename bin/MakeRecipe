@@ -54,7 +54,7 @@ fi
 [ "$PAGER" ] || PAGER=less
 
 Check_Dir_Variable compileRecipesDir
-[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compileRecipesDir}" -o ! -x "${compileRecipesDir}" ] && $sudo_exec chown $(whoami) "${compileRecipesDir}"
+[ -z "$ROOTLESS_GOBOLINUX" ] && [ ! -w "${compileRecipesDir}" -o ! -x "${compileRecipesDir}" ] && chown $(whoami) "${compileRecipesDir}"
 
 if [ "$(Arg 3)" ]
 then
@@ -160,8 +160,8 @@ fi
 
 recipedir="$compileRecipesDir/$packagename/$versionnumber"
 
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename" ] && [ ! -w "$compileRecipesDir/$packagename" -o ! -x "$compileRecipesDir/$packagename" ] && $sudo_exec chown $(whoami) "$compileRecipesDir/$packagename"
-[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename/$versionnumber" ] && [ ! -w "$compileRecipesDir/$packagename/$versionnumber" -o ! -x "$compileRecipesDir/$packagename/$versionnumber" ] && $sudo_exec chown -R $(whoami) "$compileRecipesDir/$packagename/$versionnumber"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename" ] && [ ! -w "$compileRecipesDir/$packagename" -o ! -x "$compileRecipesDir/$packagename" ] && chown $(whoami) "$compileRecipesDir/$packagename"
+[ -z "$ROOTLESS_GOBOLINUX" -a -d "$compileRecipesDir/$packagename/$versionnumber" ] && [ ! -w "$compileRecipesDir/$packagename/$versionnumber" -o ! -x "$compileRecipesDir/$packagename/$versionnumber" ] && chown -R $(whoami) "$compileRecipesDir/$packagename/$versionnumber"
 mkdir -p $recipedir/Resources
 
 recipefile="$recipedir/Recipe"

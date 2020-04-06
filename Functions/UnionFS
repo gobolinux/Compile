@@ -25,16 +25,16 @@ function Union_Mount() {
    local union="$1"
    local rw_ro=`echo $2 | sed 's/\(.*\)=rw:\(.*\)=ro:\(.*\)=tmp/\1=rw:\2=ro/g'`
    case "$union" in
-      "funionfs") $sudo_exec funionfs -o dirs="$rw_ro" -o nonempty none "$3" ;;
+      "funionfs") funionfs -o dirs="$rw_ro" -o nonempty none "$3" ;;
       "overlayfs")
          upper=`echo $2 | sed 's/\(.*\)=rw:\(.*\)=ro:\(.*\)=tmp/\1/g'`
          lower=`echo $2 | sed 's/\(.*\)=rw:\(.*\)=ro:\(.*\)=tmp/\2/g'`
          work=`echo  $2 | sed 's/\(.*\)=rw:\(.*\)=ro:\(.*\)=tmp/\3/g'`
-         $sudo_exec mount -t overlay none -o "lowerdir=$lower,upperdir=$upper,workdir=$work" "$3" ;;
-      "unionfs") $sudo_exec mount -t unionfs -o dirs="$rw_ro" none "$3" ;;
+         mount -t overlay none -o "lowerdir=$lower,upperdir=$upper,workdir=$work" "$3" ;;
+      "unionfs") mount -t unionfs -o dirs="$rw_ro" none "$3" ;;
       "unionfs-fuse")
          dirs=`echo "$rw_ro" | sed 's/=[^:]*//g'`
-         $sudo_exec unionfs -o cow -o nonempty "$rw_ro" "$3";;
+         unionfs -o cow -o nonempty "$rw_ro" "$3";;
    esac
 }
 
@@ -43,7 +43,7 @@ function Union_Add() {
    case "$union" in
       "funionfs") false ;;
       "overlayfs") false ;;
-      "unionfs") $sudo_exec mount -t unionfs -o remount,add=:"$2" none "$3" ;;
+      "unionfs") mount -t unionfs -o remount,add=:"$2" none "$3" ;;
       "unionfs-fuse") false ;;
    esac
 }
@@ -53,9 +53,9 @@ function Union_Umount() {
    local union="$1"
    shift
    case "$union" in
-      "funionfs") for mp in $@; do $sudo_exec fusermount -u "$mp"; done ;;
-      "overlayfs")  for mp in $@; do $sudo_exec umount "$mp"; done ;;
-      "unionfs")  for mp in $@; do $sudo_exec umount "$mp"; done ;;
-      "unionfs-fuse") for mp in $@; do $sudo_exec fusermount -u "$mp"; done ;;
+      "funionfs") for mp in $@; do fusermount -u "$mp"; done ;;
+      "overlayfs")  for mp in $@; do umount "$mp"; done ;;
+      "unionfs")  for mp in $@; do umount "$mp"; done ;;
+      "unionfs-fuse") for mp in $@; do fusermount -u "$mp"; done ;;
    esac
 }

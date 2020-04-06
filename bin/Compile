@@ -54,7 +54,6 @@ Add_Option_Boolean "I" "no-install" "Do not actually install the program."
 Add_Option_Boolean "W" "no-web" "Do not check remote site for recipes, and bypass fetching of archives."
 Add_Option_Entry   "l" "symlink" "If symlinks should be created and wether they should be forced on conflicts."  "yes" "yes no force"
 Add_Option_Boolean "T" "no-strip" "Do not strip executables."
-Add_Option_Boolean "G" "no-sign" "Do not sign program."
 Add_Option_Boolean "U" "no-updatesettings" "Do not update settings for the program"
 Add_Option_Boolean "M" "no-unmanaged" "Do not install unmanaged files."
 Add_Option_Boolean "L" "lazy" "'Lazy mode': cut some corners when rebuilding; debugging aid: do NOT use it for building packages."
@@ -70,13 +69,7 @@ Add_Option_Boolean "" "no-check-certificate" "Do not check certificates when dow
 Parse_Conf Compile.conf
 Parse_Options "$@"
 
-if [ -z "$ROOTLESS_GOBOLINUX" ] && ! $sudo_validate
-then
-   Ask "You are trying to compile $(Arg 1) as normal user without privileges.\n\
-Should a rootless environment be set up instead?" && {
-      CreateRootlessEnvironment && . ~/Programs/Rootless/Current/bin/StartRootless
-   }
-fi
+Is_Writable "${goboPrograms}" || Die "Needs write access to ${goboPrograms}"
 
 [ "$compileFlags" ] && Parse_Options $compileFlags
 
@@ -93,17 +86,13 @@ arg1="$(Arg 1)"
 if ! Is_URL "$arg1" && ! [ "${arg1#*:}" = "$arg1" ]
 then
    Log_Normal "Alien install of $(Arg 1) $(Arg 2)"
-   $sudo_exec Alien --install "$(Arg 1)" "$(Arg 2)"
+   Alien --install "$(Arg 1)" "$(Arg 2)"
    exit $?
 fi
 
 if Is_Entry "configure-options"
 then userconfigureoptions=(`Entry "configure-options"`)
 else userconfigureoptions=()
-fi
-
-if [ "$compileDisableSudo" = "yes" ]
-then sudo_exec=
 fi
 
 wrapup_wanted="${wrapup_wanted:-yes}"
@@ -149,8 +138,8 @@ function wrapup() {
       source_recipe
 
       # Save use flags information
-      echo "${useflags[*]}" | $sudo_exec tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
-      echo "$(Get_Architecture)" | $sudo_exec tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
+      echo "${useflags[*]}" | tee "$target/Resources/UseFlags" >/dev/null || wrap_fail "Failed installing file."
+      echo "$(Get_Architecture)" | tee "$target/Resources/Architecture" >/dev/null || wrap_fail "Failed installing file."
 
       # Save PackageSource
       local distro="GoboLinux $(cat $goboSettings/GoboLinuxVersion)"
@@ -172,22 +161,10 @@ function wrapup() {
       then fileinfo=$(printf "[File] %s\n" "$hg")
       fi
       local pkgsource=$(printf "%s\n[Distribution] %s\n[Host] %s\n" "$fileinfo" "$distro" "$archinfo")
-      echo "$pkgsource" | $sudo_exec tee "$target/Resources/PackageSource" >/dev/null || wrap_fail "Failed installing PackageSource file"
+      echo "$pkgsource" | tee "$target/Resources/PackageSource" >/dev/null || wrap_fail "Failed installing PackageSource file"
 
       Log_Normal "Generating package's build information..."
       GenBuildInformation --store "$appname" "$versionnumber" || wrap_fail "Failed installing build information file."
-
-      if ! Boolean "no-sign"
-      then
-         if [ -e "$target/Resources/Dependencies" ]
-         then
-            Log_Normal "Generating package's signature..."
-            SignProgram "$appname" "$versionnumber"
-         else
-            Log_Terse "Program does not have a Resources/Dependencies file."
-            Log_Terse "Not signing it yet."
-         fi
-      fi
    fi
    if [ ! "$ROOTLESS_GOBOLINUX" = "1" ]
    then
@@ -205,11 +182,15 @@ function wrapup() {
          fi
       fi
 
-      if git status "$recipedir/Recipe" --porcelain | grep -q "\?\?"
-      then
-         Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
-         Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
-      fi
+      (
+         cd "$recipedir"
+         if git status "Recipe" --porcelain | grep -q "\?\?"
+         then
+            echo
+            Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
+            Log_Normal "Please run 'ContributeRecipe $app $versionandrevision' to do this."
+         fi
+      )
    fi
    if [ -n "$post_install_message" ]
    then
@@ -347,7 +328,7 @@ function respawn_with_runner() {
 
 function prepare_environment() {
    Check_Dir_Variable compileDir
-   [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileDir}"
+   [ -z "$ROOTLESS_GOBOLINUX" ] && chown `whoami` "${compileDir}"
    [ "${compileRecipeDirs[*]}" ] || Die "Array \$compileRecipeDirs is not set. Please update your Compile.conf."
    for compileRecipeDir in "${compileRecipeDirs[@]}"
    do
@@ -356,7 +337,7 @@ function prepare_environment() {
    Check_Dir_Variable compileDependenciesDir
    Check_Dir_Variable compileArchivesDir
    Check_Dir_Variable compileSourcesDir
-   [ -z "$ROOTLESS_GOBOLINUX" ] && $sudo_exec chown `whoami` "${compileSourcesDir}"
+   [ -z "$ROOTLESS_GOBOLINUX" ] && chown `whoami` "${compileSourcesDir}"
    
    # if $recipe is inherited via Runner respawn...
    if [ "$recipe" ]
