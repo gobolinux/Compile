@@ -123,16 +123,16 @@ function Version_Number_From_Url() {
 
 Find_Recipe() {
    app="$1"
-   versionandrevision="$2"
+   appversion="$2"
    tarballurl="$3"
    
-   if Has_Substring "$versionandrevision" ":/"
+   if Has_Substring "$appversion" ":/"
    then
       tarballurl="$2"
-      versionandrevision=$(Version_Number_From_Url "$tarballurl")
+      appversion=$(Version_Number_From_Url "$tarballurl")
    fi
    
-   Find_Recipe_Program_And_Version pull "$app" "$versionandrevision"
+   Find_Recipe_Program_And_Version pull "$app" "$appversion"
    err=$?
    if [ "$err" = 0 ]
    then
@@ -142,11 +142,11 @@ Find_Recipe() {
 
    Find_Recipe_Program_And_Version no "$app" ""
    err=$?
-   if [ "$err" = 0 ] && [ "$versionandrevision" ]
+   if [ "$err" = 0 ] && [ "$appversion" ]
    then
-      Log_Terse "Could not find recipe for $app $versionandrevision."
-      { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $version?"
-      } && NewVersion $app $version "${tarballurl}"
+      Log_Terse "Could not find recipe for $app $appversion."
+      { Boolean "batch" || Ask_Continue "Attempt to create recipe for version $appversion?"
+      } && NewVersion $app $appversion "${tarballurl}"
       Find_Recipe_Program_And_Version no "$app" "" && {
          echo "$recipedir/Recipe"
          return 0
@@ -159,10 +159,10 @@ Find_Recipe() {
    if [ "$tarballurl" ]
    then
       Log_Normal "Will attempt to create one based on URL '$tarballurl'..."
-      if MakeRecipe --batch "$app" "$versionandrevision" "$tarballurl"
+      if MakeRecipe --batch "$app" "$appversion" "$tarballurl"
       then
          Log_Normal "Will attempt to use newly created recipe..."
-         Find_Recipe_Program_And_Version no "$app" "$versionandrevision" && {
+         Find_Recipe_Program_And_Version no "$app" "$appversion" && {
             echo "$recipedir/Recipe"
             return 0
          }
