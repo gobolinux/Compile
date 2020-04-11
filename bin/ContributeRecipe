@@ -180,7 +180,8 @@ EOF
 # sets 'recipedir', 'program' and 'version'
 Set_Recipe_Program_And_Version_From_Args
 
-RecipeLint $program $version || Die "Recipe failed validation. Not submitting."
+RecipeLint $program $version
+[ $? = 2 ] && Die "Recipe failed validation. Not submitting."
 
 handle_description "$name" "$version"
 
