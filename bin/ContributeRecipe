@@ -183,7 +183,7 @@ Set_Recipe_Program_And_Version_From_Args
 RecipeLint $program $version
 [ $? = 2 ] && Die "Recipe failed validation. Not submitting."
 
-handle_description "$name" "$version"
+handle_description "$program" "$version"
 
 [ -r "$recipedir/Resources/Description" ] || Die "No description file found. Not submitting."
 
