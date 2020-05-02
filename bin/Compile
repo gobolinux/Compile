@@ -177,8 +177,6 @@ function wrapup() {
       recipedeps="$reciperesources/Dependencies"
       Quiet mkdir -p "$reciperesources"
 
-      cp "$target/Resources/BuildInformation" "$reciperesources/BuildInformation" || wrap_fail "Failed installing file."
-
       if [ ! -f "$recipedeps" ]
       then
          cp "$target/Resources/BuildInformation" "$recipedeps" || wrap_fail "Failed installing file."
