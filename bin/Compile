@@ -71,6 +71,12 @@ Parse_Options "$@"
 
 Is_Writable "${goboPrograms}" || Die "Needs write access to ${goboPrograms}"
 
+if [ ! -d "${compileRecipesDir}/.git" ]
+then
+   Log_Normal "Initializing recipes repository"
+   git clone "${compileRecipesRepository}" "${compileRecipesDir}"
+fi
+
 [ "$compileFlags" ] && Parse_Options $compileFlags
 
 Boolean "lazy" && Set_Boolean "no-web"
