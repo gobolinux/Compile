@@ -45,10 +45,10 @@ handle_description() {
    local version="$2"
 
    # Handle descriptions
-   description="$name/$version/Resources/Description"
+   description="Resources/Description"
    if ! [ -e "$description" ]
    then
-      mkdir -p $name/$version/Resources/
+      mkdir -p Resources/
       DescribeProgram -m ascii $name > "$description"
       if [ `cat $description | wc -c` -eq 0 ]
       then
@@ -180,10 +180,12 @@ EOF
 # sets 'recipedir', 'program' and 'version'
 Set_Recipe_Program_And_Version_From_Args
 
-RecipeLint $program $version
-[ $? = 2 ] && Die "Recipe failed validation. Not submitting."
+cd "$recipedir"
 
 handle_description "$program" "$version"
+
+RecipeLint $program $version
+[ $? = 2 ] && Die "Recipe failed validation. Not submitting."
 
 [ -r "$recipedir/Resources/Description" ] || Die "No description file found. Not submitting."
 
@@ -199,7 +201,6 @@ do
   rm $i.bak
 done
 
-cd "$recipedir"
 branch="submit-$program-$version"
 git pull
 git checkout -B "$branch"
