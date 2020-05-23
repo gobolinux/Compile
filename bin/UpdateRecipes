@@ -41,7 +41,7 @@ fi
 # Prepare Environment
 ##################################################
 
-Check_Dir_Variable compileRecipeDir
+Check_Dir_Variable compileRecipesDir
 
-cd $compileRecipeDir
+cd $compileRecipesDir
 git pull
