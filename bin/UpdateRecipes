@@ -42,6 +42,13 @@ fi
 ##################################################
 
 Check_Dir_Variable compileRecipesDir
+Check_Dir_Variable compileRecipesRepository
 
-cd $compileRecipesDir
-git pull
+if [ ! -d "${compileRecipesDir}/.git" ]
+then
+   Log_Normal "Initializing recipes repository"
+   git clone "${compileRecipesRepository}" "${compileRecipesDir}"
+else
+   cd $compileRecipesDir
+   git pull
+fi
