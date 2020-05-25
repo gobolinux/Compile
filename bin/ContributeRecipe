@@ -218,7 +218,10 @@ then
    git stash pop
    git branch -D "submit-$program-$version"
 else
+   git config --global hub.protocol https
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
-   hub pull-request -b "$compileUpstreamBranch" -h "submit-$program-$version" -m "$program $version"
+   hub fork --remote-name origin-fork
+   git push --set-upstream  origin-fork "submit-$program-$version"
+   hub pull-request -b "origin/$compileUpstreamBranch" -h "origin-fork/submit-$program-$version" -m "$program $version"
 fi
 
