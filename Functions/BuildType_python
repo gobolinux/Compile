@@ -4,7 +4,7 @@ python_sane_check() {
 }
 
 # Can be overridden by the recipe
-python_major=
+python_major=${python_major:-}
 
 set_python_vars() {
    python=python${python_major}
