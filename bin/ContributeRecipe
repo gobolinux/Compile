@@ -223,6 +223,7 @@ else
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
    hub fork --remote-name origin-fork
    git push --set-upstream  origin-fork "submit-$program-$version"
-   hub pull-request -b "origin/$compileUpstreamBranch" -h "origin-fork/submit-$program-$version" -m "$program $version"
+   hub pull-request -p -h "origin-fork/submit-$program-$version" -m "$program $version"
+   git checkout master
 fi
 
