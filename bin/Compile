@@ -548,16 +548,16 @@ function handle_meta_recipe() {
          fi
       fi
       if Boolean "install-separately"
-      then in_host $0 $compileoptions --no-dependencies ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
-      else in_host $0 $compileoptions --no-dependencies --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
+      then $0 $compileoptions --no-dependencies ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
+      else $0 $compileoptions --no-dependencies --keep --app-name "$appname" --version-number "$versionnumber" ${userconfigureoptions:+--configure-options="${userconfigureoptions[@]}"} "$iname" "$iversion"
       fi
       if [ "$?" -gt 0 ]
       then
          Die "Compilation of $iname $iversion failed."
       fi
       if Boolean "install-separately"
-      then in_host SymlinkProgram "$iname" "$iversion"
-      else in_host SymlinkProgram "$appname" "$versionnumber"
+      then SymlinkProgram "$iname" "$iversion"
+      else SymlinkProgram "$appname" "$versionnumber"
       fi
    done
    Boolean "no-build" && exit 0
