@@ -1,6 +1,7 @@
 #!/bin/bash
 # ContributeRecipe - submits a GoboLinux recipe for review
 # Copyright (C) 2008-2020 Michael Homer
+# Copyright (C) 2020 Rune Morling
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +40,16 @@ Add_Option_Boolean "g" "gobo" "GoboLinux developer: push straight to repo."
 Parse_Options "$@"
 
 ### Utils #####################################################################
+
+# Actually enable pretending to do a command
+pretend() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      bash -v -c "$*"
+   fi
+}
 
 handle_description() {
    local name="$1"
@@ -177,6 +188,11 @@ EOF
 
 ### Operation #################################################################
 
+if Boolean "p"
+then
+   echo -e "\n*** Running with -p for 'pretend'. Will show commands but not commit changes to remotes.\n"
+fi
+
 # sets 'recipedir', 'program' and 'version'
 Set_Recipe_Program_And_Version_From_Args
 
@@ -202,28 +218,71 @@ do
 done
 
 branch="submit-$program-$version"
-git pull
-git checkout -B "$branch"
-git add .
-git commit -m "$program $version"
+
+echo -e "\n+++ Creating local branch \"$branch\" ...\n"
+
+pretend git pull
+pretend git checkout -B \"$branch\"
+pretend git add .
+pretend git commit -m \"$program $version\"
 
 if Boolean "gobo"
 then
-   git stash
-   cd "$compileRecipesDir"
-   git checkout "$compileUpstreamBranch" && \
-   git pull && \
-   git merge "submit-$program-$version" && \
-   git rebase && \
-   git push && \
-   git stash pop
-   git branch -D "submit-$program-$version"
+
+   echo -e "\n>>> GoboLinux Maintainer workflow selected ...\n"
+
+   # The IFS hack ensures that the array strings are newline terminated
+   #
+   IFS='
+'
+   ACTIONS=(
+      "git stash"
+      "cd \"$compileRecipesDir\""
+      "git checkout \"$compileUpstreamBranch\""
+      "git pull"
+      "git merge \"submit-$program-$version\""
+      "git rebase"
+      "git push"
+      "git stash pop"
+      "git branch -D \"submit-$program-$version\""
+  )
+
 else
-   git config hub.protocol https
+
+   echo -e "\n>>> GoboLinux Contributor workflow selected ...\n"
+
+   pretend git config hub.protocol https
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
-   hub fork --remote-name origin-fork
-   git push --set-upstream  origin-fork "submit-$program-$version"
-   hub pull-request -p -h "origin-fork/submit-$program-$version" -m "$program $version"
-   git checkout master
+
+   # The IFS hack ensures that the array strings are newline terminated
+   #
+   IFS='
+'
+   ACTIONS=( 
+      "hub fork --remote-name origin-fork"
+      "git push --set-upstream origin-fork submit-$program-$version"
+      "hub pull-request -p -h \"origin-fork/submit-$program-$version\" -m \"$program $version\""
+      "git checkout master"
+   )
+
 fi
 
+# These should probably only be shown in 'debug' mode   
+#echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
+#echo "GITHUB_USER: ${GITHUB_USER}"
+
+# Make sure that we account for authentication errors and keep trying until
+# we succeed or the user manually quits with CTRL+C.
+#
+# status=0 indicates success
+
+for CMD in ${ACTIONS[@]}; do
+   status=1
+   while [ $status -ne 0 ]
+   do
+      pretend "${CMD}"
+      status=$?
+   done
+done
+
+echo -e "\n=== Done.\n"
