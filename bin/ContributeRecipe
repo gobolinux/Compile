@@ -1,6 +1,7 @@
 #!/bin/bash
 # ContributeRecipe - submits a GoboLinux recipe for review
 # Copyright (C) 2008-2020 Michael Homer
+# Copyright (C) 2020 Rune Morling
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,11 +35,52 @@ scriptCredits="Copyright (C) 2008-2009 Michael Homer. Released under the GNU GPL
 helpOnNoArguments=yes
 scriptUsage="{ <recipe dir> | <recipe name> [<recipe version>] }"
 scriptExample="firefox"
-Add_Option_Boolean "p" "pretend" "Don't really submit, just dump the report to stdout."
 Add_Option_Boolean "g" "gobo" "GoboLinux developer: push straight to repo."
+Add_Option_Boolean "p" "pretend" "Don't really submit, just dump the report to stdout."
+Add_Option_Boolean "s" "show-secret" "Show secret GitHub oauth token on stdout."
 Parse_Options "$@"
 
 ### Utils #####################################################################
+
+# Actually enable pretending to do a command
+pretend() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      bash -v -c "$*"
+   fi
+}
+
+run_fail() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      bash -v -c "$*" || Die "Failed during: $*"
+   fi
+}
+
+run_retry() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      max_retries=3
+      i=0
+      status=1
+      while [ $status -ne 0 ]
+      do
+          if [ $i -eq $max_retries ]
+          then
+             Die "Max number of retries reached, aborting."
+          fi
+          bash -v -c "$*"
+          status=$?
+          i=$(( $i + 1 ))
+      done
+   fi
+}
 
 handle_description() {
    local name="$1"
@@ -177,6 +219,12 @@ EOF
 
 ### Operation #################################################################
 
+if Boolean "p"
+then
+   echo ""
+   Log_Normal "Running with '--pretend': Will show commands but not commit changes to remotes.\n"
+fi
+
 # sets 'recipedir', 'program' and 'version'
 Set_Recipe_Program_And_Version_From_Args
 
@@ -202,28 +250,53 @@ do
 done
 
 branch="submit-$program-$version"
-git pull
-git checkout -B "$branch"
-git add .
-git commit -m "$program $version"
+
+echo ""
+Log_Normal "Creating local branch \"$branch\" ...\n"
+
+run_fail git pull
+run_fail git checkout -B \"$branch\"
+run_fail git add .
+run_fail git commit -m \"$program $version\"
 
 if Boolean "gobo"
 then
-   git stash
-   cd "$compileRecipesDir"
-   git checkout "$compileUpstreamBranch" && \
-   git pull && \
-   git merge "submit-$program-$version" && \
-   git rebase && \
-   git push && \
-   git stash pop
-   git branch -D "submit-$program-$version"
+
+   echo ""
+   Log_Normal "GoboLinux Maintainer workflow selected ...\n"
+
+   run_fail git stash
+   run_fail cd \"$compileRecipesDir\"
+   run_fail git checkout \"$compileUpstreamBranch\"
+   run_fail git pull
+   run_fail git merge \"submit-$program-$version\"
+   run_fail git rebase
+   run_retry git push
+   run_fail git stash pop
+   run_fail git branch -D \"submit-$program-$version\"
+
 else
-   git config hub.protocol https
+
+   echo ""
+   Log_Normal "GoboLinux Contributor workflow selected ...\n"
+
+   pretend git config hub.protocol https
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
-   hub fork --remote-name origin-fork
-   git push --set-upstream  origin-fork "submit-$program-$version"
-   hub pull-request -p -h "origin-fork/submit-$program-$version" -m "$program $version"
-   git checkout master
+
+   echo ""
+   Log_Normal "When using 2FA, use GITHUB_TOKEN as your password (instead of your normal GitHub password)"
+   Log_Normal "Tip: Specify '-s' to have ContributeRecipe print your GITHUB_TOKEN for convenience.\n"
+
+   if Boolean "s"
+   then
+      Log_Normal "GITHUB_TOKEN: ${GITHUB_TOKEN}\n"
+   fi
+
+   run_retry hub fork --remote-name origin-fork
+   run_retry git push --set-upstream origin-fork \"submit-$program-$version\"
+   run_retry hub pull-request -p -h \"origin-fork/submit-$program-$version\" -m \"$program $version\"
+   run_fail git checkout master
 fi
 
+echo ""
+Log_Normal "All done.\n"
