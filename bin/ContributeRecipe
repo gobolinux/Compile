@@ -46,39 +46,31 @@ Parse_Options "$@"
 pretend() {
    if Boolean "p"
    then
-      echo "# $*"
+      echo "# $@"
    else
-      bash -v -c "$*"
+      $@
    fi
 }
 
 run_fail() {
    if Boolean "p"
    then
-      echo "# $*"
+      echo "# $@"
    else
-      bash -v -c "$*" || Die "Failed during: $*"
+      $@ || Die "Failed during: $@"
    fi
 }
 
 run_retry() {
    if Boolean "p"
    then
-      echo "# $*"
+      echo "# $@"
    else
-      max_retries=3
-      i=0
-      status=1
-      while [ $status -ne 0 ]
+      for i in $(seq 3)
       do
-          if [ $i -eq $max_retries ]
-          then
-             Die "Max number of retries reached, aborting."
-          fi
-          bash -v -c "$*"
-          status=$?
-          i=$(( $i + 1 ))
+         $@ && return
       done
+      Die "Max number of retries reached, aborting."
    fi
 }
 
@@ -252,12 +244,12 @@ done
 branch="submit-$program-$version"
 
 echo ""
-Log_Normal "Creating local branch \"$branch\" ...\n"
+Log_Normal "Creating local branch "$branch" ...\n"
 
 run_fail git pull
-run_fail git checkout -B \"$branch\"
+run_fail git checkout -B "$branch"
 run_fail git add .
-run_fail git commit -m \"$program $version\"
+run_fail git commit -m "$program $version"
 
 if Boolean "gobo"
 then
@@ -266,14 +258,14 @@ then
    Log_Normal "GoboLinux Maintainer workflow selected ...\n"
 
    run_fail git stash
-   run_fail cd \"$compileRecipesDir\"
-   run_fail git checkout \"$compileUpstreamBranch\"
+   run_fail cd "$compileRecipesDir"
+   run_fail git checkout "$compileUpstreamBranch"
    run_fail git pull
-   run_fail git merge \"submit-$program-$version\"
+   run_fail git merge "submit-$program-$version"
    run_fail git rebase
    run_retry git push
    run_fail git stash pop
-   run_fail git branch -D \"submit-$program-$version\"
+   run_fail git branch -D "submit-$program-$version"
 
 else
 
@@ -293,8 +285,8 @@ else
    fi
 
    run_retry hub fork --remote-name origin-fork
-   run_retry git push --set-upstream origin-fork \"submit-$program-$version\"
-   run_retry hub pull-request -p -h \"origin-fork/submit-$program-$version\" -m \"$program $version\"
+   run_retry git push --set-upstream origin-fork "submit-$program-$version"
+   run_retry hub pull-request -p -h "origin-fork/submit-$program-$version" -m "$program $version"
    run_fail git checkout master
 fi
 
