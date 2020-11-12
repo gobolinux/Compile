@@ -277,12 +277,23 @@ else
 
    echo ""
    Log_Normal "When using 2FA, use GITHUB_TOKEN as your password (instead of your normal GitHub password)"
-   Log_Normal "Tip: Specify '-s' to have ContributeRecipe print your GITHUB_TOKEN for convenience.\n"
+
+   OAUTH_MSG="Tip: Specify '-s' to have ContributeRecipe print your oauth_token for convenience."
 
    if Boolean "s"
    then
-      Log_Normal "GITHUB_TOKEN: ${GITHUB_TOKEN}\n"
+      if [ ! -z "${GITHUB_TOKEN}" ]
+      then
+         OAUTH_MSG="oauth_token: ${GITHUB_TOKEN}"
+      elif [ -f ~/.config/hub ]
+      then
+         OAUTH_MSG="$(grep oauth ~/.config/hub)"
+      else
+         OAUTH_MSG="Could not find a suitable GitHub oauth_token to display?"
+      fi
    fi
+
+   Log_Normal "${OAUTH_MSG}\n"
 
    run_retry hub fork --remote-name origin-fork
    run_retry git push --set-upstream origin-fork "submit-$program-$version"
