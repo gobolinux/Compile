@@ -51,6 +51,36 @@ pretend() {
    fi
 }
 
+run_fail() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      bash -v -c "$*" || Die "Failed during: $*"
+   fi
+}
+
+run_retry() {
+   if Boolean "p"
+   then
+      echo "# $*"
+   else
+      max_retries=3
+      i=0
+      status=1
+      while [ $status -ne 0 ]
+      do
+          if [ $i -eq $max_retries ]
+          then
+             Die "Max number of retries reached, aborting."
+          fi
+          bash -v -c "$*"
+          status=$?
+          i=$(( $i + 1 ))
+      done
+   fi
+}
+
 handle_description() {
    local name="$1"
    local version="$2"
@@ -190,7 +220,9 @@ EOF
 
 if Boolean "p"
 then
-   echo -e "\n*** Running with -p for 'pretend'. Will show commands but not commit changes to remotes.\n"
+   echo ""
+   Log_Normal "Running with -p for 'pretend':"
+   Log_Normal "-- will show commands but not commit changes to remotes.\n"
 fi
 
 # sets 'recipedir', 'program' and 'version'
@@ -219,70 +251,50 @@ done
 
 branch="submit-$program-$version"
 
-echo -e "\n+++ Creating local branch \"$branch\" ...\n"
+echo ""
+Log_Normal "Creating local branch \"$branch\" ...\n"
 
-pretend git pull
-pretend git checkout -B \"$branch\"
-pretend git add .
-pretend git commit -m \"$program $version\"
+run_fail git pull
+run_fail git checkout -B \"$branch\"
+run_fail git add .
+run_fail git commit -m \"$program $version\"
 
 if Boolean "gobo"
 then
 
-   echo -e "\n>>> GoboLinux Maintainer workflow selected ...\n"
+   echo ""
+   Log_Normal "GoboLinux Maintainer workflow selected ...\n"
 
-   # The IFS hack ensures that the array strings are newline terminated
-   #
-   IFS='
-'
-   ACTIONS=(
-      "git stash"
-      "cd \"$compileRecipesDir\""
-      "git checkout \"$compileUpstreamBranch\""
-      "git pull"
-      "git merge \"submit-$program-$version\""
-      "git rebase"
-      "git push"
-      "git stash pop"
-      "git branch -D \"submit-$program-$version\""
-  )
+   run_fail git stash
+   run_fail cd \"$compileRecipesDir\"
+   run_fail git checkout \"$compileUpstreamBranch\"
+   run_fail git pull
+   run_fail git merge \"submit-$program-$version\"
+   run_fail git rebase
+   run_retry git push
+   run_fail git stash pop
+   run_fail git branch -D \"submit-$program-$version\"
 
 else
 
-   echo -e "\n>>> GoboLinux Contributor workflow selected ...\n"
+   echo ""
+   Log_Normal "GoboLinux Contributor workflow selected ...\n"
 
    pretend git config hub.protocol https
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
 
-   # The IFS hack ensures that the array strings are newline terminated
-   #
-   IFS='
-'
-   ACTIONS=( 
-      "hub fork --remote-name origin-fork"
-      "git push --set-upstream origin-fork submit-$program-$version"
-      "hub pull-request -p -h \"origin-fork/submit-$program-$version\" -m \"$program $version\""
-      "git checkout master"
-   )
+   echo ""
+   Log_Normal "When using 2FA, use your oauth token as your password"
+   Log_Normal "(instead of your normal GitHub password)\n"
+   # These should probably only be shown in 'debug' mode
+   Log_Normal "GITHUB_USER: ${GITHUB_USER}"
+   Log_Normal "GITHUB_TOKEN: ${GITHUB_TOKEN}\n"
 
+   run_retry hub fork --remote-name origin-fork
+   run_retry git push --set-upstream origin-fork \"submit-$program-$version\"
+   run_retry hub pull-request -p -h \"origin-fork/submit-$program-$version\" -m \"$program $version\"
+   run_fail git checkout master
 fi
 
-# These should probably only be shown in 'debug' mode   
-#echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
-#echo "GITHUB_USER: ${GITHUB_USER}"
-
-# Make sure that we account for authentication errors and keep trying until
-# we succeed or the user manually quits with CTRL+C.
-#
-# status=0 indicates success
-
-for CMD in ${ACTIONS[@]}; do
-   status=1
-   while [ $status -ne 0 ]
-   do
-      pretend "${CMD}"
-      status=$?
-   done
-done
-
-echo -e "\n=== Done.\n"
+echo ""
+Log_Normal "All done.\n"
