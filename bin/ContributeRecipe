@@ -48,7 +48,7 @@ pretend() {
    then
       echo "# $@"
    else
-      $@
+      "$@"
    fi
 }
 
@@ -57,7 +57,7 @@ run_fail() {
    then
       echo "# $@"
    else
-      $@ || Die "Failed during: $@"
+      "$@" || Die "Failed during: $@"
    fi
 }
 
@@ -68,7 +68,7 @@ run_retry() {
    else
       for i in $(seq 3)
       do
-         $@ && return
+         "$@" && return
       done
       Die "Max number of retries reached, aborting."
    fi
