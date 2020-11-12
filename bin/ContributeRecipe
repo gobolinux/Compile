@@ -35,8 +35,9 @@ scriptCredits="Copyright (C) 2008-2009 Michael Homer. Released under the GNU GPL
 helpOnNoArguments=yes
 scriptUsage="{ <recipe dir> | <recipe name> [<recipe version>] }"
 scriptExample="firefox"
-Add_Option_Boolean "p" "pretend" "Don't really submit, just dump the report to stdout."
 Add_Option_Boolean "g" "gobo" "GoboLinux developer: push straight to repo."
+Add_Option_Boolean "p" "pretend" "Don't really submit, just dump the report to stdout."
+Add_Option_Boolean "s" "show-secret" "Show secret GitHub oauth token on stdout."
 Parse_Options "$@"
 
 ### Utils #####################################################################
@@ -221,8 +222,7 @@ EOF
 if Boolean "p"
 then
    echo ""
-   Log_Normal "Running with -p for 'pretend':"
-   Log_Normal "-- will show commands but not commit changes to remotes.\n"
+   Log_Normal "Running with '--pretend': Will show commands but not commit changes to remotes.\n"
 fi
 
 # sets 'recipedir', 'program' and 'version'
@@ -284,11 +284,13 @@ else
    hub --version &> /dev/null || Die "You need to install 'hub' to auto-submit pull-requests"
 
    echo ""
-   Log_Normal "When using 2FA, use your oauth token as your password"
-   Log_Normal "(instead of your normal GitHub password)\n"
-   # These should probably only be shown in 'debug' mode
-   Log_Normal "GITHUB_USER: ${GITHUB_USER}"
-   Log_Normal "GITHUB_TOKEN: ${GITHUB_TOKEN}\n"
+   Log_Normal "When using 2FA, use GITHUB_TOKEN as your password (instead of your normal GitHub password)"
+   Log_Normal "Tip: Specify '-s' to have ContributeRecipe print your GITHUB_TOKEN for convenience.\n"
+
+   if Boolean "s"
+   then
+      Log_Normal "GITHUB_TOKEN: ${GITHUB_TOKEN}\n"
+   fi
 
    run_retry hub fork --remote-name origin-fork
    run_retry git push --set-upstream origin-fork \"submit-$program-$version\"
