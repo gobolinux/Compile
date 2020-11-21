@@ -301,7 +301,7 @@ then
    # we may have problems with Runner when it creates a union sandbox using the overlayfs backend.
    fname=
    xattr_pattern="trusted.overlay."
-   getfattr -P -R -d -m "$xattr_pattern" --absolute-names "$installPackageDir/$version" | while read i
+   getfattr -P -R -d -m "$xattr_pattern" --absolute-names "$installPackageDir/$version" 2> /dev/null | while read i
    do
       if echo "$i" | grep -q "^# file:"
       then
