@@ -118,8 +118,8 @@ function cleanup() {
 	writedir=`Entry "writedir"`
 	Log_Normal "Moving entries to: $writedir"
 	Assert_Dir $writedir
-	cp -ra $verbose "$sandbox_rw/." "$writedir"
-	Quiet mv $sandbox_mp/* $writedir
+	cp -ra --no-preserve=xattr $verbose "$sandbox_rw/." "$writedir"
+	Quiet mv -v $sandbox_mp/* $writedir
     fi
     rm -rf $sandbox_rw $sandbox_tmp
     rmdir $sandbox_mp

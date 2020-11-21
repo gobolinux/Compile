@@ -219,7 +219,7 @@ then
       for file in $(ls $installPackageDirWrongVersion)
       do
          Log_Verbose "$installPackageDirWrongVersion/$file -> $installPackageDirVersion/"
-         cp -a "$installPackageDirWrongVersion/$file" "$installPackageDirVersion/"
+         cp -a --no-preserve=xattr "$installPackageDirWrongVersion/$file" "$installPackageDirVersion/"
       done
    done
 
@@ -232,12 +232,12 @@ then
          if Ends_With "/Settings" $entry
          then
             mkdir -p $default_settings
-            cp -a $verbose $entry/* $default_settings/
+            cp -a --no-preserve=xattr $verbose $entry/* $default_settings/
          elif Ends_With "/Variable" $entry
          then
-            cp -a $verbose $entry/* $installPackageDir/Variable/
+            cp -a --no-preserve=xattr $verbose $entry/* $installPackageDir/Variable/
          else
-            cp -a $verbose $entry/* $installPackageDir/$version/
+            cp -a --no-preserve=xattr $verbose $entry/* $installPackageDir/$version/
          fi
       done
       rm -rf ./Programs/$p
@@ -247,11 +247,11 @@ then
    # This doesn't use $goboIndex because $goboIndex is actually /usr.
    # This is confusing. We should clean this up.
    mkdir -p $default_settings
-   cp -a $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
-   cp -a $verbose ./$goboSettings/* $default_settings 2>/dev/null
-   cp -a $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
+   cp -a --no-preserve=xattr $verbose ./$goboSystem/Index/* $installPackageDir/$version 2>/dev/null
+   cp -a --no-preserve=xattr $verbose ./$goboSettings/* $default_settings 2>/dev/null
+   cp -a --no-preserve=xattr $verbose ./usr/local/* $installPackageDir/$version 2>/dev/null
    rm -rf ./usr/local
-   cp -a $verbose ./usr/* $installPackageDir/$version 2>/dev/null
+   cp -a --no-preserve=xattr $verbose ./usr/* $installPackageDir/$version 2>/dev/null
    rm -rf ./usr 2> /dev/null
    rm -f $installPackageDir/$version/etc/mtab
    rmdir --ignore-fail-on-non-empty $installPackageDir/$version/etc 2> /dev/null
@@ -269,7 +269,7 @@ then
            mv $installPackageDir/$version/{lib64,lib}
        elif [ -d $installPackageDir/$version/lib ]
        then
-           cp -a $installPackageDir/$version/lib64/* $installPackageDir/$version/lib
+           cp -a --no-preserve=xattr $installPackageDir/$version/lib64/* $installPackageDir/$version/lib
            rm -rf -- $installPackageDir/$version/lib64
        fi
    fi
@@ -278,7 +278,7 @@ then
    if [ -d $installPackageDir/$version/share/pkgconfig ]
    then
        mkdir -p $installPackageDir/$version/lib/pkgconfig
-       cp -a $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
+       cp -a --no-preserve=xattr $installPackageDir/$version/share/pkgconfig/* $installPackageDir/$version/lib/pkgconfig/
        rm -rf -- $installPackageDir/$version/share/pkgconfig
    fi
 
@@ -287,7 +287,7 @@ then
    if [ -d $installPackageDir/$version/man ]
    then
        mkdir -p $installPackageDir/$version/share/man
-       cp -a $installPackageDir/$version/man/* $installPackageDir/$version/share/man
+       cp -a --no-preserve=xattr $installPackageDir/$version/man/* $installPackageDir/$version/share/man
        rm -rf -- $installPackageDir/$version/man
    fi
 
@@ -295,6 +295,23 @@ then
 
    # LibTool .la files are deprecated
    rm -f -- $installPackageDir/$version/lib/*.la
+
+   # Remove extended attributes associated with overlayfs -- it's possible that temporary overlayfs xattrs
+   # used during the installation process marked files or directories opaque. Unless we reset those xattrs,
+   # we may have problems with Runner when it creates a union sandbox using the overlayfs backend.
+   fname=
+   xattr_pattern="trusted.overlay."
+   getfattr -P -R -d -m "$xattr_pattern" --absolute-names "$installPackageDir/$version" | while read i
+   do
+      if echo "$i" | grep -q "^# file:"
+      then
+         fname="$(echo "$i" | awk {'print $3'})"
+      elif echo "$i" | grep -q "^${xattr_pattern}"
+      then
+         xattr="$(echo "$i" | cut -d= -f1)"
+         setfattr --remove "$xattr" "$fname"
+      fi
+   done
 
    Quiet popd
 
