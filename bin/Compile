@@ -121,7 +121,7 @@ compileInstallOptions=(
    "GCONF_DISABLE_MAKEFILE_SCHEMA_INSTALL=1"
 )
 
-pure_deps_path=
+pure_deps_path=${pure_deps_path:-}
 trap "wrap_fail 'Caught signal. Exiting...'" TERM INT STOP HUP
 
 #############################################
@@ -223,7 +223,7 @@ function wrap_exit() {
       Quiet rmdir -p "$target"
       Quiet rmdir -p "$settings_target"
    fi
-   [ "${pure_deps_path}" ] && Quiet rm -f "${pure_deps_path}"
+   [ -f "${pure_deps_path}" ] && Quiet rm -f "${pure_deps_path}"
    Post_Installation_Clean_Up "$appname" "$versionnumber" "${status}"
    undo_mounts "--dont-exit"
    
@@ -231,7 +231,7 @@ function wrap_exit() {
 }
 
 function cleanup() {
-   [ "${pure_deps_path}" ] && Quiet rm -f "${pure_deps_path}"
+   [ -f "${pure_deps_path}" ] && Quiet rm -f "${pure_deps_path}"
    Post_Installation_Clean_Up "$appname" "$versionnumber"
    Boolean "remove-archive" && Map "rm -f" "${files[@]}"
    Boolean "remove-sources" && Map "rm -rf" "${dirs[@]}"
@@ -282,7 +282,6 @@ function setup_sandbox_options() {
 ##################################################
 
 function respawn_with_runner() {
-   local pure=
    if [ "$recipe_type" != "meta" ] && ! Boolean "no-build" && [ -z "$GOBOLINUX_RUNNER" ] && Quiet which Runner && Quiet Runner -c
    then
       Log_Verbose "Runner is available, using it."
@@ -293,6 +292,7 @@ function respawn_with_runner() {
       else local quiet="-q"
       fi
       local deps=""
+      local pure=
 
       if Boolean "pure"
       then
@@ -310,7 +310,7 @@ function respawn_with_runner() {
          # we process the entry with a specific version range first.
          pure_deps="$(echo "$pure_deps" | sort -rn | uniq)"
 
-         pure_deps_path=$(mktemp -p /tmp CheckDependencies.pure_deps_path.XXXXXXXXXX)
+         export pure_deps_path=$(mktemp -p /tmp CheckDependencies.pure_deps_path.XXXXXXXXXX)
          Log_Debug "Resolved dependencies:\n${pure_deps}"
          echo "$pure_deps" >> ${pure_deps_path}
 
