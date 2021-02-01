@@ -27,8 +27,9 @@ function Check_Dir_Variable() {
 # Return status:
 # 0 - Files were verified and are okay.
 # 1 - Files are corrupted
-# 2 - Files look incomplete or cannot be verified
-# 3 - Files are missing.
+# 2 - Files look incomplete
+# 3 - Files are missing
+# 4 - File cannot be verified
 function Verify_Files() {
    local myfiles=($1)
    local sizes=($2)
@@ -69,11 +70,12 @@ function Verify_Files() {
             if [ -z "$file_sum" ]
             then
                Log_Terse "Warning: no file size or MD5/SHA checksum. $file cannot be verified"
-               return 2
+               return 4
             elif [ "$file_sum" = "$sum" ]
             then
-               Log_Normal "Warning: file size could not be verified but $file matches MD5/SHA checksum."
-               return 2
+               Log_Normal "Warning: no file size."
+               Log_Normal "Assuming $file is complete based only on MD5/SHA checksum."
+               return 0
             else
                Log_Error "According to MD5/SHA checksum, $file is corrupted."
                return 1

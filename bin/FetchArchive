@@ -265,7 +265,7 @@ do
    fi
    case $result in
    1) Die "File $file is corrupted. Exiting." ;;
-   2) Die "File $file is incomplete or can not be verified" ;;
+   2) Die "File $file is incomplete. Exiting." ;;
    3) Die "Files $file is not available. Exiting." ;;
    esac
 done
