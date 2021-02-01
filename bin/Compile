@@ -300,19 +300,19 @@ function respawn_with_runner() {
          local pure_deps=
 
          Log_Debug "Gathering dependencies from Scripts and Compile"
-         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Scripts/Current/Resources/Dependencies)${pure_deps}"
-         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Compile/Current/Resources/Dependencies)${pure_deps}"
+         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Scripts/Current/Resources/Dependencies)\n${pure_deps}"
+         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Compile/Current/Resources/Dependencies)\n${pure_deps}"
 
          [ -e "${recipedir}/Resources/Dependencies" ] && \
             Log_Debug "Gathering dependencies from Resources/Dependencies" && \
-            pure_deps="$(CheckDependencies $checkdeps_args -f ${recipedir}/Resources/Dependencies)${pure_deps}"
+            pure_deps="$(CheckDependencies $checkdeps_args -f ${recipedir}/Resources/Dependencies)\n${pure_deps}"
          [ -e "${recipedir}/Resources/BuildDependencies" ] && \
             Log_Debug "Gathering dependencies from Resources/BuildDependencies" && \
-            pure_deps="$(CheckDependencies $checkdeps_args -f ${recipedir}/Resources/BuildDependencies)${pure_deps}"
+            pure_deps="$(CheckDependencies $checkdeps_args -f ${recipedir}/Resources/BuildDependencies)\n${pure_deps}"
 
          # We sort in reverse order so that if a program is captured twice (e.g., 'Fuse' and 'Fuse >= 3.0.0')
          # we process the entry with a specific version range first.
-         pure_deps="$(echo "$pure_deps" | sort -rn | uniq)"
+         pure_deps="$(echo -e "$pure_deps" | sort -rn | uniq)"
 
          export pure_deps_path=$(mktemp -p /tmp CheckDependencies.pure_deps_path.XXXXXXXXXX)
          Log_Debug "Resolved dependencies:\n${pure_deps}"
