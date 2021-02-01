@@ -2,6 +2,7 @@ Bash
 BinUtils
 CoreUtils
 GCC
+Glibc
 FindUtils
 Gawk
 Grep
