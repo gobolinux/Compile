@@ -297,7 +297,11 @@ function respawn_with_runner() {
       if Boolean "pure"
       then
          local checkdeps_args="-W -m list -s never -t installed --no-builddeps --quiet-progress"
-         local pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Scripts/Current/Resources/Dependencies)"
+         local pure_deps=
+
+         Log_Debug "Gathering dependencies from Scripts and Compile"
+         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Scripts/Current/Resources/Dependencies)${pure_deps}"
+         pure_deps="$(CheckDependencies $checkdeps_args -f ${goboPrograms}/Compile/Current/Resources/Dependencies)${pure_deps}"
 
          [ -e "${recipedir}/Resources/Dependencies" ] && \
             Log_Debug "Gathering dependencies from Resources/Dependencies" && \
