@@ -190,9 +190,11 @@ then
     echo "mkdir -p $goboDevices; mount -t $devfs none $goboDevices" >> "${sandbox_mp}/.wrapper"
     echo "mkdir -p $goboStatus; mount -t proc none $goboStatus" >> "${sandbox_mp}/.wrapper"
     echo "[ -e \"${goboLibraries}/udev/devices/\" ] && cp -aR \"${goboLibraries}/udev/devices/\"* $goboDevices" >> "${sandbox_mp}/.wrapper"
+
+    # We check if udevadm is also available at runtime. This is needed when building Udev itself.
     if Executable_Exists_In_Path "udevadm"
-    then echo "udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
-    else echo "udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
+    then echo "which udevadm >& /dev/null && udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
+    else echo "which udevtrigger >& /dev/null && udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
     fi
 fi
 echo "\"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
