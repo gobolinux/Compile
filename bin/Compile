@@ -316,10 +316,10 @@ function respawn_with_runner() {
 
          # We sort in reverse order so that if a program is captured twice (e.g., 'Fuse' and 'Fuse >= 3.0.0')
          # we process the entry with a specific version range first.
-         pure_deps="$(echo -e "$pure_deps" | sort -rn | uniq)"
+         Log_Debug "Resolved dependencies:\n${pure_deps}"
+         pure_deps="$(echo -e "$pure_deps" | sort -rn | grep -v "^#" | uniq)"
 
          export pure_deps_path=$(mktemp -p /tmp CheckDependencies.pure_deps_path.XXXXXXXXXX)
-         Log_Debug "Resolved dependencies:\n${pure_deps}"
          echo "$pure_deps" >> ${pure_deps_path}
 
          deps="-d ${pure_deps_path}"
