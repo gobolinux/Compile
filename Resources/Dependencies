@@ -14,5 +14,6 @@ Python >= 3.0.0 # Meson build type
 Scripts > 2.9.8
 Sed
 Sudo
+Wget # used by FetchArchive
 PIP3:meson
 PIP3:ninja
