@@ -1,19 +1,24 @@
+Autoconf        # used by BuildType_configure
+Autogen         # potentially used by BuildType_configure
+Automake        # potentially used by BuildType_configure 
 Bash
 BinUtils
+CMake           # used by BuildType_cmake
 CoreUtils
-GCC
-Glibc
 FindUtils
+GCC
 Gawk
+Glibc
 GoboHide
 Grep
-Make
+Lua             # used by Lua rocks
+Make            # used by BuildType_configure|cmake
 Patch
-Perl # RecipeLint
+Perl            # used by RecipeLint script
 Python >= 3.0.0 # Meson build type
 Scripts > 2.9.8
 Sed
 Sudo
-Wget # used by FetchArchive
-PIP3:meson
-PIP3:ninja
+Wget            # used by FetchArchive script
+PIP3:meson      # used by BuildType_meson
+PIP3:ninja      # used by BuildType_cmake|meson
