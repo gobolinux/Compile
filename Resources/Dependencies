@@ -3,9 +3,11 @@ Autogen         # potentially used by BuildType_configure
 Automake        # potentially used by BuildType_configure 
 Bash
 BinUtils
+Bison
 CMake           # used by BuildType_cmake
 CoreUtils
 FindUtils
+Flex
 GCC
 Gawk
 Glibc
