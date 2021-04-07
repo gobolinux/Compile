@@ -174,9 +174,9 @@ else
     use_sha=0
 fi
 
-for i in `seq 0 $[${#urls[@]}-1]`
+for url_index in `seq 0 $[${#urls[@]}-1]`
 do
-   file="${files[i]}"
+   file="${files[url_index]}"
    [ -f "${file}" -a ! -w "${file}" ] && chown `whoami` "$file"
    # First verification to know if we need to download it again
    if Boolean "no-verify-files"
@@ -186,7 +186,7 @@ do
       else result=3 # missing
       fi
    else
-      Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
+      Verify_Files "$file" "${file_sizes[url_index]}" "${file_sum[url_index]}" $use_sha
       result=$?
    fi
    # File was ok
@@ -248,7 +248,7 @@ do
    }
 
    # Note: calling this function modifies the value of $file!
-   wget_url "$i" 0 || {
+   wget_url "$url_index" 0 || {
       Die "Could not fetch '$url'."
    }
 
@@ -259,8 +259,8 @@ do
    then
       result=0
    else
-      file=${files[i]}
-      Verify_Files "$file" "${file_sizes[i]}" "${file_sums[i]}" $use_sha
+      file=${files[url_index]}
+      Verify_Files "$file" "${file_sizes[url_index]}" "${file_sums[url_index]}" $use_sha
       result=$?
    fi
    case $result in
