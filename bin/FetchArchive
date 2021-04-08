@@ -186,7 +186,7 @@ do
       else result=3 # missing
       fi
    else
-      Verify_Files "$file" "${file_sizes[url_index]}" "${file_sum[url_index]}" $use_sha
+      Verify_Files "$file" "${file_sizes[url_index]}" "${file_sums[url_index]}" $use_sha
       result=$?
    fi
    # File was ok
