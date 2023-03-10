@@ -199,6 +199,7 @@ then
    fi
    rm -rf Users/*/.distcc
    rm -rf Users/*/.cache
+   rm -rf Users/*/.cargo
    rm -rf Users/*/.oracle_jre_usage
    rmdir Users/* Users &> /dev/null
    find -type c | xargs rm -f &> /dev/null
