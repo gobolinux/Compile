@@ -1,0 +1,47 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import string
+
+# set console args (expect 3)
+op=sys.argv[1]
+cl=sys.argv[2]
+filename=sys.argv[3]
+
+# open 'filename' with error handling
+try:
+   with open(filename, "r") as f:
+      # find+replace all variables in filename
+      # where each variable is checked against the enviorment hashtable
+      # default value to blank string
+      for line in f.readlines():
+         while 1:
+            # find variable in line
+            op_index=line.find(op)
+            if op_index == -1:
+               break
+            cl_index=line.find(cl)
+            if cl_index == -1:
+               break
+            var = line[op_index + len(op):cl_index]
+
+            # get variable from environment (default "")
+            try:
+               val = os.environ[var]
+            except:
+               val = ""
+
+            # substitue the variable's value in the line
+            line = line.replace(op + var + cl, val)
+
+         # output substituted line to stdout
+         print(line, end=" ")
+
+except:  # file cannot be opened
+   # handle error logging in calling script
+   # exit failure
+   exit (1)
+
+# exit success
+exit (0)

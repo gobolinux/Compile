@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ### Imports ###################################################################
 
@@ -7,42 +7,32 @@ Import OptionParser
 
 ### Options ###################################################################
 
-helpOnNoArguments=yes
-scriptNotes="$scriptName processes a file replacing instances of variables marked
+helpOnNoArguments='yes'
+scriptNotes="${scriptName} processes a file replacing instances of variables marked
 with special indicators ('@%', '%@' by default) with the contents of equivalent
 environment variables."
-Add_Option_Entry "o" "open" "Opening mark." "@%"
-Add_Option_Entry "c" "close" "Closing mark." "%@"
-Add_Option_Entry "i" "identifier" "Add a prefix identifier in the form of '<entry>_' to the opening markup."
+Add_Option_Entry 'o' 'open' 'Opening mark.' '@%'
+Add_Option_Entry 'c' 'close' 'Closing mark.' '%@'
+Add_Option_Entry 'i' 'identifier' 'Add a prefix identifier in the form of '\''<entry>_'\'' to the opening markup.'
 Parse_Options "$@"
 
 ### Operation #################################################################
 
-open=`Entry "open"`
-close=`Entry "close"`
-if Is_Entry "identifier"
+open=$(Entry 'open')       # opening brace (default '@%')
+close=$(Entry 'close')     # closing brace (default '%@')
+if Is_Entry 'identifier'   # variable name prefix (default '')
 then
-   open="${open}`Entry identifier`_"
+   open="${open}$(Entry identifier)_"
+fi
+filename=$(Arg 1)          # source filename
+
+# read contents of the ${filename} file
+# find/expand enviornment variables in contents
+# output expanded results to stdout
+if ! ApplyVariablesCore "${open}" "${close}" "${filename}"
+then
+   # if the function returns an error (commonly, if the file doesn't exist)
+   # throw an error and abort
+   Die "${filename}: failed"
 fi
 
-cat "$(Arg 1)" | python3 -c '
-import os,sys,string
-
-op=sys.argv[1]
-cl=sys.argv[2]
-for line in sys.stdin.readlines():
-   while 1:
-      op_index=line.find(op)
-      if op_index == -1:
-         break
-      cl_index=line.find(cl)
-      if cl_index == -1:
-         break
-      var = line[op_index + len(op):cl_index]
-      try:
-         val = os.environ[var]
-      except:
-         val = ""
-      line = line.replace(op + var + cl, val)
-   print(line, end=" ")
-' "$open" "$close"
