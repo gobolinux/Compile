@@ -12,6 +12,7 @@ Glibc
 GoboHide
 Grep
 Lua             # used by Lua rocks
+LuaRocks
 Make            # used by BuildType_configure|cmake
 Patch
 Perl            # used by RecipeLint script
