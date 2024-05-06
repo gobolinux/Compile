@@ -33,7 +33,7 @@ function Find_Recipe_Program_And_Version() {
    then
       [ `ls "$entry" | wc -l` -eq 1 ] || {
          # pick latest
-         version=$(ls --sort=version "$compileRecipesDir/$program" | tail -n 1)
+         version=$(GuessLatest $(ls "$compileRecipesDir/$program"))
          if [ "$version" ]
          then
             recipedir="$compileRecipesDir/$program/$version"
