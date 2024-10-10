@@ -117,7 +117,7 @@ echo "$program--$version" | grep -q " " && {
 msg "Checking version number..."
 pureversion=`echo $version | sed 's/^\(.*\)-r[0-9]*$/\1/'`
 revision=`echo $version | sed -n 's/^.*-\(r[0-9]*\)$/\1/p'`
-echo "$pureversion" | egrep -q "^[0-9a-z_.]+$" || {
+echo "$pureversion" | grep -E -q "^[0-9a-z_.]+$" || {
    ERROR "Version $pureversion contains invalid characters (only [0-9a-z._] allowed)."
 }
 echo "$pureversion" | grep -q "[0-9]\|^cvs$\|^svn$\|^git$\|^bzr$\|^hg$" || {
@@ -145,7 +145,7 @@ function check_dir() {
       Resources)
          ;;
       *.patch|*.patch.in)
-         echo "$file" | egrep -q "^[0-9]+" || {
+         echo "$file" | grep -E -q "^[0-9]+" || {
             [ `ls $2/*.patch | wc -l` -gt 1 ] && {
                ERROR "Patch file $file is not numbered; unreliable patching order."
             }
@@ -587,7 +587,7 @@ test_recipe() {
          [ "$iname" == `NamingConventions $iname` ] || {
             WARN "Name $iname does not follow naming conventions."
          }
-         echo "$iversion" | egrep -q "^[0-9a-z_.]+$" || {
+         echo "$iversion" | grep -E -q "^[0-9a-z_.]+$" || {
             ERROR "Invalid characters in include version $iversion. Only [0-9a-z_.] allowed."
          }
          Boolean "quick-and-dirty" && continue
@@ -695,7 +695,7 @@ test_recipe() {
             ERROR "Entry '$1' in $aname does not look like a variable assignment."
          }
          vname="${1%%=*}"
-         echo "$vname" | egrep -q "^[A-Za-z_][A-Za-z0-9_]*$" || {
+         echo "$vname" | grep -E -q "^[A-Za-z_][A-Za-z0-9_]*$" || {
             WARN "Entry '$vname' in $aname does not look like a variable name."
          }
          shift
