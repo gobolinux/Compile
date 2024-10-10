@@ -188,7 +188,7 @@ function wrapup() {
 
    (
       cd "$recipedir"
-      if git status "Recipe" --porcelain | grep -q "\?\?"
+      if git status "Recipe" --porcelain | grep -q "??"
       then
          echo
          Log_Normal "You are encouraged to submit your recipe for inclusion into the distribution."
