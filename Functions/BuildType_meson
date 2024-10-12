@@ -27,7 +27,7 @@ meson_do_build() {
    meson_variables=(`echo ${meson_variables[@]} | sed "s,$target,$goboIndex,g"`)
    ninja_variables=(`echo ${ninja_variables[@]} | sed "s,$target,$goboIndex,g"`)
 
-   $meson "${sourcedir}" "${meson_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
+   $meson setup "${sourcedir}" "${meson_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
    $ninja || wrap_fail "Build failed."
 }
 
