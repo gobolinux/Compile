@@ -672,7 +672,7 @@ function construct_arrays() {
       )
    fi
    # Replace local libtool by our own
-   # Note: The use of a custom libtool was necessary because libtool fails to complete
+   # Note: The use of a custom libtool is necessary because libtool fails to complete
    # an installation if the build path differs from the install path.
    [ -n "$LIBTOOL" ] && \
    compileMakeOptions=(
