@@ -20,7 +20,7 @@ configure_do_configuration() {
          val=`echo $i | cut -d= -f 2-`
          eval export $var=\'$val\'
       done
-      
+
       [ -e "./$autogen" ] && autogen="./$autogen" && chmod +x $autogen
       [ "$autogen_before_configure" = "yes" ] && yes "" | $autogen
       prepareoptions=(
@@ -34,6 +34,12 @@ configure_do_configuration() {
 }
 
 configure_do_build() {
+   # Configure generates libtool with hardcoded linking behaviour, but we are using our own libtool.
+   # If option --disable-static is present pass it explicitly:
+   if Array_Contains config "--disable-static"; then
+      export LIBTOOLFLAGS="--tag=disable-static"
+      Log_Debug "Recognized configure option --disable-static, setting LIBTOOLFLAGS=--tag=disable-static"
+   fi
    makefile_do_build
 }
 
