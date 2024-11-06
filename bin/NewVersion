@@ -102,24 +102,30 @@ cd "$newrecipedir" || Die "Failed creating new recipe dir."
 
 [ -e "Recipe" ] || Die "Recipe file not found."
 
-# strip compile_version
-sed -i '/^compile_version=/d' Recipe
-
 # Use -a to avoid considering the file as binary if there are multibyte characters
 grep -av '# Recipe for version' Recipe > Recipe.old
 
 if [ "$compileRecipeAuthor" != "" ]
 then
    echo "# Recipe for version $newversion by $compileRecipeAuthor, on" `date` > Recipe
-   # Add compile_version here since it is supposed to be at the top.
-   # Note: For a future version it might make sense to "sort" the resulting Recipe as the last step.
-   # This way we could add/edit values in-place without worrying about order and get consistend results.
-   echo "compile_version=$scriptVersion" >> Recipe
    cat Recipe.old >> Recipe
 else
    Log_Terse "Please fill in the 'compileRecipeAuthor' variable in $goboSettings/Compile/Compile.conf"
    mv Recipe.old Recipe
 fi
+
+# update compile_version
+sed -i '/^compile_version=/d' Recipe
+grep -a  '# Recipe for version\|# Recipe (MakeRecipe)' Recipe > Recipe.new
+grep -av '# Recipe for version\|# Recipe (MakeRecipe)' Recipe > Recipe.old
+echo "compile_version=$scriptVersion" >> Recipe.new
+cat Recipe.old >> Recipe.new
+mv Recipe.new Recipe
+
+# update compile_version
+#sed -i "s|^compile_version=.*|compile_version=$scriptVersion|" Recipe
+# Note: For a future version it might make sense to "sort" the resulting Recipe as the last step.
+# This way we could add/edit values in-place without worrying about order and get consistend results.
 
 if [ "$newurl" ]
 then
