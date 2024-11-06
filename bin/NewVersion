@@ -121,9 +121,6 @@ grep -av '# Recipe for version\|# Recipe (MakeRecipe)' Recipe > Recipe.old
 echo "compile_version=$scriptVersion" >> Recipe.new
 cat Recipe.old >> Recipe.new
 mv Recipe.new Recipe
-
-# update compile_version
-#sed -i "s|^compile_version=.*|compile_version=$scriptVersion|" Recipe
 # Note: For a future version it might make sense to "sort" the resulting Recipe as the last step.
 # This way we could add/edit values in-place without worrying about order and get consistend results.
 
