@@ -6,6 +6,7 @@ BinUtils
 CMake           # used by BuildType_cmake
 CoreUtils
 FindUtils
+Fuse < 3.0.0
 GCC
 Gawk
 Glibc
