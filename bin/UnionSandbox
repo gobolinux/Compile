@@ -139,7 +139,18 @@ function mount_union() {
     Assert_Dir ${sandbox_mp}${dir}
     Assert_Dir ${sandbox_rw}${dir}
     Assert_Dir ${sandbox_tmp}${dir}
-    uniondirs=`echo "${sandbox_rw}${dir}=rw:${dir}=ro:${sandbox_tmp}${dir}=tmp" | sed "s,$unionfsPackageDir=ro,$unionfsPackageDir=rw,g"`
+    uniondirs=`echo "${sandbox_rw}${dir}=rw:${dir}=ro:${sandbox_tmp}${dir}=tmp"`
+    # Dev Note:
+    # $unionfsPackageDir is empty in PostInstall which was causing sed to garble $uniondirs!
+    # Upon further investigation, it turned out this sed operation is redundant.
+    # See https://github.com/gobolinux/Compile/issues/67.
+    # However this was tested only for the "unionImplementations" "overlayfs" and "unionfs-fuse".
+    # I did not verify whether this sed operation is *possibly* useful for other implementations like "unionfs" or "funionfs."
+    # ... therefore I am leaving it here but wrapped securely (sed only if $unionfsPackageDir is non-empty).
+    if [[ -n "$unionfsPackageDir" ]]
+    then
+        uniondirs=`echo $uniondirs | sed "s,$unionfsPackageDir=ro,$unionfsPackageDir=rw,g"`
+    fi
     Union_Mount "$unionbackend" "$uniondirs" "${sandbox_mp}${dir}"
     [ "$?" = "0" ] || sandbox_die "Unable to mount unionfs"
 }
