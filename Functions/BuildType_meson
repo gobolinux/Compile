@@ -13,17 +13,17 @@ meson_init() {
 
 meson_do_build() {
    # Unless the recipe author overrides it, set "--prefix=/usr"
-   if [[ ! "$meson_variables" == --prefix=* ]]
+   if [[ ! "$meson_options" == --prefix=* ]]
    then
-      meson_variables=(
-         "${meson_variables[@]}"
+      meson_options=(
+         "${meson_options[@]}"
          "--prefix=$goboIndex"
       )
    fi
    Add_Use_Flags_Options_To_Array meson_variables
    Add_Use_Flags_Options_To_Array ninja_variables
 
-   $meson setup "${sourcedir}" "${meson_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
+   $meson setup "${sourcedir}" "${meson_options[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
    $ninja || wrap_fail "Build failed."
 }
 
