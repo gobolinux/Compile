@@ -187,7 +187,7 @@ function wrapup() {
    fi
 
    # Run PostInstall
-   Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
+   Boolean "no-postinstall" || setup_sandbox_options || Run_PostInstall "$appname" "$versionnumber" "$unmanagedlist" "" "" || wrap_fail "Failure in post-install operation."
 
    (
       cd "$recipedir"
