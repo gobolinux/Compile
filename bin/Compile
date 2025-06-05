@@ -186,6 +186,9 @@ function wrapup() {
       fi
    fi
 
+   # Run PostInstall
+   Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
+
    (
       cd "$recipedir"
       if git status "Recipe" --porcelain | grep -q "??"
@@ -884,7 +887,6 @@ function compile_recipe() {
    
    check_direct_dependencies
    Run_Hook post_install || wrap_fail "Failure in post-install operation."
-   Boolean "no-postinstall" || Run_PostInstall "$appname" "$versionnumber" "" "" "" || wrap_fail "Failure in post-install operation."
    
    wrapup
 
