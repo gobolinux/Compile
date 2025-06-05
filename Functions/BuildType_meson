@@ -12,20 +12,16 @@ meson_init() {
 }
 
 meson_do_build() {
-   if [ ! "$override_default_options" = "yes" ]
+   # Unless the recipe author overrides it, set "--prefix=/usr"
+   if [[ ! "$meson_variables" == --prefix=* ]]
    then
       meson_variables=(
          "${meson_variables[@]}"
-         "--prefix=$target"
-      )
-      ninja_variables=(
+         "--prefix=$goboIndex"
       )
    fi
    Add_Use_Flags_Options_To_Array meson_variables
    Add_Use_Flags_Options_To_Array ninja_variables
-
-   meson_variables=(`echo ${meson_variables[@]} | sed "s,$target,$goboIndex,g"`)
-   ninja_variables=(`echo ${ninja_variables[@]} | sed "s,$target,$goboIndex,g"`)
 
    $meson setup "${sourcedir}" "${meson_variables[@]}" "${build_variables[@]}" $build_target || wrap_fail "Build failed."
    $ninja || wrap_fail "Build failed."
