@@ -207,6 +207,10 @@ then
     then echo "which udevadm >& /dev/null && udevadm trigger && udevadm settle --timeout=10" >> "${sandbox_mp}/.wrapper"
     else echo "which udevtrigger >& /dev/null && udevtrigger && udevsettle" >> "${sandbox_mp}/.wrapper"
     fi
+
+    # The following line is a kludge in order to partially mitigate https://github.com/gobolinux/Compile/issues/51.
+    # This should be fixed properly by running Pre_Installation_Preparation outside of Runner.
+    echo "find /System/Index | RemoveBroken > /dev/null" >>"${sandbox_mp}/.wrapper"
 fi
 echo "\"\${command[@]}\"" >>"${sandbox_mp}/.wrapper"
 
