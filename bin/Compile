@@ -898,6 +898,7 @@ function main() {
    source_recipe
    respawn_with_runner
    Get_Dependency_Variables "${recipedir}/Resources/Dependencies"
+   Get_Dependency_Variables "${recipedir}/Resources/BuildDependencies"
    check_compile_version
    handle_meta_recipe
    check_if_part_of_meta_compiled_by_itself
