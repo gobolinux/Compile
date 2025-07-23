@@ -16,6 +16,7 @@ Lua             # used by Lua rocks
 Make            # used by BuildType_configure|cmake
 Patch
 Perl            # used by RecipeLint script
+Pkgconfig       # ocassionally required by autogen_before_configure
 Python >= 3.0.0 # Meson build type
 Scripts > 2.9.8
 Sed
